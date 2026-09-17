@@ -3,7 +3,17 @@
 [ext_resource type="Texture2D" uid="uid://ddxmxgyyfy8mn" path="res://icon.svg" id="1_hqyvl"]
 [ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="2_otv2m"]
 
-[node name="Icon" type="Sprite2D" unique_id=186167435]
-position = Vector2(580, 292)
+[node name="game" type="Node2D" unique_id=2045042830]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=509395075]
+position = Vector2(580, 339)
 texture = ExtResource("1_hqyvl")
 script = ExtResource("2_otv2m")
+
+[node name="Camera2D" type="Camera2D" parent="Sprite2D" unique_id=538592367]
+position = Vector2(-10, -14)
+limit_smoothed = true
+
+[node name="Icon" type="Sprite2D" parent="." unique_id=1424739840]
+position = Vector2(849, 531)
+texture = ExtResource("1_hqyvl")
