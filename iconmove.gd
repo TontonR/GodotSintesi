@@ -82,12 +82,4 @@ func _physics_process(delta: float) -> void:
 			_velocity.y = 0.0
 		_is_on_floor = true
 
-	# --- Límites horizontales de la pantalla ---
-	var half_width: float = texture.get_width() * 0.5 * scale.x
-	var view_width: float = get_viewport_rect().size.x
-	if position.x < half_width:
-		position.x = half_width
-		_velocity.x = maxf(_velocity.x, 0.0)
-	elif position.x > view_width - half_width:
-		position.x = view_width - half_width
-		_velocity.x = minf(_velocity.x, 0.0)
+	
