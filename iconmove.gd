@@ -15,9 +15,12 @@ extends CharacterBody2D
 # Margen para registrar el salto pulsado un poco antes de tocar suelo
 @export var jump_buffer_time: float = 0.12
 
+@onready var animated_sprite = $AnimatedSprite2D
+
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
 var _jump_was_pressed: bool = false
+var _facing_right: bool = true
 
 func _physics_process(delta: float) -> void:
 	# --- Gravedad ---
@@ -37,6 +40,13 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, direction * move_speed, acceleration * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+
+	# --- Dirección del sprite ---
+	if direction > 0.0:
+		_facing_right = true
+	elif direction < 0.0:
+		_facing_right = false
+	animated_sprite.flip_h = not _facing_right
 
 	# --- Salto ---
 	var jump_pressed: bool = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP)
@@ -65,3 +75,15 @@ func _physics_process(delta: float) -> void:
 	_jump_was_pressed = jump_pressed
 
 	move_and_slide()
+	_update_animation()
+
+func _update_animation() -> void:
+	if not is_on_floor():
+		if velocity.y < 0.0:
+			animated_sprite.play("movement_right")
+		else:
+			animated_sprite.play("idle_right")
+	elif absf(velocity.x) > 10.0:
+		animated_sprite.play("movement_right")
+	else:
+		animated_sprite.play("idle_center")
