@@ -12,7 +12,8 @@ Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir 
 | Archivo | Descripción | Líneas clave |
 |---|---|---|
 | `project.godot:1` | Configuración engine, input `movement` (A/D), `default_clear_color` cielo | `project.godot:40` |
-| `icon.tscn:1` | Escena principal (packed). Contiene TileSet, SpriteFrames, nodos `game`, `player`, `TileMapLayer`, `SkyLayer`, `UILayer`, `Camera2D` | `icon.tscn:356` `icon.tscn:373` |
+| `icon.tscn:1` | Escena principal (packed). Contiene TileSet, SpriteFrames, nodos `game`, `player`, `TileMapLayer`, `ParallaxBackground`, `UILayer`, `Camera2D` | `icon.tscn:432` `icon.tscn:488` |
+| `assets/forest_tileset_lite/Sprites/Background/` | Sprites parallax: `sky.png` 688×211, `sky_cloud.png` 688×211, `cloud.png` 634×136, `mountain2.png` 688×127, `pine1.png` 688×148, `pine2.png` 688×199 | `icon.tscn:3-9` |
 | `iconmove.gd:1` | Lógica del `CharacterBody2D` jugador: movimiento, salto, ataque, vida, pivot | `iconmove.gd:4` `iconmove.gd:32` `iconmove.gd:48` |
 | `world_generator.gd:1` | Generación procedural del suelo plano | `world_generator.gd:4` `world_generator.gd:13` |
 | `tilesetgrass.png` | `TileSet` 16×16 (`TileSet_yb26g` `icon.tscn:352`) atlas `1:0` hierba, `2:1` tierra, `2:2` tierra profunda | `icon.tscn:169` |
@@ -23,8 +24,13 @@ Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir 
 ```
 . (root implícito)
 ├─ game (Node2D) uid 2045042830 — contenedor lógico
-├─ SkyLayer (CanvasLayer) layer -100 — fondo cielo
-│  └─ Sky (ColorRect) fullscreen Color(0.51,0.79,0.99) mouse_filter=IGNORE
+├─ ParallaxBackground uid 510311040 — fondo multilayer
+│  ├─ LayerSky     motion_scale 0,0    mirroring 447 → Sky (sprite 0.65, y -280)
+│  ├─ LayerSkyCloud motion_scale 0.02,0 mirroring 447 → SkyCloud (0.65, y -280)
+│  ├─ LayerCloud   motion_scale 0.08,0 mirroring 413 → Cloud (0.6, y -160, x 100)
+│  ├─ LayerMountain motion_scale 0.15,0 mirroring 413 → Mountain (0.6, y -40)
+│  ├─ LayerPine1   motion_scale 0.35,0 mirroring 447 → Pine1 (0.65, y -10)
+│  └─ LayerPine2   motion_scale 0.6,0  mirroring 447 → Pine2 (0.65, y 20)
 ├─ UILayer (CanvasLayer) layer 10 — HUD
 │  └─ HealthBar (ProgressBar) top-right + Label "100 / 100"
 ├─ player (CharacterBody2D) script iconmove.gd
@@ -93,9 +99,11 @@ Camera2D offset = Vector2(80, -60) zoom 3,3
 - `y=-60` → más cielo, menos suelo (con `ground_level=20`).
 - `zoom 3` pixel-art nítido (`project.godot:41` `default_texture_filter=0`).
 
-### 4.5 Fondo `project.godot:40` + `icon.tscn:358`
-- `project.godot:40` `environment/defaults/default_clear_color=Color(0.51,0.79,0.99,1)` → cielo Godot.
-- `SkyLayer:358` `CanvasLayer layer -100` + `Sky:361` `ColorRect fullscreen` mismo color, `mouse_filter=2 (IGNORE)` para no bloquear clics (fix ataque).
+### 4.5 Fondo `project.godot:40` + `ParallaxBackground` `icon.tscn:432`
+- `project.godot:40` `environment/defaults/default_clear_color=Color(0.51,0.79,0.99,1)` → solo visible si falta textura.
+- `ParallaxBackground` con 6 `ParallaxLayer` (tabla jerarquía §2): todas con `motion_mirroring` horizontal → tiling infinito; `motion_scale.y=0` → no se mueven al saltar.
+- **Parallax con zoom out**: cada `Sprite2D` tiene `scale` 0.6–0.65 (antes 1.0 → las montañas salían recortadas por el `Camera2D zoom 3`). `Sky`/`SkyCloud` bajados a `y=-280` para cubrir el hueco superior.
+- Antes había un `SkyLayer`/`Sky ColorRect` fullscreen que sobresalía por encima del parallax → **eliminado**.
 
 ---
 
@@ -237,6 +245,10 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 9. **HUD vida + más lento** `max_health 100`, `UILayer/HealthBar`, `move_speed 160→130` (actual).
 10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`iconmove.gd:155`), `salto bloqueado` (`iconmove.gd:173`), HUD dinámico (`iconmove.gd:48`), offsets corregidos.
 11. **Ataque bloquea giro** `raw_direction` filtrado + `_facing_right` bloqueado si `_is_attacking` (`iconmove.gd:151` `iconmove.gd:162`) → no se puede cambiar dirección ni moverte al lado contrario mientras atacas.
+12. **Combo `attack_1/2/3`** `SpriteFrames` 3 animaciones de ataque, `loop 0`, `speed 14` en 2/3, ventana `combo_window=0.35s`.
+13. **Parallax 6 capas** `ParallaxBackground` con todos los sprites de `forest_tileset_lite/.../Background` (sky, sky_cloud, cloud, mountain2, pine1, pine2), `motion_scale` 0→0.6, `motion_mirroring` horizontal.
+14. **Fix fondo sobresaliente** eliminado `SkyLayer`/`Sky ColorRect` que se veía por encima del parallax; `Sky`/`SkyCloud` a `y=-280`.
+15. **Zoom out del parallax** `scale 0.6–0.65` en todos los sprites + `motion_mirroring` ajustado al ancho escalado (447/413) → las montañas se ven completas con `Camera2D zoom 3`.
 
 ---
 
@@ -266,7 +278,8 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 - `AnimatedSprite2D` scale `0.435` para ajustar 128px a ~55px mundo.
 - `CollisionShape2D` `RectangleShape2D 5×17` scale `1.6` → hitbox ~8×27.
 - `TileMapLayer` colisión `physics_layer_0` todos los tiles con polígono 16×16.
-- `UILayer` y `SkyLayer` son `CanvasLayer` → no siguen a `Camera2D`.
+- `UILayer` es `CanvasLayer` → no sigue a `Camera2D`; `ParallaxBackground` sí, pero con `motion_scale` reducido.
 - Editor puede sobrescribir `icon.tscn`; `_ensure_health_ui()` evita pérdida de HUD.
+- Si cambias el `scale` de un sprite del parallax, recalcula `motion_mirroring = ancho_textura * scale` de su `ParallaxLayer` para que el tiling no deje huecos.
 
-*Última actualización: mundo plano 3000, ground 20, movimiento 130, salto -340, HUD 100, ataque 38% velocidad.*
+*Última actualización: parallax 6 capas con zoom out (scale 0.6–0.65), SkyLayer eliminado, mundo plano 3000, ground 20, movimiento 130, salto -340, HUD 100, combo 3 golpes.*

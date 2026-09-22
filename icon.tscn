@@ -1,9 +1,17 @@
 [gd_scene format=3 uid="uid://copiyrk0io0oy"]
 
+[ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/forest_tileset_lite/Sprites/Background/mountain2.png" id="1_mountain"]
 [ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="1_otv2m"]
+[ext_resource type="Texture2D" uid="uid://dstunb0ojedcb" path="res://assets/forest_tileset_lite/Sprites/Background/pine1.png" id="1_pine1"]
+[ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/forest_tileset_lite/Sprites/Background/pine2.png" id="1_pine2"]
+[ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/forest_tileset_lite/Sprites/Background/cloud.png" id="1_rhbex"]
+[ext_resource type="Texture2D" uid="uid://b57sahxytte4s" path="res://assets/forest_tileset_lite/Sprites/Background/sky.png" id="1_sky"]
+[ext_resource type="Texture2D" uid="uid://cxub773rt8vbn" path="res://assets/forest_tileset_lite/Sprites/Background/sky_cloud.png" id="1_skycloud"]
 [ext_resource type="Texture2D" uid="uid://dnn7ij0jq47ml" path="res://assets/Knight_3/Idle.png" id="2_62ljx"]
+[ext_resource type="Texture2D" uid="uid://bieb0qnjw3sqc" path="res://assets/Knight_3/Attack 2.png" id="3_71e0h"]
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="3_otv2m"]
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/Knight_3/Walk.png" id="3_ud633"]
+[ext_resource type="Texture2D" uid="uid://btj8ylkiudhpn" path="res://assets/Knight_3/Attack 3.png" id="4_rhbex"]
 [ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="4_ud633"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://world_generator.gd" id="4_world"]
 
@@ -45,6 +53,38 @@ region = Rect2(383, 0, 127, 128)
 [sub_resource type="AtlasTexture" id="AtlasTexture_kcuih"]
 atlas = ExtResource("4_ud633")
 region = Rect2(510, 0, 127, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3jaof"]
+atlas = ExtResource("3_71e0h")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_55qss"]
+atlas = ExtResource("3_71e0h")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qrt16"]
+atlas = ExtResource("3_71e0h")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1api2"]
+atlas = ExtResource("3_71e0h")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3kcy5"]
+atlas = ExtResource("4_rhbex")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_30bpa"]
+atlas = ExtResource("4_rhbex")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8tm6j"]
+atlas = ExtResource("4_rhbex")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rmvi0"]
+atlas = ExtResource("4_rhbex")
+region = Rect2(384, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yw53o"]
 atlas = ExtResource("2_62ljx")
@@ -113,8 +153,42 @@ animations = [{
 "texture": SubResource("AtlasTexture_kcuih")
 }],
 "loop": 0,
-"name": &"attack",
+"name": &"attack_1",
 "speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3jaof")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_55qss")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qrt16")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1api2")
+}],
+"loop": 0,
+"name": &"attack_2",
+"speed": 14.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3kcy5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_30bpa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8tm6j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rmvi0")
+}],
+"loop": 0,
+"name": &"attack_3",
+"speed": 14.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -355,17 +429,67 @@ sources/0 = SubResource("TileSetAtlasSource_ki3iq")
 
 [node name="game" type="Node2D" unique_id=2045042830]
 
-[node name="SkyLayer" type="CanvasLayer" parent="." unique_id=987654321]
-layer = -100
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=510311040]
 
-[node name="Sky" type="ColorRect" parent="SkyLayer" unique_id=987654322]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.509804, 0.788235, 0.992157, 1)
+[node name="LayerSky" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311041]
+motion_scale = Vector2(0, 0)
+motion_mirroring = Vector2(688, 0)
+
+[node name="Sky" type="Sprite2D" parent="ParallaxBackground/LayerSky" unique_id=510311042]
+position = Vector2(0, -280)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_sky")
+centered = false
+
+[node name="LayerSkyCloud" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311043]
+motion_scale = Vector2(0.02, 0)
+motion_mirroring = Vector2(447, 0)
+
+[node name="SkyCloud" type="Sprite2D" parent="ParallaxBackground/LayerSkyCloud" unique_id=510311044]
+position = Vector2(0, -280)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_skycloud")
+centered = false
+
+[node name="LayerCloud" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311045]
+motion_scale = Vector2(0.08, 0)
+motion_mirroring = Vector2(413, 0)
+
+[node name="Cloud" type="Sprite2D" parent="ParallaxBackground/LayerCloud" unique_id=510311046]
+position = Vector2(100, -160)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_rhbex")
+centered = false
+
+[node name="LayerMountain" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311047]
+motion_scale = Vector2(0.15, 0)
+motion_mirroring = Vector2(413, 0)
+
+[node name="Mountain" type="Sprite2D" parent="ParallaxBackground/LayerMountain" unique_id=510311048]
+position = Vector2(0, -40)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_mountain")
+centered = false
+
+[node name="LayerPine1" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311049]
+motion_scale = Vector2(0.35, 0)
+motion_mirroring = Vector2(447, 0)
+
+[node name="Pine1" type="Sprite2D" parent="ParallaxBackground/LayerPine1" unique_id=510311050]
+position = Vector2(0, -10)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_pine1")
+centered = false
+
+[node name="LayerPine2" type="ParallaxLayer" parent="ParallaxBackground" unique_id=510311051]
+motion_scale = Vector2(0.6, 0)
+motion_mirroring = Vector2(447, 0)
+
+[node name="Pine2" type="Sprite2D" parent="ParallaxBackground/LayerPine2" unique_id=510311052]
+position = Vector2(0, 20)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("1_pine2")
+centered = false
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
 layer = 10
@@ -374,9 +498,9 @@ layer = 10
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -1139.0
+offset_left = -220.0
 offset_top = 12.0
-offset_right = -931.0
+offset_right = -12.0
 offset_bottom = 36.0
 grow_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
