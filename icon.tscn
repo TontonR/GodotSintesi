@@ -1,66 +1,98 @@
 [gd_scene format=3 uid="uid://copiyrk0io0oy"]
 
 [ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="1_otv2m"]
-[ext_resource type="Texture2D" uid="uid://cgqv834xt26dn" path="res://assets/Tiny RPG Character Asset Pack 01 v2.0 -Free Soldier&Orc/Tiny RPG Character Asset Pack 01 v2.0 -Free Soldier&Orc/Characters(100x100 split)/Soldier/Soldier/Soldier.png" id="2_62ljx"]
-[ext_resource type="Texture2D" uid="uid://cyvq1ralgjsy3" path="res://assets/Tiny RPG Character Asset Pack 01 v2.0 -Free Soldier&Orc/Tiny RPG Character Asset Pack 01 v2.0 -Free Soldier&Orc/Characters(100x100 split)/Soldier/Soldier/Soldier_Walk.png" id="3_62ljx"]
+[ext_resource type="Texture2D" uid="uid://dnn7ij0jq47ml" path="res://assets/Knight_3/Idle.png" id="2_62ljx"]
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="3_otv2m"]
+[ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/Knight_3/Walk.png" id="3_ud633"]
+[ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="4_ud633"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://world_generator.gd" id="4_world"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
+bg_color = Color(0.176471, 0.176471, 0.176471, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fg"]
+bg_color = Color(0.858824, 0.192157, 0.192157, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_ud633"]
-atlas = ExtResource("2_62ljx")
-region = Rect2(0, 0, 100, 100)
+atlas = ExtResource("4_ud633")
+region = Rect2(2, 0, 127, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_aidmt"]
+atlas = ExtResource("4_ud633")
+region = Rect2(129, 0, 127, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g22mp"]
+atlas = ExtResource("4_ud633")
+region = Rect2(256, 0, 127, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fq04c"]
+atlas = ExtResource("4_ud633")
+region = Rect2(383, 0, 127, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kcuih"]
+atlas = ExtResource("4_ud633")
+region = Rect2(510, 0, 127, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yw53o"]
 atlas = ExtResource("2_62ljx")
-region = Rect2(100, 0, 100, 100)
+region = Rect2(0, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_71e0h"]
 atlas = ExtResource("2_62ljx")
-region = Rect2(200, 0, 100, 100)
+region = Rect2(128, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rhbex"]
 atlas = ExtResource("2_62ljx")
-region = Rect2(300, 0, 100, 100)
+region = Rect2(256, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_fq04c"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_rxos1"]
 atlas = ExtResource("2_62ljx")
-region = Rect2(400, 0, 100, 100)
+region = Rect2(384, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_kcuih"]
-atlas = ExtResource("2_62ljx")
-region = Rect2(500, 0, 100, 100)
+[sub_resource type="AtlasTexture" id="AtlasTexture_jgp8b"]
+atlas = ExtResource("3_ud633")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e4a52"]
+atlas = ExtResource("3_ud633")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2mblx"]
+atlas = ExtResource("3_ud633")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f11yf"]
+atlas = ExtResource("3_ud633")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_taj8v"]
+atlas = ExtResource("3_ud633")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w3r5l"]
+atlas = ExtResource("3_ud633")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3p0oa"]
+atlas = ExtResource("3_ud633")
+region = Rect2(768, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4ufh0"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(0, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_aidmt"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(100, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_g22mp"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(200, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_3jaof"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(300, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_55qss"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(400, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_qrt16"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(500, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_1api2"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(600, 0, 100, 100)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_3kcy5"]
-atlas = ExtResource("3_62ljx")
-region = Rect2(700, 0, 100, 100)
+atlas = ExtResource("3_ud633")
+region = Rect2(896, 0, 128, 128)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_yb26g"]
 animations = [{
@@ -68,6 +100,23 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ud633")
 }, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_aidmt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g22mp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fq04c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kcuih")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 10.0
+}, {
+"frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_yw53o")
 }, {
@@ -78,39 +127,36 @@ animations = [{
 "texture": SubResource("AtlasTexture_rhbex")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_fq04c")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_kcuih")
+"texture": SubResource("AtlasTexture_rxos1")
 }],
 "loop": 1,
 "name": &"idle",
-"speed": 7.0
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_jgp8b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e4a52")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2mblx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f11yf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_taj8v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w3r5l")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3p0oa")
+}, {
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_4ufh0")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_aidmt")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_g22mp")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_3jaof")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_55qss")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_qrt16")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_1api2")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_3kcy5")
 }],
 "loop": 1,
 "name": &"movement_right",
@@ -118,7 +164,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yb26g"]
-size = Vector2(11, 17)
+size = Vector2(5, 17)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ki3iq"]
 texture = ExtResource("3_otv2m")
@@ -309,32 +355,70 @@ sources/0 = SubResource("TileSetAtlasSource_ki3iq")
 
 [node name="game" type="Node2D" unique_id=2045042830]
 
-[node name="game#SkyLayer" type="CanvasLayer" parent="." unique_id=987654321]
+[node name="SkyLayer" type="CanvasLayer" parent="." unique_id=987654321]
 layer = -100
 
-[node name="game_SkyLayer#Sky" type="ColorRect" parent="." unique_id=987654322]
+[node name="Sky" type="ColorRect" parent="SkyLayer" unique_id=987654322]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(0.509804, 0.788235, 0.992157, 1)
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
+layer = 10
+
+[node name="HealthBar" type="ProgressBar" parent="UILayer" unique_id=223456790]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1139.0
+offset_top = 12.0
+offset_right = -931.0
+offset_bottom = 36.0
+grow_horizontal = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fg")
+step = 1.0
+value = 100.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="UILayer/HealthBar" unique_id=223456791]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="player" type="CharacterBody2D" parent="." unique_id=146855802]
 script = ExtResource("1_otv2m")
+
+[node name="SpritePivot" type="Node2D" parent="player" unique_id=123456789]
+position = Vector2(-5, -21)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player/SpritePivot" unique_id=1674777665]
+position = Vector2(14, -14)
+scale = Vector2(0.43593752, 0.43593752)
+sprite_frames = SubResource("SpriteFrames_yb26g")
+animation = &"idle"
 
 [node name="Camera2D" type="Camera2D" parent="player" unique_id=538592367]
 offset = Vector2(80, -60)
 zoom = Vector2(3, 3)
 limit_smoothed = true
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="player" unique_id=1674777665]
-position = Vector2(0, -24)
-sprite_frames = SubResource("SpriteFrames_yb26g")
-animation = &"idle"
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="player" unique_id=2050609657]
-position = Vector2(0, -26)
+position = Vector2(-4.9999995, -21)
+scale = Vector2(1.6, 1.6)
 shape = SubResource("RectangleShape2D_yb26g")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
