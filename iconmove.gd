@@ -82,8 +82,8 @@ func _update_animation() -> void:
 		if velocity.y < 0.0:
 			animated_sprite.play("movement_right")
 		else:
-			animated_sprite.play("idle_right")
+			animated_sprite.play("idle")
 	elif absf(velocity.x) > 10.0:
 		animated_sprite.play("movement_right")
 	else:
-		animated_sprite.play("idle_center")
+		animated_sprite.play("idle")
