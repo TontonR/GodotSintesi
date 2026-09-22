@@ -75,10 +75,10 @@ func _generate_world() -> void:       # world_generator.gd:13
 `move_speed` y `jump_velocity` son exportables → ajustables en inspector sin tocar código.
 
 ### 4.2 Movimiento `iconmove.gd:140`
-- `Input A/D` → `direction ±1`
-- Si `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)`
-- Si `direction==0`: `move_toward(0, friction)` → frena solo al soltar.
-- **Al atacar**: `effective_speed = move_speed*0.38` (`iconmove.gd:155`), `effective_accel` igual → camina ~49px/s durante `attack`, **no se para solo**.
+- `Input A/D` → `raw_direction ±1` → filtrado si ataca.
+- Si `raw_direction` es contraria a `_facing_right` mientras `_is_attacking`, `direction=0` (`iconmove.gd:151`) → **no puede avanzar ni girar al lado contrario**.
+- Si `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)` con `effective_speed = move_speed*0.38` durante ataque (`iconmove.gd:155`) → camina ~49px/s, **no se para solo** salvo que sueltes tecla (aplica `friction`).
+- `if not _is_attacking` para actualizar `_facing_right` (`iconmove.gd:162`) → dirección de ataque bloqueada.
 
 ### 4.3 Salto `iconmove.gd:172`
 - `coyote_time` y `jump_buffer` clásicos.
@@ -235,7 +235,8 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 7. **Fix ataque bloqueado** `Sky mouse_filter=2` + doble `_input/_unhandled_input` + animación inicial `idle`.
 8. **Velocidad/salto** `move_speed 320→160, jump -650→-340`.
 9. **HUD vida + más lento** `max_health 100`, `UILayer/HealthBar`, `move_speed 160→130` (actual).
-10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`iconmove.gd:155`), `saltobloqueado` (`iconmove.gd:173`), HUD dinámico (`iconmove.gd:48`), offsets corregidos.
+10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`iconmove.gd:155`), `salto bloqueado` (`iconmove.gd:173`), HUD dinámico (`iconmove.gd:48`), offsets corregidos.
+11. **Ataque bloquea giro** `raw_direction` filtrado + `_facing_right` bloqueado si `_is_attacking` (`iconmove.gd:151` `iconmove.gd:162`) → no se puede cambiar dirección ni moverte al lado contrario mientras atacas.
 
 ---
 
@@ -246,7 +247,7 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 | `A / ←` | Izquierda |
 | `D / →` | Derecha |
 | `Espacio / W / ↑` | Salto (coyote + buffer) |
-| `Click Izquierdo` | Ataque (no salta, 38% velocidad) |
+| `Click Izquierdo` | Ataque (no salta, 38% velocidad, bloquea giro/dirección contraria) |
 
 ---
 

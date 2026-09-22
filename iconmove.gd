@@ -145,12 +145,18 @@ func _physics_process(delta: float) -> void:
 	velocity.y += current_gravity * delta
 
 	# --- Movimiento horizontal con aceleración y rozamiento ---
-	# Al atacar se mueve más lento pero no se para solo
-	var direction: float = 0.0
+	# Al atacar se mueve más lento, no se para solo y no puede girar
+	var raw_direction: float = 0.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		direction += 1.0
+		raw_direction += 1.0
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		direction -= 1.0
+		raw_direction -= 1.0
+
+	var direction: float = raw_direction
+	if _is_attacking:
+		# Bloquear movimiento en dirección contraria y giro durante el ataque
+		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
+			direction = 0.0
 
 	var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
 	var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)
@@ -160,10 +166,12 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 
 	# --- Dirección del sprite - pivot en hitbox para evitar teleporte ---
-	if direction > 0.0:
-		_facing_right = true
-	elif direction < 0.0:
-		_facing_right = false
+	# Bloqueado al atacar: no se puede cambiar la dirección del ataque
+	if not _is_attacking:
+		if direction > 0.0:
+			_facing_right = true
+		elif direction < 0.0:
+			_facing_right = false
 	# Rotar el pivot en la hitbox, no el centro de la imagen
 	sprite_pivot.scale.x = 1.0 if _facing_right else -1.0
 	# Asegurar que el sprite no use flip_h (evita doble espejo)
