@@ -28,6 +28,10 @@ var _jump_buffer_timer: float = 0.0
 var _jump_was_pressed: bool = false
 var _facing_right: bool = true
 var _is_attacking: bool = false
+var _combo_index: int = 0
+var _combo_timer: float = 0.0
+@export var combo_window: float = 0.35
+const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
 
 func _ready() -> void:
 	health = max_health
@@ -138,6 +142,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_attack()
 
 func _physics_process(delta: float) -> void:
+	# --- Combo timer (si no encadenas, vuelve a attack_1) ---
+	if not _is_attacking and _combo_timer > 0.0:
+		_combo_timer -= delta
+		if _combo_timer <= 0.0:
+			_combo_index = 0
+
 	# --- Gravedad ---
 	var current_gravity: float = gravity
 	if velocity.y > 0.0:
@@ -214,13 +224,20 @@ func _physics_process(delta: float) -> void:
 func _try_attack() -> void:
 	if _is_attacking:
 		return
+	var anim: String = _ATTACK_ANIMS[_combo_index]
 	_is_attacking = true
-	animated_sprite.play("attack")
+	animated_sprite.play(anim)
 
 func _on_attack_finished() -> void:
-	if animated_sprite.animation == "attack":
+	if animated_sprite.animation in _ATTACK_ANIMS:
 		_is_attacking = false
+		# Avanza combo 1->2->3->0
+		_combo_index = (_combo_index + 1) % _ATTACK_ANIMS.size()
+		_combo_timer = combo_window
+		# Si completó el ciclo 3→0, el timer igualmente permite reset visual
 		_update_animation()
+	else:
+		_is_attacking = false
 
 func _update_animation() -> void:
 	if _is_attacking:
