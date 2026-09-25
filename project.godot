@@ -17,8 +17,13 @@ config/icon="res://icon.svg"
 
 [display]
 
+window/size/viewport_width=384
+window/size/viewport_height=216
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/parallax2d_preview/plugin.cfg")
 
 [input]
 
