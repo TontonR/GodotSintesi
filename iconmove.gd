@@ -20,8 +20,28 @@ var health: int
 
 @onready var sprite_pivot: Node2D = $SpritePivot
 @onready var animated_sprite: AnimatedSprite2D = $SpritePivot/AnimatedSprite2D
+@onready var attack_hitboxes: Array[Area2D] = [$AttackHitbox1, $AttackHitbox2, $AttackHitbox3]
+@onready var hitbox_shapes: Array[CollisionShape2D] = [
+	$AttackHitbox1/CollisionShape2D,
+	$AttackHitbox2/CollisionShape2D,
+	$AttackHitbox3/CollisionShape2D,
+]
+@onready var hitbox_debug: Node2D = $HitboxDebug
 var health_bar: ProgressBar
 var health_label: Label
+
+# Daño que inflige el golpe cuando la hitbox toca a un enemigo
+@export var hitbox_damage: int = 20
+# Dibuja la hitbox del ataque en pantalla (para ajustar en pruebas)
+@export var show_attack_hitbox: bool = true
+# Posición total de cada hitbox definida en el editor (se espejea al girar)
+var _hitbox_offsets: Array[Vector2] = []
+# Offset de cada forma dentro de su Area2D (para que el espejo sea correcto)
+var _hitbox_shape_offsets: Array[Vector2] = []
+# Índice de la hitbox activa (0=attack_1, 1=attack_2, 2=attack_3)
+var _active_hitbox: int = 0
+# Cuerpos/áreas ya golpeados en el golpe actual (evita daño repetido)
+var _hit_targets: Array = []
 
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
@@ -36,8 +56,60 @@ const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
 func _ready() -> void:
 	health = max_health
 	animated_sprite.animation_finished.connect(_on_attack_finished)
+	for i in attack_hitboxes.size():
+		_hitbox_offsets.append(attack_hitboxes[i].position + hitbox_shapes[i].position)
+		_hitbox_shape_offsets.append(hitbox_shapes[i].position)
+		attack_hitboxes[i].set_deferred("monitoring", false)
+		attack_hitboxes[i].body_entered.connect(_on_attack_hitbox_body_entered)
+		attack_hitboxes[i].area_entered.connect(_on_attack_hitbox_area_entered)
+	if hitbox_debug:
+		hitbox_debug.clear()
 	_ensure_health_ui()
 	_update_health_ui()
+
+func _on_attack_hitbox_body_entered(body: Node2D) -> void:
+	_register_hit(body)
+
+func _on_attack_hitbox_area_entered(area: Area2D) -> void:
+	_register_hit(area)
+
+func _register_hit(target: Node) -> void:
+	if not _is_attacking:
+		return
+	if target == self or _hit_targets.has(target):
+		return
+	_hit_targets.append(target)
+	_deal_damage(target)
+
+func _deal_damage(target: Node) -> void:
+	if target.has_method("take_damage"):
+		target.take_damage(hitbox_damage)
+	else:
+		var parent := target.get_parent()
+		if parent and parent.has_method("take_damage"):
+			parent.take_damage(hitbox_damage)
+
+func set_hitbox_active(active: bool) -> void:
+	# set_deferred evita el error de cambiar monitoring durante un flush de física
+	for i in attack_hitboxes.size():
+		attack_hitboxes[i].set_deferred("monitoring", active and i == _active_hitbox)
+	if active:
+		_hit_targets.clear()
+
+func _update_hitbox_debug() -> void:
+	# Dibuja la hitbox activa mientras dura el ataque (solo para pruebas)
+	if hitbox_debug == null:
+		return
+	if not show_attack_hitbox or not _is_attacking:
+		hitbox_debug.clear()
+		return
+	var rect_shape := hitbox_shapes[_active_hitbox].shape as RectangleShape2D
+	if rect_shape == null:
+		hitbox_debug.clear()
+		return
+	var size: Vector2 = rect_shape.size
+	var center: Vector2 = attack_hitboxes[_active_hitbox].position + hitbox_shapes[_active_hitbox].position
+	hitbox_debug.set_rect(Rect2(center - size * 0.5, size))
 
 func take_damage(amount: int) -> void:
 	health = maxi(health - amount, 0)
@@ -187,6 +259,15 @@ func _physics_process(delta: float) -> void:
 	# Asegurar que el sprite no use flip_h (evita doble espejo)
 	animated_sprite.flip_h = false
 
+	# Las hitboxes del ataque se espejean alrededor del origen del jugador
+	var mirror: float = 1.0 if _facing_right else -1.0
+	for i in attack_hitboxes.size():
+		attack_hitboxes[i].position = Vector2(
+			_hitbox_offsets[i].x * mirror - _hitbox_shape_offsets[i].x,
+			_hitbox_offsets[i].y - _hitbox_shape_offsets[i].y
+		)
+	_update_hitbox_debug()
+
 	# --- Salto - bloqueado al atacar ---
 	if _is_attacking:
 		# No permitir salto mientras ataca, reset buffers
@@ -226,11 +307,14 @@ func _try_attack() -> void:
 		return
 	var anim: String = _ATTACK_ANIMS[_combo_index]
 	_is_attacking = true
+	_active_hitbox = _combo_index
+	set_hitbox_active(true)
 	animated_sprite.play(anim)
 
 func _on_attack_finished() -> void:
 	if animated_sprite.animation in _ATTACK_ANIMS:
 		_is_attacking = false
+		set_hitbox_active(false)
 		# Avanza combo 1->2->3->0
 		_combo_index = (_combo_index + 1) % _ATTACK_ANIMS.size()
 		_combo_timer = combo_window
@@ -238,6 +322,7 @@ func _on_attack_finished() -> void:
 		_update_animation()
 	else:
 		_is_attacking = false
+		set_hitbox_active(false)
 
 func _update_animation() -> void:
 	if _is_attacking:

@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/Knight_3/Walk.png" id="3_ud633"]
 [ext_resource type="Texture2D" uid="uid://btj8ylkiudhpn" path="res://assets/Knight_3/Attack 3.png" id="4_rhbex"]
 [ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="4_ud633"]
+[ext_resource type="Script" uid="uid://b2gudjb3pr6s6" path="res://hitbox_debug.gd" id="5_hitdbg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -236,6 +237,12 @@ animations = [{
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yb26g"]
 size = Vector2(5, 17)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack1"]
+size = Vector2(36, 37)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack3"]
+size = Vector2(37, 26)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ki3iq"]
 texture = ExtResource("3_otv2m")
@@ -521,6 +528,40 @@ limit_smoothed = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="player" unique_id=2050609657]
 scale = Vector2(1.6, 1.6)
 shape = SubResource("RectangleShape2D_yb26g")
+
+[node name="AttackHitbox1" type="Area2D" parent="player" unique_id=549234590]
+position = Vector2(26, -6)
+collision_layer = 2
+collision_mask = 4
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="player/AttackHitbox1" unique_id=1033558135]
+position = Vector2(-6, 4.5)
+shape = SubResource("RectangleShape2D_attack1")
+
+[node name="AttackHitbox2" type="Area2D" parent="player" unique_id=161450125]
+position = Vector2(34, -6)
+collision_layer = 2
+collision_mask = 4
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="player/AttackHitbox2" unique_id=382791643]
+position = Vector2(-14, 5)
+shape = SubResource("RectangleShape2D_attack1")
+
+[node name="AttackHitbox3" type="Area2D" parent="player" unique_id=851980945]
+position = Vector2(28, -10)
+collision_layer = 2
+collision_mask = 4
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="player/AttackHitbox3" unique_id=2042572296]
+position = Vector2(-8.5, 10)
+shape = SubResource("RectangleShape2D_attack3")
+
+[node name="HitboxDebug" type="Node2D" parent="player" unique_id=150893806]
+z_index = 10
+script = ExtResource("5_hitdbg")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
 tile_map_data = PackedByteArray("AAD5/wEAAAABAAAAAAD6/wEAAAACAAAAAAD7/wEAAAADAAAAAAD8/wEAAAAEAAAAAAD1/wEAAAABAAAAAAD2/wEAAAACAAAAAAD3/wEAAAADAAAAAAD4/wEAAAAEAAAAAAD+/wEAAAACAAAAAAD//wEAAAADAAAAAAAAAAEAAAABAAAAAAABAAEAAAACAAAAAAD9/wEAAAABAAAAAAACAAEAAAADAAAAAAADAAEAAAAEAAAAAAAEAAEAAAABAAAAAAAFAAEAAAACAAAAAAAGAAEAAAADAAAAAAAHAAEAAAAEAAAAAAAIAAEAAAABAAAAAAAJAAEAAAACAAAAAAAKAAEAAAADAAAAAAALAAEAAAABAAAAAAAMAAEAAAACAAAAAAANAAEAAAADAAAAAAAOAAEAAAAEAAAAAAAPAAEAAAABAAAAAAAQAAEAAAACAAAAAAARAAEAAAADAAAAAAASAAEAAAAEAAAAAAD8/wIAAAADAAEAAAD9/wIAAAADAAEAAAD+/wIAAAACAAEAAAD//wIAAAADAAEAAAAAAAIAAAACAAEAAAABAAIAAAADAAEAAAACAAIAAAACAAEAAAADAAIAAAADAAEAAAAEAAIAAAACAAEAAAAFAAIAAAADAAEAAAAGAAIAAAACAAEAAAAHAAIAAAADAAEAAAAIAAIAAAACAAEAAAAJAAIAAAADAAEAAAAKAAIAAAACAAEAAAALAAIAAAADAAEAAAAMAAIAAAACAAEAAAANAAIAAAADAAEAAAAOAAIAAAACAAEAAAAPAAIAAAADAAEAAAAQAAIAAAACAAEAAAARAAIAAAACAAEAAAD7/wIAAAACAAEAAAD5/wIAAAACAAEAAAD6/wIAAAADAAEAAAD3/wIAAAACAAEAAAD4/wIAAAADAAEAAAD1/wIAAAACAAEAAAD2/wIAAAADAAEAAAASAAIAAAADAAEAAAASAAMAAAADAAIAAAARAAMAAAADAAIAAAAQAAMAAAADAAIAAAAPAAMAAAADAAIAAAAOAAMAAAADAAIAAAANAAMAAAADAAIAAAAMAAMAAAADAAIAAAALAAMAAAADAAIAAAAKAAMAAAADAAIAAAAJAAMAAAADAAIAAAAIAAMAAAADAAIAAAAHAAMAAAADAAIAAAAGAAMAAAADAAIAAAAFAAMAAAADAAIAAAAEAAMAAAADAAIAAAADAAMAAAADAAIAAAACAAMAAAADAAIAAAABAAMAAAADAAIAAAAAAAMAAAADAAIAAAD//wMAAAADAAIAAAD+/wMAAAADAAIAAAD9/wMAAAADAAIAAAD8/wMAAAADAAIAAAD7/wMAAAADAAIAAAD6/wMAAAADAAIAAAD5/wMAAAADAAIAAAD4/wMAAAADAAIAAAD3/wMAAAADAAIAAAD2/wMAAAADAAIAAAD1/wMAAAADAAIAAAA=")
