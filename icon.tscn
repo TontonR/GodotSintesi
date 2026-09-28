@@ -1,11 +1,13 @@
 [gd_scene format=4 uid="uid://copiyrk0io0oy"]
 
+[ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/forest_tileset_lite/Sprites/Background/cloud.png" id="1_jgp8b"]
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/forest_tileset_lite/Sprites/Background/mountain2.png" id="1_mountain"]
 [ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="1_otv2m"]
 [ext_resource type="Texture2D" uid="uid://dnn7ij0jq47ml" path="res://assets/Knight_3/Idle.png" id="2_62ljx"]
 [ext_resource type="Texture2D" uid="uid://dstunb0ojedcb" path="res://assets/forest_tileset_lite/Sprites/Background/pine1.png" id="2_rhbex"]
 [ext_resource type="Texture2D" uid="uid://bieb0qnjw3sqc" path="res://assets/Knight_3/Attack 2.png" id="3_71e0h"]
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="3_otv2m"]
+[ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/forest_tileset_lite/Sprites/Background/pine2.png" id="3_rxos1"]
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/Knight_3/Walk.png" id="3_ud633"]
 [ext_resource type="Texture2D" uid="uid://btj8ylkiudhpn" path="res://assets/Knight_3/Attack 3.png" id="4_rhbex"]
 [ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="4_ud633"]
@@ -424,10 +426,23 @@ sources/0 = SubResource("TileSetAtlasSource_ki3iq")
 
 [node name="game" type="Node2D" unique_id=2045042830]
 
+[node name="Clouds" type="Parallax2D" parent="." unique_id=132653793]
+z_index = -100
+scale = Vector2(0.5, 0.5)
+scroll_scale = Vector2(0.01, 0)
+scroll_offset = Vector2(-5, 46)
+repeat_size = Vector2(688, 0)
+autoscroll = Vector2(-1, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="Clouds" unique_id=1814271844]
+texture = ExtResource("1_jgp8b")
+
 [node name="Mountains" type="Parallax2D" parent="." unique_id=1958893488]
 z_index = -100
-scroll_scale = Vector2(0.2, 0)
-scroll_offset = Vector2(0, 130)
+scale = Vector2(0.8, 0.8)
+scroll_scale = Vector2(0.02, 0)
+scroll_offset = Vector2(0, 100)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -436,13 +451,25 @@ texture = ExtResource("1_mountain")
 
 [node name="far_forest" type="Parallax2D" parent="." unique_id=1950092743]
 z_index = -100
-scroll_scale = Vector2(0.5, 0.2)
-scroll_offset = Vector2(0, 198.295)
+scale = Vector2(0.8, 0.8)
+scroll_scale = Vector2(0.2, 0.1)
+scroll_offset = Vector2(0, 139)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="far_forest" unique_id=559745761]
 texture = ExtResource("2_rhbex")
+
+[node name="near_forest" type="Parallax2D" parent="." unique_id=1395439190]
+z_index = -100
+scale = Vector2(0.8, 0.8)
+scroll_scale = Vector2(0.5, 0.25)
+scroll_offset = Vector2(-631, 145)
+repeat_size = Vector2(688, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="near_forest" unique_id=706958388]
+texture = ExtResource("3_rxos1")
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
 layer = 10
@@ -451,10 +478,10 @@ layer = 10
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -220.0
+offset_left = -136.0
 offset_top = 12.0
 offset_right = -12.0
-offset_bottom = 36.0
+offset_bottom = 32.0
 grow_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_health_fg")
@@ -488,7 +515,7 @@ sprite_frames = SubResource("SpriteFrames_yb26g")
 animation = &"idle"
 
 [node name="Camera2D" type="Camera2D" parent="player" unique_id=538592367]
-offset = Vector2(80, -50)
+offset = Vector2(80, -70)
 limit_smoothed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="player" unique_id=2050609657]
