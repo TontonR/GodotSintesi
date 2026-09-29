@@ -1,21 +1,28 @@
 extends CharacterBody2D
 
-@export var move_speed: float = 90.0
+@export var move_speed: float = 75.0
 @export var attack_damage: int = 15
-@export var attack_cooldown: float = 1.2
-# 7 fotogramas a 6.0 FPS = 1.16 segundos hasta el golpe final
-@export var damage_delay: float = 1.16 
+@export var attack_cooldown: float = 2.0
+
+# Tiempos de animación Ping-Pong (15 frames a 6 FPS)
+@export var impact_delay: float = 0.66
+@export var total_attack_duration: float = 2.50
 
 var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 var _player: CharacterBody2D = null
 var _is_attacking: bool = false
 var _can_attack: bool = true
-var _player_in_attack_zone: bool = false
+var _player_in_attack_range: bool = false
+var _is_facing_left: bool = false
 
-@onready var sprite: AnimatedSprite2D = $Orc
-@onready var detection_area: Area2D = $detection_area
-@onready var attack_range: Area2D = $attack_range
+# Distancia X original del attack_range respecto al centro
+var _attack_range_offset_x: float = 0.0
+
+# Nodos
+@onready var sprite: AnimatedSprite2D = $Pivot/Orc
+@onready var detection_area: Area2D = $Pivot/detection_area
+@onready var attack_range: Area2D = $Pivot/attack_range
 @onready var attack_timer: Timer = Timer.new()
 
 func _ready() -> void:
@@ -23,49 +30,77 @@ func _ready() -> void:
 	attack_timer.one_shot = true
 	attack_timer.timeout.connect(_on_attack_timer_timeout)
 	add_child(attack_timer)
-	
-	if detection_area:
-		detection_area.body_entered.connect(_on_detection_area_body_entered)
-		detection_area.body_exited.connect(_on_detection_area_body_exited)
-		
+
+	# Guardamos la posición X original de tu attack_range
 	if attack_range:
-		attack_range.body_entered.connect(_on_attack_range_body_entered)
-		attack_range.body_exited.connect(_on_attack_range_body_exited)
+		_attack_range_offset_x = abs(attack_range.position.x)
+		if _attack_range_offset_x == 0:
+			_attack_range_offset_x = 35.0
+
+	# Conexión de señales de áreas
+	if detection_area:
+		if not detection_area.body_entered.is_connected(_on_detection_area_body_entered):
+			detection_area.body_entered.connect(_on_detection_area_body_entered)
+		if not detection_area.body_exited.is_connected(_on_detection_area_body_exited):
+			detection_area.body_exited.connect(_on_detection_area_body_exited)
+
+	if attack_range:
+		if not attack_range.body_entered.is_connected(_on_attack_range_body_entered):
+			attack_range.body_entered.connect(_on_attack_range_body_entered)
+		if not attack_range.body_exited.is_connected(_on_attack_range_body_exited):
+			attack_range.body_exited.connect(_on_attack_range_body_exited)
 
 func _physics_process(delta: float) -> void:
-	# 1. Aplicar gravedad
 	if not is_on_floor():
 		velocity.y += gravity * delta
 
-	# 2. Persecución y lógica de ataque
-	if _player != null and not _is_attacking:
-		var direction_x = sign(_player.global_position.x - global_position.x)
+	# Si está atacando, no se mueve ni se gira
+	if _is_attacking:
+		velocity.x = move_toward(velocity.x, 0.0, move_speed)
+		move_and_slide()
+		return
 
-		# Girar el sprite y reubicar la posición del área sin usar scale
-		if direction_x != 0:
-			var looking_left = (direction_x < 0)
-			sprite.flip_h = looking_left
-			if attack_range:
-				attack_range.position.x = -abs(attack_range.position.x) if looking_left else abs(attack_range.position.x)
+	if is_instance_valid(_player):
+		var dist_x = _player.global_position.x - global_position.x
 
-		# Si el jugador está dentro de la zona de ataque y el Orco puede atacar
-		if _player_in_attack_zone:
+		# Se gira SIEMPRE hacia donde esté el jugador
+		if abs(dist_x) > 5.0:
+			_set_facing_direction(dist_x < 0)
+
+		# Comprobación de estado
+		if _player_in_attack_range:
 			velocity.x = 0.0
 			if _can_attack:
 				_start_attack()
 			else:
 				_play_animation("idle")
 		else:
-			velocity.x = direction_x * move_speed
+			var dir = sign(dist_x)
+			velocity.x = dir * move_speed
 			_play_animation("walk")
-			
-	elif not _is_attacking:
+	else:
 		velocity.x = move_toward(velocity.x, 0.0, move_speed)
 		_play_animation("idle")
 
 	move_and_slide()
 
-# --- SEÑALES DE ÁREAS ---
+# --- GIRO CORRECTO QUE SÍ MUEVE LA HITBOX Y NO ROMPE FÍSICAS ---
+
+func _set_facing_direction(look_left: bool) -> void:
+	if _is_facing_left == look_left:
+		return
+		
+	_is_facing_left = look_left
+	
+	# Volteamos la imagen del sprite
+	if sprite:
+		sprite.flip_h = look_left
+
+	# Movemos la Area2D físicamente a la izquierda o derecha
+	if attack_range:
+		attack_range.position.x = -_attack_range_offset_x if look_left else _attack_range_offset_x
+
+# --- SEÑALES ---
 
 func _on_detection_area_body_entered(body: Node2D) -> void:
 	if body != self and body.has_method("take_damage"):
@@ -74,39 +109,51 @@ func _on_detection_area_body_entered(body: Node2D) -> void:
 func _on_detection_area_body_exited(body: Node2D) -> void:
 	if body == _player:
 		_player = null
+		_player_in_attack_range = false
 
 func _on_attack_range_body_entered(body: Node2D) -> void:
-	if body.has_method("take_damage") and body != self:
-		_player_in_attack_zone = true
+	if body != self and body.has_method("take_damage"):
+		_player_in_attack_range = true
 
 func _on_attack_range_body_exited(body: Node2D) -> void:
-	if body.has_method("take_damage") and body != self:
-		_player_in_attack_zone = false
+	if body != self and body.has_method("take_damage"):
+		_player_in_attack_range = false
 
-# --- SISTEMA DE ATAQUE ---
+# --- ATAQUE CON TU AREA2D ---
 
 func _start_attack() -> void:
 	_is_attacking = true
 	_can_attack = false
 	
-	_play_animation("attack")
+	if sprite:
+		sprite.play("attack")
+		
 	attack_timer.start()
 
-	# Espera exactamente el tiempo que le toma a la animación de 6 FPS llegar al frame 7
-	await get_tree().create_timer(damage_delay).timeout
+	# Espera al fotograma del golpe de garrote (0.66s)
+	await get_tree().create_timer(impact_delay).timeout
 	
-	# Si te quedaste en el área hasta que bajó el garrote en el frame 7, te hace daño
-	if _player_in_attack_zone and _player and _player.has_method("take_damage"):
-		_player.take_damage(attack_damage)
+	# Aplica daño usando las colisiones detectadas por tu attack_range
+	if attack_range and _is_attacking:
+		var overlapping_bodies = attack_range.get_overlapping_bodies()
+		for body in overlapping_bodies:
+			if body != self and body.has_method("take_damage"):
+				body.take_damage(attack_damage)
 
-	# Espera un breve instante final para completar la animación y libera el estado de ataque
-	await get_tree().create_timer(0.2).timeout
+	# Espera el resto de la animación
+	var remaining_time = total_attack_duration - impact_delay
+	if remaining_time > 0:
+		await get_tree().create_timer(remaining_time).timeout
+	
 	_is_attacking = false
 
 func _on_attack_timer_timeout() -> void:
 	_can_attack = true
 
 func _play_animation(anim_name: String) -> void:
+	if _is_attacking:
+		return
+		
 	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
 		if sprite.animation != anim_name:
 			sprite.play(anim_name)
