@@ -1,32 +1,19 @@
 [gd_scene format=4 uid="uid://copiyrk0io0oy"]
 
 [ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/forest_tileset_lite/Sprites/Background/cloud.png" id="1_jgp8b"]
-
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/forest_tileset_lite/Sprites/Background/mountain2.png" id="1_mountain"]
-
 [ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="1_otv2m"]
-
 [ext_resource type="Texture2D" uid="uid://dnn7ij0jq47ml" path="res://assets/Knight_3/Idle.png" id="2_62ljx"]
-
 [ext_resource type="Texture2D" uid="uid://dstunb0ojedcb" path="res://assets/forest_tileset_lite/Sprites/Background/pine1.png" id="2_rhbex"]
-
 [ext_resource type="Texture2D" uid="uid://bieb0qnjw3sqc" path="res://assets/Knight_3/Attack 2.png" id="3_71e0h"]
-
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="3_otv2m"]
-
 [ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/forest_tileset_lite/Sprites/Background/pine2.png" id="3_rxos1"]
-
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/Knight_3/Walk.png" id="3_ud633"]
-
 [ext_resource type="Texture2D" uid="uid://btj8ylkiudhpn" path="res://assets/Knight_3/Attack 3.png" id="4_rhbex"]
-
 [ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="4_ud633"]
-
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://world_generator.gd" id="4_world"]
-
-[ext_resource type="PackedScene" uid="uid://dbyg0vpbauvxa" path="res://orc.tscn" id="15_taj8v"]
-
 [ext_resource type="Script" uid="uid://b2gudjb3pr6s6" path="res://hitbox_debug.gd" id="5_hitdbg"]
+[ext_resource type="PackedScene" uid="uid://dbyg0vpbauvxa" path="res://orc.tscn" id="15_taj8v"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -475,7 +462,7 @@ texture = ExtResource("1_mountain")
 z_index = -100
 scale = Vector2(0.8, 0.8)
 scroll_scale = Vector2(0.2, 0.1)
-scroll_offset = Vector2(0, 139)
+scroll_offset = Vector2(0, 146)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -486,7 +473,7 @@ texture = ExtResource("2_rhbex")
 z_index = -100
 scale = Vector2(0.8, 0.8)
 scroll_scale = Vector2(0.5, 0.25)
-scroll_offset = Vector2(-631, 145)
+scroll_offset = Vector2(-84, 198)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -526,7 +513,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="player" type="CharacterBody2D" parent="." unique_id=146855802]
+collision_layer = 2
+collision_mask = 5
 script = ExtResource("1_otv2m")
+show_attack_hitbox = false
 
 [node name="SpritePivot" type="Node2D" parent="player" unique_id=123456789]
 
@@ -546,17 +536,18 @@ shape = SubResource("RectangleShape2D_yb26g")
 
 [node name="AttackHitbox1" type="Area2D" parent="player" unique_id=549234590]
 position = Vector2(26, -6)
-collision_layer = 2
+collision_layer = 8
 collision_mask = 4
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="player/AttackHitbox1" unique_id=1033558135]
+visible = false
 position = Vector2(-6, 4.5)
 shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox2" type="Area2D" parent="player" unique_id=161450125]
 position = Vector2(34, -6)
-collision_layer = 2
+collision_layer = 8
 collision_mask = 4
 monitoring = false
 
@@ -566,7 +557,7 @@ shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox3" type="Area2D" parent="player" unique_id=851980945]
 position = Vector2(28, -10)
-collision_layer = 2
+collision_layer = 8
 collision_mask = 4
 monitoring = false
 
@@ -584,3 +575,5 @@ tile_set = SubResource("TileSet_yb26g")
 script = ExtResource("4_world")
 
 [node name="Orc" parent="." unique_id=431162705 instance=ExtResource("15_taj8v")]
+collision_layer = 1
+collision_mask = 1

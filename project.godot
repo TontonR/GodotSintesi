@@ -39,9 +39,11 @@ movement={
 [physics]
 
 3d/physics_engine="Jolt Physics"
-layer_names/2d_physics/layer_1="world"
-layer_names/2d_physics/layer_2="player_attack"
-layer_names/2d_physics/layer_3="enemy"
+layer_names/2d_physics/layer_1="Mundo"
+layer_names/2d_physics/layer_2="Jugador"
+layer_names/2d_physics/layer_3="Enemigos"
+layer_names/2d_physics/layer_4="Ataque jugador"
+layer_names/2d_physics/layer_5="Ataque enemigo"
 
 [rendering]
 

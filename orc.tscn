@@ -151,23 +151,30 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6dhoe"]
-size = Vector2(32.35956, 49.484543)
+size = Vector2(50.15731, 49.484543)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hisia"]
-radius = 217.94382
+radius = 229.51352
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3xw0u"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kapy6"]
+bg_color = Color(0.6, 0, 0, 1)
 
 [node name="Orc" type="CharacterBody2D" unique_id=431162705]
+collision_layer = 4
+collision_mask = 3
 script = ExtResource("1_3xw0u")
 
 [node name="orc_hitbox" type="CollisionShape2D" parent="." unique_id=553912732]
-position = Vector2(41.000004, -23)
 scale = Vector2(0.4635417, 0.60625)
 shape = SubResource("RectangleShape2D_3ay35")
 
 [node name="Pivot" type="Node2D" parent="." unique_id=614283079]
 
 [node name="Orc" type="AnimatedSprite2D" parent="Pivot" unique_id=238804421]
-position = Vector2(42, -30.000002)
+position = Vector2(0, -10)
 scale = Vector2(0.4635417, 0.60625)
 sprite_frames = SubResource("SpriteFrames_3ay35")
 animation = &"attack"
@@ -175,17 +182,28 @@ frame = 4
 frame_progress = 0.10923918
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=867135562]
-position = Vector2(42, -30.000002)
+position = Vector2(20, 0)
 scale = Vector2(0.4635417, 0.60625)
+collision_layer = 16
+collision_mask = 2
 
 [node name="range_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=659728175]
-position = Vector2(57.16854, 16.49485)
 shape = SubResource("RectangleShape2D_6dhoe")
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1422760256]
-position = Vector2(42, -30.000002)
-scale = Vector2(0.4635417, 0.60625)
+collision_layer = 0
+collision_mask = 2
 
 [node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area" unique_id=1221420314]
-position = Vector2(15.101124, 14.845365)
+scale = Vector2(1.25, 0.5)
 shape = SubResource("CircleShape2D_hisia")
+
+[node name="health_bar" type="ProgressBar" parent="Pivot" unique_id=1865803771]
+offset_left = -14.0
+offset_top = -22.0
+offset_right = 14.0
+offset_bottom = -18.0
+scale = Vector2(1, 0.43999755)
+theme_override_styles/background = SubResource("StyleBoxFlat_3xw0u")
+theme_override_styles/fill = SubResource("StyleBoxFlat_kapy6")
+show_percentage = false

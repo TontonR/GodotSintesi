@@ -3,6 +3,8 @@ extends CharacterBody2D
 @export var move_speed: float = 75.0
 @export var attack_damage: int = 15
 @export var attack_cooldown: float = 2.0
+@export var max_health: float = 50.0
+@export var current_health: float = 50.0
 
 # Tiempos de animación Ping-Pong (15 frames a 6 FPS)
 @export var impact_delay: float = 0.66
@@ -24,12 +26,15 @@ var _attack_range_offset_x: float = 0.0
 @onready var detection_area: Area2D = $Pivot/detection_area
 @onready var attack_range: Area2D = $Pivot/attack_range
 @onready var attack_timer: Timer = Timer.new()
+@onready var health_bar: ProgressBar = $Pivot/health_bar
 
 func _ready() -> void:
 	attack_timer.wait_time = attack_cooldown
 	attack_timer.one_shot = true
 	attack_timer.timeout.connect(_on_attack_timer_timeout)
 	add_child(attack_timer)
+	health_bar.value = current_health # AQUI
+	health_bar.max_value = max_health
 
 	# Guardamos la posición X original de tu attack_range
 	if attack_range:
@@ -49,6 +54,31 @@ func _ready() -> void:
 			attack_range.body_entered.connect(_on_attack_range_body_entered)
 		if not attack_range.body_exited.is_connected(_on_attack_range_body_exited):
 			attack_range.body_exited.connect(_on_attack_range_body_exited)
+
+# --- DAÑO RECIBIDO (lo llama el ataque del jugador) ---
+
+func take_damage(amount: int) -> void:
+	if current_health <= 0.0:
+		return
+	current_health = maxf(current_health - float(amount), 0.0)
+	if health_bar:
+		health_bar.value = current_health
+	if current_health <= 0.0:
+		_die()
+
+func _die() -> void:
+	_is_attacking = false
+	_can_attack = false
+	_player = null
+	_player_in_attack_range = false
+	set_physics_process(false)
+	if sprite:
+		sprite.stop()
+	if detection_area:
+		detection_area.set_deferred("monitoring", false)
+	if attack_range:
+		attack_range.set_deferred("monitoring", false)
+	queue_free()
 
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
@@ -98,7 +128,7 @@ func _set_facing_direction(look_left: bool) -> void:
 
 	# Movemos la Area2D físicamente a la izquierda o derecha
 	if attack_range:
-		attack_range.position.x = -_attack_range_offset_x if look_left else _attack_range_offset_x
+		attack_range.position.x = - _attack_range_offset_x if look_left else _attack_range_offset_x
 
 # --- SEÑALES ---
 
