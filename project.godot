@@ -17,8 +17,13 @@ config/icon="res://icon.svg"
 
 [display]
 
+window/size/viewport_width=384
+window/size/viewport_height=216
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/parallax2d_preview/plugin.cfg")
 
 [input]
 
@@ -34,6 +39,9 @@ movement={
 [physics]
 
 3d/physics_engine="Jolt Physics"
+layer_names/2d_physics/layer_1="world"
+layer_names/2d_physics/layer_2="player_attack"
+layer_names/2d_physics/layer_3="enemy"
 
 [rendering]
 
