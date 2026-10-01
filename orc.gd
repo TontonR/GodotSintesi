@@ -167,7 +167,12 @@ func _start_attack() -> void:
 	if attack_range and _is_attacking:
 		var overlapping_bodies = attack_range.get_overlapping_bodies()
 		for body in overlapping_bodies:
-			if body != self and body.has_method("take_damage"):
+			if body == self or not body.has_method("take_damage"):
+				continue
+			# Si el objetivo sabe la procedencia, se la pasamos (guardia del jugador)
+			if body.has_method("take_damage_from"):
+				body.take_damage_from(attack_damage, global_position)
+			else:
 				body.take_damage(attack_damage)
 
 	# Espera el resto de la animación

@@ -48,6 +48,8 @@ var _jump_buffer_timer: float = 0.0
 var _jump_was_pressed: bool = false
 var _facing_right: bool = true
 var _is_attacking: bool = false
+var _is_guarding: bool = false
+var _is_dead: bool = false
 var _combo_index: int = 0
 var _combo_timer: float = 0.0
 @export var combo_window: float = 0.35
@@ -112,6 +114,22 @@ func _update_hitbox_debug() -> void:
 	hitbox_debug.set_rect(Rect2(center - size * 0.5, size))
 
 func take_damage(amount: int) -> void:
+	# Sin origen conocido se asume que viene de frente
+	_apply_damage(amount, true)
+
+func take_damage_from(amount: int, attacker_position: Vector2) -> void:
+	_apply_damage(amount, is_attack_from_front(attacker_position))
+
+func is_attack_from_front(attacker_position: Vector2) -> bool:
+	if is_equal_approx(attacker_position.x, global_position.x):
+		return true
+	return (attacker_position.x > global_position.x) == _facing_right
+
+func _apply_damage(amount: int, from_front: bool) -> void:
+	if _is_dead:
+		return
+	if _is_guarding and from_front:
+		return
 	health = maxi(health - amount, 0)
 	_update_health_ui()
 	if health <= 0:
@@ -200,10 +218,18 @@ func _update_health_ui() -> void:
 		health_label.text = "%d / %d" % [health, max_health]
 
 func _die() -> void:
-	# Por ahora respawn simple, puedes cambiarlo por pantalla de game over
-	health = max_health
-	_update_health_ui()
-	position = Vector2(position.x, position.y) # placeholder mantener posición
+	if _is_dead:
+		return
+	_is_dead = true
+	_is_guarding = false
+	_is_attacking = false
+	_combo_index = 0
+	_combo_timer = 0.0
+	set_hitbox_active(false)
+	if hitbox_debug:
+		hitbox_debug.clear()
+	velocity = Vector2.ZERO
+	animated_sprite.play("death")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -214,6 +240,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_attack()
 
 func _physics_process(delta: float) -> void:
+	# --- Muerto: solo gravedad y animación de muerte ---
+	if _is_dead:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+		velocity.y += gravity * delta
+		move_and_slide()
+		return
+
+	# --- Guardia: se mantiene pulsada (derecho del ratón o E) ---
+	_is_guarding = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or Input.is_key_pressed(KEY_E)
+
 	# --- Combo timer (si no encadenas, vuelve a attack_1) ---
 	if not _is_attacking and _combo_timer > 0.0:
 		_combo_timer -= delta
@@ -235,7 +271,10 @@ func _physics_process(delta: float) -> void:
 		raw_direction -= 1.0
 
 	var direction: float = raw_direction
-	if _is_attacking:
+	if _is_guarding:
+		# En guardia no se puede mover
+		direction = 0.0
+	elif _is_attacking:
 		# Bloquear movimiento en dirección contraria y giro durante el ataque
 		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
 			direction = 0.0
@@ -268,9 +307,9 @@ func _physics_process(delta: float) -> void:
 		)
 	_update_hitbox_debug()
 
-	# --- Salto - bloqueado al atacar ---
-	if _is_attacking:
-		# No permitir salto mientras ataca, reset buffers
+	# --- Salto - bloqueado al atacar o en guardia ---
+	if _is_attacking or _is_guarding:
+		# No permitir salto mientras ataca o defiende, reset buffers
 		_jump_buffer_timer = 0.0
 		_jump_was_pressed = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP)
 	else:
@@ -303,7 +342,7 @@ func _physics_process(delta: float) -> void:
 	_update_animation()
 
 func _try_attack() -> void:
-	if _is_attacking:
+	if _is_dead or _is_attacking:
 		return
 	var anim: String = _ATTACK_ANIMS[_combo_index]
 	_is_attacking = true
@@ -325,7 +364,10 @@ func _on_attack_finished() -> void:
 		set_hitbox_active(false)
 
 func _update_animation() -> void:
-	if _is_attacking:
+	if _is_dead or _is_attacking:
+		return
+	if _is_guarding:
+		animated_sprite.play("defend")
 		return
 	if not is_on_floor():
 		if velocity.y < 0.0:

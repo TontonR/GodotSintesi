@@ -13,7 +13,7 @@ extends TileMapLayer
 # Precarga directa de la escena del orco guardada
 @export var orc_scene: PackedScene = preload("res://orc.tscn")
 # Cantidad fija de Orcos iniciales a generar a lo largo del mapa
-@export var initial_orc_count: int = 5
+@export var initial_orc_count: int = 50
 # Margen en tiles desde el origen para empezar a instanciar enemigos
 @export var min_spawn_x_tile: int = 50
 
@@ -29,8 +29,8 @@ func _generate_world() -> void:
 		set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0))
 		# Suelo debajo
 		for y in range(ground_level + 1, ground_level + ground_depth):
-			if (y == ground_level +1 ):
-				set_cell(Vector2i(x,y), 0, Vector2(2,1))
+			if (y == ground_level + 1):
+				set_cell(Vector2i(x, y), 0, Vector2(2, 1))
 			else:
 				set_cell(Vector2i(x, y), 0, Vector2i(2, 2))
 	# Posicionar al jugador sobre el suelo plano
