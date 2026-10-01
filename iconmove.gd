@@ -11,6 +11,21 @@ extends CharacterBody2D
 # Vida
 @export var max_health: int = 100
 var health: int
+# Stamina: se consume al correr y al defender, se regenera sola
+@export var max_stamina: float = 100.0
+var stamina: float
+# Multiplicador de velocidad al correr
+@export var run_speed_multiplier: float = 1.7
+# Extra de aceleración al correr para que arranque antes
+@export var run_acceleration_multiplier: float = 1.3
+# Costes de correr: golpe inicial + goteo por segundo
+@export var run_initial_cost: float = 10.0
+@export var run_drain_per_second: float = 10.0
+# Costes de defender: golpe inicial + goteo por segundo
+@export var guard_initial_cost: float = 15.0
+@export var guard_drain_per_second: float = 20.0
+# Regeneración cuando no se está consumiendo
+@export var stamina_regen_per_second: float = 10.0
 # Al caer la gravedad es mayor: el salto se siente más ágil
 @export var fall_gravity_multiplier: float = 1.6
 # Margen para saltar justo después de dejar el suelo
@@ -29,6 +44,8 @@ var health: int
 @onready var hitbox_debug: Node2D = $HitboxDebug
 var health_bar: ProgressBar
 var health_label: Label
+var stamina_bar: ProgressBar
+var stamina_label: Label
 
 # Daño que inflige el golpe cuando la hitbox toca a un enemigo
 @export var hitbox_damage: int = 20
@@ -49,14 +66,18 @@ var _jump_was_pressed: bool = false
 var _facing_right: bool = true
 var _is_attacking: bool = false
 var _is_guarding: bool = false
+var _is_running: bool = false
 var _is_dead: bool = false
 var _combo_index: int = 0
 var _combo_timer: float = 0.0
 @export var combo_window: float = 0.35
 const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
+# Verde de la barra de stamina (rojo se reserva para la vida)
+const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 
 func _ready() -> void:
 	health = max_health
+	stamina = max_stamina
 	animated_sprite.animation_finished.connect(_on_attack_finished)
 	for i in attack_hitboxes.size():
 		_hitbox_offsets.append(attack_hitboxes[i].position + hitbox_shapes[i].position)
@@ -67,7 +88,9 @@ func _ready() -> void:
 	if hitbox_debug:
 		hitbox_debug.clear()
 	_ensure_health_ui()
+	_ensure_stamina_ui()
 	_update_health_ui()
+	_update_stamina_ui()
 
 func _on_attack_hitbox_body_entered(body: Node2D) -> void:
 	_register_hit(body)
@@ -139,6 +162,60 @@ func heal(amount: int) -> void:
 	health = mini(health + amount, max_health)
 	_update_health_ui()
 
+func has_stamina(amount: float) -> bool:
+	return stamina >= amount
+
+func can_run() -> bool:
+	# Para empezar a correr hay que poder pagar el golpe inicial
+	return not _is_dead and not _is_guarding and not _is_attacking and is_on_floor() and has_stamina(run_initial_cost)
+
+func can_guard() -> bool:
+	return not _is_dead and not _is_attacking and has_stamina(guard_initial_cost)
+
+func spend_stamina(amount: float) -> void:
+	stamina = maxf(stamina - amount, 0.0)
+	_update_stamina_ui()
+
+func restore_stamina(amount: float) -> void:
+	stamina = minf(stamina + amount, max_stamina)
+	_update_stamina_ui()
+
+func _update_stamina(delta: float) -> void:
+	# Orden de prioridad: defender > correr > regenerar
+	var guard_input: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or Input.is_key_pressed(KEY_E)
+	var run_input: bool = Input.is_key_pressed(KEY_SHIFT)
+
+	# --- Defender: golpe inicial cada vez que se empieza a defender ---
+	if _is_guarding:
+		if not guard_input:
+			_is_guarding = false
+		else:
+			spend_stamina(guard_drain_per_second * delta)
+			# Sin stamina la guardia se rompe sola
+			if stamina <= 0.0:
+				_is_guarding = false
+	elif guard_input and can_guard():
+		_is_guarding = true
+		spend_stamina(guard_initial_cost)
+
+	# --- Correr: golpe inicial al empezar + goteo continuo ---
+	# Solo en suelo, sin atacar y sin defender (la guardia tiene prioridad)
+	if _is_running:
+		if not run_input or _is_guarding or _is_attacking or not is_on_floor():
+			_is_running = false
+		else:
+			spend_stamina(run_drain_per_second * delta)
+			# Sin stamina se corta la carrera
+			if stamina <= 0.0:
+				_is_running = false
+	elif not _is_guarding and not _is_attacking and run_input and is_on_floor() and has_stamina(run_initial_cost):
+		_is_running = true
+		spend_stamina(run_initial_cost)
+
+	# --- Regeneración: solo si no se está consumiendo ---
+	if not _is_running and not _is_guarding:
+		restore_stamina(stamina_regen_per_second * delta)
+
 func _ensure_health_ui() -> void:
 	# Crea el HUD si no existe (evita que el editor lo borre)
 	var root = get_parent()
@@ -190,25 +267,27 @@ func _ensure_health_ui() -> void:
 		health_bar = bar
 	health_label = null
 	if health_bar:
-		health_label = health_bar.get_node_or_null("Label") as Label
-		if health_label == null:
-			var lbl = Label.new()
-			lbl.name = "Label"
-			lbl.layout_mode = 1
-			lbl.anchors_preset = 15
-			lbl.anchor_right = 1.0
-			lbl.anchor_bottom = 1.0
-			lbl.grow_horizontal = 2
-			lbl.grow_vertical = 2
-			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			lbl.text = "%d / %d" % [health, max_health]
-			var fs = 14
-			lbl.add_theme_font_size_override("font_size", fs)
-			lbl.add_theme_color_override("font_color", Color(1,1,1,1))
-			lbl.add_theme_color_override("font_shadow_color", Color(0,0,0,1))
-			health_bar.add_child(lbl)
-			health_label = lbl
+		health_label = _get_or_create_bar_label(health_bar, "%d / %d" % [health, max_health])
+
+func _get_or_create_bar_label(bar: ProgressBar, text: String) -> Label:
+	var lbl: Label = bar.get_node_or_null("Label") as Label
+	if lbl == null:
+		lbl = Label.new()
+		lbl.name = "Label"
+		lbl.layout_mode = 1
+		lbl.anchors_preset = 15
+		lbl.anchor_right = 1.0
+		lbl.anchor_bottom = 1.0
+		lbl.grow_horizontal = 2
+		lbl.grow_vertical = 2
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 14)
+		lbl.add_theme_color_override("font_color", Color(1,1,1,1))
+		lbl.add_theme_color_override("font_shadow_color", Color(0,0,0,1))
+		bar.add_child(lbl)
+	lbl.text = text
+	return lbl
 
 func _update_health_ui() -> void:
 	if health_bar:
@@ -217,11 +296,70 @@ func _update_health_ui() -> void:
 	if health_label:
 		health_label.text = "%d / %d" % [health, max_health]
 
+func _ensure_stamina_ui() -> void:
+	# Reusa el nodo StaminaBar de la escena; si no existe lo crea (ver _ensure_health_ui)
+	var root = get_parent()
+	if root == null:
+		root = get_tree().current_scene
+	stamina_bar = root.get_node_or_null("UILayer/StaminaBar") as ProgressBar
+	if stamina_bar == null:
+		stamina_bar = get_node_or_null("../UILayer/StaminaBar") as ProgressBar
+	if stamina_bar == null and root:
+		var ui_layer = root.get_node_or_null("UILayer")
+		if ui_layer == null:
+			ui_layer = CanvasLayer.new()
+			ui_layer.name = "UILayer"
+			ui_layer.layer = 10
+			root.add_child(ui_layer)
+		var bg = StyleBoxFlat.new()
+		bg.bg_color = Color(0.176, 0.176, 0.176, 1)
+		bg.corner_radius_top_left = 6
+		bg.corner_radius_top_right = 6
+		bg.corner_radius_bottom_right = 6
+		bg.corner_radius_bottom_left = 6
+		bg.border_width_left = 2
+		bg.border_width_top = 2
+		bg.border_width_right = 2
+		bg.border_width_bottom = 2
+		bg.border_color = Color(0, 0, 0, 1)
+		var fg = StyleBoxFlat.new()
+		fg.bg_color = STAMINA_COLOR
+		fg.corner_radius_top_left = 4
+		fg.corner_radius_top_right = 4
+		fg.corner_radius_bottom_right = 4
+		fg.corner_radius_bottom_left = 4
+		var bar = ProgressBar.new()
+		bar.name = "StaminaBar"
+		bar.anchor_left = 1.0
+		bar.anchor_top = 0.0
+		bar.anchor_right = 1.0
+		bar.anchor_bottom = 0.0
+		bar.offset_left = -220.0
+		bar.offset_top = 36.0
+		bar.offset_right = -12.0
+		bar.offset_bottom = 60.0
+		bar.show_percentage = false
+		bar.add_theme_stylebox_override("background", bg)
+		bar.add_theme_stylebox_override("fill", fg)
+		ui_layer.add_child(bar)
+		stamina_bar = bar
+	stamina_label = null
+	if stamina_bar:
+		stamina_label = _get_or_create_bar_label(stamina_bar, "%d / %d" % [roundi(stamina), roundi(max_stamina)])
+
+func _update_stamina_ui() -> void:
+	if stamina_bar:
+		stamina_bar.max_value = max_stamina
+		stamina_bar.value = stamina
+	if stamina_label:
+		stamina_label.text = "%d / %d" % [roundi(stamina), roundi(max_stamina)]
+
 func _die() -> void:
 	if _is_dead:
 		return
 	_is_dead = true
 	_is_guarding = false
+	_is_running = false
 	_is_attacking = false
 	_combo_index = 0
 	_combo_timer = 0.0
@@ -247,8 +385,8 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# --- Guardia: se mantiene pulsada (derecho del ratón o E) ---
-	_is_guarding = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or Input.is_key_pressed(KEY_E)
+	# --- Stamina: correr y defender consumen, el resto regenera ---
+	_update_stamina(delta)
 
 	# --- Combo timer (si no encadenas, vuelve a attack_1) ---
 	if not _is_attacking and _combo_timer > 0.0:
@@ -281,6 +419,10 @@ func _physics_process(delta: float) -> void:
 
 	var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
 	var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)
+	if _is_running:
+		# Correr: más rápido y con más aceleración
+		effective_speed *= run_speed_multiplier
+		effective_accel *= run_acceleration_multiplier
 	if direction != 0.0:
 		velocity.x = move_toward(velocity.x, direction * effective_speed, effective_accel * delta)
 	else:
@@ -374,6 +516,8 @@ func _update_animation() -> void:
 			animated_sprite.play("movement_right")
 		else:
 			animated_sprite.play("idle")
+	elif _is_running:
+		animated_sprite.play("run_right")
 	elif absf(velocity.x) > 10.0:
 		animated_sprite.play("movement_right")
 	else:

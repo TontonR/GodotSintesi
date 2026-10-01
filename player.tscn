@@ -448,7 +448,7 @@ animation = &"jump"
 frame_progress = 0.112152204
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=163465054]
-offset = Vector2(80, -70)
+offset = Vector2(60, -70)
 limit_smoothed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=938013907]

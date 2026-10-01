@@ -7,7 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/forest_tileset_lite/Sprites/Background/pine2.png" id="3_rxos1"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://world_generator.gd" id="4_world"]
 [ext_resource type="PackedScene" uid="uid://diygwv781k3tm" path="res://player.tscn" id="8_71e0h"]
-[ext_resource type="PackedScene" uid="uid://dbyg0vpbauvxa" path="res://orc.tscn" id="15_taj8v"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -22,7 +21,14 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fg"]
-bg_color = Color(0.858824, 0.192157, 0.192157, 1)
+bg_color = Color(0.85882354, 0.19215687, 0.19215687, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_fg"]
+bg_color = Color(0.3529412, 0.81960785, 0.2901961, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -269,9 +275,9 @@ layer = 10
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -136.0
+offset_left = -134.0
 offset_top = 12.0
-offset_right = -12.0
+offset_right = -14.0
 offset_bottom = 32.0
 grow_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
@@ -294,13 +300,24 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StaminaBar" type="ProgressBar" parent="UILayer" unique_id=1910925766]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -134.0
+offset_top = 38.0
+offset_right = -14.0
+offset_bottom = 58.0
+grow_horizontal = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fg")
+step = 1.0
+value = 100.0
+show_percentage = false
+
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
 tile_map_data = PackedByteArray("AAD5/wEAAAABAAAAAAD6/wEAAAACAAAAAAD7/wEAAAADAAAAAAD8/wEAAAAEAAAAAAD1/wEAAAABAAAAAAD2/wEAAAACAAAAAAD3/wEAAAADAAAAAAD4/wEAAAAEAAAAAAD+/wEAAAACAAAAAAD//wEAAAADAAAAAAAAAAEAAAABAAAAAAABAAEAAAACAAAAAAD9/wEAAAABAAAAAAACAAEAAAADAAAAAAADAAEAAAAEAAAAAAAEAAEAAAABAAAAAAAFAAEAAAACAAAAAAAGAAEAAAADAAAAAAAHAAEAAAAEAAAAAAAIAAEAAAABAAAAAAAJAAEAAAACAAAAAAAKAAEAAAADAAAAAAALAAEAAAABAAAAAAAMAAEAAAACAAAAAAANAAEAAAADAAAAAAAOAAEAAAAEAAAAAAAPAAEAAAABAAAAAAAQAAEAAAACAAAAAAARAAEAAAADAAAAAAASAAEAAAAEAAAAAAD8/wIAAAADAAEAAAD9/wIAAAADAAEAAAD+/wIAAAACAAEAAAD//wIAAAADAAEAAAAAAAIAAAACAAEAAAABAAIAAAADAAEAAAACAAIAAAACAAEAAAADAAIAAAADAAEAAAAEAAIAAAACAAEAAAAFAAIAAAADAAEAAAAGAAIAAAACAAEAAAAHAAIAAAADAAEAAAAIAAIAAAACAAEAAAAJAAIAAAADAAEAAAAKAAIAAAACAAEAAAALAAIAAAADAAEAAAAMAAIAAAACAAEAAAANAAIAAAADAAEAAAAOAAIAAAACAAEAAAAPAAIAAAADAAEAAAAQAAIAAAACAAEAAAARAAIAAAACAAEAAAD7/wIAAAACAAEAAAD5/wIAAAACAAEAAAD6/wIAAAADAAEAAAD3/wIAAAACAAEAAAD4/wIAAAADAAEAAAD1/wIAAAACAAEAAAD2/wIAAAADAAEAAAASAAIAAAADAAEAAAASAAMAAAADAAIAAAARAAMAAAADAAIAAAAQAAMAAAADAAIAAAAPAAMAAAADAAIAAAAOAAMAAAADAAIAAAANAAMAAAADAAIAAAAMAAMAAAADAAIAAAALAAMAAAADAAIAAAAKAAMAAAADAAIAAAAJAAMAAAADAAIAAAAIAAMAAAADAAIAAAAHAAMAAAADAAIAAAAGAAMAAAADAAIAAAAFAAMAAAADAAIAAAAEAAMAAAADAAIAAAADAAMAAAADAAIAAAACAAMAAAADAAIAAAABAAMAAAADAAIAAAAAAAMAAAADAAIAAAD//wMAAAADAAIAAAD+/wMAAAADAAIAAAD9/wMAAAADAAIAAAD8/wMAAAADAAIAAAD7/wMAAAADAAIAAAD6/wMAAAADAAIAAAD5/wMAAAADAAIAAAD4/wMAAAADAAIAAAD3/wMAAAADAAIAAAD2/wMAAAADAAIAAAD1/wMAAAADAAIAAAA=")
 tile_set = SubResource("TileSet_yb26g")
 script = ExtResource("4_world")
-
-[node name="Orc" parent="." unique_id=431162705 instance=ExtResource("15_taj8v")]
-collision_layer = 1
-collision_mask = 1
 
 [node name="player" parent="." unique_id=1277556182 instance=ExtResource("8_71e0h")]
