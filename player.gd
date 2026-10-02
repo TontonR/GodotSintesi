@@ -32,6 +32,9 @@ var stamina: float
 @export var coyote_time: float = 0.1
 # Margen para registrar el salto pulsado un poco antes de tocar suelo
 @export var jump_buffer_time: float = 0.12
+@export var current_coins: int = 0
+@export var initial_coins: int = 0
+
 
 @onready var sprite_pivot: Node2D = $SpritePivot
 @onready var animated_sprite: AnimatedSprite2D = $SpritePivot/AnimatedSprite2D
@@ -46,6 +49,7 @@ var health_bar: ProgressBar
 var health_label: Label
 var stamina_bar: ProgressBar
 var stamina_label: Label
+var coins_label: Label
 
 # Daño que inflige el golpe cuando la hitbox toca a un enemigo
 @export var hitbox_damage: int = 20
@@ -78,6 +82,7 @@ const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 func _ready() -> void:
 	health = max_health
 	stamina = max_stamina
+	current_coins = initial_coins
 	animated_sprite.animation_finished.connect(_on_attack_finished)
 	for i in attack_hitboxes.size():
 		_hitbox_offsets.append(attack_hitboxes[i].position + hitbox_shapes[i].position)
@@ -89,8 +94,10 @@ func _ready() -> void:
 		hitbox_debug.clear()
 	_ensure_health_ui()
 	_ensure_stamina_ui()
+	_ensure_coins_ui()
 	_update_health_ui()
 	_update_stamina_ui()
+	_update_coins_ui()
 
 func _on_attack_hitbox_body_entered(body: Node2D) -> void:
 	_register_hit(body)
@@ -161,6 +168,19 @@ func _apply_damage(amount: int, from_front: bool) -> void:
 func heal(amount: int) -> void:
 	health = mini(health + amount, max_health)
 	_update_health_ui()
+
+func add_coin(amount: int = 1) -> void:
+	# La llaman las monedas al tocarlas
+	current_coins += amount
+	_update_coins_ui()
+
+func spend_coins(amount: int) -> bool:
+	# Para mejoras/tienda: devuelve false si no llegan
+	if current_coins < amount:
+		return false
+	current_coins -= amount
+	_update_coins_ui()
+	return true
 
 func has_stamina(amount: float) -> bool:
 	return stamina >= amount
@@ -283,8 +303,8 @@ func _get_or_create_bar_label(bar: ProgressBar, text: String) -> Label:
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 14)
-		lbl.add_theme_color_override("font_color", Color(1,1,1,1))
-		lbl.add_theme_color_override("font_shadow_color", Color(0,0,0,1))
+		lbl.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		bar.add_child(lbl)
 	lbl.text = text
 	return lbl
@@ -353,6 +373,45 @@ func _update_stamina_ui() -> void:
 		stamina_bar.value = stamina
 	if stamina_label:
 		stamina_label.text = "%d / %d" % [roundi(stamina), roundi(max_stamina)]
+
+func _ensure_coins_ui() -> void:
+	# Reusa el Label `coins` de la escena; si no existe lo crea (ver _ensure_health_ui)
+	var root = get_parent()
+	if root == null:
+		root = get_tree().current_scene
+	coins_label = root.get_node_or_null("UILayer/coins") as Label
+	if coins_label == null:
+		coins_label = get_node_or_null("../UILayer/coins") as Label
+	if coins_label == null and root:
+		var ui_layer = root.get_node_or_null("UILayer")
+		if ui_layer == null:
+			ui_layer = CanvasLayer.new()
+			ui_layer.name = "UILayer"
+			ui_layer.layer = 10
+			root.add_child(ui_layer)
+		var lbl = Label.new()
+		lbl.name = "coins"
+		lbl.layout_mode = 1
+		lbl.anchors_preset = 15
+		lbl.anchor_right = 1.0
+		lbl.anchor_bottom = 1.0
+		lbl.grow_horizontal = 2
+		lbl.grow_vertical = 2
+		lbl.offset_left = -180.0
+		lbl.offset_top = -76.0
+		lbl.offset_right = -180.0
+		lbl.offset_bottom = -76.0
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 14)
+		lbl.add_theme_color_override("font_color", Color(1,1,1,1))
+		lbl.add_theme_color_override("font_shadow_color", Color(0,0,0,1))
+		ui_layer.add_child(lbl)
+		coins_label = lbl
+
+func _update_coins_ui() -> void:
+	if coins_label:
+		coins_label.text = str(current_coins)
 
 func _die() -> void:
 	if _is_dead:

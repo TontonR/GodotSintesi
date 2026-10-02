@@ -17,11 +17,18 @@ extends TileMapLayer
 # Margen en tiles desde el inicio (x=0) para que el jugador aparezca seguro
 @export var safe_start_tiles: int = 15
 
+@export_group("Configuración de Monedas")
+@export var coin_scene: PackedScene = preload("res://coin.tscn")
+# Cantidad exacta de monedas repartidas por el suelo de cada zona
+@export var coins_per_zone: int = 20
+# Las monedas no caen (no son cuerpos físicos): su base queda sobre el suelo
+@export var coin_ground_offset: float = 8.0
+
 # Referencia al jugador
 @onready var player: CharacterBody2D = get_node_or_null("/root/game/player")
 
-# Diccionario para rastrear los orcos instanciados en cada zona
-# Clave: zone_index (int), Valor: Array[Node2D] (los orcos de esa zona)
+# Diccionario para rastrear lo instanciado en cada zona
+# Clave: zone_index (int), Valor: {"orcs": Array[Node2D], "coins": Array[Node2D]}
 var loaded_zones: Dictionary = {}
 var current_player_zone: int = -1
 
@@ -98,9 +105,24 @@ func _load_zone(zone_index: int) -> void:
 			
 			get_parent().add_child.call_deferred(new_orc)
 			zone_orcs.append(new_orc)
+	
+	# C) Repartir monedas por el suelo de la zona
+	var zone_coins: Array[Node2D] = []
+	if coin_scene:
+		var min_x_tile: float = max(start_x, safe_start_tiles)
+		var coin_y_pixels: float = (ground_level * 16) - coin_ground_offset
+		
+		for i in range(coins_per_zone):
+			var coin_tile_x: float = randf_range(min_x_tile, end_x - 1)
 			
-	# Guardar los orcos en la lista de la zona cargada
-	loaded_zones[zone_index] = zone_orcs
+			var new_coin = coin_scene.instantiate() as Node2D
+			new_coin.position = Vector2(coin_tile_x * 16.0, coin_y_pixels)
+			
+			get_parent().add_child.call_deferred(new_coin)
+			zone_coins.append(new_coin)
+	
+	# Guardar lo instanciado de la zona cargada
+	loaded_zones[zone_index] = {"orcs": zone_orcs, "coins": zone_coins}
 
 func _unload_zone(zone_index: int) -> void:
 	var start_x: int = zone_index * zone_width_tiles
@@ -111,9 +133,19 @@ func _unload_zone(zone_index: int) -> void:
 		for y in range(ground_level, ground_level + ground_depth):
 			erase_cell(Vector2i(x, y))
 			
-	# B) Eliminar y destruir todos los orcos pertenecientes a esa zona
+	# B) Eliminar y destruir todo lo instanciado en esa zona
 	if loaded_zones.has(zone_index):
-		for orc in loaded_zones[zone_index]:
-			if is_instance_valid(orc):
-				orc.queue_free()
+		var zone_content: Dictionary = loaded_zones[zone_index]
+		for key in ["orcs", "coins"]:
+			for node in zone_content.get(key, []):
+				if is_instance_valid(node):
+					node.queue_free()
 		loaded_zones.erase(zone_index)
+	
+	# C) Las monedas que soltaron los orcos no están registradas, se buscan por posición
+	var zone_min_x: float = start_x * 16
+	var zone_max_x: float = end_x * 16
+	for coin in get_tree().get_nodes_in_group("coins"):
+		var coin_node := coin as Node2D
+		if is_instance_valid(coin_node) and coin_node.global_position.x >= zone_min_x and coin_node.global_position.x < zone_max_x:
+			coin_node.queue_free()

@@ -14,7 +14,7 @@ Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir 
 | `project.godot:1` | Configuración engine, input `movement` (A/D), `default_clear_color` cielo | `project.godot:40` |
 | `icon.tscn:1` | Escena principal (packed). Contiene TileSet, SpriteFrames, nodos `game`, `player`, `TileMapLayer`, `ParallaxBackground`, `UILayer`, `Camera2D` | `icon.tscn:432` `icon.tscn:488` |
 | `assets/forest_tileset_lite/Sprites/Background/` | Sprites parallax: `sky.png` 688×211, `sky_cloud.png` 688×211, `cloud.png` 634×136, `mountain2.png` 688×127, `pine1.png` 688×148, `pine2.png` 688×199 | `icon.tscn:3-9` |
-| `iconmove.gd:1` | Lógica del `CharacterBody2D` jugador: movimiento, salto, ataque, vida, pivot | `iconmove.gd:4` `iconmove.gd:32` `iconmove.gd:48` |
+| `player.gd:1` | Lógica del `CharacterBody2D` jugador: movimiento, salto, ataque, vida, pivot | `player.gd:4` `player.gd:32` `player.gd:48` |
 | `world_generator.gd:1` | Generación procedural del suelo plano | `world_generator.gd:4` `world_generator.gd:13` |
 | `tilesetgrass.png` | `TileSet` 16×16 (`TileSet_yb26g` `icon.tscn:352`) atlas `1:0` hierba, `2:1` tierra, `2:2` tierra profunda | `icon.tscn:169` |
 | `assets/Knight_3/*.png` | Sprites `Idle.png` 4f, `Walk.png` 8f, `Attack 1.png` 5f (128×128) | `icon.tscn:4` |
@@ -34,7 +34,7 @@ Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir 
 ├─ UILayer (CanvasLayer) layer 10 — HUD
 │  ├─ HealthBar (ProgressBar) top-right + Label "100 / 100" (rojo)
 │  └─ StaminaBar (ProgressBar) justo debajo + Label "100 / 100" (verde)
-├─ player (CharacterBody2D) script iconmove.gd
+├─ player (CharacterBody2D) script player.gd
 │  ├─ SpritePivot (Node2D) pos -5,-21 (hitbox)
 │  │  └─ AnimatedSprite2D pos 14,-14 scale 0.435, SpriteFrames
 │  ├─ Camera2D offset 60,-70 (nodo normal, sin lógica de script)
@@ -66,9 +66,9 @@ func _generate_world() -> void:       # world_generator.gd:13
 
 ---
 
-## 4. Jugador `iconmove.gd:1` — Física
+## 4. Jugador `player.gd:1` — Física
 
-### 4.1 Parámetros (`iconmove.gd:3`)
+### 4.1 Parámetros (`player.gd:3`)
 ```gdscript
 @export var move_speed: float = 130.0   # 320→160→130 (bajado bastante)
 @export var acceleration: float = 750.0 # 1800→900→750
@@ -81,15 +81,15 @@ func _generate_world() -> void:       # world_generator.gd:13
 ```
 `move_speed` y `jump_velocity` son exportables → ajustables en inspector sin tocar código.
 
-### 4.2 Movimiento `iconmove.gd:140`
+### 4.2 Movimiento `player.gd:140`
 - `Input A/D` → `raw_direction ±1` → filtrado si ataca.
-- Si `raw_direction` es contraria a `_facing_right` mientras `_is_attacking`, `direction=0` (`iconmove.gd:151`) → **no puede avanzar ni girar al lado contrario**.
-- Si `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)` con `effective_speed = move_speed*0.38` durante ataque (`iconmove.gd:155`) → camina ~49px/s, **no se para solo** salvo que sueltes tecla (aplica `friction`).
-- `if not _is_attacking` para actualizar `_facing_right` (`iconmove.gd:162`) → dirección de ataque bloqueada.
+- Si `raw_direction` es contraria a `_facing_right` mientras `_is_attacking`, `direction=0` (`player.gd:151`) → **no puede avanzar ni girar al lado contrario**.
+- Si `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)` con `effective_speed = move_speed*0.38` durante ataque (`player.gd:155`) → camina ~49px/s, **no se para solo** salvo que sueltes tecla (aplica `friction`).
+- `if not _is_attacking` para actualizar `_facing_right` (`player.gd:162`) → dirección de ataque bloqueada.
 
-### 4.3 Salto `iconmove.gd:172`
+### 4.3 Salto `player.gd:172`
 - `coyote_time` y `jump_buffer` clásicos.
-- **Bloqueado al atacar** (`iconmove.gd:173` `if _is_attacking: reset buffers` ) → no puedes saltar en mitad de `attack`.
+- **Bloqueado al atacar** (`player.gd:173` `if _is_attacking: reset buffers` ) → no puedes saltar en mitad de `attack`.
 - Salto variable: soltar espacio corta `velocity.y *=0.45`.
 
 ### 4.4 Cámara `player.tscn:450`
@@ -113,7 +113,7 @@ Camera2D offset = Vector2(60, -70)
 
 | Nombre | Frames | Textura | Loop | Speed | Uso |
 |---|---|---|---|---|---|
-| `attack` | 5 (0-510×128) | `Knight_3/Attack 1.png` | `0` (no loop) | 10 | `iconmove.gd:210` |
+| `attack` | 5 (0-510×128) | `Knight_3/Attack 1.png` | `0` (no loop) | 10 | `player.gd:210` |
 | `idle` | 4 (0-384×128) | `Knight_3/Idle.png` | `1` | 5 | reposo / caída |
 | `movement_right` | 8 (0-896×128) | `Knight_3/Walk.png` | `1` | 10 | andar / salto ascendente |
 | `run_right` | 6 (0-768×128) | `Knight_3/Run.png` | `1` | 8 | correr (con `Shift`) |
@@ -123,7 +123,7 @@ Histórico: antes `idle_center` + `idle_right` duplicados (ambos 8f de Walk) →
 
 `AnimatedSprite2D` `icon.tscn:357` `pos 14,-14` dentro de `SpritePivot` scale `0.435`, animación inicial `idle`.
 
-### 5.1 Pivot en Hitbox (fix teleporte) `icon.tscn:354` `iconmove.gd:53`
+### 5.1 Pivot en Hitbox (fix teleporte) `icon.tscn:354` `player.gd:53`
 Problema: textura 128×128 con padding derecho para espada. `flip_h` sobre centro de imagen movía pies 2× offset al girar.
 
 Solución:
@@ -132,7 +132,7 @@ SpritePivot (Node2D) pos -5,-21 # = CollisionShape2D pos
   └─ AnimatedSprite2D pos 14,-14 # 9-(-5), -35-(-21)
 ```
 ```gdscript
-# iconmove.gd:53
+# player.gd:53
 sprite_pivot.scale.x = 1.0 if _facing_right else -1.0 # rota sobre hitbox
 animated_sprite.flip_h = false
 ```
@@ -140,22 +140,22 @@ Giro alrededor de `CollisionShape2D`, pies anclados, padding irrelevante.
 
 ---
 
-## 6. Ataque Click Izquierdo `iconmove.gd:30`
+## 6. Ataque Click Izquierdo `player.gd:30`
 
 ```gdscript
-var _is_attacking: bool = false # iconmove.gd:30
-func _input(event): # iconmove.gd:132 y _unhandled_input:136
+var _is_attacking: bool = false # player.gd:30
+func _input(event): # player.gd:132 y _unhandled_input:136
 	if event is InputEventMouseButton and button_index==MOUSE_BUTTON_LEFT and pressed:
 		_try_attack()
-func _try_attack(): # iconmove.gd:206
+func _try_attack(): # player.gd:206
 	if _is_attacking: return
 	_is_attacking = true
 	animated_sprite.play("attack")
-func _on_attack_finished(): # iconmove.gd:212 conectado en _ready:34
+func _on_attack_finished(): # player.gd:212 conectado en _ready:34
 	if animation=="attack":
 		_is_attacking=false
 		_update_animation()
-func _update_animation(): # iconmove.gd:217
+func _update_animation(): # player.gd:217
 	if _is_attacking: return # prioridad
 	if not is_on_floor(): play(movement_right/idle)
 	elif abs(velocity.x)>10: play(movement_right)
@@ -168,7 +168,7 @@ func _update_animation(): # iconmove.gd:217
 
 ## 7. Sistema de Vida — Explicación Detallada
 
-### 7.1 Variables `iconmove.gd:11`
+### 7.1 Variables `player.gd:11`
 ```gdscript
 @export var max_health: int = 100 # vida base, editable en inspector
 var health: int                    # vida actual
@@ -176,7 +176,7 @@ var health_bar: ProgressBar        # referencia UI (asignada dinámicamente)
 var health_label: Label
 ```
 
-### 7.2 Inicialización `iconmove.gd:32`
+### 7.2 Inicialización `player.gd:32`
 ```gdscript
 func _ready() -> void:
 	health = max_health            # 100
@@ -185,7 +185,7 @@ func _ready() -> void:
 	_update_health_ui()            # refleja 100/100
 ```
 
-### 7.3 API `iconmove.gd:38`
+### 7.3 API `player.gd:38`
 ```gdscript
 func take_damage(amount: int) -> void:
 	health = maxi(health - amount, 0)
@@ -215,7 +215,7 @@ player.heal(20)        # poción
 player.health # leer
 ```
 
-### 7.4 HUD `icon.tscn:370` + `_ensure_health_ui()` `iconmove.gd:48`
+### 7.4 HUD `icon.tscn:370` + `_ensure_health_ui()` `player.gd:48`
 **Declarativo** (`icon.tscn:370`):
 ```ini
 UILayer (CanvasLayer) layer 10
@@ -224,7 +224,7 @@ UILayer (CanvasLayer) layer 10
 	 theme_override_styles/fill = StyleBoxFlat_health_fg (rojo 0.86 radius 4)
 	 └─ Label anchors 15 full, center, "100 / 100" font 14 blanco sombra negra
 ```
-**Procedural fallback** (`iconmove.gd:48` `_ensure_health_ui`):
+**Procedural fallback** (`player.gd:48` `_ensure_health_ui`):
 - Busca `get_parent().get_node_or_null("UILayer/HealthBar")` y `../UILayer/HealthBar` (soporta ambas jerarquías).
 - Si no existe (editor lo borró), crea `CanvasLayer`, `ProgressBar`, `StyleBoxFlat` y `Label` por código con mismos valores. Así el HUD **nunca desaparece** aunque el `.tscn` se sobrescriba.
 - Se llama en `_ready` antes de `_update_health_ui`.
@@ -242,13 +242,13 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 2. **Idle único** `icon.tscn:114` dos `idle_*` → uno `idle` 4f.
 3. **Fondo azul + suelo bajo + cámara** `project.godot:40` clear_color cielo, `ground_level 12→20`, `Camera2D offset 0,0→80,-60`.
 4. **Personaje a la izquierda** `Camera2D offset.x 0→80`.
-5. **Ataque click izquierdo** `SpriteFrames attack` 5f `loop 0` + `iconmove.gd:206` `_try_attack`.
-6. **Pivot hitbox** `SpritePivot -5,-21` + `scale.x` en vez de `flip_h` (`iconmove.gd:59`).
+5. **Ataque click izquierdo** `SpriteFrames attack` 5f `loop 0` + `player.gd:206` `_try_attack`.
+6. **Pivot hitbox** `SpritePivot -5,-21` + `scale.x` en vez de `flip_h` (`player.gd:59`).
 7. **Fix ataque bloqueado** `Sky mouse_filter=2` + doble `_input/_unhandled_input` + animación inicial `idle`.
 8. **Velocidad/salto** `move_speed 320→160, jump -650→-340`.
 9. **HUD vida + más lento** `max_health 100`, `UILayer/HealthBar`, `move_speed 160→130` (actual).
-10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`iconmove.gd:155`), `salto bloqueado` (`iconmove.gd:173`), HUD dinámico (`iconmove.gd:48`), offsets corregidos.
-11. **Ataque bloquea giro** `raw_direction` filtrado + `_facing_right` bloqueado si `_is_attacking` (`iconmove.gd:151` `iconmove.gd:162`) → no se puede cambiar dirección ni moverte al lado contrario mientras atacas.
+10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`player.gd:155`), `salto bloqueado` (`player.gd:173`), HUD dinámico (`player.gd:48`), offsets corregidos.
+11. **Ataque bloquea giro** `raw_direction` filtrado + `_facing_right` bloqueado si `_is_attacking` (`player.gd:151` `player.gd:162`) → no se puede cambiar dirección ni moverte al lado contrario mientras atacas.
 12. **Combo `attack_1/2/3`** `SpriteFrames` 3 animaciones de ataque, `loop 0`, `speed 14` en 2/3, ventana `combo_window=0.35s`.
 13. **Parallax 6 capas** `ParallaxBackground` con todos los sprites de `forest_tileset_lite/.../Background` (sky, sky_cloud, cloud, mountain2, pine1, pine2), `motion_scale` 0→0.6, `motion_mirroring` horizontal.
 14. **Fix fondo sobresaliente** eliminado `SkyLayer`/`Sky ColorRect` que se veía por encima del parallax; `Sky`/`SkyCloud` a `y=-280`.
@@ -274,7 +274,7 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 
 ## 10. Sistema de Stamina — Explicación Detallada
 
-### 9.1 Parámetros `iconmove.gd:11`
+### 9.1 Parámetros `player.gd:11`
 ```gdscript
 @export var max_stamina: float = 100.0            # stamina base
 @export var run_speed_multiplier: float = 1.7     # velocidad al correr (130 -> 221 px/s)
@@ -293,7 +293,7 @@ Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value
 | Defender (`Click Derecho` / `E`) | -15 | -20/s | bloquea movimiento, salto y giro |
 | Atacar / saltar / quieto | 0 | 0 | +10/s de regeneración |
 
-### 9.3 Lógica `_update_stamina()` `iconmove.gd:236`
+### 9.3 Lógica `_update_stamina()` `player.gd:236`
 Orden de prioridad en cada frame de física:
 1. **Defender** — si ya se defendía, sigue drenando; si se acaba la stamina la guardia **se rompe sola**.
 2. **Correr** — requiere `is_on_floor()`, no atacar y no defender. Al agotarse la carrera **se corta sola**.

@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/forest_tileset_lite/Sprites/Background/pine2.png" id="3_rxos1"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://world_generator.gd" id="4_world"]
 [ext_resource type="PackedScene" uid="uid://diygwv781k3tm" path="res://player.tscn" id="8_71e0h"]
+[ext_resource type="PackedScene" uid="uid://cu5od85b24g7x" path="res://coin.tscn" id="8_rhbex"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -271,6 +272,23 @@ texture = ExtResource("3_rxos1")
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
 layer = 10
 
+[node name="coins" type="Label" parent="UILayer" unique_id=1876716093]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -76.0
+offset_right = -180.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="HealthBar" type="ProgressBar" parent="UILayer" unique_id=223456790]
 anchors_preset = 1
 anchor_left = 1.0
@@ -321,3 +339,6 @@ tile_set = SubResource("TileSet_yb26g")
 script = ExtResource("4_world")
 
 [node name="player" parent="." unique_id=1277556182 instance=ExtResource("8_71e0h")]
+
+[node name="coin" parent="." unique_id=2022432403 instance=ExtResource("8_rhbex")]
+position = Vector2(61, 0)

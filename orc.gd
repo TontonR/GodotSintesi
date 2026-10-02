@@ -6,6 +6,14 @@ extends CharacterBody2D
 @export var max_health: float = 50.0
 @export var current_health: float = 50.0
 
+@export_group("Botín")
+@export var coin_scene: PackedScene = preload("res://coin.tscn")
+@export var coins_on_death: int = 3
+# Separación horizontal entre las monedas soltadas
+@export var coin_drop_spread: float = 14.0
+# Baja la moneda hasta que su base (16px de sprite) quede sobre el suelo
+@export var coin_drop_y: float = 8.0
+
 # Tiempos de animación Ping-Pong (15 frames a 6 FPS)
 @export var impact_delay: float = 0.66
 @export var total_attack_duration: float = 2.50
@@ -78,7 +86,21 @@ func _die() -> void:
 		detection_area.set_deferred("monitoring", false)
 	if attack_range:
 		attack_range.set_deferred("monitoring", false)
+	_drop_coins()
 	queue_free()
+
+func _drop_coins() -> void:
+	# Suelta monedas en su posición antes de desaparecer
+	if not coin_scene or coins_on_death <= 0:
+		return
+	var parent := get_parent()
+	if parent == null:
+		return
+	for i in range(coins_on_death):
+		var coin := coin_scene.instantiate() as Node2D
+		# Se cuelgan como hermanos del ogro, así que se usan coordenadas locales
+		coin.position = position + Vector2(randf_range(-coin_drop_spread, coin_drop_spread), coin_drop_y)
+		parent.add_child.call_deferred(coin)
 
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():

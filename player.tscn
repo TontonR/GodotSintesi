@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://diygwv781k3tm"]
 
-[ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://iconmove.gd" id="1_1jxqw"]
+[ext_resource type="Script" uid="uid://cvrd6cgoqhjnk" path="res://player.gd" id="1_1jxqw"]
 [ext_resource type="Texture2D" uid="uid://b4ay63lwh2uc7" path="res://assets/Knight_3/Attack 1.png" id="2_dw050"]
 [ext_resource type="Texture2D" uid="uid://bieb0qnjw3sqc" path="res://assets/Knight_3/Attack 2.png" id="3_b26j0"]
 [ext_resource type="Texture2D" uid="uid://btj8ylkiudhpn" path="res://assets/Knight_3/Attack 3.png" id="4_n7ghd"]
