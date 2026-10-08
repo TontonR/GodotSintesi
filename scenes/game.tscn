@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://copiyrk0io0oy"]
+[gd_scene format=3 uid="uid://copiyrk0io0oy"]
 
 [ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/map/background/cloud.png" id="1_8718u"]
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/map/background/mountain2.png" id="2_efco6"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="5_u27ij"]
 [ext_resource type="PackedScene" uid="uid://diygwv781k3tm" path="res://scenes/player.tscn" id="7_o3jbc"]
 [ext_resource type="PackedScene" uid="uid://cu5od85b24g7x" path="res://scenes/collectables/coin.tscn" id="8_a2bvq"]
+[ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://scripts/world_generator.gd" id="8_vtaks"]
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dnwqqwxweihvq" path="res://assets/map/tile/grass_tile.png" id="10_vtaks"]
 
@@ -372,7 +373,7 @@ value = 100.0
 show_percentage = false
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
-tile_map_data = PackedByteArray("AAAQAAEAAAACAAAAAAARAAEAAAADAAAAAAASAAEAAAAEAAAAAAA=")
+tile_map_data = PackedByteArray(0, 0, 16, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 17, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 18, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0)
 tile_set = SubResource("TileSet_yb26g")
 
 [node name="player" parent="." unique_id=1277556182 instance=ExtResource("7_o3jbc")]
@@ -381,11 +382,10 @@ tile_set = SubResource("TileSet_yb26g")
 position = Vector2(61, 0)
 
 [node name="map" type="Node" parent="." unique_id=1287760833]
+script = ExtResource("8_vtaks")
 
 [node name="solid_map_layer" type="TileMapLayer" parent="map" unique_id=1295439100]
-tile_map_data = PackedByteArray("AAD8/wEAAAAAAAAAAAD9/wEAAAABAAAAAAD9/wIAAAABAAEAAAD+/wEAAAABAAAAAAD+/wIAAAABAAEAAAD//wEAAAABAAAAAAD//wIAAAABAAEAAAAAAAEAAAABAAAAAAAAAAIAAAABAAEAAAABAAEAAAABAAAAAAABAAIAAAABAAEAAAACAAEAAAABAAAAAAACAAIAAAABAAEAAAADAAEAAAABAAAAAAADAAIAAAABAAEAAAAEAAEAAAABAAAAAAAEAAIAAAABAAEAAAAFAAEAAAABAAAAAAAFAAIAAAABAAEAAAAGAAEAAAABAAAAAAAGAAIAAAABAAEAAAAHAAEAAAACAAAAAAAHAAIAAAACAAEAAAD8/wMAAAAAAAEAAAAHAAMAAAACAAEAAAAGAAMAAAABAAEAAAAFAAMAAAABAAEAAAAEAAMAAAABAAEAAAADAAMAAAABAAEAAAACAAMAAAABAAEAAAABAAMAAAABAAEAAAAAAAMAAAABAAEAAAD//wMAAAABAAEAAAD+/wMAAAABAAEAAAD9/wMAAAABAAEAAAD8/wQAAAAAAAIAAAAHAAQAAAACAAIAAAAGAAQAAAABAAIAAAAFAAQAAAABAAIAAAAEAAQAAAABAAIAAAADAAQAAAABAAIAAAACAAQAAAABAAIAAAABAAQAAAABAAIAAAAAAAQAAAABAAIAAAD//wQAAAABAAIAAAD+/wQAAAABAAIAAAD9/wQAAAABAAIAAAD8/wIAAAAAAAEAAAA=")
 tile_set = SubResource("TileSet_0tnpc")
 
 [node name="grass_map_layer" type="TileMapLayer" parent="map" unique_id=1954245395]
-tile_map_data = PackedByteArray("AAD8/wEAAAAAAAAAAAAHAAEAAAACAAAAAAD9/wEAAAABAAAAAAD+/wEAAAABAAAAAAAFAAEAAAABAAAAAAAGAAEAAAABAAAAAAD//wEAAAABAAAAAAAAAAEAAAABAAAAAAABAAEAAAABAAAAAAACAAEAAAABAAAAAAADAAEAAAABAAAAAAAEAAEAAAABAAAAAAA=")
 tile_set = SubResource("TileSet_mdkdc")

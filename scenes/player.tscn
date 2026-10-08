@@ -11,7 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://o3usnax0hqkn" path="res://assets/player/Jump.png" id="9_60mlk"]
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/player/Walk.png" id="10_i4ail"]
 [ext_resource type="Texture2D" uid="uid://be0c4gghyvad5" path="res://assets/player/Run.png" id="11_a38lo"]
-[ext_resource type="Script" uid="uid://b2gudjb3pr6s6" path="res://scripts/hitbox_debug.gd" id="12_4ni07"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ud633"]
 atlas = ExtResource("2_jej6c")
@@ -436,7 +435,6 @@ size = Vector2(37, 26)
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_3v2ag")
-show_attack_hitbox = false
 
 [node name="SpritePivot" type="Node2D" parent="." unique_id=1450528728]
 
@@ -457,7 +455,7 @@ shape = SubResource("RectangleShape2D_yb26g")
 
 [node name="AttackHitbox1" type="Area2D" parent="." unique_id=2128828989]
 position = Vector2(26, -6)
-collision_layer = 8
+collision_layer = 0
 collision_mask = 4
 monitoring = false
 
@@ -468,7 +466,7 @@ shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox2" type="Area2D" parent="." unique_id=1710885674]
 position = Vector2(34, -6)
-collision_layer = 8
+collision_layer = 0
 collision_mask = 4
 monitoring = false
 
@@ -478,7 +476,7 @@ shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox3" type="Area2D" parent="." unique_id=1672558282]
 position = Vector2(28, -10)
-collision_layer = 8
+collision_layer = 0
 collision_mask = 4
 monitoring = false
 
@@ -488,4 +486,3 @@ shape = SubResource("RectangleShape2D_attack3")
 
 [node name="HitboxDebug" type="Node2D" parent="." unique_id=1514317802]
 z_index = 10
-script = ExtResource("12_4ni07")

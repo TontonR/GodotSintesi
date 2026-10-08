@@ -1,4 +1,4 @@
-extends TileMapLayer
+extends Node
 
 # ==============================================================================
 # CONFIGURACIÓN DEL MUNDO INFINITO Y ZONAS
@@ -24,8 +24,14 @@ extends TileMapLayer
 # Las monedas no caen (no son cuerpos físicos): su base queda sobre el suelo
 @export var coin_ground_offset: float = 8.0
 
-# Referencia al jugador
-@onready var player: CharacterBody2D = get_node_or_null("/root/game/player")
+# Capas hijas que alimenta el generador:
+#   solid_map_layer -> ground_tile.png (tierra con colisión)
+#   grass_map_layer -> grass_tile.png (franja de hierba, solo visual)
+@onready var solid_layer: TileMapLayer = $solid_map_layer
+@onready var grass_layer: TileMapLayer = $grass_map_layer
+
+# Referencia al jugador (hermano de este nodo dentro de la raíz "game")
+@onready var player: CharacterBody2D = get_parent().get_node_or_null("player")
 
 # Diccionario para rastrear lo instanciado en cada zona
 # Clave: zone_index (int), Valor: {"orcs": Array[Node2D], "coins": Array[Node2D]}
@@ -33,7 +39,8 @@ var loaded_zones: Dictionary = {}
 var current_player_zone: int = -1
 
 func _ready() -> void:
-	clear()
+	solid_layer.clear()
+	grass_layer.clear()
 	
 	# Posicionar al jugador en el inicio del mundo
 	if player:
@@ -54,6 +61,21 @@ func _process(_delta: float) -> void:
 	if new_zone != current_player_zone:
 		current_player_zone = new_zone
 		_update_zones_around_player()
+
+# ==============================================================================
+# CAPAS DE TILE
+# ==============================================================================
+# Las variantes solo cambian de fila, nunca dentro de una misma fila:
+# así el terreno queda continuo y no se ven huecos tipo lego.
+func _paint_grass(x: int) -> void:
+	grass_layer.set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0))
+
+# Fila 0 del tileset de tierra = superficie, fila 2 = cuerpo con colisión.
+# (Las filas 1 y 3 quedan fuera: alguna celda no tiene colisión definida.)
+func _paint_ground(x: int) -> void:
+	solid_layer.set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0))
+	for y in range(ground_level + 1, ground_level + ground_depth):
+		solid_layer.set_cell(Vector2i(x, y), 0, Vector2i(y % 3, 2))
 
 # ==============================================================================
 # GESTIÓN DE CARGA Y DESCARGA DE ZONAS
@@ -78,16 +100,10 @@ func _load_zone(zone_index: int) -> void:
 	var start_x: int = zone_index * zone_width_tiles
 	var end_x: int = start_x + zone_width_tiles
 	
-	# A) Generar Tiles del terreno de la zona
+	# A) Generar el terreno de la zona en las dos capas
 	for x in range(start_x, end_x):
-		# Capa superficial (Hierba)
-		set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0))
-		# Capas inferiores (Tierra)
-		for y in range(ground_level + 1, ground_level + ground_depth):
-			if y == ground_level + 1:
-				set_cell(Vector2i(x, y), 0, Vector2i(2, 1))
-			else:
-				set_cell(Vector2i(x, y), 0, Vector2i(2, 2))
+		_paint_grass(x)
+		_paint_ground(x)
 				
 	# B) Generar la cantidad fija de Orcos para esta zona
 	var zone_orcs: Array[Node2D] = []
@@ -128,10 +144,11 @@ func _unload_zone(zone_index: int) -> void:
 	var start_x: int = zone_index * zone_width_tiles
 	var end_x: int = start_x + zone_width_tiles
 	
-	# A) Borrar las celdas del TileMap en esa zona
+	# A) Borrar las celdas de las dos capas en esa zona
 	for x in range(start_x, end_x):
 		for y in range(ground_level, ground_level + ground_depth):
-			erase_cell(Vector2i(x, y))
+			grass_layer.erase_cell(Vector2i(x, y))
+			solid_layer.erase_cell(Vector2i(x, y))
 			
 	# B) Eliminar y destruir todo lo instanciado en esa zona
 	if loaded_zones.has(zone_index):
