@@ -16,7 +16,7 @@ extends Node
 @export var orcs_per_zone: int = 4
 @export var ghost_scene: PackedScene = preload("res://scenes/enemies/ghost.tscn")
 # Cantidad exacta de orcos a generar por zona
-@export var ghost_per_zone: int = 4
+@export var ghost_per_zone: int = 0
 # Margen en tiles desde el inicio (x=0) para que el jugador aparezca seguro
 @export var safe_start_tiles: int = 15
 

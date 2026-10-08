@@ -177,9 +177,7 @@ shape = SubResource("RectangleShape2D_3ay35")
 position = Vector2(0, -10)
 scale = Vector2(0.4635417, 0.60625)
 sprite_frames = SubResource("SpriteFrames_3ay35")
-animation = &"attack"
-frame = 4
-frame_progress = 0.10923918
+animation = &"idle"
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=867135562]
 position = Vector2(20, 0)
