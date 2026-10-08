@@ -13,7 +13,10 @@ extends Node
 @export_group("Configuración de Enemigos")
 @export var orc_scene: PackedScene = preload("res://scenes/enemies/orc.tscn")
 # Cantidad exacta de orcos a generar por zona
-@export var orcs_per_zone: int = 8
+@export var orcs_per_zone: int = 4
+@export var ghost_scene: PackedScene = preload("res://scenes/enemies/ghost.tscn")
+# Cantidad exacta de orcos a generar por zona
+@export var ghost_per_zone: int = 4
 # Margen en tiles desde el inicio (x=0) para que el jugador aparezca seguro
 @export var safe_start_tiles: int = 15
 
@@ -121,6 +124,18 @@ func _load_zone(zone_index: int) -> void:
 			
 			get_parent().add_child.call_deferred(new_orc)
 			zone_orcs.append(new_orc)
+
+		for i in range(ghost_per_zone):
+			# Generar una posición X aleatoria dentro del rango de esta zona
+			var min_x_tile: float = max(start_x, safe_start_tiles)
+			var rand_tile_x: float = randf_range(min_x_tile, end_x - 1)
+			var spawn_x_pixels: float = rand_tile_x * 16
+			
+			var new_ghost = ghost_scene.instantiate() as Node2D
+			new_ghost.position = Vector2(spawn_x_pixels, spawn_y_pixels)
+			
+			get_parent().add_child.call_deferred(new_ghost)
+			zone_orcs.append(new_ghost)
 	
 	# C) Repartir monedas por el suelo de la zona
 	var zone_coins: Array[Node2D] = []

@@ -262,26 +262,31 @@ collision_mask = 0
 script = ExtResource("1_kjq22")
 sprite_faces_right = false
 projectile_scene = ExtResource("2_jw18l")
+tp_min_distance_x = 20.0
+tp_max_distance_x = 60.0
 
 [node name="ghost_hitbox" type="CollisionShape2D" parent="." unique_id=1769343006]
 position = Vector2(0, 1)
+scale = Vector2(0.7, 0.7)
 shape = SubResource("RectangleShape2D_3ay35")
 
 [node name="Pivot" type="Node2D" parent="." unique_id=1379820782]
 
 [node name="ghost" type="AnimatedSprite2D" parent="Pivot" unique_id=925955587]
 position = Vector2(0, 3.5)
-scale = Vector2(1, 0.9125)
+scale = Vector2(0.7, 0.7)
 sprite_frames = SubResource("SpriteFrames_3ay35")
 animation = &"idle"
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1875697751]
+scale = Vector2(0.48000234, 0.48000234)
 
 [node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area" unique_id=1905668338]
 scale = Vector2(1.25, 1.25)
 shape = SubResource("CircleShape2D_3ay35")
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=1249047959]
+scale = Vector2(0.5125225, 0.5125225)
 collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
