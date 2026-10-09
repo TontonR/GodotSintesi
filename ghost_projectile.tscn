@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://cwbfpoft0ae74"]
+
+[ext_resource type="Script" uid="uid://dl6jo63rqmv5c" path="res://scripts/enemies/ghost_projectile.gd" id="1_nvuny"]
+[ext_resource type="Texture2D" uid="uid://barmw4x14toei" path="res://assets/enemies/All_Fire_Bullet_Pixel_16x16_02.png" id="2_nvuny"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nvuny"]
+atlas = ExtResource("2_nvuny")
+region = Rect2(0, 288, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gy1yn"]
+atlas = ExtResource("2_nvuny")
+region = Rect2(16, 288, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rw73v"]
+atlas = ExtResource("2_nvuny")
+region = Rect2(32, 288, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rva2s"]
+atlas = ExtResource("2_nvuny")
+region = Rect2(48, 288, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nvfw6"]
+atlas = ExtResource("2_nvuny")
+region = Rect2(64, 288, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5r6nw"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nvuny")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gy1yn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rw73v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rva2s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nvfw6")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3ay35"]
+radius = 6.3999996
+
+[node name="ghost_projectile" type="Node2D" unique_id=1022503433]
+script = ExtResource("1_nvuny")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1872318237]
+position = Vector2(5.9604645e-08, 0)
+scale = Vector2(1.5625, 0.90625)
+sprite_frames = SubResource("SpriteFrames_5r6nw")
+frame_progress = 0.018378314
+
+[node name="hitbox" type="Area2D" parent="AnimatedSprite2D" unique_id=19704722]
+collision_layer = 0
+collision_mask = 2
+
+[node name="projectile_hitbox" type="CollisionShape2D" parent="AnimatedSprite2D/hitbox" unique_id=1843783139]
+position = Vector2(0.6399994, 1.1034484)
+scale = Vector2(1.0000001, 1)
+shape = SubResource("CircleShape2D_3ay35")

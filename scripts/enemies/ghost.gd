@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 @export_group("Configuración Visual")
-@export var sprite_faces_right: bool = true   # Cambia a 'false' en el Inspector si tu sprite por defecto mira a la izquierda
+@export var sprite_faces_right: bool = true
 
 @export_group("Vida y Salud")
 @export var max_health: float = 40.0
@@ -9,26 +9,26 @@ var health: float = 40.0
 
 @export_group("Movimiento Espectral")
 @export var speed: float = 80.0
-@export var evade_speed_multiplier: float = 1.2 # 1.2x al aproximarse en ataque
-@export var flee_speed_multiplier: float = 1.5  # 1.5x al huir velozmente tras atacar
+@export var evade_speed_multiplier: float = 1.2
+@export var flee_speed_multiplier: float = 1.5
 @export var float_amplitude: float = 12.0
 @export var float_frequency: float = 2.0
 
 @export_group("Tiempos de Ataque y Recuperación")
-@export var charge_time: float = 0.5            # Carga de 0.5s previa al golpe
-@export var flee_time: float = 1.0              # 1.0s de huida en dirección opuesta
-@export var idle_recovery_time: float = 0.5     # 0.5s de reposo en idle
+@export var charge_time: float = 0.5
+@export var flee_time: float = 1.0
+@export var idle_recovery_time: float = 0.5
 
 @export_group("Ataque a Distancia")
-@export var projectile_scene: PackedScene       # Asigna ghost_projectile.tscn en el Inspector
-@export var projectile_spawn_delay: float = 0.2  # Momento exacto del disparo durante la animación de ataque
+@export var projectile_scene: PackedScene
+@export var projectile_spawn_delay: float = 0.2
 
 @export_group("Teletransporte (TP)")
 @export var tp_cooldown: float = 6.0
-@export var tp_min_distance_x: float = 40.0         # Distancia horizontal mínima respecto al jugador
-@export var tp_max_distance_x: float = 120.0        # Distancia horizontal máxima respecto al jugador
-@export var tp_min_height_above_player: float = 10.0  # Ajustado: Mínimo 10px arriba del jugador
-@export var tp_max_height_above_player: float = 35.0  # Ajustado: Máximo 35px arriba del jugador (para que no quede inalcanzable)
+@export var tp_min_distance_x: float = 40.0
+@export var tp_max_distance_x: float = 120.0
+@export var tp_min_height_above_player: float = 0.0
+@export var tp_max_height_above_player: float = 35.0
 
 # Referencias a nodos
 @onready var animated_sprite: AnimatedSprite2D = $Pivot/ghost
@@ -36,7 +36,7 @@ var health: float = 40.0
 @onready var detection_area: Area2D = $Pivot/detection_area
 @onready var detection_shape: CollisionShape2D = $Pivot/detection_area/detection_hitbox
 @onready var attack_range_area: Area2D = $Pivot/attack_range
-@onready var spawn_point: Node2D = $Pivot/SpawnPoint # Asegúrate de tener este Marker2D o Node2D en $Pivot
+@onready var spawn_point: Node2D = $Pivot/SpawnPoint
 
 var player: Node2D = null
 var float_timer: float = 0.0
@@ -60,11 +60,12 @@ var flee_direction_x: float = 1.0
 func _ready() -> void:
 	health = max_health
 
-	# Asegurarse de pertenecer al grupo "ghost" para evitar autodaño con el proyectil
 	if not is_in_group("ghost"):
 		add_to_group("ghost")
 
-	# Desactivar colisión física con la capa del jugador (Capa 2)
+	# Capas de colisión:
+	# Layer 3/4 para recibir golpes de la espada
+	# Mask 1 para colisionar con el mapa/paredes pero NO con la capa física del jugador (Capa 2)
 	set_collision_mask_value(2, false)
 
 	player = get_tree().get_first_node_in_group("player")
@@ -102,12 +103,11 @@ func _physics_process(delta: float) -> void:
 	if is_dead or is_teleporting:
 		return
 
-	# Dirección hacia el jugador
 	var player_dir_x = sign(player.global_position.x - global_position.x)
 	if player_dir_x == 0:
 		player_dir_x = 1.0
 
-	# --- ESTADO 1: EJECUCIÓN DEL ATAQUE EN CURSO ---
+	# ESTADO 1: ATAQUE
 	if is_attacking:
 		velocity.x = 0
 		charge_timer = 0.0
@@ -116,7 +116,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# --- ESTADO 2: HUIDA RÁPIDA TRAS ATACAR ---
+	# ESTADO 2: HUIDA
 	if is_fleeing:
 		if is_on_wall():
 			flee_direction_x *= -1.0
@@ -131,7 +131,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# --- ESTADO 3: REPOSO OBLIGADO / IDLE TRAS HUIR ---
+	# ESTADO 3: RECUPERACIÓN
 	if is_recovering:
 		velocity.x = 0
 		charge_timer = 0.0
@@ -144,7 +144,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# --- ESTADO NORMAL: EVALUACIÓN DE SENSORES Y PERSECUCIÓN ---
+	# ESTADO NORMAL
 	_update_sensor_states()
 
 	if player_in_attack_range:
@@ -156,7 +156,7 @@ func _physics_process(delta: float) -> void:
 
 		charge_timer += delta
 		if charge_timer >= charge_time:
-			charge_timer = 0.0  # Reset del temporizador para evitar bucle infinito
+			charge_timer = 0.0
 			_execute_attack()
 
 	elif has_seen_player:
@@ -183,14 +183,13 @@ func _apply_floating(delta: float) -> void:
 # ==============================================================================
 # SISTEMA DE DAÑO
 # ==============================================================================
-func take_damage(amount: int) -> void:
+func take_damage(amount: float) -> void:
 	if is_dead:
 		return
 
 	health -= amount
 	print("¡Fantasma golpeado! Vida restante: ", health)
 
-	# Efecto visual de parpadeo rojo al recibir un espadazo
 	if animated_sprite:
 		animated_sprite.modulate = Color(1, 0.2, 0.2)
 		get_tree().create_timer(0.15).timeout.connect(func():
@@ -212,7 +211,6 @@ func _execute_attack() -> void:
 	charge_timer = 0.0
 	velocity = Vector2.ZERO
 
-	# Instanciar el proyectil con el tiempo de retraso configurado
 	get_tree().create_timer(projectile_spawn_delay).timeout.connect(func():
 		if not is_dead:
 			_spawn_projectile()
@@ -233,37 +231,25 @@ func _execute_attack() -> void:
 		_start_flee_and_recovery_sequence()
 
 func _spawn_projectile() -> void:
-	if not projectile_scene:
-		print("ERROR: Falta asignar 'projectile_scene' en el Inspector del Ghost.")
-		return
-
-	if not player:
-		print("ERROR: No se encuentra al objeto 'player'.")
+	if not projectile_scene or not player:
 		return
 
 	var projectile = projectile_scene.instantiate()
 	if not projectile:
 		return
 
-	# Obtener posición global de origen
 	var spawn_pos = spawn_point.global_position if spawn_point else global_position
 	projectile.global_position = spawn_pos
 	
-	# Dirección en 2D apuntando al centro del jugador
 	var dir = (player.global_position - spawn_pos).normalized()
-	
 	if "direction" in projectile:
 		projectile.direction = dir
-	
 	projectile.rotation = dir.angle()
 
-	# Forzar capa Z alta para evitar que aparezca detrás del mapa
 	if projectile is Node2D:
 		projectile.z_index = 10
 
-	# Añadir al nodo raíz del nivel actual
 	get_tree().current_scene.add_child(projectile)
-	print("Proyectil generado con éxito en: ", spawn_pos)
 
 func _start_flee_and_recovery_sequence() -> void:
 	is_attacking = false
@@ -295,7 +281,11 @@ func _start_flee_and_recovery_sequence() -> void:
 func _start_tp_timer() -> void:
 	get_tree().create_timer(tp_cooldown).timeout.connect(func():
 		if not is_dead and not is_teleporting:
-			_perform_teleport_sequence()
+			# SOLO SE TELETRANSPORTA SI HA DETECTADO/VISTO AL JUGADOR
+			if has_seen_player:
+				_perform_teleport_sequence()
+			else:
+				_start_tp_timer() # Reinicia el reloj para seguir esperando
 	)
 
 func _perform_teleport_sequence() -> void:
@@ -319,6 +309,7 @@ func _teleport_to_new_position() -> void:
 
 	var target_position = player.global_position + Vector2(offset_x, offset_y)
 
+	# Límite por la cámara para no salir de pantalla
 	var camera = get_viewport().get_camera_2d()
 	if camera:
 		var cam_pos = camera.get_screen_center_position()
@@ -331,6 +322,17 @@ func _teleport_to_new_position() -> void:
 
 		target_position.x = clamp(target_position.x, min_x, max_x)
 		target_position.y = clamp(target_position.y, min_y, max_y)
+
+	# Raycast físico para evitar que el TP lo meta dentro del TileMap/Paredes
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, target_position)
+	query.collision_mask = 1 # Capa del suelo/mapa
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	if result:
+		# Si hay una pared en el camino, se posiciona justo un poco antes de la colisión
+		target_position = result.position - (target_position - global_position).normalized() * 16.0
 
 	global_position = target_position
 
@@ -372,7 +374,6 @@ func die() -> void:
 	is_dead = true
 	velocity = Vector2.ZERO
 
-	# Desactivar colisiones si existen
 	var col = get_node_or_null("ghost_hitbox")
 	if col:
 		col.set_deferred("disabled", true)
