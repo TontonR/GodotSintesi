@@ -21,8 +21,6 @@ func _ready() -> void:
 		detection_area = $Pivot/detection_area
 	if not attack_range:
 		attack_range = $Pivot/attack_range
-	if not health_bar:
-		health_bar = $Pivot/health_bar
 
 	super()
 

@@ -1,402 +1,681 @@
-extends CharacterBody2D
+extends EnemyBase
+## Fantasma: Aproximación -> Ataque -> TP Lejano -> Huida fluida y acotada
 
-@export_group("Configuración Visual")
-@export var sprite_faces_right: bool = true   # Cambia a 'false' en el Inspector si tu sprite por defecto mira a la izquierda
+enum State {IDLE, CHASING, ATTACKING, TELEPORTING, RETREATING}
 
-@export_group("Vida y Salud")
-@export var max_health: float = 40.0
-var health: float = 40.0
+const FACING_DEADZONE := 5.0
+const SCREEN_MARGIN := 30.0
+
+@export_group("Animaciones Extra")
+@export var vanish_animation: StringName = &"vanish"
+@export var appear_animation: StringName = &"appear"
 
 @export_group("Movimiento Espectral")
-@export var speed: float = 80.0
-@export var evade_speed_multiplier: float = 1.2 # 1.2x al aproximarse en ataque
-@export var flee_speed_multiplier: float = 1.5  # 1.5x al huir velozmente tras atacar
-@export var float_amplitude: float = 12.0
-@export var float_frequency: float = 2.0
+@export var acceleration: float = 6.0
+@export var float_amplitude_y: float = 12.0
+@export var float_amplitude_x: float = 5.0
+@export var float_frequency: float = 2.5
+@export var hover_height: float = 20.0
+@export var vertical_follow_speed: float = 2.0
 
-@export_group("Tiempos de Ataque y Recuperación")
-@export var charge_time: float = 0.5            # Carga de 0.5s previa al golpe
-@export var flee_time: float = 1.0              # 1.0s de huida en dirección opuesta
-@export var idle_recovery_time: float = 0.5     # 0.5s de reposo en idle
+@export_group("Jugosidad Visual")
+@export var max_tilt_angle: float = 12.0
+@export var lean_speed: float = 8.0
+@export var float_squash_amount: float = 0.08
 
 @export_group("Ataque a Distancia")
-@export var projectile_scene: PackedScene       # Asigna ghost_projectile.tscn en el Inspector
-@export var projectile_spawn_delay: float = 0.2  # Momento exacto del disparo durante la animación de ataque
+@export var projectile_scene: PackedScene
+@export var charge_time: float = 0.4
+@export var charge_tint: Color = Color(1.0, 0.6, 1.0)
+@export var projectile_spawn_delay: float = 0.15
 
-@export_group("Teletransporte (TP)")
-@export var tp_cooldown: float = 6.0
-@export var tp_min_distance_x: float = 40.0         # Distancia horizontal mínima respecto al jugador
-@export var tp_max_distance_x: float = 120.0        # Distancia horizontal máxima respecto al jugador
-@export var tp_min_height_above_player: float = 10.0  # Ajustado: Mínimo 10px arriba del jugador
-@export var tp_max_height_above_player: float = 35.0  # Ajustado: Máximo 35px arriba del jugador (para que no quede inalcanzable)
+@export_group("Rango Cercano & Huida")
+@export var near_range: Area2D
+@export var retreat_speed_multiplier: float = 1.6
+@export var max_flee_time: float = 1.8
+@export var flee_tp_check_interval: float = 0.3
+@export_range(0.0, 1.0) var tp_chance_during_flee: float = 0.35
 
-# Referencias a nodos
-@onready var animated_sprite: AnimatedSprite2D = $Pivot/ghost
-@onready var pivot: Node2D = $Pivot
-@onready var detection_area: Area2D = $Pivot/detection_area
-@onready var detection_shape: CollisionShape2D = $Pivot/detection_area/detection_hitbox
-@onready var attack_range_area: Area2D = $Pivot/attack_range
-@onready var spawn_point: Node2D = $Pivot/SpawnPoint # Asegúrate de tener este Marker2D o Node2D en $Pivot
+@export_group("Teletransporte Lejano")
+@export var tp_cooldown: float = 4.0
+@export var tp_min_distance_x: float = 250.0
+@export var tp_max_distance_x: float = 380.0
+@export var tp_min_height_above_player: float = 35.0
+@export var tp_max_height_above_player: float = 80.0
+@export var tp_min_distance_from_player: float = 220.0
+@export var tp_min_vertical_separation: float = 25.0
+@export var tp_attempts: int = 20
+@export var invulnerable_while_teleporting: bool = true
 
-var player: Node2D = null
-var float_timer: float = 0.0
-var is_teleporting: bool = false
-var is_dead: bool = false
+@onready var spawn_point: Node2D = get_node_or_null("Pivot/SpawnPoint")
 
-# Sensores y memoria
-var player_in_detection_area: bool = false
-var player_in_attack_range: bool = false
-var has_seen_player: bool = false
+var _state: State = State.IDLE
+var _charge_timer: float = 0.0
+var _float_time: float = 0.0
+var _current_tilt: float = 0.0
+var _player_dir: float = 1.0
 
-# Control de estados
-var is_attacking: bool = false
-var is_fleeing: bool = false
-var is_recovering: bool = false
-var charge_timer: float = 0.0
+# Dirección fija durante la huida.
+var _flee_direction_x: float = 1.0
 
-# Direcciones
-var flee_direction_x: float = 1.0
+var _flee_timer: float = 0.0
+var _flee_tp_check_timer: float = 0.0
+var _can_teleport: bool = true
+
+var _shoot_timer: Timer
+var _tp_cooldown_timer: Timer
+var _body_shape: CollisionShape2D
+
+
+func _init() -> void:
+	max_health = 40.0
+	speed_movement = 85.0
+	move_animation = &"chase"
+	attack_duration = 0.5
+	uses_gravity = false
+
 
 func _ready() -> void:
-	health = max_health
+	if not sprite:
+		sprite = get_node_or_null("Pivot/ghost")
 
-	# Asegurarse de pertenecer al grupo "ghost" para evitar autodaño con el proyectil
-	if not is_in_group("ghost"):
-		add_to_group("ghost")
+	if not detection_area:
+		detection_area = get_node_or_null("Pivot/detection_area")
 
-	# Desactivar colisión física con la capa del jugador (Capa 2)
+	if not attack_range:
+		attack_range = get_node_or_null("Pivot/attack_range")
+
+	if not near_range:
+		near_range = get_node_or_null("Pivot/near_range")
+
+	flip_pivot = get_node_or_null("Pivot")
+
+	super()
+
+	add_to_group("ghost")
 	set_collision_mask_value(2, false)
 
-	player = get_tree().get_first_node_in_group("player")
+	_body_shape = get_node_or_null("ghost_hitbox")
 
-	if animated_sprite:
-		animated_sprite.animation_finished.connect(_on_animation_finished)
-		animated_sprite.play("idle")
+	# Temporizador de disparo.
+	_shoot_timer = Timer.new()
+	_shoot_timer.one_shot = true
+	_shoot_timer.timeout.connect(_on_shoot_timeout)
+	add_child(_shoot_timer)
 
-	if detection_area:
-		detection_area.body_entered.connect(_on_detection_area_body_entered)
-		detection_area.body_exited.connect(_on_detection_area_body_exited)
+	# Temporizador de teletransporte.
+	_tp_cooldown_timer = Timer.new()
+	_tp_cooldown_timer.one_shot = true
+	_tp_cooldown_timer.timeout.connect(_on_tp_cooldown_timeout)
+	add_child(_tp_cooldown_timer)
 
-	if attack_range_area:
-		attack_range_area.body_entered.connect(_on_attack_range_body_entered)
-		attack_range_area.body_exited.connect(_on_attack_range_body_exited)
+	if sprite:
+		if not sprite.animation_finished.is_connected(_on_animation_finished):
+			sprite.animation_finished.connect(_on_animation_finished)
 
-	_start_tp_timer()
+		if not sprite.animation_looped.is_connected(_on_animation_finished):
+			sprite.animation_looped.connect(_on_animation_finished)
 
-func _set_pivot_facing_direction(dir_x: float) -> void:
-	if not pivot or dir_x == 0.0:
-		return
-	
-	var face_right = dir_x > 0
-	if not sprite_faces_right:
-		face_right = !face_right
+		_play_animation(idle_animation, true)
 
-	pivot.scale.x = 1.0 if face_right else -1.0
 
-func _physics_process(delta: float) -> void:
-	if not player:
-		player = get_tree().get_first_node_in_group("player")
-		if not player:
-			return
+# ==============================================================================
+# COMPORTAMIENTO PRINCIPAL
+# ==============================================================================
 
-	if is_dead or is_teleporting:
-		return
-
-	# Dirección hacia el jugador
-	var player_dir_x = sign(player.global_position.x - global_position.x)
-	if player_dir_x == 0:
-		player_dir_x = 1.0
-
-	# --- ESTADO 1: EJECUCIÓN DEL ATAQUE EN CURSO ---
-	if is_attacking:
-		velocity.x = 0
-		charge_timer = 0.0
-		_set_pivot_facing_direction(player_dir_x)
-		_apply_floating(delta)
-		move_and_slide()
+func _update_behavior(delta: float) -> void:
+	# Durante el teletransporte no se ejecuta el comportamiento normal.
+	if _state == State.TELEPORTING:
+		velocity = velocity.lerp(Vector2.ZERO, minf(delta * 10.0, 1.0))
+		_apply_visual_juice(delta)
 		return
 
-	# --- ESTADO 2: HUIDA RÁPIDA TRAS ATACAR ---
-	if is_fleeing:
-		if is_on_wall():
-			flee_direction_x *= -1.0
+	# Flotación ambiental.
+	_float_time += delta * float_frequency
 
-		velocity.x = flee_direction_x * (speed * flee_speed_multiplier)
-		_set_pivot_facing_direction(flee_direction_x)
+	var target_v := Vector2(
+		cos(_float_time * 0.7) * float_amplitude_x,
+		sin(_float_time) * float_amplitude_y
+	)
 
-		if animated_sprite and animated_sprite.animation != "chase":
-			animated_sprite.play("chase")
+	# Buscar al jugador si todavía no tenemos una referencia válida.
+	if not is_instance_valid(_player):
+		_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
 
-		_apply_floating(delta)
-		move_and_slide()
+	if not is_instance_valid(_player):
+		_state = State.IDLE
+		_set_charge(0.0)
+		_play_animation(idle_animation)
+
+		velocity = velocity.lerp(target_v, minf(acceleration * delta, 1.0))
+		_apply_visual_juice(delta)
 		return
 
-	# --- ESTADO 3: REPOSO OBLIGADO / IDLE TRAS HUIR ---
-	if is_recovering:
-		velocity.x = 0
-		charge_timer = 0.0
-		_set_pivot_facing_direction(player_dir_x)
-		
-		if animated_sprite and animated_sprite.animation != "idle":
-			animated_sprite.play("idle")
+	# Dirección hacia el jugador.
+	var dx := _player.global_position.x - global_position.x
 
-		_apply_floating(delta)
-		move_and_slide()
+	if absf(dx) > FACING_DEADZONE:
+		_player_dir = signf(dx)
+
+	# Comprobar las áreas.
+	_player_in_attack_range = (
+		attack_range != null
+		and attack_range.overlaps_body(_player)
+	)
+
+	var player_in_detection := (
+		detection_area != null
+		and detection_area.overlaps_body(_player)
+	)
+
+	var player_in_near := (
+		near_range != null
+		and near_range.overlaps_body(_player)
+	)
+
+	# --------------------------------------------------------------------------
+	# MÁQUINA DE ESTADOS
+	# --------------------------------------------------------------------------
+
+	match _state:
+		State.IDLE, State.CHASING:
+			# 1. HUIR SI EL JUGADOR SE ACERCA DEMASIADO.
+			if player_in_near:
+				_start_retreating()
+
+				# Si ha comenzado a huir sin teletransportarse,
+				# aplicar movimiento desde este mismo ciclo.
+				if _state == State.RETREATING:
+					target_v = _update_flee_physics(delta, target_v)
+
+			# 2. ATACAR SI ESTÁ DENTRO DEL RANGO DE ATAQUE.
+			elif _player_in_attack_range:
+				_state = State.CHASING
+
+				_set_charge(_charge_timer + delta)
+
+				if _charge_timer >= charge_time:
+					_start_attack()
+
+			# 3. PERSEGUIR.
+			elif player_in_detection:
+				_state = State.CHASING
+
+				_set_charge(0.0)
+
+				target_v.x += _player_dir * speed_movement
+
+				_follow_player_height(target_v)
+
+				_play_animation(move_animation)
+
+			# 4. REPOSO.
+			else:
+				_state = State.IDLE
+
+				_set_charge(0.0)
+
+				_play_animation(idle_animation)
+
+		State.RETREATING:
+			target_v = _update_flee_physics(delta, target_v)
+
+		State.ATTACKING:
+			target_v.x = move_toward(
+				target_v.x,
+				0.0,
+				speed_movement * 0.5 * delta
+			)
+
+		State.TELEPORTING:
+			pass
+
+	# Orientación visual.
+	if _state == State.RETREATING:
+		_set_facing_direction(_flee_direction_x < 0.0)
+	elif _state != State.IDLE and _state != State.TELEPORTING:
+		_set_facing_direction(_player_dir < 0.0)
+
+	# Aplicar la velocidad deseada.
+	velocity = velocity.lerp(
+		target_v,
+		minf(acceleration * delta, 1.0)
+	)
+
+	_apply_visual_juice(delta)
+
+
+# ==============================================================================
+# HUIDA
+# ==============================================================================
+
+func _start_retreating() -> void:
+	if not is_instance_valid(_player):
 		return
 
-	# --- ESTADO NORMAL: EVALUACIÓN DE SENSORES Y PERSECUCIÓN ---
-	_update_sensor_states()
+	# Intentar teletransportarse al iniciar la huida.
+	if _can_teleport and randf() < tp_chance_during_flee:
+		start_teleport()
+		return
 
-	if player_in_attack_range:
-		_set_pivot_facing_direction(player_dir_x)
-		velocity.x = player_dir_x * (speed * evade_speed_multiplier)
+	_state = State.RETREATING
 
-		if animated_sprite and animated_sprite.animation != "chase":
-			animated_sprite.play("chase")
+	_set_charge(0.0)
 
-		charge_timer += delta
-		if charge_timer >= charge_time:
-			charge_timer = 0.0  # Reset del temporizador para evitar bucle infinito
-			_execute_attack()
+	_flee_timer = max_flee_time
+	_flee_tp_check_timer = flee_tp_check_interval
 
-	elif has_seen_player:
-		_set_pivot_facing_direction(player_dir_x)
-		charge_timer = 0.0
-		velocity.x = player_dir_x * speed
+	# Calcular la dirección opuesta al jugador.
+	var dx := global_position.x - _player.global_position.x
 
-		if animated_sprite and animated_sprite.animation != "chase":
-			animated_sprite.play("chase")
+	if absf(dx) > 0.01:
+		_flee_direction_x = signf(dx)
 	else:
-		_set_pivot_facing_direction(player_dir_x)
-		charge_timer = 0.0
-		velocity.x = 0
-		if animated_sprite and animated_sprite.animation != "idle":
-			animated_sprite.play("idle")
+		# Si ambos están alineados, escapar hacia un lado.
+		_flee_direction_x = - _player_dir
 
-	_apply_floating(delta)
-	move_and_slide()
+	if absf(_flee_direction_x) < 0.01:
+		_flee_direction_x = 1.0
 
-func _apply_floating(delta: float) -> void:
-	float_timer += delta * float_frequency
-	velocity.y = sin(float_timer) * float_amplitude
+	_play_animation(move_animation)
 
-# ==============================================================================
-# SISTEMA DE DAÑO
-# ==============================================================================
-func take_damage(amount: int) -> void:
-	if is_dead:
-		return
 
-	health -= amount
-	print("¡Fantasma golpeado! Vida restante: ", health)
+func _update_flee_physics(
+	delta: float,
+	out_target_v: Vector2
+) -> Vector2:
+	_flee_timer -= delta
+	_flee_tp_check_timer -= delta
 
-	# Efecto visual de parpadeo rojo al recibir un espadazo
-	if animated_sprite:
-		animated_sprite.modulate = Color(1, 0.2, 0.2)
-		get_tree().create_timer(0.15).timeout.connect(func():
-			if is_instance_valid(animated_sprite):
-				animated_sprite.modulate = Color.WHITE
+	# Al finalizar el tiempo de huida, volver a perseguir.
+	if _flee_timer <= 0.0:
+		_state = State.CHASING
+		_set_charge(0.0)
+		return out_target_v
+
+	# Intento periódico de teletransporte.
+	if _flee_tp_check_timer <= 0.0:
+		_flee_tp_check_timer = flee_tp_check_interval
+
+		if _can_teleport and randf() < tp_chance_during_flee:
+			start_teleport()
+			return Vector2.ZERO
+
+	# Movimiento horizontal de huida.
+	out_target_v.x = (
+		_flee_direction_x
+		* speed_movement
+		* retreat_speed_multiplier
+	)
+
+	# Seguir la altura del jugador sin perder la velocidad de huida.
+	if is_instance_valid(_player):
+		var desired_y := _player.global_position.y - hover_height
+		var diff_y := desired_y - global_position.y
+
+		out_target_v.y = clampf(
+			diff_y * vertical_follow_speed,
+			- speed_movement,
+			speed_movement
 		)
 
-	if health <= 0:
-		die()
+	_play_animation(move_animation)
+
+	return out_target_v
+
 
 # ==============================================================================
-# SECUENCIA DE ATAQUE Y RECUPERACIÓN
+# SEGUIMIENTO VERTICAL
 # ==============================================================================
-func _execute_attack() -> void:
-	if is_attacking or is_fleeing or is_recovering:
+
+func _follow_player_height(out_target_v: Vector2) -> void:
+	if vertical_follow_speed <= 0.0:
 		return
 
-	is_attacking = true
-	charge_timer = 0.0
-	velocity = Vector2.ZERO
-
-	# Instanciar el proyectil con el tiempo de retraso configurado
-	get_tree().create_timer(projectile_spawn_delay).timeout.connect(func():
-		if not is_dead:
-			_spawn_projectile()
-	, CONNECT_ONE_SHOT)
-
-	if animated_sprite and animated_sprite.sprite_frames.has_animation("attack"):
-		animated_sprite.play("attack")
-		
-		var frames_count = animated_sprite.sprite_frames.get_frame_count("attack")
-		var fps = animated_sprite.sprite_frames.get_animation_speed("attack")
-		var attack_duration = (frames_count / fps) if fps > 0 else 0.5
-
-		get_tree().create_timer(attack_duration).timeout.connect(func():
-			if is_attacking and not is_dead:
-				_start_flee_and_recovery_sequence()
-		, CONNECT_ONE_SHOT)
-	else:
-		_start_flee_and_recovery_sequence()
-
-func _spawn_projectile() -> void:
-	if not projectile_scene:
-		print("ERROR: Falta asignar 'projectile_scene' en el Inspector del Ghost.")
+	if not is_instance_valid(_player):
 		return
 
-	if not player:
-		print("ERROR: No se encuentra al objeto 'player'.")
+	var desired_y := _player.global_position.y - hover_height
+	var diff_y := desired_y - global_position.y
+
+	out_target_v.y += clampf(
+		diff_y * vertical_follow_speed,
+		- speed_movement,
+		speed_movement
+	)
+
+
+# ==============================================================================
+# ATAQUE
+# ==============================================================================
+
+func _start_attack() -> void:
+	if _state == State.ATTACKING or _state == State.TELEPORTING:
 		return
 
-	var projectile = projectile_scene.instantiate()
+	_state = State.ATTACKING
+
+	_set_charge(0.0)
+
+	_play_animation(attack_animation, true)
+
+	_shoot_timer.start(maxf(projectile_spawn_delay, 0.01))
+
+	# Efecto visual de compresión.
+	if flip_pivot:
+		var tw := create_tween()
+
+		tw.tween_property(
+			flip_pivot,
+			"scale",
+			flip_pivot.scale * Vector2(1.2, 0.8),
+			0.08
+		)
+
+		tw.tween_property(
+			flip_pivot,
+			"scale",
+			Vector2(signf(flip_pivot.scale.x), 1.0),
+			0.12
+		)
+
+
+func _on_shoot_timeout() -> void:
+	if _is_dead:
+		return
+
+	if not projectile_scene or not is_instance_valid(_player):
+		start_teleport()
+		return
+
+	var projectile := projectile_scene.instantiate() as Node2D
+
 	if not projectile:
+		start_teleport()
 		return
 
-	# Obtener posición global de origen
-	var spawn_pos = spawn_point.global_position if spawn_point else global_position
-	projectile.global_position = spawn_pos
-	
-	# Dirección en 2D apuntando al centro del jugador
-	var dir = (player.global_position - spawn_pos).normalized()
-	
+	var origin: Vector2 = (
+		spawn_point.global_position
+		if is_instance_valid(spawn_point)
+		else global_position
+	)
+
+	var dir := (_player.global_position - origin).normalized()
+
 	if "direction" in projectile:
-		projectile.direction = dir
-	
+		projectile.set("direction", dir)
+
 	projectile.rotation = dir.angle()
+	projectile.z_index = 10
 
-	# Forzar capa Z alta para evitar que aparezca detrás del mapa
-	if projectile is Node2D:
-		projectile.z_index = 10
-
-	# Añadir al nodo raíz del nivel actual
 	get_tree().current_scene.add_child(projectile)
-	print("Proyectil generado con éxito en: ", spawn_pos)
+	projectile.global_position = origin
 
-func _start_flee_and_recovery_sequence() -> void:
-	is_attacking = false
-	is_fleeing = true
-	is_recovering = false
-	charge_timer = 0.0
-
-	if player:
-		var dir_from_player = sign(global_position.x - player.global_position.x)
-		flee_direction_x = dir_from_player if dir_from_player != 0 else (1.0 if randf() > 0.5 else -1.0)
+	# Tras disparar, intentar teletransportarse.
+	if _can_teleport:
+		start_teleport()
 	else:
-		flee_direction_x = 1.0 if randf() > 0.5 else -1.0
+		_state = State.IDLE
 
-	get_tree().create_timer(flee_time).timeout.connect(func():
-		if not is_dead and is_fleeing:
-			is_fleeing = false
-			is_recovering = true
-			
-			get_tree().create_timer(idle_recovery_time).timeout.connect(func():
-				if not is_dead:
-					is_recovering = false
-					_update_sensor_states()
-			, CONNECT_ONE_SHOT)
-	, CONNECT_ONE_SHOT)
 
 # ==============================================================================
 # TELETRANSPORTE
 # ==============================================================================
-func _start_tp_timer() -> void:
-	get_tree().create_timer(tp_cooldown).timeout.connect(func():
-		if not is_dead and not is_teleporting:
-			_perform_teleport_sequence()
-	)
 
-func _perform_teleport_sequence() -> void:
-	is_teleporting = true
-	is_attacking = false
-	is_fleeing = false
-	is_recovering = false
-	charge_timer = 0.0
-	velocity = Vector2.ZERO
-
-	if animated_sprite:
-		animated_sprite.play("vanish")
-
-func _teleport_to_new_position() -> void:
-	if not player:
+func start_teleport() -> void:
+	if _is_dead:
 		return
 
-	var dir_x = 1.0 if randf() > 0.5 else -1.0
-	var offset_x = dir_x * randf_range(tp_min_distance_x, tp_max_distance_x)
-	var offset_y = -randf_range(tp_min_height_above_player, tp_max_height_above_player)
-
-	var target_position = player.global_position + Vector2(offset_x, offset_y)
-
-	var camera = get_viewport().get_camera_2d()
-	if camera:
-		var cam_pos = camera.get_screen_center_position()
-		var viewport_size = get_viewport_rect().size / camera.zoom
-		
-		var min_x = cam_pos.x - (viewport_size.x / 2.0) + 30.0
-		var max_x = cam_pos.x + (viewport_size.x / 2.0) - 30.0
-		var min_y = cam_pos.y - (viewport_size.y / 2.0) + 30.0
-		var max_y = cam_pos.y + (viewport_size.y / 2.0) - 30.0
-
-		target_position.x = clamp(target_position.x, min_x, max_x)
-		target_position.y = clamp(target_position.y, min_y, max_y)
-
-	global_position = target_position
-
-	if animated_sprite:
-		animated_sprite.play("appear")
-
-func _update_sensor_states() -> void:
-	if player:
-		if attack_range_area:
-			player_in_attack_range = attack_range_area.get_overlapping_bodies().has(player)
-		if detection_area:
-			player_in_detection_area = detection_area.get_overlapping_bodies().has(player)
-
-# ==============================================================================
-# EVENTOS Y SEÑALES
-# ==============================================================================
-func _on_detection_area_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player") or body == player:
-		player_in_detection_area = true
-		has_seen_player = true
-
-func _on_detection_area_body_exited(body: Node2D) -> void:
-	if body.is_in_group("player") or body == player:
-		player_in_detection_area = false
-
-func _on_attack_range_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player") or body == player:
-		player_in_attack_range = true
-		has_seen_player = true
-
-func _on_attack_range_body_exited(body: Node2D) -> void:
-	if body.is_in_group("player") or body == player:
-		player_in_attack_range = false
-
-func die() -> void:
-	if is_dead:
+	if _state == State.TELEPORTING:
 		return
 
-	is_dead = true
+	if not _can_teleport:
+		return
+
+	_can_teleport = false
+
+	_shoot_timer.stop()
+
+	_set_charge(0.0)
+
+	_state = State.TELEPORTING
+
+	# Detener el movimiento durante el efecto.
 	velocity = Vector2.ZERO
 
-	# Desactivar colisiones si existen
-	var col = get_node_or_null("ghost_hitbox")
-	if col:
-		col.set_deferred("disabled", true)
-
-	if animated_sprite:
-		animated_sprite.play("vanish")
+	if _has_anim(vanish_animation):
+		_play_animation(vanish_animation, true)
 	else:
-		queue_free()
+		_execute_teleport()
+
+
+func _execute_teleport() -> void:
+	if _is_dead:
+		return
+
+	if is_instance_valid(_player):
+		var pos := _find_teleport_position()
+
+		if pos.is_finite():
+			global_position = pos
+		else:
+			# No se ha encontrado una posición segura.
+			# Mantener la posición actual en vez de aparecer cerca.
+			_end_teleport()
+			return
+
+	if _has_anim(appear_animation):
+		_play_animation(appear_animation, true)
+	else:
+		_end_teleport()
+
+
+func _end_teleport() -> void:
+	if _is_dead:
+		return
+
+	_state = State.IDLE
+
+	velocity = Vector2.ZERO
+
+	_set_charge(0.0)
+
+	_tp_cooldown_timer.start(tp_cooldown)
+
+
+func _on_tp_cooldown_timeout() -> void:
+	_can_teleport = true
+
 
 func _on_animation_finished() -> void:
-	if not animated_sprite:
+	if not sprite:
 		return
 
-	match animated_sprite.animation:
-		"vanish":
-			if is_dead:
+	match sprite.animation:
+		vanish_animation:
+			if _is_dead:
 				queue_free()
-			else:
-				_teleport_to_new_position()
-		"appear":
-			is_teleporting = false
-			_update_sensor_states()
-			_start_tp_timer()
-			if not player_in_attack_range and has_seen_player:
-				animated_sprite.play("chase")
-			else:
-				animated_sprite.play("idle")
+			elif _state == State.TELEPORTING:
+				_execute_teleport()
+
+		appear_animation:
+			if not _is_dead and _state == State.TELEPORTING:
+				_end_teleport()
+
+
+# ==============================================================================
+# BÚSQUEDA DE UNA POSICIÓN DE TELETRANSPORTE
+# ==============================================================================
+
+func _find_teleport_position() -> Vector2:
+	if not is_instance_valid(_player):
+		return Vector2.INF
+
+	var player_pos := _player.global_position
+
+	for i in range(maxi(tp_attempts, 1)):
+		# Elegir un lado aleatorio.
+		var side := -1.0 if randf() < 0.5 else 1.0
+
+		# Distancia horizontal.
+		var distance_x := randf_range(
+			tp_min_distance_x,
+			maxf(tp_min_distance_x, tp_max_distance_x)
+		)
+
+		# Altura sobre el jugador.
+		var height := randf_range(
+			tp_min_height_above_player,
+			maxf(tp_min_height_above_player, tp_max_height_above_player)
+		)
+
+		var candidate := player_pos + Vector2(
+			side * distance_x,
+			- height
+		)
+
+		# Respetar los límites de la cámara.
+		var pos := _clamp_to_camera(candidate)
+
+		# Comprobar las distancias después de limitar la posición.
+		var actual_dx := absf(pos.x - player_pos.x)
+		var actual_dy := player_pos.y - pos.y
+
+		if actual_dx < tp_min_distance_from_player:
+			continue
+
+		if actual_dy < tp_min_vertical_separation:
+			continue
+
+		# Comprobar colisiones.
+		if test_move(Transform2D(0.0, pos), Vector2.ZERO):
+			continue
+
+		return pos
+
+	# Ninguna posición cumple los requisitos.
+	return Vector2.INF
+
+
+func _clamp_to_camera(pos: Vector2) -> Vector2:
+	var cam := get_viewport().get_camera_2d()
+
+	if not cam:
+		return pos
+
+	var center := cam.get_screen_center_position()
+
+	var half := (
+		get_viewport_rect().size / cam.zoom / 2.0
+		- Vector2.ONE * SCREEN_MARGIN
+	)
+
+	# Evitar límites invertidos si la cámara es muy pequeña.
+	half.x = maxf(half.x, 0.0)
+	half.y = maxf(half.y, 0.0)
+
+	return pos.clamp(
+		center - half,
+		center + half
+	)
+
+
+# ==============================================================================
+# EFECTOS VISUALES
+# ==============================================================================
+
+func _apply_visual_juice(delta: float) -> void:
+	if not flip_pivot:
+		return
+
+	var move_pct := 0.0
+
+	if speed_movement > 0.0:
+		move_pct = clampf(
+			velocity.x / speed_movement,
+			-1.0,
+			1.0
+		)
+
+	var target_tilt := move_pct * deg_to_rad(max_tilt_angle)
+
+	_current_tilt = lerp_angle(
+		_current_tilt,
+		target_tilt,
+		minf(lean_speed * delta, 1.0)
+	)
+
+	flip_pivot.rotation = _current_tilt
+
+	var cycle := sin(_float_time * 2.0)
+
+	var scale_y := 1.0 + cycle * float_squash_amount
+	var scale_x := 1.0 - cycle * float_squash_amount * 0.5
+
+	if sprite:
+		sprite.scale = Vector2(scale_x, scale_y)
+
+
+# ==============================================================================
+# CARGA DEL ATAQUE
+# ==============================================================================
+
+func _set_charge(value: float) -> void:
+	_charge_timer = value
+
+	if sprite:
+		var charge_ratio := clampf(
+			value / maxf(charge_time, 0.001),
+			0.0,
+			1.0
+		)
+
+		sprite.self_modulate = Color.WHITE.lerp(
+			charge_tint,
+			charge_ratio
+		)
+
+
+# ==============================================================================
+# ANIMACIONES Y DAÑO
+# ==============================================================================
+
+func _has_anim(anim: StringName) -> bool:
+	return (
+		sprite != null
+		and sprite.sprite_frames != null
+		and sprite.sprite_frames.has_animation(anim)
+	)
+
+
+func _is_valid_target(body: Node2D) -> bool:
+	return body != self and body.is_in_group("player")
+
+
+func take_damage(amount: float) -> void:
+	if (
+		invulnerable_while_teleporting
+		and _state == State.TELEPORTING
+	):
+		return
+
+	super.take_damage(amount)
+
+
+func _on_death() -> void:
+	if _shoot_timer:
+		_shoot_timer.stop()
+
+	if _tp_cooldown_timer:
+		_tp_cooldown_timer.stop()
+
+	_set_charge(0.0)
+
+	if _body_shape:
+		_body_shape.set_deferred("disabled", true)
+
+	if _has_anim(vanish_animation):
+		_state = State.TELEPORTING
+		_play_animation(vanish_animation, true)
+	else:
+		queue_free()

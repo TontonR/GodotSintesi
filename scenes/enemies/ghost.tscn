@@ -251,7 +251,7 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_3ay35"]
-radius = 265.6048
+radius = 304.9985
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6dhoe"]
 radius = 248.0504
@@ -260,10 +260,10 @@ radius = 248.0504
 collision_layer = 8
 collision_mask = 0
 script = ExtResource("1_kjq22")
-sprite_faces_right = false
 projectile_scene = ExtResource("2_jw18l")
 tp_min_distance_x = 20.0
 tp_max_distance_x = 60.0
+sprite_faces_right = false
 
 [node name="ghost_hitbox" type="CollisionShape2D" parent="." unique_id=1769343006]
 position = Vector2(0, 1)
@@ -279,7 +279,9 @@ sprite_frames = SubResource("SpriteFrames_3ay35")
 animation = &"idle"
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1875697751]
-scale = Vector2(0.48000234, 0.48000234)
+scale = Vector2(0.6000023, 0.6000023)
+collision_layer = 2
+collision_mask = 2
 
 [node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area" unique_id=1905668338]
 scale = Vector2(1.25, 1.25)
@@ -290,6 +292,13 @@ scale = Vector2(0.5125225, 0.5125225)
 collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
+shape = SubResource("CircleShape2D_6dhoe")
+
+[node name="near_range" type="Area2D" parent="Pivot" unique_id=357702545]
+scale = Vector2(0.34267804, 0.34267804)
+collision_mask = 2
+
+[node name="near_hitbox" type="CollisionShape2D" parent="Pivot/near_range" unique_id=91382080]
 shape = SubResource("CircleShape2D_6dhoe")
 
 [node name="SpawnPoint" type="Marker2D" parent="Pivot" unique_id=1215235679]

@@ -456,7 +456,7 @@ shape = SubResource("RectangleShape2D_yb26g")
 [node name="AttackHitbox1" type="Area2D" parent="." unique_id=2128828989]
 position = Vector2(26, -6)
 collision_layer = 0
-collision_mask = 4
+collision_mask = 12
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox1" unique_id=268311663]
@@ -467,17 +467,17 @@ shape = SubResource("RectangleShape2D_attack1")
 [node name="AttackHitbox2" type="Area2D" parent="." unique_id=1710885674]
 position = Vector2(34, -6)
 collision_layer = 0
-collision_mask = 4
+collision_mask = 12
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox2" unique_id=313277032]
 position = Vector2(-14, 5)
 shape = SubResource("RectangleShape2D_attack1")
 
-[node name="AttackHitbox3" type="Area2D" parent="." unique_id=1672558282]
+[node name="AttackHitbox3" type="Area2D" parent="." unique_id=1672558282 groups=["player"]]
 position = Vector2(28, -10)
 collision_layer = 0
-collision_mask = 4
+collision_mask = 12
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox3" unique_id=1054411595]
