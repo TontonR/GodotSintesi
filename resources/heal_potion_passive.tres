@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="HealPassive" format=3 uid="uid://dxexwodwh0r4t"]
+
+[ext_resource type="Script" uid="uid://bbw2j545jnja4" path="res://scripts/collectables/HealPassive.gd" id="1_5hjdl"]
+[ext_resource type="Texture2D" uid="uid://dbndxy0qgtivd" path="res://assets/potions/potion1.png" id="1_6h5pc"]
+
+[resource]
+script = ExtResource("1_5hjdl")
+id = "01"
+item_name = "heal_potion"
+description = "It heals the user for a short time, can stack and "
+icon = ExtResource("1_6h5pc")
+metadata/_custom_type_script = "uid://bbw2j545jnja4"
