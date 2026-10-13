@@ -256,13 +256,19 @@ radius = 304.9985
 [sub_resource type="CircleShape2D" id="CircleShape2D_6dhoe"]
 radius = 218.94214
 
-[node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area")]
+[node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area", "sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 8
 collision_mask = 0
 script = ExtResource("1_kjq22")
+flying_enemy = true
+ranged_enemy = true
 projectile = ExtResource("2_jw18l")
 flee_enemy = true
 flee_area = NodePath("Pivot/flee_range")
+sprite = NodePath("Pivot/ghost")
+detection_area = NodePath("Pivot/detection_area")
+attack_range = NodePath("Pivot/attack_range")
+flip_pivot = NodePath("Pivot")
 sprite_faces_right = false
 
 [node name="ghost_hitbox" type="CollisionShape2D" parent="." unique_id=1769343006]
@@ -279,7 +285,7 @@ sprite_frames = SubResource("SpriteFrames_3ay35")
 animation = &"idle"
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1875697751]
-scale = Vector2(0.6000023, 0.6000023)
+scale = Vector2(0.8, 0.6)
 collision_layer = 2
 collision_mask = 2
 
@@ -287,14 +293,14 @@ collision_mask = 2
 shape = SubResource("CircleShape2D_3ay35")
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=1249047959]
-scale = Vector2(0.6, 0.45)
+scale = Vector2(0.6, 0.3)
 collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
 shape = SubResource("CircleShape2D_6dhoe")
 
 [node name="flee_range" type="Area2D" parent="Pivot" unique_id=357702545]
-scale = Vector2(0.35, 0.25)
+scale = Vector2(0.35, 0.2)
 collision_mask = 2
 
 [node name="flee_hitbox" type="CollisionShape2D" parent="Pivot/flee_range" unique_id=91382080]

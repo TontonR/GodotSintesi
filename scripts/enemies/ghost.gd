@@ -3,7 +3,8 @@ extends EnemyBase
 ## Al huir intenta TP; si no puede, se queda y sigue atacando (no corre).
 ## El TP se sitúa alrededor del jugador: offsets en X e Y entre el radio
 ## de flee_area y el de attack_area (no hace falta círculo perfecto).
-## Tras un ataque, el TP queda bloqueado tp_cooldown + post_attack_tp_delay.
+## La Y del destino varía al azar, pero nunca queda por debajo del jugador
+## (ni, por tanto, por debajo del suelo).
 
 @export_group("Extra Animations")
 ## Animation played when disappearing before a teleport.
@@ -17,9 +18,7 @@ extends EnemyBase
 
 @export_group("Teleport")
 ## Seconds before the ghost can teleport again.
-@export var tp_cooldown: float = 4.0
-## Extra TP lockout after a full attack (added to tp_cooldown).
-@export var post_attack_tp_delay: float = 0.5
+@export var tp_cooldown: float = 8.0
 ## Margin (px) outside flee and inside attack when picking a spot.
 @export var tp_zone_margin: float = 10.0
 ## Minimum distance (px) between the previous and the new TP spot.
@@ -34,8 +33,6 @@ const SCREEN_MARGIN := 30.0
 var _is_teleporting: bool = false
 var _tp_applied: bool = false
 var _charge_timer: float = 0.0
-var _can_teleport: bool = true
-var _hold_ground_attack: bool = false
 var _last_tp_pos := Vector2.INF
 
 var _tp_cooldown_timer: Timer
@@ -76,7 +73,6 @@ func _ready() -> void:
 
 	_tp_cooldown_timer = Timer.new()
 	_tp_cooldown_timer.one_shot = true
-	_tp_cooldown_timer.timeout.connect(func(): _can_teleport = true)
 	add_child(_tp_cooldown_timer)
 
 	if sprite:
@@ -96,14 +92,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_behavior(delta: float) -> void:
-	# Re-busca al jugador si la detección se perdió (p. ej. tras un TP).
-	if not is_instance_valid(_player):
-		_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
-
-	# Las señales no se actualizan al teletransportarse: se consulta de golpe.
 	_refresh_area_flags()
 
-	# La carga avanza en rango de ataque; si huye con TP, _start_teleport la pone a 0.
 	if _player_in_attack_range:
 		_charge_timer += delta
 	else:
@@ -116,9 +106,6 @@ func _update_behavior(delta: float) -> void:
 # ATTACK & FLEE (EnemyBase hooks)
 # ==============================================================================
 
-## No arranca el ataque de la base hasta terminar la carga.
-## Al terminar un ataque "normal" bloquea el TP tp_cooldown + post_attack_tp_delay.
-## Los ataques de "aguanta el suelo" (sin TP) no reinician el cooldown completo.
 func _start_attack() -> void:
 	if _is_teleporting:
 		return
@@ -126,17 +113,7 @@ func _start_attack() -> void:
 		_play_animation(idle_animation)
 		return
 	_charge_timer = 0.0
-	# await super() espera a que el ataque termine por completo.
 	await super()
-	if _is_dead:
-		return
-	if _hold_ground_attack:
-		# Solo un pequeño margen: el cooldown de TP ya está corriendo o está cerca.
-		_hold_ground_attack = false
-		if not _can_teleport:
-			_tp_cooldown_timer.start(maxf(_tp_cooldown_timer.time_left, post_attack_tp_delay))
-	else:
-		_tp_cooldown_timer.start(tp_cooldown + post_attack_tp_delay)
 
 
 func _chase(to_player: Vector2) -> void:
@@ -144,16 +121,12 @@ func _chase(to_player: Vector2) -> void:
 	super(to_player)
 
 
-## Huir = solo intentar TP a la zona de ataque.
-## Si no puede (cooldown / sin posición), se queda quieto y sigue atacando.
 func _flee(_to_player: Vector2) -> void:
 	if _try_teleport():
 		return
 
-	# Sin TP disponible: no corre; aguanta el suelo y ataca si puede.
 	_stop()
 	if _can_attack and not _is_attacking:
-		_hold_ground_attack = true
 		_start_attack()
 	else:
 		_play_animation(idle_animation)
@@ -169,15 +142,12 @@ func take_damage(amount: float) -> void:
 # TELEPORT
 # ==============================================================================
 
-## Devuelve true si el TP se ha iniciado correctamente.
-## Jamás durante un ataque ni si ya hay otro TP en curso.
 func _try_teleport() -> bool:
-	if _is_dead or _is_teleporting or _is_attacking or not _can_teleport:
+	if _is_dead or _is_teleporting or _is_attacking or not _tp_cooldown_timer.is_stopped():
 		return false
 	if not is_instance_valid(_player):
 		return false
 
-	# Comprobación previa: no desaparece si no hay posición posible.
 	if not _find_attack_zone_position().is_finite():
 		return false
 
@@ -186,14 +156,11 @@ func _try_teleport() -> bool:
 
 
 func _start_teleport() -> void:
-	_can_teleport = false
 	_is_teleporting = true
 	_tp_applied = false
 	_charge_timer = 0.0
 	velocity = Vector2.ZERO
 
-	# El lógico se agenda con la duración real de la animación (si existe).
-	# Así no dependemos de animation_finished, que a veces no llega.
 	var vanish_dur := _anim_duration(vanish_animation)
 	if vanish_dur > 0.0:
 		_play_animation(vanish_animation, true)
@@ -234,7 +201,6 @@ func _on_animation_finished() -> void:
 	if not sprite or _is_dead or not _is_teleporting:
 		return
 
-	# Refuerzo por si el timer se pierde: si la animación ya terminó, avanza.
 	match sprite.animation:
 		vanish_animation:
 			if not _tp_applied:
@@ -248,11 +214,6 @@ func _on_animation_finished() -> void:
 # POSITION SEARCH
 # ==============================================================================
 
-## TP a la zona de ataque: se parte de la posición del jugador y se elige
-## un punto en el anillo elíptico entre flee_area y attack_area.
-## Cada eje usa su propio radio (rx ≠ ry), así que no hace falta círculo perfecto.
-## Reintenta hasta encontrar un punto válido (incluida tp_min_travel).
-## Solo entra en el bucle si attack es estrictamente mayor que flee en ambos ejes.
 func _find_attack_zone_position() -> Vector2:
 	if not is_instance_valid(_player):
 		return Vector2.INF
@@ -260,19 +221,17 @@ func _find_attack_zone_position() -> Vector2:
 	var attack_ext := _area_extents(attack_range)
 	var flee_ext := _area_extents(flee_area)
 
-	# Precondición: el anillo debe existir en ambos ejes (attack > flee + márgenes).
-	# Sin esto el bucle de abajo podría no terminar nunca.
 	if attack_ext.x <= flee_ext.x + tp_zone_margin * 2.0:
 		return Vector2.INF
 	if attack_ext.y <= flee_ext.y + tp_zone_margin * 2.0:
 		return Vector2.INF
 
 	var player_pos := _player.global_position
-	# Origen de la distancia mínima: último TP si lo hay; si no, la posición actual.
 	var from_pos := _last_tp_pos if _last_tp_pos.is_finite() else global_position
 
-	# Red de seguridad: con la precondición cumplida casi siempre se sale en pocos
-	# intentos; el tope evita colgar el juego si el mundo/cámara lo bloquea todo.
+	var flee_keep_out := flee_ext + Vector2.ONE * tp_zone_margin
+	var attack_keep_in := attack_ext - Vector2.ONE * tp_zone_margin
+
 	var max_tries := maxi(tp_attempts, 1) * 20
 	for i in range(max_tries):
 		var angle := randf() * TAU
@@ -289,15 +248,17 @@ func _find_attack_zone_position() -> Vector2:
 			continue
 
 		var offset := dir * randf_range(d_min, d_max)
-		# Nunca por encima del jugador (Y hacia abajo en Godot).
-		offset.y = maxf(offset.y, 0.0)
+		offset.y = minf(offset.y, 0.0)
 
 		var candidate := _clamp_to_camera(player_pos + offset)
-		if candidate.y < player_pos.y:
+		candidate.y = minf(candidate.y, player_pos.y)
+
+		if not _is_inside_ellipse(candidate, player_pos, attack_keep_in):
+			continue
+		if _is_inside_ellipse(candidate, player_pos, flee_keep_out):
 			continue
 		if _is_blocked(candidate):
 			continue
-		# Debe alejarse lo suficiente del último punto de TP; si no, se reintenta.
 		if candidate.distance_to(from_pos) < tp_min_travel:
 			continue
 		return candidate
@@ -305,8 +266,13 @@ func _find_attack_zone_position() -> Vector2:
 	return Vector2.INF
 
 
-## Distancia desde el origen hasta la elipse extents en la dirección dir.
-## Devuelve -1 si no hay intersección válida.
+func _is_inside_ellipse(point: Vector2, center: Vector2, extents: Vector2) -> bool:
+	if extents.x <= 0.0 or extents.y <= 0.0:
+		return false
+	var rel := (point - center) / extents
+	return rel.length_squared() < 1.0
+
+
 func _ellipse_ray_distance(dir: Vector2, extents: Vector2) -> float:
 	if extents.x <= 0.0 or extents.y <= 0.0:
 		return -1.0
@@ -318,8 +284,6 @@ func _ellipse_ray_distance(dir: Vector2, extents: Vector2) -> float:
 	return 1.0 / sqrt(denom)
 
 
-## Mitades globales (rx, ry) de la primera forma del área.
-## Con escala no uniforme un círculo se comporta como elipse: cada eje se mide aparte.
 func _area_extents(area: Area2D) -> Vector2:
 	if not area:
 		return Vector2.ZERO
@@ -373,7 +337,6 @@ func _has_anim(anim: StringName) -> bool:
 	)
 
 
-## Duración en segundos de una animación (0 si no existe).
 func _anim_duration(anim: StringName) -> float:
 	if not _has_anim(anim):
 		return 0.0
@@ -396,11 +359,9 @@ func _on_death() -> void:
 	if _body_shape:
 		_body_shape.set_deferred("disabled", true)
 
-	# Se desvanece antes de eliminarse.
 	if _has_anim(vanish_animation):
 		_is_teleporting = true
 		_play_animation(vanish_animation, true)
-		# Red de seguridad por si no llega animation_finished.
 		get_tree().create_timer(1.0).timeout.connect(queue_free, CONNECT_ONE_SHOT)
 	else:
 		queue_free()
