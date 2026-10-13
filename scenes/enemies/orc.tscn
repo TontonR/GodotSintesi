@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dbyg0vpbauvxa"]
 
 [ext_resource type="Script" uid="uid://bsr5qkarb2yoj" path="res://scripts/enemies/orc.gd" id="1_obyuh"]
-[ext_resource type="Texture2D" uid="uid://by0y3kn5370el" path="res://assets/enemies/ogre-all.png" id="2_gici0"]
+[ext_resource type="Texture2D" uid="uid://chp2xlodsbiti" path="res://assets/enemies/ogre-all.png" id="2_gici0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(34.51686, 46.18557)
@@ -156,10 +156,14 @@ size = Vector2(50.15731, 49.484543)
 [sub_resource type="CircleShape2D" id="CircleShape2D_hisia"]
 radius = 229.51352
 
-[node name="Orc" type="CharacterBody2D" unique_id=431162705]
+[node name="Orc" type="CharacterBody2D" unique_id=561010859 node_paths=PackedStringArray("sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_obyuh")
+sprite = NodePath("Pivot/Orc")
+detection_area = NodePath("Pivot/detection_area")
+attack_range = NodePath("Pivot/attack_range")
+flip_pivot = NodePath("Pivot")
 
 [node name="orc_hitbox" type="CollisionShape2D" parent="." unique_id=553912732]
 scale = Vector2(0.4635417, 0.60625)

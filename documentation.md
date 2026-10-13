@@ -335,4 +335,62 @@ Orden de prioridad en cada frame de física:
 - La animación `run_right` (8 frames de `Run.png`, loop, speed 8) ya existía en `player.tscn`; solo había que dispararla.
 - La cámara no tiene lógica en el script: para cambiar el comportamiento de límites usa las propiedades `limit_*` del nodo `Camera2D` en el editor.
 
-*Última actualización: sistema de stamina completo (correr -10 inicial/-10s, defender -15 inicial/-20s, regen +10/s), HUD StaminaBar verde, cámara sin lock ni bounds (como en `main`).*
+*Última actualización: refactor de enemigos (EnemyBase + Ghost) en rama `refactor/base_enemies`.*
+
+---
+
+## 13. Sistema de Enemigos (`EnemyBase` + hijos)
+
+### 13.1 `scripts/enemies/enemy_base.gd` — clase base
+`CharacterBody2D` con IA genérica: perseguir → atacar (melee o proyectil) → huir opcional → loot al morir.
+
+| Grupo export | Contenido clave |
+|---|---|
+| Basic Stats | `max_health`, `base_attack`, `base_defense`, `speed_movement`, `attack_cooldown` |
+| Enemy Config | `flying_enemy` (sin gravedad, X+Y), `ranged_enemy` + `projectile` / `projectile_speed` / `projectile_spawn`, `flee_enemy` + `flee_area` |
+| Attack | `attack_impact_delay` (impacto), `attack_duration` (bloqueo) |
+| Loot | `loot_table: Array[LootDropItem]`, spreads |
+| Nodes | `sprite`, `detection_area`, `attack_range`, `flip_pivot` |
+| Animations | `idle_animation`, `move_animation`, `attack_animation`, `sprite_faces_right` |
+
+**Hooks para hijos** (sobrescribir):
+- `_update_behavior(delta)` — prioridad huir > atacar > perseguir
+- `_start_attack()` / `_perform_attack()` / `_chase` / `_flee`
+- `_on_death()` — por defecto `queue_free()`
+- `_refresh_area_flags()` — revalida `attack_range` / `flee_area` (útil tras TPs)
+
+**Flujo de ataque**: `_start_attack` espera `attack_impact_delay` → `_perform_attack` (proyectil o melee) → espera el resto de `attack_duration`.
+
+### 13.2 `scripts/enemies/ghost.gd` — fantasma volador
+Extiende `EnemyBase`. Sin máquina de estados; usa los hooks de la base.
+
+| Export | Default | Descripción |
+|---|---|---|
+| `charge_time` | 0.4s | Tiempo en rango antes de disparar |
+| `tp_cooldown` | 4s | Enfriamiento del teletransporte |
+| `post_attack_tp_delay` | 0.5s | TP extra bloqueado tras cada ataque (se suma al cooldown) |
+| `tp_zone_margin` | 10px | Margen fuera del flee / dentro del attack |
+| `tp_min_travel` | 80px | Distancia mínima entre el último TP y el nuevo |
+| `tp_attempts` | 12 | Intentos aleatorios (×20 de red de seguridad en el bucle) |
+| `invulnerable_while_teleporting` | true | Sin daño durante el TP |
+
+**Comportamiento**:
+1. **Huir** = solo intentar TP a la zona de ataque. Si no puede (cooldown / sin posición), **no corre**: se queda y sigue atacando.
+2. **TP** se calcula desde la posición del jugador, en el anillo elíptico entre `flee_range` y `attack_range` (rx ≠ ry). Nunca por encima del jugador (`offset.y >= 0`).
+3. **Búsqueda**: precondición `attack > flee + 2×margen` en ambos ejes; luego reintenta hasta cumplir `tp_min_travel` (tope de seguridad `tp_attempts × 20`).
+4. **Sin TP durante ataque**; al terminar un ataque normal: lockout `tp_cooldown + post_attack_tp_delay`. Los ataques de "aguantar el suelo" no reinician el cooldown completo.
+5. Invulnerable mientras hace `vanish`/`appear`.
+
+**Escena** `scenes/enemies/ghost.tscn`:
+- Áreas elípticas: `attack_range` scale ≈ 0.6×0.45, `flee_range` ≈ 0.35×0.25 (misma `CircleShape2D`)
+- `Pivot/SpawnPoint` para el proyectil
+- Export del proyectil se llama **`projectile`** (no `projectile_scene`)
+
+### 13.3 `scripts/enemies/orc.gd` — melee de suelo
+Ejemplo mínimo de hijo: solo `_init` con stats y autodetección de nodos en `_ready` (~28 líneas). Sin gravedad off, melee cuerpo a cuerpo.
+
+### 13.4 Cómo añadir un enemigo nuevo
+1. Crear escena `CharacterBody2D` con script `extends EnemyBase` (o hijo existente).
+2. Añadir `AnimatedSprite2D`, `detection_area`, `attack_range` (+ `flee_area` / proyectil si hace falta).
+3. Asignar exports en el inspector o en `_init()` como hace `orc.gd`.
+4. El jugador debe estar en el grupo **`player`** para ser detectado.
