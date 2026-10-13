@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://ema1utjheove"]
 
 [ext_resource type="Script" uid="uid://ct2hbfr1b517q" path="res://scripts/enemies/ghost.gd" id="1_kjq22"]
-[ext_resource type="Texture2D" uid="uid://b4a55sct0em27" path="res://assets/enemies/ghost-Appear.png" id="1_xtt71"]
+[ext_resource type="Texture2D" uid="uid://cra7d57nm57rt" path="res://assets/enemies/ghost-Appear.png" id="1_xtt71"]
 [ext_resource type="PackedScene" uid="uid://dm2ckrg4nlgk2" path="res://scenes/enemies/ghost_projectile.tscn" id="2_jw18l"]
-[ext_resource type="Texture2D" uid="uid://colqwqamlxled" path="res://assets/enemies/ghost-attack.png" id="2_kjq22"]
-[ext_resource type="Texture2D" uid="uid://bnejj2enggekk" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
-[ext_resource type="Texture2D" uid="uid://dstcsq3jsqlpn" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
-[ext_resource type="Texture2D" uid="uid://b1jaeycenxfd1" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
+[ext_resource type="Texture2D" uid="uid://c8p7l6yblch5h" path="res://assets/enemies/ghost-attack.png" id="2_kjq22"]
+[ext_resource type="Texture2D" uid="uid://b8v8t1nbwmavd" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
+[ext_resource type="Texture2D" uid="uid://dq53d1hkoi7w5" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
+[ext_resource type="Texture2D" uid="uid://bqjhafkmxx2n2" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(37, 54)
@@ -254,15 +254,15 @@ animations = [{
 radius = 304.9985
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6dhoe"]
-radius = 248.0504
+radius = 218.94214
 
-[node name="ghost" type="CharacterBody2D" unique_id=1875466108]
+[node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area")]
 collision_layer = 8
 collision_mask = 0
 script = ExtResource("1_kjq22")
-projectile_scene = ExtResource("2_jw18l")
-tp_min_distance_x = 20.0
-tp_max_distance_x = 60.0
+projectile = ExtResource("2_jw18l")
+flee_enemy = true
+flee_area = NodePath("Pivot/flee_range")
 sprite_faces_right = false
 
 [node name="ghost_hitbox" type="CollisionShape2D" parent="." unique_id=1769343006]
@@ -288,18 +288,18 @@ scale = Vector2(1.25, 1.25)
 shape = SubResource("CircleShape2D_3ay35")
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=1249047959]
-scale = Vector2(0.5125225, 0.5125225)
+scale = Vector2(0.5, 0.35)
 collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
 shape = SubResource("CircleShape2D_6dhoe")
 
-[node name="near_range" type="Area2D" parent="Pivot" unique_id=357702545]
-scale = Vector2(0.34267804, 0.34267804)
+[node name="flee_range" type="Area2D" parent="Pivot" unique_id=357702545]
+scale = Vector2(0.3, 0.2)
 collision_mask = 2
 
-[node name="near_hitbox" type="CollisionShape2D" parent="Pivot/near_range" unique_id=91382080]
+[node name="flee_hitbox" type="CollisionShape2D" parent="Pivot/flee_range" unique_id=91382080]
 shape = SubResource("CircleShape2D_6dhoe")
 
-[node name="SpawnPoint" type="Marker2D" parent="Pivot" unique_id=1215235679]
+[node name="SpawnPoint" type="Marker2D" parent="Pivot"]
 position = Vector2(-21, 1)
