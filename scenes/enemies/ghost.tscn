@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://ema1utjheove"]
 
 [ext_resource type="Script" uid="uid://ct2hbfr1b517q" path="res://scripts/enemies/ghost.gd" id="1_kjq22"]
-[ext_resource type="Texture2D" uid="uid://b4a55sct0em27" path="res://assets/enemies/ghost-Appear.png" id="1_xtt71"]
+[ext_resource type="Texture2D" uid="uid://cra7d57nm57rt" path="res://assets/enemies/ghost-Appear.png" id="1_xtt71"]
 [ext_resource type="PackedScene" uid="uid://dm2ckrg4nlgk2" path="res://scenes/enemies/ghost_projectile.tscn" id="2_jw18l"]
-[ext_resource type="Texture2D" uid="uid://colqwqamlxled" path="res://assets/enemies/ghost-attack.png" id="2_kjq22"]
-[ext_resource type="Texture2D" uid="uid://bnejj2enggekk" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
-[ext_resource type="Texture2D" uid="uid://dstcsq3jsqlpn" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
-[ext_resource type="Texture2D" uid="uid://b1jaeycenxfd1" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
+[ext_resource type="Texture2D" uid="uid://c8p7l6yblch5h" path="res://assets/enemies/ghost-attack.png" id="2_kjq22"]
+[ext_resource type="Texture2D" uid="uid://b8v8t1nbwmavd" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
+[ext_resource type="Texture2D" uid="uid://dq53d1hkoi7w5" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
+[ext_resource type="Texture2D" uid="uid://bqjhafkmxx2n2" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(37, 54)
