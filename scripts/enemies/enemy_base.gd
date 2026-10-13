@@ -176,9 +176,9 @@ func _chase(to_player: Vector2) -> void:
 ## Se aleja del jugador (dirección contraria a to_player).
 func _flee(to_player: Vector2) -> void:
 	if flying_enemy:
-		velocity = -to_player.normalized() * speed_movement
+		velocity = - to_player.normalized() * speed_movement
 	else:
-		velocity.x = -signf(to_player.x) * speed_movement
+		velocity.x = - signf(to_player.x) * speed_movement
 	_play_animation(move_animation)
 
 
@@ -343,9 +343,9 @@ func _set_facing_direction(look_left: bool) -> void:
 	if sprite:
 		sprite.flip_h = flipped
 	if attack_range:
-		attack_range.position.x = -_attack_range_offset_x if look_left else _attack_range_offset_x
+		attack_range.position.x = - _attack_range_offset_x if look_left else _attack_range_offset_x
 	if projectile_spawn:
-		projectile_spawn.position.x = -_projectile_spawn_offset_x if look_left else _projectile_spawn_offset_x
+		projectile_spawn.position.x = - _projectile_spawn_offset_x if look_left else _projectile_spawn_offset_x
 
 
 ## Con force = true reinicia la animación aunque ya sea la actual (útil al atacar).
