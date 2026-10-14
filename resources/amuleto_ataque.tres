@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AttackBonusPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/AttackBonusPassive.gd" id="1_atkb"]
+[ext_resource type="Texture2D" uid="uid://2a0mkvjqtxo6" path="res://assets/items/item183.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_atkb")
+id = "amuleto_ataque"
+item_name = "Amuleto de ataque"
+description = "Añade 6 de daño a cada golpe."
+icon = ExtResource("1_tex")
+value = 60
+passive_id = "amuleto_ataque"
+bonus = 6.0

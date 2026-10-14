@@ -45,11 +45,23 @@ extends CharacterBody2D
 @export var attack_duration: float = 1.0
 
 const DEFAULT_COIN: PackedScene = preload("res://scenes/collectables/coin.tscn")
+const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
+## Pool de objetos que pueden soltarse al morir (uno al azar por drop)
+const DROP_ITEMS: Array[Items] = [
+	preload("res://resources/pocion_cura.tres"),
+	preload("res://resources/pocion_stamina.tres"),
+	preload("res://resources/pocion_mayor.tres"),
+	preload("res://resources/heal_potion_passive.tres"),
+	preload("res://resources/amuleto_ataque.tres"),
+	preload("res://resources/armadura_ligera.tres"),
+	preload("res://resources/talisman_regen.tres"),
+]
 
 @export_group("Loot")
 ## Items dropped on death, with chance and amount per entry.
 @export var loot_table: Array[LootDropItem] = [
-	LootDropItem.new(DEFAULT_COIN, 1.0, 1, 3)
+	LootDropItem.new(DEFAULT_COIN, 1.0, 1, 3),
+	LootDropItem.new(ITEM_PICKUP_SCENE, 0.75, 1, 1, DROP_ITEMS)
 ]
 ## Horizontal spread (px) when dropping loot.
 @export var loot_drop_spread: float = 15.0
@@ -460,6 +472,9 @@ func _drop_loot() -> void:
 			for i in amount:
 				var item := drop_entry.item_scene.instantiate()
 				if item:
+					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
+					if drop_entry.item_pool.size() > 0 and "item" in item:
+						item.set("item", drop_entry.item_pool.pick_random())
 					parent.add_child(item)
 					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
 					var offset_y := randf_range(-loot_drop_y, loot_drop_y)

@@ -2,9 +2,15 @@
 
 [ext_resource type="Script" uid="uid://c7jnnmuupglut" path="res://item_pickup.gd" id="1_im1t2"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_pickup"]
+radius = 10.0
+
 [node name="ItemPickup" type="Area2D" unique_id=249990279]
+collision_layer = 8
+collision_mask = 2
 script = ExtResource("1_im1t2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1597821503]
+shape = SubResource("CircleShape2D_pickup")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=158829275]

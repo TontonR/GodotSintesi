@@ -10,6 +10,11 @@
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://scripts/world_generator.gd" id="8_vtaks"]
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dnwqqwxweihvq" path="res://assets/map/tile/grass_tile.png" id="10_vtaks"]
+[ext_resource type="PackedScene" uid="uid://fqwwivfv2w2f" path="res://item_pickup.tscn" id="11_pick"]
+[ext_resource type="Resource" path="res://resources/pocion_cura.tres" id="12_poci"]
+[ext_resource type="Resource" path="res://resources/pocion_stamina.tres" id="13_pocs"]
+[ext_resource type="Resource" uid="uid://dxexwodwh0r4t" path="res://resources/heal_potion_passive.tres" id="14_hpas"]
+[ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scripts/inventory_ui.gd" id="15_invui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -372,6 +377,17 @@ step = 1.0
 value = 100.0
 show_percentage = false
 
+[node name="ConsumableBar" type="HBoxContainer" parent="UILayer" unique_id=842212263]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -32.0
+offset_right = 88.0
+offset_bottom = -8.0
+grow_vertical = 0
+script = ExtResource("15_invui")
+
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
 tile_map_data = PackedByteArray(0, 0, 16, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 17, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 18, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0)
 tile_set = SubResource("TileSet_yb26g")
@@ -380,6 +396,18 @@ tile_set = SubResource("TileSet_yb26g")
 
 [node name="coin" parent="." unique_id=2022432403 instance=ExtResource("8_a2bvq")]
 position = Vector2(61, 0)
+
+[node name="drop_pocion_cura" parent="." unique_id=131457314 instance=ExtResource("11_pick")]
+position = Vector2(110, 0)
+item = ExtResource("12_poci")
+
+[node name="drop_pocion_stamina" parent="." unique_id=1723610242 instance=ExtResource("11_pick")]
+position = Vector2(150, 0)
+item = ExtResource("13_pocs")
+
+[node name="drop_pasiva_curacion" parent="." unique_id=745113163 instance=ExtResource("11_pick")]
+position = Vector2(190, 0)
+item = ExtResource("14_hpas")
 
 [node name="map" type="Node" parent="." unique_id=1287760833]
 script = ExtResource("8_vtaks")

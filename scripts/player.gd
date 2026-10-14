@@ -55,6 +55,7 @@ const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 	$AttackHitbox2/CollisionShape2D,
 	$AttackHitbox3/CollisionShape2D,
 ]
+@onready var passives: PlayerPassives = get_node_or_null("PlayerPassives")
 # endregion
 
 # Variables de estado interno
@@ -257,12 +258,16 @@ func _register_hit(target: Node) -> void:
 
 
 func _deal_damage(target: Node) -> void:
+	# Las pasivas activas pueden modificar el daño del golpe
+	var damage := hitbox_damage
+	if passives:
+		damage = roundi(passives.trigger_attack_passives(target, float(hitbox_damage)))
 	if target.has_method("take_damage"):
-		target.take_damage(hitbox_damage)
+		target.take_damage(damage)
 	else:
 		var parent := target.get_parent()
 		if parent and parent.has_method("take_damage"):
-			parent.take_damage(hitbox_damage)
+			parent.take_damage(damage)
 
 
 func take_damage(amount: int) -> void:
@@ -282,7 +287,11 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 func _apply_damage(amount: int, from_front: bool) -> void:
 	if _is_dead or (_is_guarding and from_front):
 		return
-	health = maxi(health - amount, 0)
+	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
+	var final_amount := amount
+	if passives:
+		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount))), 0)
+	health = maxi(health - final_amount, 0)
 	_update_health_ui()
 	if health <= 0:
 		_die()

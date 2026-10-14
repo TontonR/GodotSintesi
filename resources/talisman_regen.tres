@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RegenPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/RegenPassive.gd" id="1_regn"]
+[ext_resource type="Texture2D" uid="uid://db8bh3xp12gro" path="res://assets/items/item467.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_regn")
+id = "talisman_regen"
+item_name = "Talismán de regeneración"
+description = "Recupera 1 de vida por segundo."
+icon = ExtResource("1_tex")
+value = 60
+passive_id = "talisman_regen"
+heal_per_tick = 1
+interval = 1.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Consumable" format=3]
+
+[ext_resource type="Script" uid="uid://b3y6d7mpmp5aj" path="res://scripts/collectables/consumable.gd" id="1_csbl"]
+[ext_resource type="Texture2D" uid="uid://dpa2ba741jijo" path="res://assets/items/item912.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_csbl")
+id = "pocion_mayor"
+item_name = "Elixir de vigor"
+description = "Restaura 60 puntos de vida."
+icon = ExtResource("1_tex")
+value = 50
+heal_amount = 60

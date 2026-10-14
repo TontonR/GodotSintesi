@@ -5,13 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://dm2ckrg4nlgk2" path="res://scenes/enemies/ghost_projectile.tscn" id="2_jw18l"]
 [ext_resource type="Texture2D" uid="uid://c8p7l6yblch5h" path="res://assets/enemies/ghost-attack.png" id="2_kjq22"]
 [ext_resource type="Texture2D" uid="uid://b8v8t1nbwmavd" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
-[ext_resource type="Script" uid="uid://d0f6ctigofepe" path="res://scripts/resources/loot_drop_item.gd" id="3_i8s0f"]
 [ext_resource type="Texture2D" uid="uid://dq53d1hkoi7w5" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
 [ext_resource type="Texture2D" uid="uid://bqjhafkmxx2n2" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
-
-[sub_resource type="Resource" id="Resource_kapy6"]
-script = ExtResource("3_i8s0f")
-metadata/_custom_type_script = "uid://d0f6ctigofepe"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(37, 54)
@@ -270,7 +265,6 @@ ranged_enemy = true
 projectile = ExtResource("2_jw18l")
 flee_enemy = true
 flee_area = NodePath("Pivot/flee_range")
-loot_table = Array[Object]([SubResource("Resource_kapy6")])
 sprite = NodePath("Pivot/ghost")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")
