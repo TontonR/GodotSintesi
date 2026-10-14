@@ -4,8 +4,10 @@ extends Node
 ## Se emite cuando cambia el contenido de algún hueco
 signal slots_changed
 
-## Huecos de la barra de consumibles (sin apilamiento)
-const MAX_SLOTS: int = 3
+## Huecos totales: los 2 primeros para skills, los 3 últimos para consumibles
+const MAX_SLOTS: int = 5
+## Cantidad de huecos reservados a skills (los primeros)
+const SKILL_SLOTS: int = 2
 
 ## Objetos guardados: un objeto por hueco (null = hueco vacío)
 var slots: Array[Items] = []
@@ -28,22 +30,31 @@ func _unhandled_input(event: InputEvent) -> void:
 			use_slot(i, get_parent())
 			return
 
-## Añade el objeto al primer hueco libre. Devuelve false si la barra está llena
+## Añade el objeto según su tipo: skills → huecos 1-2, el resto → 3-5.
+## Devuelve false si no queda hueco de su tipo (el objeto no se recoge)
 func add_item(item: Items) -> bool:
-	for i in MAX_SLOTS:
+	var inicio := 0
+	var fin := MAX_SLOTS
+	if item is Skills:
+		fin = SKILL_SLOTS
+	else:
+		inicio = SKILL_SLOTS
+	for i in range(inicio, fin):
 		if slots[i] == null:
 			slots[i] = item
 			slots_changed.emit()
 			return true
 	return false
 
-## Consume el objeto del hueco indicado aplicándolo sobre el objetivo
+## Activa el objeto del hueco indicado (teclas 1-5). Las skills permanecen
+## en su hueco; los consumibles se gastan al activarse
 func use_slot(index: int, target: Node) -> void:
 	if index < 0 or index >= MAX_SLOTS or slots[index] == null:
 		return
 	var item := slots[index]
-	slots[index] = null
-	slots_changed.emit()
+	if not item is Skills:
+		slots[index] = null
+		slots_changed.emit()
 	item.use(target)
 
 ## Contenido del hueco indicado (null si está vacío)

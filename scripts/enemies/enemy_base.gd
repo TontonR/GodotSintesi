@@ -51,7 +51,6 @@ const DROP_ITEMS: Array[Items] = [
 	preload("res://resources/pocion_cura.tres"),
 	preload("res://resources/pocion_stamina.tres"),
 	preload("res://resources/pocion_mayor.tres"),
-	preload("res://resources/heal_potion_passive.tres"),
 	preload("res://resources/amuleto_ataque.tres"),
 	preload("res://resources/armadura_ligera.tres"),
 	preload("res://resources/talisman_regen.tres"),

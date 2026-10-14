@@ -4,47 +4,58 @@ _2026-10-14 · rama `feat/items-demo`_
 
 ## Jerarquía
 
-`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `HealPassive`, `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`.
+`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`.
 `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
 
-## Decisiones cerradas
+## Huecos y teclas (5 huecos)
 
-- **Consumibles: 3 huecos sueltos** en la barra (sin apilamiento; `max_stack` sin usar). **Barra llena: no pasa nada.**
-- Destino según objeto: consumible → `Inventory`, pasiva → `PlayerPassives`.
+| Huecos | Tipo | Teclas (`use_slot_1..5`) |
+|---|---|---|
+| 1-2 | **Skills** (no se gastan al usarlas) | 1, 2 |
+| 3-5 | **Consumibles** (se gastan al activarse) | 3, 4, 5 |
 
-## Catálogo de objetos (7)
+- `Inventory.add_item` enruta por tipo: `Skills` → 1-2, resto → 3-5; barra llena de su tipo = **no pasa nada**.
+- UI (`InventoryUI` en `UILayer/ConsumableBar`, ancho 146 px): separador entre zonas y borde azulado en los huecos de skills.
+- Destino fuera del inventario: pasivas → `PlayerPassives`. Las skills sin `on_pickup` entran por fallback en `item_pickup.gd`.
+- Entradas nuevas: `use_slot_4` (tecla 4), `use_slot_5` (tecla 5). `interact` = F.
+
+## Catálogo de objetos (6)
 
 | .tres | Tipo | Efecto |
 |---|---|---|
-| `pocion_cura` | Consumible | +30 vida (tecla 1/2/3) |
+| `pocion_cura` | Consumible | +30 vida |
 | `pocion_stamina` | Consumible | +40 stamina |
 | `pocion_mayor` ("Elixir de vigor") | Consumible | +60 vida |
-| `heal_potion_passive` | Pasiva | Cura 25 al recogerla |
 | `amuleto_ataque` | Pasiva | +6 de daño por golpe |
 | `armadura_ligera` | Pasiva | −25% del daño recibido |
 | `talisman_regen` | Pasiva | +1 vida/segundo |
 
-Texturas nuevas de `assets/items/` (16×16, aleatorias: item183/467/579/912).
+Eliminada `heal_potion_passive.tres` + `HealPassive.gd` (2026-10-14, git lo conserva).
 
 ## Cómo salen los objetos
 
-- **Loot de enemigos (principal)**: `LootDropItem` tiene `item_pool: Array[Items]`; `enemy_base.gd` suelta `item_pickup.tscn` con un objeto **al azar** con **75% de probabilidad** al morir (además de monedas 100%). El `item` se asigna **antes de `add_child`** (si no, `_ready` no pinta el sprite).
-- **Por zona**: `world_generator` solo spawnea orcos (4/zona) y fantasmas (1/zona).
-- **Escena**: 3 drops fijos en `game.tscn` a **y=392** (x=110/150/190).
+- **Loot de enemigos**: `LootDropItem.item_pool` con los 6 objetos; `enemy_base.gd` suelta `item_pickup.tscn` con uno **al azar** con **75% de probabilidad** (además de monedas 100%). El `item` se asigna **antes de `add_child`**.
+- **Escena**: 2 drops en `game.tscn` a y=350 (x=110/150); la pasiva curación fue eliminada.
 
-## Trampa de altura (BUG ENCONTRADO 2026-10-14)
+## Física de los drops (`item_pickup.gd`)
 
-El suelo generado está en `ground_level * 16` = **y=400** (`ground_level = 25`). Todo lo colocado en y=0 **queda en el aire, fuera de cámara** — por eso "no spawneaban" los drops. Los enemigos sueltan loot en su posición (sobre el suelo) por eso funciona. El `coin` legacy en `game.tscn (61, 0)` tiene el mismo problema (no tocado).
+- **Gravedad** 900 px/s² → cae hasta el suelo (raycast contra capa 1, la física de los `TileMapLayer` está en `physics_layer_0/collision_layer = 1`).
+- **Rebote**: restitución 0.45; por debajo de 35 px/s de impacto se asienta.
+- **Vaivén**: al asentarse, `sin(t·2.5 + fase)` con amplitud 1.5 px y fase aleatoria (bucle sutil, no sincronizado).
+- Si no encuentra suelo cerca, flota donde aparece (evita caer al vacío).
 
-## Otros arreglos de hoy
+## Trampa de altura (BUG 2026-10-14)
 
-- `ghost.tscn` tenía `loot_table` con una entrada **vacía** (override del editor) → los fantasmas no soltaban **nada**; eliminado, usan el default.
-- Inputs: `interact` = **F**, `use_slot_1..3` = **1/2/3** (E ya era guardar).
+El suelo generado está en `ground_level * 16` = **y=400** (`ground_level = 25`). Todo lo colocado en y=0 quedaba en el aire fuera de cámara: por eso "no spawneaban" los drops (y el editor revirtió un arreglo a y=392 antes del primer commit — ahora la gravedad lo auto-corrige). Los enemigos sueltan loot a su altura. El `coin` legacy en `game.tscn (61, 0)` sigue con ese problema (no tocado).
+
+## Otros arreglos
+
+- `ghost.tscn`: override de `loot_table` con entrada vacía eliminado (antes los fantasmas no soltaban nada).
 - `Skills.gd`: enum `EquipSlot { NONE = 0 }` (antes el export no compilaba).
 - Triggers en `player.gd`: pasivas modifican daño al atacar y al recibir.
 
 ## Pendiente
 
-- Equipamiento (`Skills`): `use()` llama a `equip()` pero el jugador no lo tiene; bonuses sin aplicar.
+- Equipamiento (`Skills`): `use()` llama a `equip()` pero el jugador no lo tiene; bonuses sin aplicar. Huecos 1-2 funcionales pero sin objetos skill que poner.
 - Prompt de interacción en pantalla ("F") y mantener-para-intercambiar con barra llena.
 - `player.tscn` legacy de la raíz sin `Inventory`/`PlayerPassives` (no se usa).
