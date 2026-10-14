@@ -18,7 +18,7 @@ const DISTANCIA_SUELO: float = 1024.0
 
 @export_group("Física")
 ## Gravedad al caer (px/s²)
-@export var gravity: float = 900.0
+@export var fall_gravity: float = 900.0
 ## Rebote tras el impacto con el suelo (0 = sin rebote)
 @export var bounce: float = 0.45
 ## Velocidad de impacto mínima para llegar a rebotar (px/s)
@@ -54,7 +54,7 @@ func _physics_process(delta: float) -> void:
 		global_position.y = _y_reposo + sin(_tiempo * float_speed + _fase) * float_height
 		return
 
-	_velocidad_y += gravity * delta
+	_velocidad_y += fall_gravity * delta
 	var siguiente := global_position.y + _velocidad_y * delta
 	if _velocidad_y > 0.0:
 		var suelo := _buscar_suelo_hacia(Vector2(global_position.x, siguiente + 6.0))

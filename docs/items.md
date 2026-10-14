@@ -15,9 +15,14 @@ _2026-10-14 · rama `feat/items-demo`_
 | 3-5 | **Consumibles** (se gastan al activarse) | 3, 4, 5 |
 
 - `Inventory.add_item` enruta por tipo: `Skills` → 1-2, resto → 3-5; barra llena de su tipo = **no pasa nada**.
-- UI (`InventoryUI` en `UILayer/ConsumableBar`, ancho 146 px): separador entre zonas y borde azulado en los huecos de skills.
 - Destino fuera del inventario: pasivas → `PlayerPassives`. Las skills sin `on_pickup` entran por fallback en `item_pickup.gd`.
 - Entradas nuevas: `use_slot_4` (tecla 4), `use_slot_5` (tecla 5). `interact` = F.
+
+## HUD (2026-10-14, más compacto)
+
+- `ConsumableBar` (`InventoryUI`) **arriba-izquierda**: huecos 18×18 (iconos 16 a 1:1), separación 2, borde 1 px; separador de 4 px entre skills (borde azulado) y consumibles.
+- Vida/stamina **arriba-derecha**: barras 94×12 (antes 120×20), fuentes 10 (antes 14), borde 1 px. Monedas: fuente 10.
+- **Pasivas** (`PassiveUI` en `UILayer/PassiveBar`, arriba-derecha bajo las barras): columna de iconos 12×12 con alpha 0.55 (preview estilo The Binding of Isaac). `PlayerPassives` emite `passives_changed` y enlaza la lista en `_ready` (mismo patrón que Inventory con su barra).
 
 ## Catálogo de objetos (6)
 

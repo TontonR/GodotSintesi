@@ -14,18 +14,19 @@
 [ext_resource type="Resource" path="res://resources/pocion_cura.tres" id="12_poci"]
 [ext_resource type="Resource" path="res://resources/pocion_stamina.tres" id="13_pocs"]
 [ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scripts/inventory_ui.gd" id="15_invui"]
+[ext_resource type="Script" uid="uid://b63sr5c2s357d" path="res://scripts/passive_ui.gd" id="16_pasui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 border_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fg"]
 bg_color = Color(0.85882354, 0.19215687, 0.19215687, 1)
@@ -327,7 +328,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 10
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -336,10 +337,10 @@ vertical_alignment = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -134.0
-offset_top = 12.0
-offset_right = -14.0
-offset_bottom = 32.0
+offset_left = -100.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 18.0
 grow_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_health_fg")
@@ -356,7 +357,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 10
 text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -365,10 +366,10 @@ vertical_alignment = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -134.0
-offset_top = 38.0
-offset_right = -14.0
-offset_bottom = 58.0
+offset_left = -100.0
+offset_top = 22.0
+offset_right = -6.0
+offset_bottom = 34.0
 grow_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fg")
@@ -376,14 +377,21 @@ step = 1.0
 value = 100.0
 show_percentage = false
 
+[node name="PassiveBar" type="VBoxContainer" parent="UILayer" unique_id=1966386339]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -18.0
+offset_top = 44.0
+offset_right = -6.0
+offset_bottom = 44.0
+script = ExtResource("16_pasui")
+
 [node name="ConsumableBar" type="HBoxContainer" parent="UILayer" unique_id=842212263]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -32.0
-offset_right = 154.0
-offset_bottom = -8.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 108.0
+offset_bottom = 22.0
 grow_vertical = 0
 script = ExtResource("15_invui")
 
