@@ -3,8 +3,8 @@ extends Items
 
 enum EquipSlot { NONE = 0 }
 
-@export_group("Configuración de Equipamiento")
-## Ranura de equipamiento del objeto
+@export_group("Equipment Setup")
+## Equipment slot of the item
 @export var slot: EquipSlot = EquipSlot.NONE
 @export var armor_bonus: float = 0
 @export var attack_bonus: float = 0

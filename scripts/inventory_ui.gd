@@ -1,10 +1,10 @@
 class_name InventoryUI
 extends HBoxContainer
 
-## Tamaño de cada hueco en píxeles
+## Size of each slot in pixels
 const SLOT_SIZE := Vector2(18, 18)
 
-## Inventario enlazado (lo llama el propio Inventory al entrar en escena)
+## Linked inventory (bound by Inventory itself when entering the tree)
 var inventory: Inventory
 
 var _icons: Array[TextureRect] = []
@@ -51,7 +51,7 @@ func _create_slot(index: int) -> TextureRect:
 	panel.add_theme_stylebox_override("panel", style)
 
 	var icon := TextureRect.new()
-	icon.name = "Icono"
+	icon.name = "Icon"
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE

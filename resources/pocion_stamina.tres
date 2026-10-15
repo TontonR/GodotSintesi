@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="Consumable" format=3]
+[gd_resource type="Resource" script_class="Consumable" format=3 uid="uid://b1kwx1jao7004"]
 
 [ext_resource type="Script" uid="uid://b3y6d7mpmp5aj" path="res://scripts/collectables/consumable.gd" id="1_csbl"]
 [ext_resource type="Texture2D" uid="uid://cpkc174h5sgc3" path="res://assets/potions/potion3.png" id="1_poc3"]
 
 [resource]
 script = ExtResource("1_csbl")
+stamina_amount = 40
 id = "pocion_stamina"
 item_name = "Poción de resistencia"
 description = "Restaura 40 puntos de stamina."
 icon = ExtResource("1_poc3")
 value = 20
-stamina_amount = 40
 metadata/_custom_type_script = "uid://b3y6d7mpmp5aj"

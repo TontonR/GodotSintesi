@@ -11,10 +11,11 @@
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dnwqqwxweihvq" path="res://assets/map/tile/grass_tile.png" id="10_vtaks"]
 [ext_resource type="PackedScene" uid="uid://fqwwivfv2w2f" path="res://item_pickup.tscn" id="11_pick"]
-[ext_resource type="Resource" path="res://resources/pocion_cura.tres" id="12_poci"]
-[ext_resource type="Resource" path="res://resources/pocion_stamina.tres" id="13_pocs"]
+[ext_resource type="Resource" uid="uid://d22di4a6y33ew" path="res://resources/pocion_cura.tres" id="12_poci"]
+[ext_resource type="Resource" uid="uid://b1kwx1jao7004" path="res://resources/pocion_stamina.tres" id="13_pocs"]
 [ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scripts/inventory_ui.gd" id="15_invui"]
 [ext_resource type="Script" uid="uid://b63sr5c2s357d" path="res://scripts/passive_ui.gd" id="16_pasui"]
+[ext_resource type="PackedScene" path="res://scenes/inventory_screen.tscn" id="18_invs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -377,14 +378,16 @@ step = 1.0
 value = 100.0
 show_percentage = false
 
-[node name="PassiveBar" type="VBoxContainer" parent="UILayer" unique_id=1966386339]
+[node name="PassiveBar" type="GridContainer" parent="UILayer" unique_id=1966386339]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -18.0
+offset_left = -90.0
 offset_top = 44.0
 offset_right = -6.0
 offset_bottom = 44.0
+grow_horizontal = 0
+columns = 6
 script = ExtResource("16_pasui")
 
 [node name="ConsumableBar" type="HBoxContainer" parent="UILayer" unique_id=842212263]
@@ -420,3 +423,5 @@ tile_set = SubResource("TileSet_0tnpc")
 
 [node name="grass_map_layer" type="TileMapLayer" parent="map" unique_id=1954245395]
 tile_set = SubResource("TileSet_mdkdc")
+
+[node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]

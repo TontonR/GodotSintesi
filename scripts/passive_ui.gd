@@ -1,14 +1,18 @@
 class_name PassiveUI
-extends VBoxContainer
+extends GridContainer
 
-## Tamaño de cada icono en píxeles
+## Number of columns in the passive grid
+const COLUMNS: int = 6
+## Size of each icon in pixels
 const ICON_SIZE := Vector2(12, 12)
 
-## Lista de pasivas enlazada (lo llama PlayerPassives al entrar en escena)
+## Linked passive list (bound by PlayerPassives when entering the tree)
 var source: PlayerPassives
 
 func _init() -> void:
-	add_theme_constant_override("separation", 2)
+	columns = COLUMNS
+	add_theme_constant_override("h_separation", 2)
+	add_theme_constant_override("v_separation", 2)
 
 func bind(passives: PlayerPassives) -> void:
 	if source and source.passives_changed.is_connected(_refresh):
@@ -23,7 +27,9 @@ func _refresh() -> void:
 		child.queue_free()
 	if source == null:
 		return
-	for passive in source.active_passives:
+	# Más recientes primero (arriba a la izquierda); las filas crecen hacia abajo
+	for i in range(source.active_passives.size() - 1, -1, -1):
+		var passive := source.active_passives[i]
 		if passive == null or passive.icon == null:
 			continue
 		var icon := TextureRect.new()

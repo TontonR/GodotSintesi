@@ -1,6 +1,6 @@
 # Objetos e inventario — diseño y estado
 
-_2026-10-14 · rama `feat/items-demo`_
+_2026-10-14 · rama `feat/items-demo` · 2026-10-15 · rama `feat/skills-and-complex-passives`_
 
 ## Jerarquía
 
@@ -22,7 +22,7 @@ _2026-10-14 · rama `feat/items-demo`_
 
 - `ConsumableBar` (`InventoryUI`) **arriba-izquierda**: huecos 18×18 (iconos 16 a 1:1), separación 2, borde 1 px; separador de 4 px entre skills (borde azulado) y consumibles.
 - Vida/stamina **arriba-derecha**: barras 94×12 (antes 120×20), fuentes 10 (antes 14), borde 1 px. Monedas: fuente 10.
-- **Pasivas** (`PassiveUI` en `UILayer/PassiveBar`, arriba-derecha bajo las barras): columna de iconos 12×12 con alpha 0.55 (preview estilo The Binding of Isaac). `PlayerPassives` emite `passives_changed` y enlaza la lista en `_ready` (mismo patrón que Inventory con su barra).
+- **Pasivas** (`PassiveUI` en `UILayer/PassiveBar`, arriba-derecha bajo las barras): desde 2026-10-15 es un **`GridContainer` de 6 columnas** (ver `docs/ui.md`). Iconos 12×12 con alpha 0.55. `PlayerPassives` emite `passives_changed` y enlaza la lista en `_ready` (mismo patrón que Inventory con su barra).
 
 ## Catálogo de objetos (6)
 
@@ -45,11 +45,10 @@ Eliminada `heal_potion_passive.tres` + `HealPassive.gd` (2026-10-14, git lo cons
 ## Física de los drops (`item_pickup.gd`)
 
 - **Recogida automática**: `body_entered` con el jugador recoge al instante (sin tecla); si el hueco está ocupado, no pasa nada y se reintenta al volver a tocarlo. `action_prompt`/F eliminados.
-- **Gravedad** 900 px/s² → cae hasta el suelo (raycast contra capa 1, la física de los `TileMapLayer` está en `physics_layer_0/collision_layer = 1`).
-- **Rebote**: restitución 0.45; por debajo de 35 px/s de impacto se asienta.
-- **Vaivén**: al asentarse, `sin(t·2.5 + fase)` con amplitud 1.5 px y fase aleatoria (bucle sutil, no sincronizado). `z_index = 1` para no quedar tras los tiles.
-- **Búsqueda de suelo perezosa**: se hace en el **primer tick de física**, no en `_ready`, y `_drop_loot` asigna posición **antes** de `add_child` — antes el chequeo corría con el objeto en (0, 0) y podía asentarlo a una altura falsa (objeto "luchando" con la posición real).
-- Si no encuentra suelo cerca, flota donde aparece (evita caer al vacío).
+- **FIX parpadeo (2026-10-15)**: el suelo se busca **una sola vez** en el primer tick (`_find_ground` → `_ground_y`) y el aterrizaje se compara contra esa altura **fija**. Antes se lanzaba un rayo corto por frame (`y + v·dt + 6`): un impacto con `v < 35 px/s` no alcanzaba el suelo → `min_bounce_speed` era inalcanzable → micro-bucle de ±2 px a ~7 Hz **para siempre** (éste era el parpadeo real; el fix anterior solo arreglaba la posición inicial).
+- **Gravedad** 900 px/s² (capa 1 = `physics_layer_0/collision_layer` de los `TileMapLayer`). **Rebote** 0.45 hasta impactos < 35 px/s → asienta en ~3-4 rebotes. **Vaivén** `sin(t·2.5 + fase)` de 1,5 px con fase aleatoria. `z_index = 1`.
+- Si no encuentra suelo cerca, flota donde aparece.
+- **Tooltip de proximidad**: hijo `ProximityArea` (círculo 40 px, > radio de recogida 10 px) muestra `Tooltip` (nombre sobre el cuadro con la descripción, `z_index = 10`) al acercarse el jugador y lo oculta al irse; el texto sale de `item_name`/`description` y se libera con el item.
 
 ## Trampa de altura (BUG 2026-10-14)
 
@@ -64,5 +63,5 @@ El suelo generado está en `ground_level * 16` = **y=400** (`ground_level = 25`)
 ## Pendiente
 
 - Equipamiento (`Skills`): `use()` llama a `equip()` pero el jugador no lo tiene; bonuses sin aplicar. Huecos 1-2 funcionales pero sin objetos skill que poner.
-- Prompt de interacción en pantalla ("F") y mantener-para-intercambiar con barra llena.
+- Intercambio/montar con barra llena (hoy: si está llena, el objeto queda en el suelo).
 - `player.tscn` legacy de la raíz sin `Inventory`/`PlayerPassives` (no se usa).

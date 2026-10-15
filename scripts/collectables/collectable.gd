@@ -1,7 +1,7 @@
 class_name Collectable
 extends Items
 
-## Se ejecuta al recoger el objeto del suelo.
-## Devuelve `true` si queda recogido (el pickup se libera) y `false` si no cabe.
+## Runs when the item is picked up from the ground.
+## Returns `true` when stored (the pickup frees itself) and `false` when full.
 func on_pickup(_player: Node) -> bool:
 	return true

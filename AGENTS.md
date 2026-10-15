@@ -1,6 +1,6 @@
 # GodotSintesi — Reglas del agente
 
-Roguelike 2D en **Godot 4.7** (`project.godot`), pixel-art, interfaz, código y comentarios **en español**.
+Roguelike 2D en **Godot 4.7** (`project.godot`), pixel-art. Idioma: comentarios `#`, textos de UI y `.tres` **en español**; identificadores, `@export(_group)` y doc `##` **en inglés** en los sistemas de objetos/inventario/UI/pasivas/loot (ver `docs/ui.md`). `player`/`enemies`/`world_generator` siguen como estaban.
 
 ## Carga perezosa de documentación (CRITICAL)
 
@@ -15,6 +15,7 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 | Fichero | Cuándo |
 |---|---|
 | `docs/items.md` | Diseño cerrado de inventario/objetos/pickups (siguiente tarea) |
+| `docs/ui.md` | HUD, grid de pasivas (6 col), pantalla de inventario (Tab/I), convención EN/ES |
 | `documentation.md` | Legacy: jugador, stamina, mundo, enemigos. ⚠️ §13.2 fantasma DESACTUALIZADO (ahora `tp_cooldown = 8.0`, `offset.y = minf(...)`, sin `post_attack_tp_delay`) |
 | `docs/<sistema>.md` | Los que se vayan creando al terminar tareas |
 

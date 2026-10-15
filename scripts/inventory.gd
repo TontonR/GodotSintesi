@@ -1,15 +1,15 @@
 class_name Inventory
 extends Node
 
-## Se emite cuando cambia el contenido de algún hueco
+## Emitted when the content of any slot changes
 signal slots_changed
 
-## Huecos totales: los 2 primeros para skills, los 3 últimos para consumibles
+## Total slots: the first 2 for skills, the last 3 for consumables
 const MAX_SLOTS: int = 5
-## Cantidad de huecos reservados a skills (los primeros)
+## Number of slots reserved for skills (the first ones)
 const SKILL_SLOTS: int = 2
 
-## Objetos guardados: un objeto por hueco (null = hueco vacío)
+## Stored items: one item per slot (null = empty slot)
 var slots: Array[Items] = []
 
 func _init() -> void:
@@ -30,8 +30,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			use_slot(i, get_parent())
 			return
 
-## Añade el objeto según su tipo: skills → huecos 1-2, el resto → 3-5.
-## Devuelve false si no queda hueco de su tipo (el objeto no se recoge)
+## Stores the item by type: skills → slots 1-2, the rest → 3-5.
+## Returns false when no slot of its type is free (the item is not picked up)
 func add_item(item: Items) -> bool:
 	var inicio := 0
 	var fin := MAX_SLOTS
@@ -46,8 +46,8 @@ func add_item(item: Items) -> bool:
 			return true
 	return false
 
-## Activa el objeto del hueco indicado (teclas 1-5). Las skills permanecen
-## en su hueco; los consumibles se gastan al activarse
+## Activates the item in the given slot (keys 1-5). Skills stay in
+## their slot; consumables are consumed when activated
 func use_slot(index: int, target: Node) -> void:
 	if index < 0 or index >= MAX_SLOTS or slots[index] == null:
 		return
@@ -57,7 +57,7 @@ func use_slot(index: int, target: Node) -> void:
 		slots_changed.emit()
 	item.use(target)
 
-## Contenido del hueco indicado (null si está vacío)
+## Content of the given slot (null when empty)
 func get_slot(index: int) -> Items:
 	if index < 0 or index >= MAX_SLOTS:
 		return null

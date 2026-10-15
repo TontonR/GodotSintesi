@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="DamageReductionPassive" format=3]
+[gd_resource type="Resource" script_class="DamageReductionPassive" format=3 uid="uid://b8tf07bwucsq6"]
 
-[ext_resource type="Script" path="res://scripts/collectables/DamageReductionPassive.gd" id="1_defn"]
+[ext_resource type="Script" uid="uid://d1eal6j7fcg0i" path="res://scripts/collectables/DamageReductionPassive.gd" id="1_defn"]
 [ext_resource type="Texture2D" uid="uid://ditgmpktg6vbd" path="res://assets/items/item579.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_defn")
+passive_id = "armadura_ligera"
 id = "armadura_ligera"
 item_name = "Armadura ligera"
 description = "Reduce un 25% el daño recibido."
 icon = ExtResource("1_tex")
 value = 60
-passive_id = "armadura_ligera"
-reduction = 0.25

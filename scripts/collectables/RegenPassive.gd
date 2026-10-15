@@ -1,10 +1,10 @@
 class_name RegenPassive
 extends PassiveItems
 
-@export_group("Regeneración")
-## Vida recuperada cada `interval` segundos
+@export_group("Regeneration")
+## Health restored every `interval` seconds
 @export var heal_per_tick: int = 1
-## Segundos transcurridos entre cada recuperación
+## Seconds elapsed between each heal tick
 @export var interval: float = 1.0
 
 var _timer: float = 0.0

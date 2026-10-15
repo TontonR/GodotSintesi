@@ -1,9 +1,28 @@
-[gd_scene format=3 uid="uid://fqwwivfv2w2f"]
+[gd_scene load_steps=5 format=3 uid="uid://fqwwivfv2w2f"]
 
 [ext_resource type="Script" uid="uid://c7jnnmuupglut" path="res://item_pickup.gd" id="1_im1t2"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pickup"]
 radius = 10.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_proximity"]
+radius = 40.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 4.0
+content_margin_bottom = 3.0
+bg_color = Color(0.078, 0.078, 0.102, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.42, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="ItemPickup" type="Area2D" unique_id=249990279]
 collision_layer = 8
@@ -14,3 +33,55 @@ script = ExtResource("1_im1t2")
 shape = SubResource("CircleShape2D_pickup")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=158829275]
+
+[node name="ProximityArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ProximityArea"]
+shape = SubResource("CircleShape2D_proximity")
+
+[node name="Tooltip" type="Control" parent="."]
+z_index = 10
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -64.0
+offset_right = 60.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="Tooltip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 2
+mouse_filter = 2
+
+[node name="NameLabel" type="Label" parent="Tooltip/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 2
+
+[node name="DescPanel" type="PanelContainer" parent="Tooltip/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tooltip")
+
+[node name="DescLabel" type="Label" parent="Tooltip/VBox/DescPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 9
+autowrap_mode = 3

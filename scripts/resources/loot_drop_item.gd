@@ -5,8 +5,8 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var drop_chance: float = 1.0
 @export var min_amount: int = 1
 @export var max_amount: int = 1
-## Si la escena tiene la propiedad `item` (ItemPickup), aquí va el objeto:
-## se elige uno al azar del pool en cada suelta.
+## If the scene has the `item` property (ItemPickup), the item comes from this
+## pool: one random entry is chosen on every drop.
 @export var item_pool: Array[Items] = []
 
 func _init(
