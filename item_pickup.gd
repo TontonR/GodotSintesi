@@ -12,10 +12,6 @@ const DISTANCIA_SUELO: float = 1024.0
 ## Objeto que entrega esta entidad al ser recogida
 @export var item: Items
 
-@export_group("Configuración de Interacción")
-## Nombre de la acción en el Mapa de Entradas
-@export var action_prompt: String = "interact"
-
 @export_group("Física")
 ## Gravedad al caer (px/s²)
 @export var fall_gravity: float = 900.0
@@ -35,20 +31,26 @@ var _velocidad_y: float = 0.0
 var _y_reposo: float = 0.0
 var _fase: float = 0.0
 var _tiempo: float = 0.0
-var _player_in_range: CharacterBody2D = null
+var _suelo_buscado: bool = false
 
 @onready var sprite: Sprite2D = $Sprite2D
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
 	_fase = randf() * TAU
-	_buscar_suelo()
+	# Siempre por encima de los tiles: así el vaivén nunca queda medio oculto
+	z_index = 1
 
 	if item and item.icon and sprite:
 		sprite.texture = item.icon
 
 func _physics_process(delta: float) -> void:
+	# El suelo se busca en el primer tick de física: así el objeto ya tiene su
+	# posición real (los drops de enemigos se colocan justo al aparecer)
+	if not _suelo_buscado:
+		_suelo_buscado = true
+		_buscar_suelo()
+
 	if _estado == Estado.FLOTANDO:
 		_tiempo += delta
 		global_position.y = _y_reposo + sin(_tiempo * float_speed + _fase) * float_height
@@ -68,22 +70,18 @@ func _physics_process(delta: float) -> void:
 			return
 	global_position.y = siguiente
 
-func _unhandled_input(event: InputEvent) -> void:
-	# Si el jugador está cerca y pulsa la tecla de interacción
-	if _player_in_range and event.is_action_pressed(action_prompt):
-		_interact_with_item()
-
-func _interact_with_item() -> void:
-	if not is_instance_valid(_player_in_range) or item == null:
+## Recogida automática: basta con tocar el objeto (sin pulsar nada)
+func _on_body_entered(body: Node2D) -> void:
+	if not body.is_in_group("player") or item == null:
 		return
 
 	# El objeto decide dónde va (barra o pasivas); si no define on_pickup
 	# (p. ej. las skills), va al inventario
 	if item.has_method("on_pickup"):
-		if item.on_pickup(_player_in_range):
+		if item.on_pickup(body):
 			queue_free()
 		return
-	var inventario := _player_in_range.get_node_or_null("Inventory")
+	var inventario := body.get_node_or_null("Inventory")
 	if inventario and inventario.call("add_item", item):
 		queue_free()
 
@@ -114,11 +112,3 @@ func _asentar(y: float) -> void:
 	_y_reposo = y
 	_velocidad_y = 0.0
 	_estado = Estado.FLOTANDO
-
-func _on_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		_player_in_range = body as CharacterBody2D
-
-func _on_body_exited(body: Node2D) -> void:
-	if body == _player_in_range:
-		_player_in_range = null

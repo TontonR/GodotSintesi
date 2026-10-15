@@ -474,10 +474,12 @@ func _drop_loot() -> void:
 					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
 					if drop_entry.item_pool.size() > 0 and "item" in item:
 						item.set("item", drop_entry.item_pool.pick_random())
-					parent.add_child(item)
 					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
 					var offset_y := randf_range(-loot_drop_y, loot_drop_y)
+					# Posición ANTES de add_child: la búsqueda de suelo de `_ready`
+					# debe hacerse con el objeto ya colocado, nunca en (0, 0)
 					item.global_position = global_position + Vector2(offset_x, offset_y)
+					parent.add_child(item)
 
 
 ## Parpadeo rojo al recibir daño.

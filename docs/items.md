@@ -44,9 +44,11 @@ Eliminada `heal_potion_passive.tres` + `HealPassive.gd` (2026-10-14, git lo cons
 
 ## Física de los drops (`item_pickup.gd`)
 
+- **Recogida automática**: `body_entered` con el jugador recoge al instante (sin tecla); si el hueco está ocupado, no pasa nada y se reintenta al volver a tocarlo. `action_prompt`/F eliminados.
 - **Gravedad** 900 px/s² → cae hasta el suelo (raycast contra capa 1, la física de los `TileMapLayer` está en `physics_layer_0/collision_layer = 1`).
 - **Rebote**: restitución 0.45; por debajo de 35 px/s de impacto se asienta.
-- **Vaivén**: al asentarse, `sin(t·2.5 + fase)` con amplitud 1.5 px y fase aleatoria (bucle sutil, no sincronizado).
+- **Vaivén**: al asentarse, `sin(t·2.5 + fase)` con amplitud 1.5 px y fase aleatoria (bucle sutil, no sincronizado). `z_index = 1` para no quedar tras los tiles.
+- **Búsqueda de suelo perezosa**: se hace en el **primer tick de física**, no en `_ready`, y `_drop_loot` asigna posición **antes** de `add_child` — antes el chequeo corría con el objeto en (0, 0) y podía asentarlo a una altura falsa (objeto "luchando" con la posición real).
 - Si no encuentra suelo cerca, flota donde aparece (evita caer al vacío).
 
 ## Trampa de altura (BUG 2026-10-14)
