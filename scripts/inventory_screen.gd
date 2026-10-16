@@ -1,14 +1,24 @@
 class_name InventoryScreen
 extends CanvasLayer
 
-## Size of each slot button in pixels
+## Size of each slot button in pixels (skills and consumables)
 const SLOT_SIZE := Vector2(20, 20)
+## Size of each collectible button (6 columns must fit the middle column)
+const COLLECTIBLE_SLOT_SIZE := Vector2(16, 16)
+## Rows of collectibles shown per page
+const COLLECTIBLE_ROWS: int = 6
 
 ## Flat list of selectable entries: [{ item, button }]
 var _entries: Array[Dictionary] = []
 ## Index of the highlighted entry (-1 = none)
 var _selected: int = -1
 var _signals_bound: bool = false
+## Index where the collectibles entries begin
+var _collect_start: int = 0
+## Number of collectible pages (1 when everything fits on screen)
+var _collect_pages: int = 1
+## Current collectibles page (0-based)
+var _collect_page: int = 0
 
 var _style_normal: StyleBoxFlat
 var _style_hover: StyleBoxFlat
@@ -18,7 +28,8 @@ var _style_selected: StyleBoxFlat
 @onready var _portrait: AnimatedSprite2D = $Window/Layout/LeftColumn/PortraitBox/Portrait
 @onready var _skills_flow: FlowContainer = $Window/Layout/LeftColumn/SkillsFlow
 @onready var _consumables_flow: FlowContainer = $Window/Layout/LeftColumn/ConsumablesFlow
-@onready var _collectibles_flow: FlowContainer = $Window/Layout/LeftColumn/CollectiblesFlow
+@onready var _collectibles_header: Label = $Window/Layout/CollectiblesColumn/CollectiblesHeader
+@onready var _collectibles_grid: GridContainer = $Window/Layout/CollectiblesColumn/CollectiblesGrid
 @onready var _item_icon: TextureRect = $Window/Layout/RightColumn/ItemIcon
 @onready var _item_name: Label = $Window/Layout/RightColumn/ItemName
 @onready var _item_stats: Label = $Window/Layout/RightColumn/ItemStats
@@ -86,27 +97,39 @@ func _refresh() -> void:
 	_entries.clear()
 	_clear_flow(_skills_flow)
 	_clear_flow(_consumables_flow)
-	_clear_flow(_collectibles_flow)
+	_clear_flow(_collectibles_grid)
+	_collect_start = 0
 
 	var inventory := _inventory()
 	if inventory:
 		_fill_slots(_skills_flow, inventory, 0, Inventory.SKILL_SLOTS)
 		_fill_slots(_consumables_flow, inventory, Inventory.SKILL_SLOTS, Inventory.MAX_SLOTS)
+	_collect_start = _entries.size()
 
+	# Solo los coleccionables de la página actual (6 filas de 6)
+	var list: Array[PassiveItems] = []
 	var passives := _passives()
 	if passives:
 		for passive in passives.active_passives:
-			_add_slot(_collectibles_flow, passive)
+			if passive and passive.icon:
+				list.append(passive)
+	var per_page := COLLECTIBLE_ROWS * _collectibles_grid.columns
+	_collect_pages = maxi(1, (list.size() + per_page - 1) / per_page)
+	_collect_page = clampi(_collect_page, 0, _collect_pages - 1)
+	var start := _collect_page * per_page
+	for i in range(start, mini(start + per_page, list.size())):
+		_add_slot(_collectibles_grid, list[i], COLLECTIBLE_SLOT_SIZE)
+	_update_collectibles_header()
 
 ## Crea los botones de un tramo del inventario (huecos vacío incluidos)
-func _fill_slots(flow: FlowContainer, inventory: Inventory, from: int, to: int) -> void:
+func _fill_slots(container: Container, inventory: Inventory, from: int, to: int) -> void:
 	for i in range(from, to):
-		_add_slot(flow, inventory.get_slot(i))
+		_add_slot(container, inventory.get_slot(i))
 
-## Añade un hueco al flujo; registra la entrada solo si lleva objeto
-func _add_slot(flow: FlowContainer, item: Items) -> void:
+## Añade un hueco al contenedor; registra la entrada solo si lleva objeto
+func _add_slot(container: Container, item: Items, size: Vector2 = SLOT_SIZE) -> void:
 	var button := Button.new()
-	button.custom_minimum_size = SLOT_SIZE
+	button.custom_minimum_size = size
 	button.focus_mode = Control.FOCUS_NONE
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.add_theme_stylebox_override("normal", _style_normal)
@@ -120,11 +143,11 @@ func _add_slot(flow: FlowContainer, item: Items) -> void:
 		button.pressed.connect(_select.bind(index))
 	else:
 		button.disabled = true
-	flow.add_child(button)
+	container.add_child(button)
 
-func _clear_flow(flow: FlowContainer) -> void:
-	for child in flow.get_children():
-		flow.remove_child(child)
+func _clear_flow(container: Container) -> void:
+	for child in container.get_children():
+		container.remove_child(child)
 		child.queue_free()
 
 ## Resalta la entrada indicada y muestra su información en el panel derecho
@@ -147,6 +170,17 @@ func _select(index: int) -> void:
 func _move_selection(step: int) -> void:
 	if _entries.is_empty():
 		return
+	# Al salir del borde visible de los coleccionables se cambia de página
+	if step > 0 and _selected == _entries.size() - 1 and _collect_page < _collect_pages - 1:
+		_collect_page += 1
+		_refresh()
+		_select(_collect_start)
+		return
+	if step < 0 and _selected == _collect_start and _collect_page > 0:
+		_collect_page -= 1
+		_refresh()
+		_select(_entries.size() - 1)
+		return
 	_select(_selected + step)
 
 func _clear_detail() -> void:
@@ -154,6 +188,13 @@ func _clear_detail() -> void:
 	_item_name.text = ""
 	_item_stats.text = ""
 	_item_description.text = ""
+
+## Updates the collectibles header, adding the page indicator when needed
+func _update_collectibles_header() -> void:
+	if _collect_pages > 1:
+		_collectibles_header.text = "Coleccionables · %d/%d" % [_collect_page + 1, _collect_pages]
+	else:
+		_collectibles_header.text = "Coleccionables"
 
 ## Línea de estadísticas del objeto (vacía si no expone valores)
 func _stats_text(item: Items) -> String:
