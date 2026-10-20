@@ -1,0 +1,27 @@
+# Jugador — movimiento, combate, vida y stamina
+
+_2026-10-20 · rama `feat/skills-and-complex-passives`_
+
+## Qué hace y dónde vive
+
+- `scripts/player.gd` sobre `CharacterBody2D` en `scenes/player.tscn`; está en el grupo `player` (los enemigos lo detectan por ahí).
+- HUD en `UILayer` (`HealthBar`, `StaminaBar`, monedas); `_ensure_health_ui()` / `_ensure_stamina_ui()` recrean las barras por código si el editor borra los nodos.
+
+## Movimiento
+
+- `move_speed` 130, `acceleration` 750, `friction` 1000, `jump_velocity` -340, `gravity` 1400, caída ×1.6, coyote 0.1, buffer 0.12.
+- Teclas leídas en crudo: A/D, salto Espacio/W. Shift = correr (1.7×, -10 + -10/s). Las flechas quedan solo para la UI (páginas de pasivas e inventario).
+- Atacar o defender bloquea salto y giro; atacando se mueve al 38%.
+- Cámara: `Camera2D` `offset (60,-70)`, sin límites ni lógica en script.
+
+## Combate
+
+- Click izquierdo: combo `attack_1/2/3`, `combo_window` 0.35 s, `hitbox_damage` 20.
+- Click derecho o E: guardia (-15 + -20/s); bloquea daño frontal (`from_front`).
+- Vida `max_health` 100: `take_damage()`, `heal()`; `_die()` es placeholder (respawn lleno).
+- Monedas: `current_coins`, `initial_coins`.
+
+## Trampas
+
+- Giro con `sprite_pivot.scale.x`, nunca `flip_h`: con `flip_h` los pies se desplazan por el padding de la espada.
+- El movimiento se lee con `Input.is_key_pressed` en crudo, no con la acción `movement` de `project.godot`.

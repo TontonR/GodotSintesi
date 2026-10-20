@@ -138,11 +138,11 @@ func _physics_process(delta: float) -> void:
 		current_gravity *= fall_gravity_multiplier
 	velocity.y += current_gravity * delta
 
-	# Movimiento Horizontal
+	# Movimiento Horizontal (A/D; las flechas quedan para la UI)
 	var raw_direction: float = 0.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+	if Input.is_key_pressed(KEY_D):
 		raw_direction += 1.0
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+	if Input.is_key_pressed(KEY_A):
 		raw_direction -= 1.0
 
 	var direction: float = raw_direction
@@ -184,9 +184,9 @@ func _physics_process(delta: float) -> void:
 	# Salto
 	if _is_attacking or _is_guarding:
 		_jump_buffer_timer = 0.0
-		_jump_was_pressed = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP)
+		_jump_was_pressed = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W)
 	else:
-		var jump_pressed: bool = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP)
+		var jump_pressed: bool = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W)
 		var jump_just_pressed: bool = jump_pressed and not _jump_was_pressed
 
 		if jump_just_pressed:

@@ -383,12 +383,31 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -90.0
-offset_top = 44.0
+offset_top = 56.0
 offset_right = -6.0
-offset_bottom = 44.0
+offset_bottom = 56.0
 grow_horizontal = 0
 columns = 6
 script = ExtResource("16_pasui")
+
+[node name="PassivePageLabel" type="Label" parent="UILayer" unique_id=281177241]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -90.0
+offset_top = 44.0
+offset_right = -6.0
+offset_bottom = 56.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 8
+text = "Pág. 1/2"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="ConsumableBar" type="HBoxContainer" parent="UILayer" unique_id=842212263]
 offset_left = 4.0
@@ -425,3 +444,4 @@ tile_set = SubResource("TileSet_0tnpc")
 tile_set = SubResource("TileSet_mdkdc")
 
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]
+visible = true

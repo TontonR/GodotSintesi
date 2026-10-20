@@ -14,10 +14,13 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 
 | Fichero | Cuándo |
 |---|---|
-| `docs/items.md` | Diseño cerrado de inventario/objetos/pickups (siguiente tarea) |
-| `docs/ui.md` | HUD, grid de pasivas (6 col), pantalla de inventario (Tab/I), convención EN/ES |
-| `documentation.md` | Legacy: jugador, stamina, mundo, enemigos. ⚠️ §13.2 fantasma DESACTUALIZADO (ahora `tp_cooldown = 8.0`, `offset.y = minf(...)`, sin `post_attack_tp_delay`) |
-| `docs/<sistema>.md` | Los que se vayan creando al terminar tareas |
+| `docs/items.md` | Inventario (5 huecos), catálogo de 6 objetos, drops y recogida |
+| `docs/ui.md` | HUD, grid de pasivas (6 col, 10 filas/página), pantalla de inventario (Tab/I), convención EN/ES |
+| `docs/player.md` | Movimiento, combo, guardia, vida, stamina y teclas |
+| `docs/enemies.md` | `EnemyBase`, fantasma (TP) y orco; loot |
+| `docs/world.md` | Generación por zonas, suelo, población y capas |
+| `docs/historial.md` | Bugs ya resueltos (drops, loot); leer solo si algo huele a eso |
+| `documentation.md` | Histórico (396 líneas). Solo arqueología; no usar como fuente |
 
 ## Reglas de trabajo
 
@@ -40,3 +43,4 @@ Al terminar una tarea que cambie comportamiento o cierre una decisión:
 1. Resume el resultado en `docs/<sistema>.md` (créalo si no existe), ~30 líneas máximo, con fecha `AAAA-MM-DD`.
 2. **Este fichero no crece**: si supera ~70 líneas, lo nuevo va a `docs/`.
 3. Si creas un fichero nuevo, añádelo al índice de arriba.
+4. Plantilla y cuándo escribir: skill `docs-vivas` (cárgala antes de investigar y al cerrar la tarea).

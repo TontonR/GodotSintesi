@@ -1,5 +1,7 @@
 # Documentación del Proyecto - test (Godot 4.7)
 
+> **Histórico** (2026-10-20). Superado por `docs/player.md`, `docs/enemies.md` y `docs/world.md`; se conserva por las explicaciones largas. No cargar por defecto.
+
 ## 1. Visión General
 Proyecto 2D plataforma/action en **Godot 4.7 (Forward Plus)**. Escena principal `icon.tscn:1` (uid `uid://copiyrk0io0oy`) con **mundo plano infinito**, personaje **Knight_3** con física, salto, ataque, cámara desplazada y HUD de vida.
 

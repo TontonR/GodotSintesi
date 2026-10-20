@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/inventory_screen.gd" id="1_scr"]
 
@@ -17,6 +17,22 @@ corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_column"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.13, 0.13, 0.17, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.42, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="InventoryScreen" type="CanvasLayer"]
 layer = 10
@@ -50,21 +66,24 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="LeftColumn" type="VBoxContainer" parent="Window/Layout"]
+[node name="LeftPanel" type="PanelContainer" parent="Window/Layout"]
+custom_minimum_size = Vector2(84, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(80, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_column")
+
+[node name="LeftColumn" type="VBoxContainer" parent="Window/Layout/LeftPanel"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="PortraitBox" type="Control" parent="Window/Layout/LeftColumn"]
+[node name="PortraitBox" type="Control" parent="Window/Layout/LeftPanel/LeftColumn"]
 layout_mode = 2
 size_flags_horizontal = 4
 custom_minimum_size = Vector2(72, 52)
 mouse_filter = 2
 
-[node name="Portrait" type="AnimatedSprite2D" parent="Window/Layout/LeftColumn/PortraitBox"]
+[node name="Portrait" type="AnimatedSprite2D" parent="Window/Layout/LeftPanel/LeftColumn/PortraitBox"]
 
-[node name="SkillsHeader" type="Label" parent="Window/Layout/LeftColumn"]
+[node name="SkillsHeader" type="Label" parent="Window/Layout/LeftPanel/LeftColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -73,12 +92,12 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 9
 text = "Habilidades"
 
-[node name="SkillsFlow" type="FlowContainer" parent="Window/Layout/LeftColumn"]
+[node name="SkillsFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn"]
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 
-[node name="ConsumablesHeader" type="Label" parent="Window/Layout/LeftColumn"]
+[node name="ConsumablesHeader" type="Label" parent="Window/Layout/LeftPanel/LeftColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -87,17 +106,25 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 9
 text = "Consumibles"
 
-[node name="ConsumablesFlow" type="FlowContainer" parent="Window/Layout/LeftColumn"]
+[node name="ConsumablesFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn"]
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 
-[node name="CollectiblesColumn" type="VBoxContainer" parent="Window/Layout"]
+[node name="CollectiblesPanel" type="PanelContainer" parent="Window/Layout"]
+custom_minimum_size = Vector2(136, 0)
 layout_mode = 2
-custom_minimum_size = Vector2(116, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_column")
+
+[node name="CollectiblesColumn" type="VBoxContainer" parent="Window/Layout/CollectiblesPanel"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="CollectiblesHeader" type="Label" parent="Window/Layout/CollectiblesColumn"]
+[node name="CollectiblesHeaderRow" type="HBoxContainer" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="CollectiblesHeader" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -106,26 +133,54 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 9
 text = "Coleccionables"
 
-[node name="CollectiblesGrid" type="GridContainer" parent="Window/Layout/CollectiblesColumn"]
+[node name="CollectiblesPage" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 8
+text = "1/1"
+
+[node name="PrevPage" type="Button" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "←"
+
+[node name="NextPage" type="Button" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "→"
+
+[node name="CollectiblesGrid" type="GridContainer" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn"]
 layout_mode = 2
 columns = 6
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 
-[node name="RightColumn" type="VBoxContainer" parent="Window/Layout"]
+[node name="RightPanel" type="PanelContainer" parent="Window/Layout"]
+custom_minimum_size = Vector2(116, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(138, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_column")
+
+[node name="RightColumn" type="VBoxContainer" parent="Window/Layout/RightPanel"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="ItemIcon" type="TextureRect" parent="Window/Layout/RightColumn"]
+[node name="ItemIcon" type="TextureRect" parent="Window/Layout/RightPanel/RightColumn"]
 layout_mode = 2
 size_flags_horizontal = 4
 custom_minimum_size = Vector2(64, 64)
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ItemName" type="Label" parent="Window/Layout/RightColumn"]
+[node name="ItemName" type="Label" parent="Window/Layout/RightPanel/RightColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -133,14 +188,16 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 10
 horizontal_alignment = 2
+autowrap_mode = 3
 
-[node name="ItemStats" type="Label" parent="Window/Layout/RightColumn"]
+[node name="ItemStats" type="Label" parent="Window/Layout/RightPanel/RightColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.6, 1)
 theme_override_font_sizes/font_size = 9
 horizontal_alignment = 2
+autowrap_mode = 3
 
-[node name="ItemDescription" type="Label" parent="Window/Layout/RightColumn"]
+[node name="ItemDescription" type="Label" parent="Window/Layout/RightPanel/RightColumn"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)

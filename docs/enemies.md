@@ -1,0 +1,25 @@
+# Enemigos — `EnemyBase`, fantasma y orco
+
+_2026-10-20 · rama `feat/skills-and-complex-passives`_
+
+## Qué hace y dónde vive
+
+- `scripts/enemies/enemy_base.gd` (`CharacterBody2D`) + hijos `ghost.gd` (volador, ranged, TP) y `orc.gd` (melee). Escenas en `scenes/enemies/`.
+- Detectan al jugador por el grupo `player`.
+- IA por prioridad: huir > atacar > perseguir. Los hijos sobrescriben `_update_behavior`, `_start_attack`, `_perform_attack`, `_on_death`.
+
+## Exports de la base
+
+- Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
+- Config: `flying_enemy`; `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
+- Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
+- Loot: `loot_table` con 1 `LootDropItem` al 75%; el item se asigna antes de `add_child`.
+
+## Fantasma
+
+- `charge_time` 0.4, `tp_cooldown` 8.0, `tp_zone_margin` 10, `tp_min_travel` 80, `tp_attempts` 12, invulnerable durante el TP.
+- TP al anillo elíptico entre `flee_range` y `attack_range`, nunca por encima del jugador (`offset.y = minf(offset.y, 0.0)`); sin `post_attack_tp_delay`.
+
+## Trampas
+
+- Un override vacío de `loot_table` en la escena dejaba al fantasma sin drops (ya eliminado).

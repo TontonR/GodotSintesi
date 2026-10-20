@@ -15,6 +15,8 @@ var source: PlayerPassives
 ## Current page (0-based); flipped with the left/right arrows
 var _page: int = 0
 
+@onready var _page_label: Label = get_parent().get_node_or_null("PassivePageLabel") as Label
+
 func _init() -> void:
 	columns = COLUMNS
 	add_theme_constant_override("h_separation", 2)
@@ -28,7 +30,6 @@ func bind(passives: PlayerPassives) -> void:
 	_refresh()
 
 ## Left/right arrows flip the page when there is more than one
-## (con las flechas del teclado también camina el jugador: player.gd las lee)
 func _unhandled_input(event: InputEvent) -> void:
 	if _page_count() <= 1:
 		return
@@ -41,6 +42,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _set_page(page: int) -> void:
 	_page = wrapi(page, 0, _page_count())
 	_refresh()
+
+## Shows the page counter only when there is more than one page
+func _update_page_label() -> void:
+	if _page_label == null:
+		return
+	var pages := _page_count()
+	_page_label.visible = pages > 1
+	_page_label.text = "Pág. %d/%d" % [_page + 1, pages]
 
 ## Number of pages needed to show every passive
 func _page_count() -> int:
@@ -60,9 +69,11 @@ func _refresh() -> void:
 		remove_child(child)
 		child.queue_free()
 	if source == null:
+		_update_page_label()
 		return
 	var list := _page_list()
 	_page = clampi(_page, 0, _page_count() - 1)
+	_update_page_label()
 	var count := list.size()
 	var start := _page * PER_PAGE
 	# Más recientes primero (arriba a la izquierda) dentro de la página actual
