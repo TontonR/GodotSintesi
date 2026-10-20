@@ -8,6 +8,9 @@ const COLLECTIBLE_SLOT_SIZE := Vector2(16, 16)
 ## Rows of collectibles shown per page
 const COLLECTIBLE_ROWS: int = 6
 
+## Escena de un hueco (se asigna en el Inspector)
+@export var slot_scene: PackedScene
+
 ## Flat list of selectable entries: [{ item, button }]
 var _entries: Array[Dictionary] = []
 ## Index of the highlighted entry (-1 = none)
@@ -24,10 +27,6 @@ var _collect_pages: int = 1
 ## Current collectibles page (0-based)
 var _collect_page: int = 0
 
-var _style_normal: StyleBoxFlat
-var _style_hover: StyleBoxFlat
-var _style_selected: StyleBoxFlat
-
 @onready var _portrait_box: Control = $Window/Layout/LeftPanel/LeftColumn/PortraitBox
 @onready var _portrait: AnimatedSprite2D = $Window/Layout/LeftPanel/LeftColumn/PortraitBox/Portrait
 @onready var _skills_flow: FlowContainer = $Window/Layout/LeftPanel/LeftColumn/SkillsFlow
@@ -43,15 +42,6 @@ var _style_selected: StyleBoxFlat
 
 func _ready() -> void:
 	visible = false
-	_style_normal = _make_style(Color(0.176, 0.176, 0.176, 0.9), Color(0, 0, 0, 1), 1)
-	_style_hover = _make_style(Color(0.24, 0.24, 0.26, 0.95), Color(0.45, 0.45, 0.5, 1), 1)
-	# Mismo ancho de borde que el resto: el hueco no cambia de tamaño al seleccionar
-	_style_selected = _make_style(Color(0.2, 0.26, 0.36, 0.95), Color(0.31, 0.51, 0.86, 1), 1)
-	for button in [_prev_page_button, _next_page_button]:
-		button.add_theme_stylebox_override("normal", _style_normal)
-		button.add_theme_stylebox_override("hover", _style_hover)
-		button.add_theme_stylebox_override("pressed", _style_hover)
-		button.add_theme_stylebox_override("disabled", _style_normal)
 	_prev_page_button.pressed.connect(_change_page.bind(-1))
 	_next_page_button.pressed.connect(_change_page.bind(1))
 	_portrait_box.resized.connect(_layout_portrait)
@@ -163,22 +153,14 @@ func _fill_slots(container: Container, inventory: Inventory, from: int, to: int)
 
 ## Añade un hueco al contenedor; registra la entrada solo si lleva objeto
 func _add_slot(container: Container, item: Items, size: Vector2 = SLOT_SIZE) -> void:
-	var button := Button.new()
-	button.custom_minimum_size = size
-	button.focus_mode = Control.FOCUS_NONE
-	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	button.add_theme_stylebox_override("normal", _style_normal)
-	button.add_theme_stylebox_override("hover", _style_hover)
-	button.add_theme_stylebox_override("pressed", _style_hover)
-	button.add_theme_stylebox_override("disabled", _style_normal)
+	var slot: InventorySlot = slot_scene.instantiate()
+	slot.custom_minimum_size = size
+	slot.set_item(item)
 	if item:
-		button.icon = item.icon
 		var index := _entries.size()
-		_entries.append({"item": item, "button": button})
-		button.pressed.connect(_select.bind(index))
-	else:
-		button.disabled = true
-	container.add_child(button)
+		_entries.append({"item": item, "button": slot})
+		slot.pressed.connect(_select.bind(index))
+	container.add_child(slot)
 
 func _clear_flow(container: Container) -> void:
 	for child in container.get_children():
@@ -194,14 +176,9 @@ func _select(index: int) -> void:
 		return
 	_selected = wrapi(index, 0, _entries.size())
 	_focus_column = 0 if _selected < _collect_start else 1
-	for entry in _entries:
-		var button: Button = entry.button
-		var is_selected: bool = button == _entries[_selected].button
-		var style := _style_selected if is_selected else _style_normal
-		button.add_theme_stylebox_override("normal", style)
-		# El seleccionado conserva el azul también al pasar el ratón por encima
-		button.add_theme_stylebox_override("hover", style if is_selected else _style_hover)
-		button.add_theme_stylebox_override("pressed", style if is_selected else _style_hover)
+	for i in _entries.size():
+		var slot: InventorySlot = _entries[i].button
+		slot.set_selected(i == _selected)
 	var item: Items = _entries[_selected].item
 	_item_icon.texture = item.icon
 	_item_name.text = item.item_name
@@ -332,14 +309,6 @@ func _update_portrait() -> void:
 
 func _layout_portrait() -> void:
 	_portrait.position = _portrait_box.size / 2.0
-
-func _make_style(bg: Color, border: Color, width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = border
-	style.set_border_width_all(width)
-	style.set_corner_radius_all(4)
-	return style
 
 func _player() -> Node:
 	return get_parent().get_node_or_null("player")

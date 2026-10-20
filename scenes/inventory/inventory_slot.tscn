@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bg0483jcrkkv1"]
+
+[ext_resource type="StyleBox" uid="uid://chvl0ip78nky6" path="res://resources/inventory/slot_normal.tres" id="1_5agom"]
+[ext_resource type="StyleBox" uid="uid://dlwxlrvo8sf0l" path="res://resources/inventory/slot_selected.tres" id="2_c7w7p"]
+[ext_resource type="StyleBox" uid="uid://docbi8kj1stkr" path="res://resources/inventory/slot_hover.tres" id="3_0uvgv"]
+[ext_resource type="Script" uid="uid://bhd1wnsgx1txh" path="res://scenes/inventory/inventory_slot.gd" id="4_0uvgv"]
+
+[node name="InventorySlot" type="Button" unique_id=623010055]
+custom_minimum_size = Vector2(20, 20)
+offset_right = 8.0
+offset_bottom = 8.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("1_5agom")
+theme_override_styles/pressed = ExtResource("3_0uvgv")
+theme_override_styles/hover = ExtResource("3_0uvgv")
+theme_override_styles/disabled = ExtResource("1_5agom")
+script = ExtResource("4_0uvgv")
+style_normal = ExtResource("1_5agom")
+style_hover = ExtResource("3_0uvgv")
+style_selected = ExtResource("2_c7w7p")

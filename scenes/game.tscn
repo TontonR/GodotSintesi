@@ -444,4 +444,3 @@ tile_set = SubResource("TileSet_0tnpc")
 tile_set = SubResource("TileSet_mdkdc")
 
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]
-visible = true
