@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cwey05xwtoo11"]
 
-[ext_resource type="Script" uid="uid://c8u58noi3h48g" path="res://scripts/inventory_screen.gd" id="1_scr"]
+[ext_resource type="Script" uid="uid://c8u58noi3h48g" path="res://scenes/inventory/inventory_screen.gd" id="1_scr"]
+[ext_resource type="PackedScene" uid="uid://bg0483jcrkkv1" path="res://scenes/inventory/inventory_slot.tscn" id="2_slot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 content_margin_left = 8.0
@@ -39,6 +40,7 @@ process_mode = 3
 layer = 10
 visible = false
 script = ExtResource("1_scr")
+slot_scene = ExtResource("2_slot")
 
 [node name="Dimmer" type="ColorRect" parent="." unique_id=631638895]
 anchors_preset = 15

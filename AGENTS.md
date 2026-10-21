@@ -31,7 +31,7 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 ## Convenciones
 
 - GDScript con tabs; `class_name`; `##` sobre cada `@export`; agrupar en `@export_group`.
-- Escenas en `scenes/`, scripts en `scripts/`. En la raíz hay legacy: `player.tscn`, `item_pickup.gd/.tscn`, `documentation.md`.
+- Escenas en `scenes/`, scripts en `scripts/`; todo el inventario vive en `scenes/inventory/` y sus estilos en `resources/inventory/`. En la raíz hay legacy: `player.tscn`, `item_pickup.gd/.tscn`, `documentation.md`.
 - Enemigos extienden `EnemyBase` (`scripts/enemies/enemy_base.gd`); jugador en grupo `player`.
 - Capas 2D: 1 mundo, 2 jugador, 3 enemigos, 4 ataque jugador. Viewport 384×216.
 - Exports de escena del fantasma: `projectile` (no `projectile_scene`).

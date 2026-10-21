@@ -38,12 +38,14 @@ Con el teclado numérico (numpad), mientras el juego no está pausado:
 | `KP 2` | Genera una pasiva/coleccionable aleatoria |
 | `KP 3` | Reservado para skills (todavía no hay objetos) |
 
-Los objetos se añaden directamente al inventario o a las pasivas activas. El código está en `scripts/inventory.gd` (`DEBUG_TOOLS`) y está pensado para borrarse cuando termine la fase de pruebas.
+Los objetos se añaden directamente al inventario o a las pasivas activas. El código está en `scenes/inventory/inventory.gd` (`DEBUG_TOOLS`) y está pensado para borrarse cuando termine la fase de pruebas.
 
 ## Estructura
 
-- `scenes/`: escenas del juego (`game.tscn`, `player.tscn`, enemigos, inventario).
-- `scripts/`: lógica en GDScript (jugador, enemigos, mundo, UI, inventario y coleccionables).
+- `scenes/`: escenas del juego (`game.tscn`, `player.tscn`, enemigos).
+- `scenes/inventory/`: todo el inventario (pantalla, slots, lógica y HUD de consumibles).
+- `scripts/`: lógica en GDScript (jugador, enemigos, mundo, UI y coleccionables).
+- `resources/inventory/`: estilos de los huecos del inventario.
 - `resources/`: objetos de datos (`.tres`) del catálogo.
 - `assets/`: sprites, tiles, monedas y efectos.
 - `docs/`: documentación viva por sistema.

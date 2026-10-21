@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://o3usnax0hqkn" path="res://assets/player/Jump.png" id="9_60mlk"]
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/player/Walk.png" id="10_i4ail"]
 [ext_resource type="Texture2D" uid="uid://be0c4gghyvad5" path="res://assets/player/Run.png" id="11_a38lo"]
-[ext_resource type="Script" path="res://scripts/inventory.gd" id="12_invtr"]
+[ext_resource type="Script" uid="uid://dk8k8rxxtpk3w" path="res://scenes/inventory/inventory.gd" id="12_invtr"]
 [ext_resource type="Script" path="res://scripts/collectables/player_passive.gd" id="13_pasvs"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ud633"]

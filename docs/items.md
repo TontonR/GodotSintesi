@@ -27,7 +27,7 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 - Física (`item_pickup.gd`): gravedad 900, rebote 0.45 hasta <35 px/s, vaivén 1,5 px, `z_index` 1; suelo fijado en el primer tick.
 - Tooltip de proximidad a 40 px (nombre + descripción); el HUD está en `docs/ui.md`.
 
-## Debug (temporal, `inventory.gd`)
+## Debug (temporal, `scenes/inventory/inventory.gd`)
 
 - Numpad `0` vacía inventario y pasivas; `1` añade un consumible aleatorio; `2` una pasiva aleatoria; `3` reservado para skills (aún sin objetos).
 - Se añaden directamente (consumibles a los huecos 3-5, pasivas a `PlayerPassives`); si el inventario está lleno, el objeto se descarta.

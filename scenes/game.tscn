@@ -13,9 +13,9 @@
 [ext_resource type="PackedScene" uid="uid://fqwwivfv2w2f" path="res://item_pickup.tscn" id="11_pick"]
 [ext_resource type="Resource" uid="uid://d22di4a6y33ew" path="res://resources/pocion_cura.tres" id="12_poci"]
 [ext_resource type="Resource" uid="uid://b1kwx1jao7004" path="res://resources/pocion_stamina.tres" id="13_pocs"]
-[ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scripts/inventory_ui.gd" id="15_invui"]
+[ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scenes/inventory/inventory_ui.gd" id="15_invui"]
 [ext_resource type="Script" uid="uid://b63sr5c2s357d" path="res://scripts/passive_ui.gd" id="16_pasui"]
-[ext_resource type="PackedScene" path="res://scenes/inventory_screen.tscn" id="18_invs"]
+[ext_resource type="PackedScene" uid="uid://cwey05xwtoo11" path="res://scenes/inventory/inventory_screen.tscn" id="18_invs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
