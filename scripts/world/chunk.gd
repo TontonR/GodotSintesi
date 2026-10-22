@@ -8,19 +8,20 @@ extends Node2D
 
 func paint(
 	heights: PackedInt32Array,
-	world_height: int,
+	_world_height: int,
 	solid_tiles: TileSet,
 	grass_tiles: TileSet,
 	source_id: int,
 	surface: Vector2i,
 	fill: Vector2i,
-	grass_coord: Vector2i
+	grass_coord: Vector2i,
+	fill_depth: int = 1
 ) -> void:
 	solid.tile_set = solid_tiles
 	grass.tile_set = grass_tiles
 	for x in range(heights.size()):
 		var h := heights[x]
 		solid.set_cell(Vector2i(x, h), source_id, surface)
-		for y in range(h + 1, world_height):
+		for y in range(h + 1, h + 1 + fill_depth):
 			solid.set_cell(Vector2i(x, y), source_id, fill)
 		grass.set_cell(Vector2i(x, h), source_id, grass_coord)

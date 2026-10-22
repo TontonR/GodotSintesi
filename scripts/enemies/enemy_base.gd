@@ -19,6 +19,8 @@ signal died
 @export var speed_movement: float = 50.0
 ## Seconds between two consecutive attacks.
 @export var attack_cooldown: float = 2.0
+## Auto-subida de escalones de 1 tile (16px) para enemigos terrestres.
+@export var step_height: float = 16.0
 
 @export_group("Enemy Config")
 ## No gravity; moves freely on X and Y.
@@ -154,7 +156,34 @@ func _physics_process(delta: float) -> void:
 	else:
 		_update_behavior(delta)
 
+	# Auto-subida de escalones para enemigos terrestres.
+	if not flying_enemy and is_on_floor() and velocity.x != 0.0:
+		_try_step_up(signf(velocity.x))
+
 	move_and_slide()
+
+
+func _try_step_up(direction: float) -> void:
+	# Solo para enemigos terrestres en el suelo con movimiento horizontal.
+	if flying_enemy or not is_on_floor() or direction == 0.0:
+		return
+	var collision_shape := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	var half_width := 8.0
+	if collision_shape and collision_shape.shape is RectangleShape2D:
+		half_width = (collision_shape.shape as RectangleShape2D).size.x * 0.5 * collision_shape.scale.x
+	var from := position + Vector2(half_width * direction, 0.0)
+	var to := from + Vector2(16.0 * direction, 0.0)
+	var query := PhysicsRayQueryParameters2D.create(from, to, 1 << 0)
+	var result := get_world_2d().direct_space_state.intersect_ray(query)
+	if result:
+		var from_up := from + Vector2(0.0, -step_height)
+		var to_up := to + Vector2(0.0, -step_height)
+		query.from = from_up
+		query.to = to_up
+		var result_up := get_world_2d().direct_space_state.intersect_ray(query)
+		if not result_up:
+			position += Vector2(0.0, -step_height)
+			position += Vector2(4.0 * direction, 0.0)
 
 
 # ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://copiyrk0io0oy"]
+[gd_scene format=4 uid="uid://copiyrk0io0oy"]
 
 [ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/map/background/cloud.png" id="1_8718u"]
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/map/background/mountain2.png" id="2_efco6"]
@@ -418,7 +418,7 @@ grow_vertical = 0
 script = ExtResource("15_invui")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1365743471]
-tile_map_data = PackedByteArray(0, 0, 16, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 17, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 18, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0)
+tile_map_data = PackedByteArray("AAAQAAEAAAACAAAAAAARAAEAAAADAAAAAAASAAEAAAAEAAAAAAA=")
 tile_set = SubResource("TileSet_yb26g")
 
 [node name="player" parent="." unique_id=1277556182 instance=ExtResource("7_o3jbc")]
@@ -438,9 +438,11 @@ item = ExtResource("13_pocs")
 script = ExtResource("8_vtaks")
 
 [node name="solid_map_layer" type="TileMapLayer" parent="map" unique_id=1295439100]
+tile_map_data = PackedByteArray("AAAQAAEAAAAAAAAAAAARAAEAAAABAAAAAAASAAEAAAACAAAAAAAQAAIAAAABAAEAAAARAAIAAAABAAEAAAASAAIAAAABAAEAAAAQAAMAAAABAAEAAAARAAMAAAABAAEAAAASAAMAAAABAAEAAAAQAAQAAAABAAEAAAARAAQAAAABAAEAAAASAAQAAAABAAEAAAAQAAUAAAABAAEAAAASAAUAAAABAAEAAAARAAUAAAABAAEAAAAPAAIAAAABAAAAAAAOAAIAAAABAAAAAAANAAIAAAABAAAAAAANAAMAAAABAAEAAAANAAQAAAABAAEAAAAOAAQAAAABAAEAAAAPAAQAAAABAAEAAAAPAAMAAAABAAEAAAAOAAMAAAABAAEAAAANAAUAAAABAAEAAAAOAAUAAAABAAEAAAAPAAUAAAABAAEAAAA=")
 tile_set = SubResource("TileSet_0tnpc")
 
 [node name="grass_map_layer" type="TileMapLayer" parent="map" unique_id=1954245395]
+tile_map_data = PackedByteArray("AAAQAAEAAAAAAAAAAAARAAEAAAABAAAAAAASAAEAAAACAAAAAAA=")
 tile_set = SubResource("TileSet_mdkdc")
 
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]

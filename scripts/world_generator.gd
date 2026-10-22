@@ -29,6 +29,8 @@ extends Node
 @export var noise_gain: float = 0.45
 @export var min_height: int = 12
 @export var max_height: int = 38
+## Cuántos tiles de relleno bajo la superficie (1 = solo el tile inmediatamente debajo).
+@export var ground_fill_depth: int = 1
 
 @export_group("Tiles")
 @export var solid_tile_set: TileSet
@@ -232,7 +234,8 @@ func _load_chunk(coord: Vector2i) -> void:
 		tile_source_id,
 		ground_surface_coords,
 		ground_fill_coords,
-		grass_tile_coords
+		grass_tile_coords,
+		ground_fill_depth
 	)
 	_spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk

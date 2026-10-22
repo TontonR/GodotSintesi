@@ -13,7 +13,16 @@ extends CharacterBody2D
 @export var fall_gravity_multiplier: float = 1.6
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.12
+## Altura máxima de escalón para auto-subida (1 tile = 16px).
+@export var step_height: float = 16.0
+## Tiempo total de la subida (s) – controla la suavidad.
+@export var step_duration: float = 0.12
 # endregion
+
+# Variables internas para animar la subida
+var _step_time_left: float = 0.0
+var _step_start_y: float = 0.0
+var _step_target_y: float = 0.0
 
 # region Estadísticas y Economía
 @export_group("Estadísticas y Economía")
@@ -107,6 +116,32 @@ func _ready() -> void:
 	_update_coins_ui()
 
 
+func _try_step_up(direction: float) -> void:
+	# Solo si estamos en el suelo y nos movemos horizontalmente.
+	if not is_on_floor() or direction == 0.0:
+		return
+	# Raycast desde el borde del personaje a altura de los pies.
+	var collision_shape := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	var half_width := 8.0
+	if collision_shape and collision_shape.shape is RectangleShape2D:
+		half_width = (collision_shape.shape as RectangleShape2D).size.x * 0.5 * collision_shape.scale.x
+	var from := position + Vector2(half_width * direction, 0.0)
+	var to := from + Vector2(16.0 * direction, 0.0)  # 1 tile adelante
+	var query := PhysicsRayQueryParameters2D.create(from, to, 1 << 0)  # capa "world"
+	var result := get_world_2d().direct_space_state.intersect_ray(query)
+	if result:
+		# Hay pared a nivel del suelo; comprobar si hay hueco 1 tile arriba.
+		var from_up := from + Vector2(0.0, -step_height)
+		var to_up := to + Vector2(0.0, -step_height)
+		query.from = from_up
+		query.to = to_up
+		var result_up := get_world_2d().direct_space_state.intersect_ray(query)
+		if not result_up:
+			# Hueco libre arriba: subir y avanzar.
+			position += Vector2(0.0, -step_height)
+			position += Vector2(4.0 * direction, 0.0)
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_try_attack()
@@ -151,6 +186,10 @@ func _physics_process(delta: float) -> void:
 	elif _is_attacking:
 		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
 			direction = 0.0
+
+	# Auto-subida de escalones de 1 tile (antes de aplicar velocidad)
+	if is_on_floor() and direction != 0.0:
+		_try_step_up(direction)
 
 	var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
 	var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)
