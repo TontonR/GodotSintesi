@@ -1,6 +1,6 @@
 # Interfaz — HUD, grid de pasivas y pantalla de inventario
 
-_2026-10-15 · 2026-10-21 · rama `feat/skills-and-complex-passives`_
+_2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
 
 ## Grid de pasivas (`PassiveUI` · `UILayer/PassiveBar`)
 
@@ -16,7 +16,7 @@ _2026-10-15 · 2026-10-21 · rama `feat/skills-and-complex-passives`_
 - **Coleccionables = las pasivas activas** (`PlayerPassives.active_passives`, simples o complejas, las mismas del HUD). **Paginados**: `GridContainer` de 6 columnas × **6 filas por página** (36/página, botones 16×16); la cabecera muestra **"Coleccionables"**, el contador **X/Y** y las flechas **← / →** justo al lado.
 - **Derecha** (panel derecho): icono 64 px, **nombre**, línea de **estadísticas** y **descripción** del elemento seleccionado. Estadísticas: vida/stamina de consumibles; bonus de `Skills`; de las pasivas se leen propiedades dinámicas (`bonus`, `reduction`, `heal_per_tick`+`interval`) con `"prop" in item` + `item.get()`.
 - **GUI**: la estructura (paneles, labels y grids) vive en el `.tscn`; el código solo instancia/rellena los huecos dinámicos (`InventorySlot`) y enlaza los datos del `Inventory`/`PlayerPassives`.
-- **Slots**: `InventorySlot` (`scenes/inventory/inventory_slot.tscn`) es un `Button` reutilizable con estilos en `resources/inventory/`; `InventoryScreen` lo instancia vía `@export var slot_scene` y `_refresh()` solo rellena icono/selección.
+- **Slots**: `InventorySlot` (`scenes/inventory/inventory_slot.tscn`) es un `Button` reutilizable con estilos en `resources/inventory/`; `InventoryScreen` lo instancia vía `@export var slot_scene` y `_refresh()` solo rellena icono/selección. **HUD**: `InventoryUI` instancia el mismo slot con `preload` (18×18) para skills/consumibles, sin crear botones a mano en `game.tscn`.
 - **Selección (2026-10-20)**: ratón (clic en el hueco), **A/D** anterior/siguiente dentro de la columna activa y **W/S** suben/bajan dentro de la columna activa (izquierda: skills ↔ consumibles; centro: filas del grid). **Tab** alterna entre columna 1 y 2; la columna 3 (preview) nunca se selecciona. Resaltado = borde azul 1 px, mismo ancho que el normal (el hueco no cambia de tamaño) y **conserva el azul al pasar el ratón**. **Páginas**: **← / →** y **Q** (anterior/izquierda) / **E** (siguiente/derecha) cambian de página y seleccionan el primer coleccionable; los botones **← / →** están en la cabecera, al lado de "Coleccionables". Huecos vacíos = botones deshabilitados con el mismo fondo; `focus_mode = NONE` (Tab se gestiona a mano para alternar columnas).
 - **Sin** botones de usar/equipar (no pedidos). Teclas 1-5 no responden mientras está abierta (la pausa lo bloquea). Se re-monta con `slots_changed`/`passives_changed` solo si está visible.
 
