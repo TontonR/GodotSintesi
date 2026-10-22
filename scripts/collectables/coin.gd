@@ -1,5 +1,8 @@
 extends Area2D
 
+## Se emite al recogerla; el generador del mundo lo usa para no reaparecerla.
+signal collected
+
 # Valor que suma esta moneda al contador del jugador
 @export var coin_value: int = 1
 
@@ -14,4 +17,5 @@ func _on_body_entered(body: Node2D) -> void:
 	if target == null or not target.has_method("add_coin"):
 		return
 	target.add_coin(coin_value)
+	collected.emit()
 	queue_free()

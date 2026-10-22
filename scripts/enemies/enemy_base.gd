@@ -1,5 +1,7 @@
 class_name EnemyBase
 extends CharacterBody2D
+## Se emite al morir; el generador del mundo lo usa para no reaparecerlo.
+signal died
 ## Enemigo base: persigue al jugador, ataca (cuerpo a cuerpo o a distancia),
 ## puede huir si el jugador se acerca demasiado y suelta loot al morir.
 ## Los enemigos voladores (flying_enemy) se mueven libremente en 2D y sin gravedad.
@@ -430,6 +432,7 @@ func take_damage(amount: float) -> void:
 
 func _die() -> void:
 	_is_dead = true
+	died.emit()
 	_is_attacking = false
 	_can_attack = false
 	_player = null

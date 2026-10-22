@@ -7,5 +7,21 @@
   "compaction": {
     "auto": true,
     "prune": true
+  },
+  "mcp": {
+    "servers": {
+      "godot": {
+        "type": "local",
+        "command": ["npx", "-y", "@coding-solo/godot-mcp"],
+        "environment": {
+          "GODOT_PATH": "/home/usuari-tarda/.local/bin/godot"
+        }
+      },
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+        "oauth": false
+      }
+    }
   }
 }
