@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://bgk5lkaqsdhdf" path="res://assets/player/Walk.png" id="10_i4ail"]
 [ext_resource type="Texture2D" uid="uid://be0c4gghyvad5" path="res://assets/player/Run.png" id="11_a38lo"]
 [ext_resource type="Script" uid="uid://dk8k8rxxtpk3w" path="res://scenes/inventory/inventory.gd" id="12_invtr"]
-[ext_resource type="Script" path="res://scripts/collectables/player_passive.gd" id="13_pasvs"]
+[ext_resource type="Script" uid="uid://dpg2boq5ityj0" path="res://scripts/collectables/player_passive.gd" id="13_pasvs"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ud633"]
 atlas = ExtResource("2_jej6c")
@@ -428,10 +428,10 @@ animations = [{
 size = Vector2(5, 17)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack1"]
-size = Vector2(36, 37)
+size = Vector2(33, 28.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack3"]
-size = Vector2(37, 26)
+size = Vector2(71, 48)
 
 [node name="player" type="CharacterBody2D" unique_id=1277556182 groups=["player"]]
 collision_layer = 2
@@ -441,8 +441,8 @@ script = ExtResource("1_3v2ag")
 [node name="SpritePivot" type="Node2D" parent="." unique_id=1450528728]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpritePivot" unique_id=264867996]
-position = Vector2(15, -15)
-scale = Vector2(0.43593752, 0.43593752)
+position = Vector2(21.000002, -28.000004)
+scale = Vector2(0.872, 0.872)
 sprite_frames = SubResource("SpriteFrames_yb26g")
 animation = &"jump"
 frame_progress = 0.112152204
@@ -452,7 +452,7 @@ offset = Vector2(60, -70)
 limit_smoothed = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=938013907]
-scale = Vector2(1.6, 1.6)
+scale = Vector2(3.2, 3.2)
 shape = SubResource("RectangleShape2D_yb26g")
 
 [node name="AttackHitbox1" type="Area2D" parent="." unique_id=2128828989]
@@ -462,8 +462,8 @@ collision_mask = 12
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox1" unique_id=268311663]
-visible = false
-position = Vector2(-6, 4.5)
+position = Vector2(-1, 7)
+scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox2" type="Area2D" parent="." unique_id=1710885674]
@@ -472,8 +472,9 @@ collision_layer = 0
 collision_mask = 12
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox2" unique_id=313277032]
-position = Vector2(-14, 5)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox2" unique_id=624834229]
+position = Vector2(-9, 6.5)
+scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_attack1")
 
 [node name="AttackHitbox3" type="Area2D" parent="." unique_id=1672558282 groups=["player"]]
@@ -483,14 +484,15 @@ collision_mask = 12
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox3" unique_id=1054411595]
-position = Vector2(-8.5, 10)
+position = Vector2(8.5, 11)
 shape = SubResource("RectangleShape2D_attack3")
 
 [node name="HitboxDebug" type="Node2D" parent="." unique_id=1514317802]
+visible = false
 z_index = 10
 
-[node name="PlayerPassives" type="Node" parent="."]
+[node name="PlayerPassives" type="Node" parent="." unique_id=1882808833]
 script = ExtResource("13_pasvs")
 
-[node name="Inventory" type="Node" parent="."]
+[node name="Inventory" type="Node" parent="." unique_id=334339997]
 script = ExtResource("12_invtr")

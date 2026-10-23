@@ -151,7 +151,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6dhoe"]
-size = Vector2(50.15731, 49.484543)
+size = Vector2(168.10349, 47.84458)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hisia"]
 radius = 229.51352
@@ -168,26 +168,28 @@ collision_mask = 3
 script = ExtResource("1_3xw0u")
 
 [node name="orc_hitbox" type="CollisionShape2D" parent="." unique_id=553912732]
-scale = Vector2(0.4635417, 0.60625)
+position = Vector2(4, 10)
+scale = Vector2(0.928, 1.212)
 shape = SubResource("RectangleShape2D_3ay35")
 
 [node name="Pivot" type="Node2D" parent="." unique_id=614283079]
 
 [node name="Orc" type="AnimatedSprite2D" parent="Pivot" unique_id=238804421]
 position = Vector2(0, -10)
-scale = Vector2(0.4635417, 0.60625)
+scale = Vector2(0.928, 1.212)
 sprite_frames = SubResource("SpriteFrames_3ay35")
 animation = &"attack"
 frame = 4
 frame_progress = 0.10923918
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=867135562]
-position = Vector2(20, 0)
-scale = Vector2(0.4635417, 0.60625)
+position = Vector2(40, 0)
+scale = Vector2(0.464, 1.212)
 collision_layer = 16
 collision_mask = 2
 
 [node name="range_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=659728175]
+position = Vector2(-25.86206, 7.42064)
 shape = SubResource("RectangleShape2D_6dhoe")
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1422760256]

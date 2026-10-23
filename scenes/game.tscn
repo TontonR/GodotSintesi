@@ -271,9 +271,8 @@ sources/0 = SubResource("TileSetAtlasSource_kvpfn")
 
 [node name="clouds" type="Parallax2D" parent="." unique_id=132653793]
 z_index = -100
-scale = Vector2(0.5, 0.5)
 scroll_scale = Vector2(0.01, 0)
-scroll_offset = Vector2(-5, 46)
+scroll_offset = Vector2(-5, 90)
 repeat_size = Vector2(688, 0)
 autoscroll = Vector2(-1, 0)
 repeat_times = 3
@@ -283,9 +282,9 @@ texture = ExtResource("1_8718u")
 
 [node name="mountains" type="Parallax2D" parent="." unique_id=1958893488]
 z_index = -100
-scale = Vector2(0.8, 0.8)
+scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.02, 0)
-scroll_offset = Vector2(0, 100)
+scroll_offset = Vector2(0, 212.99998)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -294,9 +293,9 @@ texture = ExtResource("2_efco6")
 
 [node name="far_forest" type="Parallax2D" parent="." unique_id=1950092743]
 z_index = -100
-scale = Vector2(0.8, 0.8)
+scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.2, 0.1)
-scroll_offset = Vector2(0, 146)
+scroll_offset = Vector2(-1072, 363)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -305,9 +304,9 @@ texture = ExtResource("3_ospag")
 
 [node name="near_forest" type="Parallax2D" parent="." unique_id=1395439190]
 z_index = -100
-scale = Vector2(0.8, 0.8)
+scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.5, 0.25)
-scroll_offset = Vector2(-84, 198)
+scroll_offset = Vector2(-84, 520)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
@@ -436,6 +435,8 @@ item = ExtResource("13_pocs")
 
 [node name="map" type="Node" parent="." unique_id=1287760833]
 script = ExtResource("8_vtaks")
+safe_start_tiles = 50
+base_height = 50
 
 [node name="solid_map_layer" type="TileMapLayer" parent="map" unique_id=1295439100]
 tile_map_data = PackedByteArray("AAAQAAEAAAAAAAAAAAARAAEAAAABAAAAAAASAAEAAAACAAAAAAAQAAIAAAABAAEAAAARAAIAAAABAAEAAAASAAIAAAABAAEAAAAQAAMAAAABAAEAAAARAAMAAAABAAEAAAASAAMAAAABAAEAAAAQAAQAAAABAAEAAAARAAQAAAABAAEAAAASAAQAAAABAAEAAAAQAAUAAAABAAEAAAASAAUAAAABAAEAAAARAAUAAAABAAEAAAAPAAIAAAABAAAAAAAOAAIAAAABAAAAAAANAAIAAAABAAAAAAANAAMAAAABAAEAAAANAAQAAAABAAEAAAAOAAQAAAABAAEAAAAPAAQAAAABAAEAAAAPAAMAAAABAAEAAAAOAAMAAAABAAEAAAANAAUAAAABAAEAAAAOAAUAAAABAAEAAAAPAAUAAAABAAEAAAA=")

@@ -1,41 +1,76 @@
 class_name WorldChunk
 extends Node2D
 
-@onready var solid: TileMapLayer = $Solid
-@onready var grass: TileMapLayer = $Grass
-@onready var entities: Node2D = $Entities
+const ROW_SURFACE := 0
+const ROW_FILL := 1
+const ROW_BOTTOM := 2
+
+var entities: Node2D
+var _solid: TileMapLayer
+
+
+func _ready() -> void:
+	# Buscar el nodo Entities existente.
+	for child in get_children():
+		if child is Node2D and child.name.to_lower() == "entities":
+			entities = child
+			break
+
+	if entities == null:
+		entities = Node2D.new()
+		entities.name = "Entities"
+		add_child(entities)
+
+	# Buscar una capa Solid existente.
+	_solid = get_node_or_null("Solid") as TileMapLayer
+
+	# Si no existe, crearla.
+	if _solid == null:
+		_solid = TileMapLayer.new()
+		_solid.name = "Solid"
+		add_child(_solid)
+
+	move_child(_solid, 0)
 
 
 func paint(
-	heights: PackedInt32Array,
-	edge_left: int,
-	edge_right: int,
-	solid_tiles: TileSet,
-	grass_tiles: TileSet,
-	source_id: int,
-	surface: Vector2i,
-	fill: Vector2i,
-	grass_coord: Vector2i,
-	fill_depth: int = 4
+		heights: PackedInt32Array,
+		edge_left: int,
+		edge_right: int,
+		tile_set: TileSet,
+		source_id: int,
+		atlas_origin: Vector2i,
+		floor_row: int,
+		swap_left_right: bool
 ) -> void:
-	solid.tile_set = solid_tiles
-	grass.tile_set = grass_tiles
-	var last := heights.size() - 1
-	for x in range(heights.size()):
-		var h := heights[x]
-		var left_h := heights[x - 1] if x > 0 else edge_left
-		var right_h := heights[x + 1] if x < last else edge_right
+	_solid.clear()
+	_solid.tile_set = tile_set
 
-		# Borde izquierdo (0), centro (1) o borde derecho (2) si el vecino baja.
-		var tile_x := 1
-		var left_lower := left_h < h
-		var right_lower := right_h < h
-		if left_lower and not right_lower:
-			tile_x = 0
-		elif right_lower and not left_lower:
-			tile_x = 2
+	var width := heights.size()
 
-		solid.set_cell(Vector2i(x, h), source_id, Vector2i(tile_x, surface.y))
-		for y in range(h + 1, h + 1 + fill_depth):
-			solid.set_cell(Vector2i(x, y), source_id, fill)
-		grass.set_cell(Vector2i(x, h), source_id, Vector2i(tile_x, grass_coord.y))
+	for x in range(width):
+		var surface := heights[x]
+		var left_surface := edge_left if x == 0 else heights[x - 1]
+		var right_surface := edge_right if x == width - 1 else heights[x + 1]
+
+		for y in range(surface, floor_row):
+			var has_left := y >= left_surface
+			var has_right := y >= right_surface
+
+			var col := 1
+
+			if not has_left and has_right:
+				col = 0
+			elif has_left and not has_right:
+				col = 2
+
+			if swap_left_right and col != 1:
+				col = 2 - col
+
+			var row := ROW_SURFACE if y == surface else ROW_FILL
+
+			_solid.set_cell(
+				Vector2i(x, y),
+				source_id,
+				atlas_origin + Vector2i(col, row)
+			)
