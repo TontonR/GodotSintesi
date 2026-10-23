@@ -29,8 +29,8 @@ extends Node
 @export var noise_gain: float = 0.45
 @export var min_height: int = 12
 @export var max_height: int = 38
-## Cuántos tiles de relleno bajo la superficie (1 = solo el tile inmediatamente debajo).
-@export var ground_fill_depth: int = 1
+## Cuántos tiles de relleno bajo la superficie (4 = 5 tiles de grosor).
+@export var ground_fill_depth: int = 4
 
 @export_group("Tiles")
 @export var solid_tile_set: TileSet
@@ -38,7 +38,7 @@ extends Node
 @export var tile_source_id: int = 0
 @export var grass_tile_coords: Vector2i = Vector2i(1, 0)
 @export var ground_surface_coords: Vector2i = Vector2i(1, 0)
-@export var ground_fill_coords: Vector2i = Vector2i(1, 2)
+@export var ground_fill_coords: Vector2i = Vector2i(1, 1)
 
 @export_group("Enemigos")
 ## Lista de escenas de enemigos.
@@ -171,8 +171,12 @@ func _update_chunks(force: bool) -> void:
 func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
+	var start_x := coord.x * chunk_width_tiles
 	for i in range(chunk_width_tiles):
-		heights[i] = _height_at(coord.x * chunk_width_tiles + i)
+		heights[i] = _height_at(start_x + i)
+	# Alturas vecinas para elegir los tiles de borde izquierdo/derecho.
+	var edge_left := _height_at(start_x - 1)
+	var edge_right := _height_at(start_x + chunk_width_tiles)
 
 	# Misma semilla + mismo chunk = mismos spawns.
 	var rng := RandomNumberGenerator.new()
@@ -214,7 +218,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * 16, heights[local_x] * 16 - coin_ground_offset)
 		})
 
-	return {"heights": heights, "enemies": enemies, "coins": coins}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "enemies": enemies, "coins": coins}
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -228,7 +232,8 @@ func _load_chunk(coord: Vector2i) -> void:
 	add_child(chunk)
 	chunk.paint(
 		data["heights"],
-		chunk_height_tiles,
+		data["edge_left"],
+		data["edge_right"],
 		solid_tile_set,
 		grass_tile_set,
 		tile_source_id,

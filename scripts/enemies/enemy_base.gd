@@ -21,6 +21,12 @@ signal died
 @export var attack_cooldown: float = 2.0
 ## Auto-subida de escalones de 1 tile (16px) para enemigos terrestres.
 @export var step_height: float = 16.0
+## Tiempo total de la subida (s) – controla la suavidad.
+@export var step_duration: float = 0.15
+
+var _step_time_left: float = 0.0
+var _step_start_y: float = 0.0
+var _step_target_y: float = 0.0
 
 @export_group("Enemy Config")
 ## No gravity; moves freely on X and Y.
@@ -146,6 +152,13 @@ func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
 
+	# Subida de escalón animada (sin teletransporte).
+	if _step_time_left > 0.0:
+		_step_time_left -= delta
+		var t := clampf((step_duration - _step_time_left) / step_duration, 0.0, 1.0)
+		position.y = lerpf(_step_start_y, _step_target_y, t)
+		return
+
 	# Los voladores no sufren gravedad.
 	if not flying_enemy and not is_on_floor():
 		velocity.y += gravity * delta
@@ -159,6 +172,8 @@ func _physics_process(delta: float) -> void:
 	# Auto-subida de escalones para enemigos terrestres.
 	if not flying_enemy and is_on_floor() and velocity.x != 0.0:
 		_try_step_up(signf(velocity.x))
+		if _step_time_left > 0.0:
+			return
 
 	move_and_slide()
 
@@ -171,7 +186,7 @@ func _try_step_up(direction: float) -> void:
 	var half_width := 8.0
 	if collision_shape and collision_shape.shape is RectangleShape2D:
 		half_width = (collision_shape.shape as RectangleShape2D).size.x * 0.5 * collision_shape.scale.x
-	var from := position + Vector2(half_width * direction, 0.0)
+	var from := global_position + Vector2(half_width * direction, 0.0)
 	var to := from + Vector2(16.0 * direction, 0.0)
 	var query := PhysicsRayQueryParameters2D.create(from, to, 1 << 0)
 	var result := get_world_2d().direct_space_state.intersect_ray(query)
@@ -182,8 +197,9 @@ func _try_step_up(direction: float) -> void:
 		query.to = to_up
 		var result_up := get_world_2d().direct_space_state.intersect_ray(query)
 		if not result_up:
-			position += Vector2(0.0, -step_height)
-			position += Vector2(4.0 * direction, 0.0)
+			_step_start_y = position.y
+			_step_target_y = position.y - step_height
+			_step_time_left = step_duration
 
 
 # ---------------------------------------------------------------------------
