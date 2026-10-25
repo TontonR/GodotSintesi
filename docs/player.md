@@ -5,12 +5,14 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 ## Qué hace y dónde vive
 
 - `scripts/player.gd` sobre `CharacterBody2D` en `scenes/player.tscn`; está en el grupo `player` (los enemigos lo detectan por ahí).
+- Escala ×2: ≈56 px de alto, collider 16×54 (el origen queda ~27 px sobre los pies).
 - HUD en `UILayer` (`HealthBar`, `StaminaBar`, monedas); `_ensure_health_ui()` / `_ensure_stamina_ui()` recrean las barras por código si el editor borra los nodos.
 
 ## Movimiento
 
 - `move_speed` 130, `acceleration` 750, `friction` 1000, `jump_velocity` -340, `gravity` 1400, caída ×1.6, coyote 0.1, buffer 0.12.
 - Teclas leídas en crudo: A/D, salto Espacio/W. Shift = correr (1.7×, -10 + -10/s). Las flechas quedan solo para la UI (páginas de pasivas e inventario).
+- Auto-subida de 1 tile (16 px) instantánea con `test_move` sobre la forma real; no frena la X. 2+ tiles se saltan.
 - Atacar o defender bloquea salto y giro; atacando se mueve al 38%.
 - Cámara: `Camera2D` `offset (60,-70)`, sin límites ni lógica en script.
 

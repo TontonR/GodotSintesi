@@ -1,17 +1,18 @@
 # Enemigos — `EnemyBase`, fantasma y orco
 
-_2026-10-20 · rama `feat/skills-and-complex-passives`_
+_2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 
 ## Qué hace y dónde vive
 
 - `scripts/enemies/enemy_base.gd` (`CharacterBody2D`) + hijos `ghost.gd` (volador, ranged, TP) y `orc.gd` (melee). Escenas en `scenes/enemies/`.
+- `orc.tscn` y `ghost.tscn` tienen `scale = (2, 2)` en la raíz: sprite, collider y áreas al doble. El generador apoya la base del collider en el suelo (`_body_bottom`), no el origen, más `spawn_y_offset` (el fantasma sube 6 px porque su cola dibuja por debajo del collider).
 - Detectan al jugador por el grupo `player`.
 - IA por prioridad: huir > atacar > perseguir. Los hijos sobrescriben `_update_behavior`, `_start_attack`, `_perform_attack`, `_on_death`.
 
 ## Exports de la base
 
 - Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
-- Config: `flying_enemy`; `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
+- Config: `flying_enemy`; `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
 - Loot: `loot_table` con 1 `LootDropItem` al 75%; el item se asigna antes de `add_child`.
 

@@ -6,12 +6,14 @@ extends Node
 
 ## Tamaño de un tile en píxeles. Único sitio donde se define.
 const TILE_SIZE := 16
+## Tiles libres tras la zona segura antes de generar enemigos en el chunk 0.
+const SPAWN_CLEARANCE_TILES := 6
 
 @export_group("Mundo")
 ## Semilla del mundo; 0 = aleatoria por partida.
 @export var world_seed: int = 0
 ## Ancho de cada chunk en tiles.
-@export var chunk_width_tiles: int = 64
+@export var chunk_width_tiles: int = 256
 ## Fila del fondo del mundo. El terreno se rellena hasta aquí. Debe ser mayor que max_height.
 @export var chunk_height_tiles: int = 140
 ## Tiles planos al inicio para que el jugador aparezca seguro.
@@ -40,6 +42,8 @@ const TILE_SIZE := 16
 @export_group("Tiles")
 ## TileSet con el atlas 3x3 (superficie, relleno y reservados).
 @export var solid_tile_set: TileSet
+## TileSet del césped que se pinta sobre la superficie.
+@export var grass_tile_set: TileSet
 @export var tile_source_id: int = 0
 ## Coordenada de atlas del tile 1 (esquina superior izquierda del bloque 3x3).
 @export var tile_atlas_origin: Vector2i = Vector2i(0, 0)
@@ -53,7 +57,7 @@ const TILE_SIZE := 16
 	preload("res://scenes/enemies/ghost.tscn")
 ]
 ## Cantidades por chunk, en el mismo orden que las escenas.
-@export var enemy_counts_per_chunk: Array[int] = [6, 2]
+@export var enemy_counts_per_chunk: Array[int] = [4, 1]
 ## Margen en tiles para no aparecer pegado al borde del chunk.
 @export var enemy_spawn_margin_tiles: int = 2
 
@@ -68,6 +72,7 @@ const TILE_SIZE := 16
 
 @onready var player: CharacterBody2D = get_parent().get_node_or_null("player")
 @onready var _template_solid: TileMapLayer = get_node_or_null("solid_map_layer")
+@onready var _template_grass: TileMapLayer = get_node_or_null("grass_map_layer")
 
 var _noise := FastNoiseLite.new()
 var _seed: int = 0
@@ -84,6 +89,8 @@ func _ready() -> void:
 	# La capa antigua sigue en game.tscn como plantilla de TileSet.
 	if solid_tile_set == null and _template_solid:
 		solid_tile_set = _template_solid.tile_set
+	if grass_tile_set == null and _template_grass:
+		grass_tile_set = _template_grass.tile_set
 
 	_seed = world_seed if world_seed != 0 else randi()
 	_noise.seed = _seed
@@ -187,6 +194,9 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# Alturas vecinas para elegir los tiles de borde izquierdo/derecho.
 	var edge_left := _height_at(start_x - 1)
 	var edge_right := _height_at(start_x + chunk_width_tiles)
+	# Altura de la columna siguiente: el chunk pinta una columna extra para
+	# tapar la grieta de 1 px entre las capas de dos chunks.
+	var edge_right_next := _height_at(start_x + chunk_width_tiles + 1)
 
 	# Misma semilla + mismo chunk = mismos spawns.
 	var rng := RandomNumberGenerator.new()
@@ -194,7 +204,8 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 
 	var min_x := enemy_spawn_margin_tiles
 	if coord.x == 0:
-		min_x = maxi(min_x, safe_start_tiles)
+		# Hueco extra para que no aparezcan encima del spawn del jugador.
+		min_x = maxi(min_x, safe_start_tiles + SPAWN_CLEARANCE_TILES)
 	var max_x := chunk_width_tiles - enemy_spawn_margin_tiles - 1
 	# Si la zona segura ocupa todo el chunk, no hay hueco para spawns.
 	var has_room := min_x <= max_x
@@ -218,7 +229,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			enemies.append({
 				"id": spawn_id,
 				"scene": enemy_scenes[idx],
-				"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - TILE_SIZE)
+				"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE)
 			})
 
 	var coins: Array[Dictionary] = []
@@ -233,7 +244,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_ground_offset)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "enemies": enemies, "coins": coins}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins}
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -249,9 +260,11 @@ func _load_chunk(coord: Vector2i) -> void:
 		data["heights"],
 		data["edge_left"],
 		data["edge_right"],
+		data["edge_right_next"],
 		solid_tile_set,
 		tile_source_id,
 		tile_atlas_origin,
+		grass_tile_set,
 		chunk_height_tiles,
 		swap_left_right
 	)
@@ -275,7 +288,11 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		var enemy := scene.instantiate() as Node2D
 		if enemy == null:
 			continue
-		enemy.position = entry["position"]
+		# La base del collider queda sobre el suelo (el origen suele estar más arriba).
+		# `spawn_y_offset` corrige los que tienen el dibujo más bajo que el collider.
+		var spawn_pos: Vector2 = entry["position"]
+		var offset: float = enemy.get("spawn_y_offset")
+		enemy.position = spawn_pos - Vector2(0.0, _body_bottom(enemy) + offset)
 		chunk.entities.add_child(enemy)
 		if enemy.has_signal("died"):
 			enemy.connect("died", _on_enemy_died.bind(spawn_id))
@@ -291,6 +308,19 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		chunk.entities.add_child(coin)
 		if coin.has_signal("collected"):
 			coin.connect("collected", _on_coin_collected.bind(spawn_id))
+
+
+## Distancia del origen a la base del collider del cuerpo (para apoyarlo en el suelo).
+func _body_bottom(enemy: Node2D) -> float:
+	# shortcut: solo colliders directos RectangleShape2D; ampliar si cambia la forma.
+	var bottom := 0.0
+	for child in enemy.get_children():
+		var shape_node := child as CollisionShape2D
+		if shape_node and shape_node.shape is RectangleShape2D:
+			var rect := shape_node.shape as RectangleShape2D
+			var local_bottom: float = shape_node.position.y + rect.size.y * 0.5 * shape_node.scale.y
+			bottom = maxf(bottom, local_bottom * enemy.scale.y)
+	return bottom
 
 
 func _on_enemy_died(spawn_id: String) -> void:

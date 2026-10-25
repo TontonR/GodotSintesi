@@ -15,14 +15,7 @@ extends CharacterBody2D
 @export var jump_buffer_time: float = 0.12
 ## Altura máxima de escalón para auto-subida (1 tile = 16px).
 @export var step_height: float = 16.0
-## Tiempo total de la subida (s) – controla la suavidad.
-@export var step_duration: float = 0.15
 # endregion
-
-# Variables internas para animar la subida
-var _step_time_left: float = 0.0
-var _step_start_y: float = 0.0
-var _step_target_y: float = 0.0
 
 # region Estadísticas y Economía
 @export_group("Estadísticas y Economía")
@@ -117,30 +110,23 @@ func _ready() -> void:
 
 
 func _try_step_up(direction: float) -> void:
-	# Solo si estamos en el suelo y nos movemos horizontalmente.
+	# Se comprueba con la forma real del cuerpo: los rayos a media altura no
+	# veían los escalones de 1 tile (el origen está ~27 px sobre los pies).
 	if not is_on_floor() or direction == 0.0:
 		return
-	# Raycast desde el borde del personaje a altura de los pies.
-	var collision_shape := get_node_or_null("CollisionShape2D") as CollisionShape2D
-	var half_width := 8.0
-	if collision_shape and collision_shape.shape is RectangleShape2D:
-		half_width = (collision_shape.shape as RectangleShape2D).size.x * 0.5 * collision_shape.scale.x
-	var from := global_position + Vector2(half_width * direction, 0.0)
-	var to := from + Vector2(16.0 * direction, 0.0)  # 1 tile adelante
-	var query := PhysicsRayQueryParameters2D.create(from, to, 1 << 0)  # capa "world"
-	var result := get_world_2d().direct_space_state.intersect_ray(query)
-	if result:
-		# Hay pared a nivel del suelo; comprobar si hay hueco 1 tile arriba.
-		var from_up := from + Vector2(0.0, -step_height)
-		var to_up := to + Vector2(0.0, -step_height)
-		query.from = from_up
-		query.to = to_up
-		var result_up := get_world_2d().direct_space_state.intersect_ray(query)
-		if not result_up:
-			# Preparar subida suave: se anima en _physics_process.
-			_step_start_y = position.y
-			_step_target_y = position.y - step_height
-			_step_time_left = step_duration
+	var forward := Vector2(2.0 * direction, 0.0)
+	if not test_move(global_transform, forward):
+		return
+	var up := Vector2(0.0, -step_height)
+	if test_move(global_transform, up):
+		return
+	var raised := global_transform
+	# +1 px para que el borde del escalón no cuente como choque al probar en horizontal.
+	raised.origin += up + Vector2(0.0, -1.0)
+	# safe_margin 0: apoyado justo encima del escalón no cuenta como choque.
+	if test_move(raised, forward, null, 0.0):
+		return
+	global_position += up
 
 
 func _input(event: InputEvent) -> void:
@@ -158,13 +144,6 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.y += gravity * delta
 		move_and_slide()
-		return
-
-	# Subida de escalón animada (sin teletransporte).
-	if _step_time_left > 0.0:
-		_step_time_left -= delta
-		var t := clampf((step_duration - _step_time_left) / step_duration, 0.0, 1.0)
-		position.y = lerpf(_step_start_y, _step_target_y, t)
 		return
 
 	_update_stamina(delta)
@@ -198,9 +177,6 @@ func _physics_process(delta: float) -> void:
 	# Auto-subida de escalones de 1 tile (antes de aplicar velocidad)
 	if is_on_floor() and direction != 0.0:
 		_try_step_up(direction)
-		if _step_time_left > 0.0:
-			velocity = Vector2.ZERO
-			return
 
 	var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
 	var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)

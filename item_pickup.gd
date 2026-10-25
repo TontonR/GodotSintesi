@@ -2,7 +2,7 @@ class_name ItemPickup
 extends Area2D
 
 ## Half the sprite height (px): the item rests with its base on the ground
-const HALF_HEIGHT: float = 8.0
+const HALF_HEIGHT: float = 16.0
 ## Physics layer of the world (ground and platforms)
 const WORLD_LAYER: int = 1
 ## Maximum distance (px) searched downwards for the ground when spawning

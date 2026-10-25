@@ -25,6 +25,7 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 
 - `enemy_base.gd`: 1 objeto al azar del pool (75%) + monedas (100%); el `item` se asigna antes de `add_child`.
 - Física (`item_pickup.gd`): gravedad 900, rebote 0.45 hasta <35 px/s, vaivén 1,5 px, `z_index` 1; suelo fijado en el primer tick.
+- Recogida al doble: icono 32 px (`Sprite2D` ×2), `HALF_HEIGHT` 16 y radio de recogida 16; el tooltip sube 8 px.
 - Tooltip de proximidad a 40 px (nombre + descripción); el HUD está en `docs/ui.md`.
 
 ## Debug (temporal, `scenes/inventory/inventory.gd`)
