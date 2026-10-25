@@ -170,15 +170,17 @@ func _try_step_up(direction: float) -> void:
 	# media altura (el origen está por encima de los pies).
 	if flying_enemy or not is_on_floor() or direction == 0.0:
 		return
-	var forward := Vector2(2.0 * direction, 0.0)
+	# Mirar por delante lo que se va a avanzar este frame (+1 px) para no chocar.
+	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
+	var forward := Vector2(lookahead * direction, 0.0)
 	if not test_move(global_transform, forward):
 		return
-	var up := Vector2(0.0, -step_height)
+	# 1 px de más para no quedar pegado a la cara del escalón y encadenar otra subida.
+	var up := Vector2(0.0, -(step_height + 1.0))
 	if test_move(global_transform, up):
 		return
 	var raised := global_transform
-	# +1 px para que el borde del escalón no cuente como choque al probar en horizontal.
-	raised.origin += up + Vector2(0.0, -1.0)
+	raised.origin += up
 	if test_move(raised, forward, null, 0.0):
 		return
 	global_position += up

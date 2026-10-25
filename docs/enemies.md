@@ -12,7 +12,7 @@ _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 ## Exports de la base
 
 - Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
-- Config: `flying_enemy`; `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
+- Config: `flying_enemy`; `step_height` 16 (auto-subida de 1 tile, mismo criterio que el jugador: mira por delante y sube 17 px); `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
 - Loot: `loot_table` con 1 `LootDropItem` al 75%; el item se asigna antes de `add_child`.
 

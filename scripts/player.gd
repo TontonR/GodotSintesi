@@ -114,15 +114,19 @@ func _try_step_up(direction: float) -> void:
 	# veían los escalones de 1 tile (el origen está ~27 px sobre los pies).
 	if not is_on_floor() or direction == 0.0:
 		return
-	var forward := Vector2(2.0 * direction, 0.0)
+	# Mirar por delante lo que se va a avanzar este frame (+1 px): así se sube
+	# antes de chocar y no se pierde la velocidad contra la pared.
+	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
+	var forward := Vector2(lookahead * direction, 0.0)
 	if not test_move(global_transform, forward):
 		return
-	var up := Vector2(0.0, -step_height)
+	# 1 px de más: con los pies justo al nivel del escalón la pared sigue
+	# contando como choque y se encadenaban dos subidas (2 tiles de golpe).
+	var up := Vector2(0.0, -(step_height + 1.0))
 	if test_move(global_transform, up):
 		return
 	var raised := global_transform
-	# +1 px para que el borde del escalón no cuente como choque al probar en horizontal.
-	raised.origin += up + Vector2(0.0, -1.0)
+	raised.origin += up
 	# safe_margin 0: apoyado justo encima del escalón no cuenta como choque.
 	if test_move(raised, forward, null, 0.0):
 		return

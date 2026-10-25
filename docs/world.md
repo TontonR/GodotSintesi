@@ -6,7 +6,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 - `scripts/world_generator.gd` crea `scenes/world/chunk.tscn` bajo demanda; cada chunk pinta su capa `Solid` y su capa `Grass` con `scripts/world/chunk.gd`.
 - `scenes/game.tscn` conserva `solid_map_layer`/`grass_map_layer` con el parche de ejemplo: sirven de plantilla de tiles y de fuente de `TileSet`; los chunks nuevos no reutilizan su `tile_map_data`.
-- Terreno con `FastNoiseLite` Perlin 1D sobre la X global. `base_height` 60 (escena: 50), amplitud 45, frecuencia 0.010: montañas amplias.
+- Terreno con `FastNoiseLite` Perlin 1D sobre la X global. `base_height` 60 (escena: 50), amplitud 20, frecuencia 0.007: colinas suaves. Con `world_seed` 12345 el rango medido es 43–59 (16 tiles) y el salto máximo entre tiles contiguos es 1.
 - Inicio plano en los tiles 0–49 y transición de 24 tiles (escena `safe_start_tiles=50`); el jugador aparece en `x=808`, 6 tiles sobre el suelo.
 
 ## Tiles del terreno
@@ -33,7 +33,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Subida automática
 
-- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al chocar con un escalón, usando `test_move` sobre la forma real del cuerpo; no se frena la X.
+- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Se prueba el avance del frame (`|vx| * delta + 1`) y se sube 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
 - 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
 
 ## Capas y cámara

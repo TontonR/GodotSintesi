@@ -29,9 +29,9 @@ const SPAWN_CLEARANCE_TILES := 6
 ## Altura media del suelo en tiles (la fila crece hacia abajo).
 @export var base_height: int = 60
 ## Variación máxima de altura; más alto = montañas más grandes.
-@export var height_amplitude: float = 45.0
+@export var height_amplitude: float = 20.0
 ## Frecuencia del ruido; más baja = montañas más anchas.
-@export var noise_frequency: float = 0.010
+@export var noise_frequency: float = 0.007
 @export var noise_octaves: int = 4
 @export var noise_gain: float = 0.45
 ## Fila mínima del suelo (cumbre más alta). No bajar de 0.
