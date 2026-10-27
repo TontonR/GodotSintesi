@@ -7,7 +7,7 @@ extends Node
 ## Tamaño de un tile en píxeles. Único sitio donde se define.
 const TILE_SIZE := 16
 ## Tiles libres tras la zona segura antes de generar enemigos en el chunk 0.
-const SPAWN_CLEARANCE_TILES := 6
+const SPAWN_CLEARANCE_TILES := 12
 
 @export_group("Mundo")
 ## Semilla del mundo; 0 = aleatoria por partida.
