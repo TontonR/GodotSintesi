@@ -452,6 +452,7 @@ offset = Vector2(60, -70)
 limit_smoothed = true
 smoothing_enabled = true
 smoothing_speed = 15.0
+process_mode = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=938013907]
 scale = Vector2(3.2, 3.2)
