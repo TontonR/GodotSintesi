@@ -80,6 +80,8 @@ var _is_running: bool = false
 var _is_dead: bool = false
 var _combo_index: int = 0
 var _combo_timer: float = 0.0
+## Tiempo restante de bloqueo de control por knockback.
+var _knockback_timer: float = 0.0
 
 
 # ==============================================================================
@@ -139,30 +141,35 @@ func _physics_process(delta: float) -> void:
 	velocity.y += current_gravity * delta
 
 	# Movimiento Horizontal
-	var raw_direction: float = 0.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		raw_direction += 1.0
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		raw_direction -= 1.0
-
-	var direction: float = raw_direction
-	if _is_guarding:
-		direction = 0.0
-	elif _is_attacking:
-		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
-			direction = 0.0
-
-	var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
-	var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)
-	
-	if _is_running:
-		effective_speed *= run_speed_multiplier
-		effective_accel *= run_acceleration_multiplier
-		
-	if direction != 0.0:
-		velocity.x = move_toward(velocity.x, direction * effective_speed, effective_accel * delta)
+	var direction: float = 0.0
+	if _knockback_timer > 0.0:
+		# Empuje recibido: se ignora el input hasta que acabe el bloqueo.
+		_knockback_timer = maxf(_knockback_timer - delta, 0.0)
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+		var raw_direction: float = 0.0
+		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+			raw_direction += 1.0
+		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+			raw_direction -= 1.0
+
+		direction = raw_direction
+		if _is_guarding:
+			direction = 0.0
+		elif _is_attacking:
+			if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
+				direction = 0.0
+
+		var effective_speed: float = move_speed * (0.38 if _is_attacking else 1.0)
+		var effective_accel: float = acceleration * (0.38 if _is_attacking else 1.0)
+		
+		if _is_running:
+			effective_speed *= run_speed_multiplier
+			effective_accel *= run_acceleration_multiplier
+			
+		if direction != 0.0:
+			velocity.x = move_toward(velocity.x, direction * effective_speed, effective_accel * delta)
+		else:
+			velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 
 	# Orientación del Sprite e Hitboxes
 	if not _is_attacking:
@@ -274,8 +281,33 @@ func take_damage(amount: int) -> void:
 	_apply_damage(amount, true)
 
 
-func take_damage_from(amount: int, attacker_position: Vector2) -> void:
-	_apply_damage(amount, is_attack_from_front(attacker_position))
+func take_damage_from(amount: int, attacker_position: Vector2, knockback_force: float = 0.0, knockback_lock: float = 0.15, knockup_force: float = 0.0) -> void:
+	var from_front: bool = is_attack_from_front(attacker_position)
+	if not _apply_damage(amount, from_front):
+		return
+	if knockback_force > 0.0:
+		var dir := signf(global_position.x - attacker_position.x)
+		if is_zero_approx(dir):
+			dir = -1.0 if _facing_right else 1.0
+		apply_knockback(dir, knockback_force, knockback_lock)
+	if knockup_force > 0.0:
+		apply_knockup(knockup_force, knockback_lock)
+
+
+## Empuje horizontal que ignora el input durante `duration` segundos.
+func apply_knockback(direction: float, force: float, duration: float = 0.15) -> void:
+	if _is_dead:
+		return
+	velocity.x = direction * force
+	_knockback_timer = maxf(_knockback_timer, duration)
+
+
+## Lanzamiento vertical (knockup) que ignora el input durante `duration` segundos.
+func apply_knockup(force: float, duration: float = 0.15) -> void:
+	if _is_dead:
+		return
+	velocity.y = minf(velocity.y, - absf(force))
+	_knockback_timer = maxf(_knockback_timer, duration)
 
 
 func is_attack_from_front(attacker_position: Vector2) -> bool:
@@ -284,9 +316,10 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 	return (attacker_position.x > global_position.x) == _facing_right
 
 
-func _apply_damage(amount: int, from_front: bool) -> void:
+## Devuelve true si el daño se aplicó (false si estaba muerto o lo bloqueó la guardia).
+func _apply_damage(amount: int, from_front: bool) -> bool:
 	if _is_dead or (_is_guarding and from_front):
-		return
+		return false
 	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
 	var final_amount := amount
 	if passives:
@@ -295,6 +328,7 @@ func _apply_damage(amount: int, from_front: bool) -> void:
 	_update_health_ui()
 	if health <= 0:
 		_die()
+	return true
 
 
 func heal(amount: int) -> void:
@@ -342,6 +376,11 @@ func can_run() -> bool:
 
 func can_guard() -> bool:
 	return not _is_dead and not _is_attacking and has_stamina(guard_initial_cost)
+
+
+## Devuelve true si el jugador está bloqueando con el escudo.
+func is_guarding() -> bool:
+	return _is_guarding
 
 
 func spend_stamina(amount: float) -> void:

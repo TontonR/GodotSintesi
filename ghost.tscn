@@ -285,10 +285,3 @@ collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
 shape = SubResource("CircleShape2D_6dhoe")
-
-[node name="SpawnPoint" type="Marker2D" parent="Pivot" unique_id=1215235679]
-position = Vector2(-21, 1)
-
-[node name="health_bar" type="ProgressBar" parent="Pivot" unique_id=1263724615]
-offset_right = 4.0
-offset_bottom = 27.0

@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://c840xptqh36o2"]
+
+[ext_resource type="Script" uid="uid://bsr5qkarb2yoj" path="res://scripts/enemies/orc.gd" id="1_6ql68"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
+size = Vector2(34.51686, 46.18557)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3ay35"]
+animations = [{
+"frames": [],
+"loop": 2,
+"name": &"attack",
+"speed": 6.0
+}, {
+"frames": [],
+"loop": 1,
+"name": &"idle",
+"speed": 6.0
+}, {
+"frames": [],
+"loop": 1,
+"name": &"walk",
+"speed": 6.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6dhoe"]
+size = Vector2(50.15731, 49.484543)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hisia"]
+radius = 229.51352
+
+[node name="ENEMYBASE" type="CharacterBody2D" unique_id=431162705]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_6ql68")
+
+[node name="orc_hitbox" type="CollisionShape2D" parent="." unique_id=553912732]
+scale = Vector2(0.4635417, 0.60625)
+shape = SubResource("RectangleShape2D_3ay35")
+
+[node name="Pivot" type="Node2D" parent="." unique_id=614283079]
+
+[node name="ENEMYBASEPNG" type="AnimatedSprite2D" parent="Pivot" unique_id=238804421]
+position = Vector2(0, -10)
+scale = Vector2(0.4635417, 0.60625)
+sprite_frames = SubResource("SpriteFrames_3ay35")
+animation = &"walk"
+
+[node name="attack_range" type="Area2D" parent="Pivot" unique_id=867135562]
+position = Vector2(20, 0)
+scale = Vector2(0.4635417, 0.60625)
+collision_layer = 16
+collision_mask = 2
+
+[node name="range_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=659728175]
+shape = SubResource("RectangleShape2D_6dhoe")
+
+[node name="detection_area" type="Area2D" parent="Pivot" unique_id=1422760256]
+collision_layer = 0
+collision_mask = 2
+
+[node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area" unique_id=1221420314]
+scale = Vector2(1.25, 0.5)
+shape = SubResource("CircleShape2D_hisia")

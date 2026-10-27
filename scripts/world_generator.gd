@@ -23,12 +23,18 @@ extends Node
 ## Lista de escenas de enemigos cargadas por defecto.
 @export var enemy_scenes: Array[PackedScene] = [
 	preload("res://scenes/enemies/orc.tscn"),
-	preload("res://scenes/enemies/ghost.tscn")
+	preload("res://scenes/enemies/ghost.tscn"),
+	preload("res://scenes/enemies/werewolf.tscn"),
+	preload("res://scenes/enemies/mutant_toad.tscn"),
+	preload("res://scenes/enemies/demon.tscn")
 ]
 ## Cantidades por zona correspondientes EN ORDEN a las escenas de arriba:
 ## Posición 0 -> 4 Orcos por zona
 ## Posición 1 -> 1 Fantasma por zona
-@export var enemy_counts_per_zone: Array[int] = [4, 1]
+## Posición 2 -> 1 Lobo por zona
+## Posición 3 -> 1 Sapo mutante por zona
+## Posición 4 -> 1 Demonio por zona
+@export var enemy_counts_per_zone: Array[int] = [4, 1, 1, 1, 1]
 
 # Margen en tiles desde el inicio (x=0) para que el jugador aparezca seguro
 @export var safe_start_tiles: int = 15
@@ -53,6 +59,9 @@ var current_player_zone: int = -1
 
 
 func _ready() -> void:
+	# Los enemigos lo buscan por grupo para leer la configuración de zonas.
+	add_to_group("world_generator")
+
 	solid_layer.clear()
 	grass_layer.clear()
 	
