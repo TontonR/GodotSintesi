@@ -127,7 +127,7 @@ func _try_step_up(direction: float) -> void:
 		return
 	# 1 px de más: con los pies justo al nivel del escalón la pared sigue
 	# contando como choque y se encadenaban dos subidas (2 tiles de golpe).
-	var up := Vector2(0.0, -(step_height + 1.0))
+	var up := Vector2(0.0, - (step_height + 1.0))
 	if test_move(global_transform, up):
 		return
 	var raised := global_transform
@@ -433,13 +433,14 @@ func _update_camera() -> void:
 	# X en píxeles enteros: el fondo deja de temblar. La Y también, pero un
 	# escalón de 1 tile (16 px) se sube en varios frames para no sacudir la vista.
 	if is_nan(_cam_y):
-		_cam_y = camera.global_position.y
-	var target_y := camera.global_position.y
-	var dy := target_y - _cam_y
+		_cam_y = global_position.y
+	# El objetivo es el jugador, no la cámara: si se usara la cámara, el
+	# desfase acumulado sería permanente y el jugador acabaría fuera por arriba.
+	var dy := global_position.y - _cam_y
 	if is_on_floor() and absf(dy) <= step_height + 2.0:
 		dy = clampf(dy, -6.0, 6.0)
 	_cam_y = roundf(_cam_y + dy)
-	camera.global_position = Vector2(roundf(camera.global_position.x), _cam_y)
+	camera.global_position = Vector2(roundf(global_position.x), _cam_y)
 
 
 func _update_animation() -> void:
