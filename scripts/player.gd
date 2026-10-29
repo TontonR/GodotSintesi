@@ -20,6 +20,8 @@ extends CharacterBody2D
 
 # Desfase del sprite al subir un escalón: el cuerpo sube de golpe, el dibujo no.
 var _visual_step_offset: float = 0.0
+# Y entera de la cámara; los escalones se reparten en varios frames.
+var _cam_y: float = NAN
 # endregion
 
 # region Estadísticas y Economía
@@ -249,8 +251,7 @@ func _physics_process(delta: float) -> void:
 		_jump_was_pressed = jump_pressed
 
 	move_and_slide()
-	# La cámara se mueve en píxeles enteros: el fondo deja de temblar.
-	camera.global_position = camera.global_position.round()
+	_update_camera()
 	_update_animation()
 
 
@@ -428,6 +429,19 @@ func _update_stamina(delta: float) -> void:
 # ==============================================================================
 # ANIMACIONES Y UI
 # ==============================================================================
+func _update_camera() -> void:
+	# X en píxeles enteros: el fondo deja de temblar. La Y también, pero un
+	# escalón de 1 tile (16 px) se sube en varios frames para no sacudir la vista.
+	if is_nan(_cam_y):
+		_cam_y = camera.global_position.y
+	var target_y := camera.global_position.y
+	var dy := target_y - _cam_y
+	if is_on_floor() and absf(dy) <= step_height + 2.0:
+		dy = clampf(dy, -6.0, 6.0)
+	_cam_y = roundf(_cam_y + dy)
+	camera.global_position = Vector2(roundf(camera.global_position.x), _cam_y)
+
+
 func _update_animation() -> void:
 	if _is_dead or _is_attacking:
 		return
