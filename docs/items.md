@@ -8,10 +8,10 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 
 ## Huecos (5) y teclas
 
-| Huecos | Tipo | Teclas (`use_slot_1..5`) |
-|---|---|---|
-| 1-2 | Skills (no se gastan) | 1, 2 |
-| 3-5 | Consumibles (se gastan) | 3, 4, 5 |
+| Huecos | Tipo                    | Teclas (`use_slot_1..5`) |
+| ------ | ----------------------- | ------------------------ |
+| 1-2    | Skills (no se gastan)   | 1, 2                     |
+| 3-5    | Consumibles (se gastan) | 3, 4, 5                  |
 
 - `Inventory.add_item` enruta por tipo; si la barra del tipo está llena, el objeto se queda en el suelo.
 - Pasivas → `PlayerPassives`. Recogida automática al tocar (`body_entered`); F (`interact`) ya no recoge.
@@ -23,7 +23,8 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 
 ## Drops
 
-- `enemy_base.gd`: 1 objeto al azar del pool (75%) + monedas (100%); el `item` se asigna antes de `add_child`.
+- `enemy_base.gd`: 1–3 monedas garantizadas + 1 objeto al azar del pool (75%). Los 8 coins/chunk del generador son pickups independientes del loot enemigo.
+- El drop se parenta primero y luego recibe `global_position`; asignarla antes hacía que el offset del chunk se sumara dos veces. No añadir pickups de prueba en `game.tscn`.
 - Física (`item_pickup.gd`): gravedad 900, rebote 0.45 hasta <35 px/s, vaivén 1,5 px, `z_index` 1; suelo fijado en el primer tick.
 - Recogida al doble: icono 32 px (`Sprite2D` ×2), `HALF_HEIGHT` 16 y radio de recogida 16; el tooltip sube 8 px.
 - Tooltip de proximidad a 40 px (nombre + descripción); el HUD está en `docs/ui.md`.
