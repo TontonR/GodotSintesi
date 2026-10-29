@@ -21,6 +21,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 ## Escala de pantalla (2026-10-29)
 
 - Viewport 768×432 y ventana 1536×864 = exactamente 2×. Con 1280×720 el factor era 1.667 y el pixel-art temblaba al desplazarse (las texturas con filtro nearest cambian de tamaño de texel cada frame). Si se cambia la ventana, usar múltiplos enteros: 768×432, 1536×864.
+- `window/stretch/scale_mode="integer"`: en pantalla completa (1920×1080) el contenido se dibuja a 2× exactos (1536×864) centrado, con bandas negras; sin esto el factor era 2.5 y el temblor volvía. Medido: `screen_scale=(2.0, 2.0)` en ventana y en fullscreen.
 - `snap_2d_transforms_to_pixel` sigue activo; con escala entera no produce temblor.
 
 ## Chunks y carga
