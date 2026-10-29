@@ -15,8 +15,13 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 - La superficie elige tile izquierdo `(0,0)`, centro `(1,0)` o derecho `(2,0)` según si el vecino baja. Se miran las alturas del chunk y las de los chunks vecinos (`edge_left`/`edge_right`).
 - La capa `Grass` repite esa misma columna en la fila de superficie, encima de `Solid`; su `TileSet` se toma de `grass_map_layer`.
 - El relleno llega hasta `chunk_height_tiles` (140): no hay efecto de mapa flotante.
-- Cada chunk pinta una columna extra a la derecha, idéntica a la primera del siguiente: tapa la grieta de 1 px que deja el redondeo a píxel al unir dos `TileMapLayer` con escalado fraccionario de ventana.
+- Cada chunk pinta una columna extra a la derecha, idéntica a la primera del siguiente: tapa la grieta de 1 px al unir dos `TileMapLayer`.
 - Sin rampas; los escalones son de 1 tile y se suben automáticamente.
+
+## Escala de pantalla (2026-10-29)
+
+- Viewport 768×432 y ventana 1536×864 = exactamente 2×. Con 1280×720 el factor era 1.667 y el pixel-art temblaba al desplazarse (las texturas con filtro nearest cambian de tamaño de texel cada frame). Si se cambia la ventana, usar múltiplos enteros: 768×432, 1536×864.
+- `snap_2d_transforms_to_pixel` sigue activo; con escala entera no produce temblor.
 
 ## Chunks y carga
 
@@ -33,8 +38,9 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Subida automática
 
-- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Se prueba el avance del frame (`|vx| * delta + 1`) y se sube 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
+- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Prueban 1 px por delante y suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
 - 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
+- El primer chunk (x=0) no genera enemigos: zona segura para spawnear.
 
 ## Capas y cámara
 

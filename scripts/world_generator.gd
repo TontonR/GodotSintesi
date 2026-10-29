@@ -6,8 +6,6 @@ extends Node
 
 ## Tamaño de un tile en píxeles. Único sitio donde se define.
 const TILE_SIZE := 16
-## Tiles libres tras la zona segura antes de generar enemigos en el chunk 0.
-const SPAWN_CLEARANCE_TILES := 12
 
 @export_group("Mundo")
 ## Semilla del mundo; 0 = aleatoria por partida.
@@ -203,15 +201,9 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	rng.seed = hash("%d:%d:%d" % [_seed, coord.x, coord.y])
 
 	var min_x := enemy_spawn_margin_tiles
-	if coord.x == 0:
-		# Hueco extra para que no aparezcan encima del spawn del jugador.
-		min_x = maxi(min_x, safe_start_tiles + SPAWN_CLEARANCE_TILES)
 	var max_x := chunk_width_tiles - enemy_spawn_margin_tiles - 1
-	# Si la zona segura ocupa todo el chunk, no hay hueco para spawns.
-	var has_room := min_x <= max_x
-	if not has_room:
-		min_x = 0
-		max_x = 0
+	# El primer chunk es zona segura: sin enemigos, así no atacan al spawnear.
+	var enemy_room := coord.x != 0
 
 	var enemies: Array[Dictionary] = []
 	var enemy_index := 0
@@ -224,7 +216,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			enemy_index += 1
 			# Consumir el RNG siempre para que las posiciones no cambien al persistir bajas.
 			var local_x := rng.randi_range(min_x, max_x)
-			if not has_room or _defeated_spawns.has(spawn_id) or enemy_scenes[idx] == null:
+			if not enemy_room or _defeated_spawns.has(spawn_id) or enemy_scenes[idx] == null:
 				continue
 			enemies.append({
 				"id": spawn_id,
@@ -237,7 +229,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 		var spawn_id := "c:%d:%d:%d" % [coord.x, coord.y, i]
 		# Mismo motivo que con los enemigos: no alterar el orden del RNG.
 		var local_x := rng.randi_range(min_x, max_x)
-		if not has_room or _collected_spawns.has(spawn_id):
+		if _collected_spawns.has(spawn_id):
 			continue
 		coins.append({
 			"id": spawn_id,
