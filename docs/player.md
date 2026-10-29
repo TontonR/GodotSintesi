@@ -14,7 +14,7 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 - Teclas leídas en crudo: A/D, salto Espacio/W. Shift = correr (1.7×, -10 + -10/s). Las flechas quedan solo para la UI (páginas de pasivas e inventario).
 - Auto-subida de 1 tile (16 px) con `test_move` sobre la forma real: prueba 1 px por delante, sube 17 px y sigue con la X intacta (no frena ni bloquea el frame). El sprite se queda 16 px abajo y sube interpolado en `step_duration` (0.08 s) para que no se vea el salto. 2+ tiles se saltan.
 - Atacar o defender bloquea salto y giro; atacando se mueve al 38%.
-- Cámara: `Camera2D` `offset (60,-70)`, `smoothing_enabled` a 15 y `process_callback` física (0) para ir sincronizada con el jugador. Sin límites.
+- Cámara: `Camera2D` `offset (60,-70)`, `process_callback` física (0). Cada frame se redondea su `global_position` a píxel entero: con `snap_2d_transforms_to_pixel` el mundo y el parallax se desplazan en píxeles exactos y no tiemblan (medido: `canvas_transform` siempre entero).
 
 ## Combate
 

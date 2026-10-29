@@ -25,7 +25,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Chunks y carga
 
-- Chunks de 256×140 tiles. Carga según cámara + `load_margin_px` 96: normalmente 1 chunk, 2 cerca de una costura. El chunk del jugador nunca se descarga.
+- Chunks de 256×140 tiles. Carga según cámara + `load_margin_px` 96 y se mantienen `KEEP_CHUNKS_SIDE` = 2 chunks extra a cada lado: los enemigos y monedas solo desaparecen cuando su chunk queda 2 chunks atrás (se liberan con el nodo, no antes).
 - Antes de instanciar se generan los datos del chunk y del siguiente a la derecha. Al alejarse se borran datos y nodos.
 - Semilla: `world_seed` 0 = aleatoria; cualquier otro valor la fija. El RNG de cada chunk usa semilla + coordenada.
 

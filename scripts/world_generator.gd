@@ -6,6 +6,9 @@ extends Node
 
 ## Tamaño de un tile en píxeles. Único sitio donde se define.
 const TILE_SIZE := 16
+## Chunks extra a cada lado que se mantienen cargados: los enemigos no
+## desaparecen al cruzar una costura (solo se liberan 2 chunks más atrás).
+const KEEP_CHUNKS_SIDE := 2
 
 @export_group("Mundo")
 ## Semilla del mundo; 0 = aleatoria por partida.
@@ -156,6 +159,9 @@ func _update_chunks(force: bool) -> void:
 	var current := floori(player.global_position.x / chunk_width_px)
 	first = mini(first, current)
 	last = maxi(last, current)
+	# Mantener cargados los chunks vecinos aunque la vista ya no los toque.
+	first -= KEEP_CHUNKS_SIDE
+	last += KEEP_CHUNKS_SIDE
 
 	if not force and first == _last_first and last == _last_last:
 		return

@@ -56,6 +56,7 @@ const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 # region Nodos OnReady
 @onready var sprite_pivot: Node2D = $SpritePivot
 @onready var animated_sprite: AnimatedSprite2D = $SpritePivot/AnimatedSprite2D
+@onready var camera: Camera2D = $Camera2D
 @onready var attack_hitboxes: Array[Area2D] = [$AttackHitbox1, $AttackHitbox2, $AttackHitbox3]
 @onready var hitbox_shapes: Array[CollisionShape2D] = [
 	$AttackHitbox1/CollisionShape2D,
@@ -248,6 +249,8 @@ func _physics_process(delta: float) -> void:
 		_jump_was_pressed = jump_pressed
 
 	move_and_slide()
+	# La cámara se mueve en píxeles enteros: el fondo deja de temblar.
+	camera.global_position = camera.global_position.round()
 	_update_animation()
 
 
