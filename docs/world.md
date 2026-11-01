@@ -30,9 +30,22 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 - Antes de instanciar se generan los datos del chunk y del siguiente a la derecha. Al alejarse se borran datos y nodos.
 - Semilla: `world_seed` 0 = aleatoria; cualquier otro valor la fija. El RNG de cada chunk usa semilla + coordenada.
 
+## Biomas (2026-11-01)
+
+- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `spawn_weight`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
+- Recursos: `resources/world/biomes/pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.75) y `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.25).
+- El bioma es **por chunk**: `_biome_for_chunk()` tira `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12, `biome_contrast` 2) y reparte el resultado entre los `spawn_weight`. El chunk 0 siempre es el primer bioma (zona segura).
+- La transición es dura en el borde del chunk (4096 px): no hay mezcla entre biomas.
+
+## Césped tintable
+
+- La capa `Grass` usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone `modulate` con el `grass_color` del bioma, así cualquier color vale (un futuro nevado sería `Color(0.93, 0.96, 1)`).
+- `WorldChunk.paint()` recibe `grass_tint` y lo aplica a su `Grass`; `Solid` (suelo marrón) no se tiñe.
+- Para añadir un bioma basta con crear otro `.tres` y meterlo en `biomes` del generador.
+
 ## Spawns y persistencia
 
-- Por chunk: `enemy_counts_per_chunk` [4 orcos, 1 fantasma] y 8 monedas. Con 256 tiles de ancho la densidad es la mitad que con 128; para más o menos, tocar los contadores (la densidad no cambia con el alto). Márgenes de 2 tiles; en el chunk 0 no se genera hasta `safe_start_tiles + 6` (88 px de hueco con el spawn del jugador).
+- Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 2 lobos + 1 sapo + 1 demonio (bosque rojo), más 8 monedas. Con 256 tiles de ancho la densidad es la mitad que con 128; para más o menos, tocar los contadores de los `.tres` (la densidad no cambia con el alto). Márgenes de 2 tiles; en el chunk 0 no se genera hasta `safe_start_tiles + 6` (88 px de hueco con el spawn del jugador).
 - La base del collider del enemigo se apoya en el suelo (`_body_bottom`), no el origen: los enemigos están escalados ×2.
 - Cada spawn tiene un id estable (`e:x:y:índice`, `c:x:y:índice`). `EnemyBase` emite `died` y `coin.gd` emite `collected`; el generador guarda esos ids y no los vuelve a instanciar.
 - Los enemigos vivos que se descargan reaparecen; las bajas y monedas recogidas no.
@@ -46,7 +59,6 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 ## Capas y cámara
 
 - Capas 2D: 1 mundo, 2 jugador, 3 enemigos, 4 ataque jugador. Viewport 768×432 (ventana 1280×720).
-- `enemy_scenes` y `enemy_counts_per_chunk` deben tener el mismo orden. Para biomas futuros, elegir configuración en `_generate_chunk` y pasar sus tiles/spawns a `WorldChunk.paint`.
 
 ## Trampas
 

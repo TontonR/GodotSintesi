@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://cu5od85b24g7x" path="res://scenes/collectables/coin.tscn" id="8_a2bvq"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://scripts/world_generator.gd" id="8_vtaks"]
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
-[ext_resource type="Texture2D" uid="uid://dnwqqwxweihvq" path="res://assets/map/tile/grass_tile.png" id="10_vtaks"]
+[ext_resource type="Texture2D" path="res://assets/map/tile/grass_tile_gray.png" id="10_vtaks"]
 [ext_resource type="PackedScene" uid="uid://fqwwivfv2w2f" path="res://item_pickup.tscn" id="11_pick"]
 [ext_resource type="Resource" uid="uid://d22di4a6y33ew" path="res://resources/pocion_cura.tres" id="12_poci"]
 [ext_resource type="Resource" uid="uid://b1kwx1jao7004" path="res://resources/pocion_stamina.tres" id="13_pocs"]

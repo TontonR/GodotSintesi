@@ -51,12 +51,15 @@ func paint(
 		atlas_origin: Vector2i,
 		grass_tile_set: TileSet,
 		floor_row: int,
-		swap_left_right: bool
+		swap_left_right: bool,
+		grass_tint: Color = Color.WHITE
 ) -> void:
 	_solid.clear()
 	_solid.tile_set = tile_set
 	_grass.clear()
 	_grass.tile_set = grass_tile_set
+	# La textura del césped es gris: el bioma la tiñe con modulate.
+	_grass.modulate = grass_tint
 
 	var width := heights.size()
 

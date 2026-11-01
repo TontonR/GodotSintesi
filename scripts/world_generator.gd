@@ -51,14 +51,16 @@ const KEEP_CHUNKS_SIDE := 2
 ## Activar si los bordes izquierdo/derecho salen intercambiados.
 @export var swap_left_right: bool = false
 
-@export_group("Enemigos")
-## Lista de escenas de enemigos.
-@export var enemy_scenes: Array[PackedScene] = [
-	preload("res://scenes/enemies/orc.tscn"),
-	preload("res://scenes/enemies/ghost.tscn")
+@export_group("Biomas")
+## Biomas del mundo; el primero es el de la zona segura.
+@export var biomes: Array[Biome] = [
+	preload("res://resources/world/biomes/pradera.tres"),
+	preload("res://resources/world/biomes/bosque_rojo.tres")
 ]
-## Cantidades por chunk, en el mismo orden que las escenas.
-@export var enemy_counts_per_chunk: Array[int] = [4, 1]
+## Frecuencia del ruido que reparte los biomas; más bajo = biomas más grandes.
+@export var biome_frequency: float = 0.12
+## Contraste del ruido de biomas; más alto = extremos más frecuentes.
+@export var biome_contrast: float = 2.0
 ## Margen en tiles para no aparecer pegado al borde del chunk.
 @export var enemy_spawn_margin_tiles: int = 2
 
@@ -76,6 +78,7 @@ const KEEP_CHUNKS_SIDE := 2
 @onready var _template_grass: TileMapLayer = get_node_or_null("grass_map_layer")
 
 var _noise := FastNoiseLite.new()
+var _biome_noise := FastNoiseLite.new()
 var _seed: int = 0
 var _camera: Camera2D
 var _loaded_chunks: Dictionary = {}
@@ -101,6 +104,10 @@ func _ready() -> void:
 	_noise.frequency = noise_frequency
 	_noise.fractal_octaves = noise_octaves
 	_noise.fractal_gain = noise_gain
+
+	_biome_noise.seed = _seed + 1000
+	_biome_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	_biome_noise.frequency = biome_frequency
 
 	if player:
 		_camera = player.get_node_or_null("Camera2D") as Camera2D
@@ -191,6 +198,24 @@ func _update_chunks(force: bool) -> void:
 			_chunk_data.erase(coord)
 
 
+## Bioma del chunk. El 0 es siempre el primero (zona segura del jugador).
+func _biome_for_chunk(chunk_x: int) -> Biome:
+	if biomes.is_empty():
+		return null
+	if chunk_x == 0:
+		return biomes[0]
+	var total := 0.0
+	for biome in biomes:
+		total += maxf(biome.spawn_weight, 0.0)
+	var roll := _biome_noise.get_noise_1d(float(chunk_x))
+	roll = clampf(roll * biome_contrast + 0.5, 0.0, 1.0) * total
+	for biome in biomes:
+		roll -= maxf(biome.spawn_weight, 0.0)
+		if roll <= 0.0:
+			return biome
+	return biomes[biomes.size() - 1]
+
+
 func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
@@ -213,22 +238,29 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# El primer chunk es zona segura: sin enemigos, así no atacan al spawnear.
 	var enemy_room := coord.x != 0
 
+	var biome := _biome_for_chunk(coord.x)
+	var scenes: Array[PackedScene] = []
+	var counts: Array[int] = []
+	if biome:
+		scenes = biome.enemy_scenes
+		counts = biome.enemy_counts
+
 	var enemies: Array[Dictionary] = []
 	var enemy_index := 0
-	for idx in range(enemy_scenes.size()):
+	for idx in range(scenes.size()):
 		var count := 0
-		if idx < enemy_counts_per_chunk.size():
-			count = enemy_counts_per_chunk[idx]
+		if idx < counts.size():
+			count = counts[idx]
 		for i in range(count):
 			var spawn_id := "e:%d:%d:%d" % [coord.x, coord.y, enemy_index]
 			enemy_index += 1
 			# Consumir el RNG siempre para que las posiciones no cambien al persistir bajas.
 			var local_x := rng.randi_range(min_x, max_x)
-			if not enemy_room or _defeated_spawns.has(spawn_id) or enemy_scenes[idx] == null:
+			if not enemy_room or _defeated_spawns.has(spawn_id) or scenes[idx] == null:
 				continue
 			enemies.append({
 				"id": spawn_id,
-				"scene": enemy_scenes[idx],
+				"scene": scenes[idx],
 				"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE)
 			})
 
@@ -244,7 +276,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_ground_offset)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome}
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -252,6 +284,7 @@ func _load_chunk(coord: Vector2i) -> void:
 		_chunk_data[coord] = _generate_chunk(coord)
 	var data: Dictionary = _chunk_data[coord]
 
+	var biome: Biome = data.get("biome")
 	var chunk: WorldChunk = chunk_scene.instantiate()
 	chunk.name = "Chunk_%d" % coord.x
 	chunk.position = Vector2(coord.x * chunk_width_tiles * TILE_SIZE, 0)
@@ -266,7 +299,8 @@ func _load_chunk(coord: Vector2i) -> void:
 		tile_atlas_origin,
 		grass_tile_set,
 		chunk_height_tiles,
-		swap_left_right
+		swap_left_right,
+		biome.grass_color if biome else Color.WHITE
 	)
 	_spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk
