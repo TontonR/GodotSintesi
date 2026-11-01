@@ -4,7 +4,7 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 
 ## Jerarquía
 
-`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`. `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
+`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`, `CritPassive`, `LifestealPassive`. `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
 
 ## Huecos (5) y teclas
 
@@ -16,10 +16,12 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 - `Inventory.add_item` enruta por tipo; si la barra del tipo está llena, el objeto se queda en el suelo.
 - Pasivas → `PlayerPassives`. Recogida automática al tocar (`body_entered`); F (`interact`) ya no recoge.
 
-## Catálogo (6)
+## Catálogo (16)
 
-- Consumibles: `pocion_cura` +30 vida, `pocion_stamina` +40 stamina, `pocion_mayor` +60 vida.
-- Pasivas: `amuleto_ataque` +6 daño, `armadura_ligera` −25% daño recibido, `talisman_regen` +1 vida/s.
+- Consumibles (8): `pocion_cura` +30 vida, `pocion_cura_menor` +15, `pocion_mayor` +60, `elixir_vida` +100, `pocion_stamina` +40 stamina, `pocion_stamina_mayor` +70, `bebida_tonificante` +20/+20, `esencia_vital` +40/+40.
+- Pasivas (8): `amuleto_ataque` +6 daño, `amuleto_furia` +12 daño, `amuleto_critico` 20% ×1.8, `pulso_vampirico` +2 vida por golpe, `armadura_ligera` −25% daño recibido, `armadura_pesada` −40%, `talisman_regen` +1 vida/s, `anillo_vigor` +2 stamina/s.
+- Todos entran en el pool de drop (`DROP_ITEMS` en `enemy_base.gd`) y en las teclas de debug del inventario. Cada objeto es un `.tres` en `resources/`; añadir otro de un tipo existente no toca código.
+- `CritPassive` (probabilidad × multiplicador) y `LifestealPassive` (cura al golpear, guarda el jugador en `on_equip`) son las dos clases nuevas. `RegenPassive` ahora tiene `stamina_per_tick`, así el anillo de vigor es el mismo script con `heal_per_tick = 0`.
 
 ## Drops
 

@@ -60,6 +60,16 @@ const DROP_ITEMS: Array[Items] = [
 	preload("res://resources/amuleto_ataque.tres"),
 	preload("res://resources/armadura_ligera.tres"),
 	preload("res://resources/talisman_regen.tres"),
+	preload("res://resources/pocion_cura_menor.tres"),
+	preload("res://resources/pocion_stamina_mayor.tres"),
+	preload("res://resources/bebida_tonificante.tres"),
+	preload("res://resources/elixir_vida.tres"),
+	preload("res://resources/esencia_vital.tres"),
+	preload("res://resources/amuleto_furia.tres"),
+	preload("res://resources/amuleto_critico.tres"),
+	preload("res://resources/armadura_pesada.tres"),
+	preload("res://resources/anillo_vigor.tres"),
+	preload("res://resources/pulso_vampirico.tres"),
 ]
 
 @export_group("Loot")

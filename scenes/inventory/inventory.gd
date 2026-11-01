@@ -17,11 +17,21 @@ const _DEBUG_CONSUMABLES: Array[String] = [
 	"res://resources/pocion_cura.tres",
 	"res://resources/pocion_stamina.tres",
 	"res://resources/pocion_mayor.tres",
+	"res://resources/pocion_cura_menor.tres",
+	"res://resources/pocion_stamina_mayor.tres",
+	"res://resources/bebida_tonificante.tres",
+	"res://resources/elixir_vida.tres",
+	"res://resources/esencia_vital.tres",
 ]
 const _DEBUG_PASSIVES: Array[String] = [
 	"res://resources/amuleto_ataque.tres",
 	"res://resources/armadura_ligera.tres",
 	"res://resources/talisman_regen.tres",
+	"res://resources/amuleto_furia.tres",
+	"res://resources/amuleto_critico.tres",
+	"res://resources/armadura_pesada.tres",
+	"res://resources/anillo_vigor.tres",
+	"res://resources/pulso_vampirico.tres",
 ]
 
 ## Stored items: one item per slot (null = empty slot)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AttackBonusPassive" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://dhxroie2spk6p" path="res://scripts/collectables/AttackBonusPassive.gd" id="1_atkb"]
+[ext_resource type="Texture2D" uid="uid://c536hvs8bpwnk" path="res://assets/items/item333.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_atkb")
+bonus = 12.0
+passive_id = "amuleto_furia"
+id = "amuleto_furia"
+item_name = "Amuleto de furia"
+description = "Añade 12 de daño a cada golpe."
+icon = ExtResource("1_tex")
+value = 120
