@@ -52,7 +52,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Subida automática
 
-- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Prueban 1 px por delante y suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
+- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. El jugador prueba 1 px por delante; los enemigos prueban lo que avanzan en el frame (`|vx| * delta`, mínimo 2 px) + 1, porque el lobo llega a 300 px/s. Suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
 - 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
 - El primer chunk (x=0) no genera enemigos: zona segura para spawnear.
 

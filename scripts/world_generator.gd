@@ -61,6 +61,8 @@ const KEEP_CHUNKS_SIDE := 2
 @export var biome_frequency: float = 0.12
 ## Contraste del ruido de biomas; más alto = extremos más frecuentes.
 @export var biome_contrast: float = 2.0
+
+@export_group("Spawns")
 ## Margen en tiles para no aparecer pegado al borde del chunk.
 @export var enemy_spawn_margin_tiles: int = 2
 
