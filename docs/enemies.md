@@ -1,4 +1,4 @@
-# Enemigos — `EnemyBase`, fantasma y orco
+# Enemigos — `EnemyBase`, fantasma, orco, lobo, sapo y demonio
 
 _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 
@@ -21,6 +21,20 @@ _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 - `charge_time` 0.4, `tp_cooldown` 8.0, `tp_zone_margin` 10, `tp_min_travel` 80, `tp_attempts` 12, invulnerable durante el TP.
 - TP al anillo elíptico entre `flee_range` y `attack_range`, nunca por encima del jugador (`offset.y = minf(offset.y, 0.0)`); sin `post_attack_tp_delay`.
 
+## Lobo, sapo y demonio (2026-11-01, rama `feat/biomas`)
+
+- Traídos de `origin/feat/enemigos-demon-toad-werewolf` sin su generador ni su `player.gd`.
+- **Lobo** (`werewolf`): 60 de vida, merodea su chunk (`chunk_width_tiles`), embiste de punta a punta del área de detección; cada 2 embestidas la siguiente vuelta es un salto con daño doble. El primer golpe de cada embestida lanza al jugador (`knockup`).
+- **Sapo** (`mutant_toad`): salta en arcos altos; cada 3 aterrizajes lanza una ráfaga de 3 proyectiles destructibles (`toad_projectile`, un golpe basta).
+- **Demonio** (`demon`): vuela 80 px sobre el spawn y cada 3 s se para sobre el jugador para escupir fuego (`demon_fire`, área que se alarga hasta el suelo). Si el jugador lo bloquea, queda aturdido 5 s o hasta 3 golpes.
+- Estos tres piden al jugador `take_damage_from(..., knockback, knockup)` e `is_guarding()`; ver `docs/player.md`.
+
+## Colisiones (pass-through)
+
+- El jugador (`collision_mask` 1) y los terrestres orco/lobo/sapo (`collision_mask` 1) solo chocan con el mundo: se atraviesan entre ellos, no se puede subir encima ni empujar. El daño va por `Area2D`, no por cuerpo.
+- El fantasma y el demonio ya tenían máscara 0.
+
 ## Trampas
 
 - Un override vacío de `loot_table` en la escena dejaba al fantasma sin drops (ya eliminado).
+- Los enemigos nuevos se escribieron contra el generador viejo de zonas: solo el lobo leía la configuración del mundo, y ya usa `chunk_width_tiles`.

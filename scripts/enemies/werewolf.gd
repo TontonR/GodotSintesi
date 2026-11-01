@@ -68,8 +68,6 @@ var _charge_hit_done: bool = false
 ## La recuperación se hace corriendo hacia el jugador (embestida fallida).
 var _recover_chasing: bool = false
 var _charges_done: int = 0
-## Jugador con el que ya se ha excluido la colisión física.
-var _collision_excluded_player: CharacterBody2D = null
 var _jump_vx: float = 0.0
 var _jump_taken_off: bool = false
 ## Segundos que faltan para poder volver a golpear por contacto.
@@ -109,7 +107,6 @@ func _ready() -> void:
 # ---------------------------------------------------------------------------
 
 func _update_behavior(delta: float) -> void:
-	_ensure_player_collision_exception()
 	_hit_cooldown_left = maxf(_hit_cooldown_left - delta, 0.0)
 	_try_contact_damage()
 	match _state:
@@ -197,7 +194,6 @@ func _process_wander(delta: float) -> void:
 # ---------------------------------------------------------------------------
 
 func _start_windup() -> void:
-	_ensure_player_collision_exception()
 	_state = State.WINDUP
 	_state_timer = charge_windup
 	_stop()
@@ -232,7 +228,6 @@ func _start_charge() -> void:
 		_return_to_wander()
 		return
 
-	_ensure_player_collision_exception()
 	_charge_dir = _dir_to_player()
 	_set_facing_direction(_charge_dir < 0.0)
 	_charge_remaining = _charge_distance
@@ -423,12 +418,6 @@ func _is_blocked_by_world() -> bool:
 	return false
 
 
-## Excluye la colisión con el jugador en cuanto lo detecta (pass-through).
-func _on_detection_area_body_entered(body: Node2D) -> void:
-	super(body)
-	_ensure_player_collision_exception()
-
-
 ## Dirección horizontal (-1/1) hacia el jugador; sin jugador, hacia donde mira.
 func _dir_to_player() -> float:
 	if is_instance_valid(_player):
@@ -455,12 +444,3 @@ func _get_detection_diameter() -> float:
 				radius = maxf(radius, half.x * absf(shape_scale.x))
 	return maxf(radius, 1.0) * 2.0
 
-
-## Excluye la colisión física con el jugador en ambos sentidos, para no
-## arrastrarlo. Las Area2D (detección y ataque) no se ven afectadas.
-func _ensure_player_collision_exception() -> void:
-	if not is_instance_valid(_player) or _player == _collision_excluded_player:
-		return
-	_collision_excluded_player = _player
-	add_collision_exception_with(_player)
-	_player.add_collision_exception_with(self)

@@ -21,6 +21,9 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 - Click izquierdo: combo `attack_1/2/3`, `combo_window` 0.35 s, `hitbox_damage` 20.
 - Click derecho o E: guardia (-15 + -20/s); bloquea daño frontal (`from_front`).
 - Vida `max_health` 100: `take_damage()`, `heal()`; `_die()` es placeholder (respawn lleno).
+- Empuje de enemigos: `take_damage_from(amount, attacker_pos, knockback, lock, knockup)` aplica daño y, si no lo bloquea la guardia, `apply_knockback()` / `apply_knockup()`. Mientras dura `lock` (0.12–0.15 s) se ignora el input horizontal.
+- `is_guarding()` para las áreas enemigas que distinguen bloqueo (fuego del demonio).
+- El cuerpo del jugador solo colisiona con el mundo (`collision_mask` 1): atraviesa a los enemigos, no se sube encima. El daño y los golpes van por `Area2D`.
 - Monedas: `current_coins`, `initial_coins`.
 
 ## Trampas

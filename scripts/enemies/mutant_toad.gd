@@ -37,7 +37,6 @@ var _jumps_done: int = 0
 var _jump_dir: float = 1.0
 var _jump_taken_off: bool = false
 var _spawn_position: Vector2 = Vector2.ZERO
-var _collision_excluded_player: CharacterBody2D = null
 var _windup_tween: Tween = null
 
 
@@ -71,7 +70,6 @@ func _ready() -> void:
 # ---------------------------------------------------------------------------
 
 func _update_behavior(delta: float) -> void:
-	_ensure_player_collision_exception()
 	match _state:
 		State.IDLE:
 			_process_idle(delta)
@@ -233,13 +231,3 @@ func _get_muzzle_position() -> Vector2:
 
 func _pick_wait() -> float:
 	return randf_range(jump_wait_min, jump_wait_max)
-
-
-## Excluye la colisión física con el jugador en ambos sentidos, para no
-## empujarlo. Las Area2D (detección y proyectiles) no se ven afectadas.
-func _ensure_player_collision_exception() -> void:
-	if not is_instance_valid(_player) or _player == _collision_excluded_player:
-		return
-	_collision_excluded_player = _player
-	add_collision_exception_with(_player)
-	_player.add_collision_exception_with(self)

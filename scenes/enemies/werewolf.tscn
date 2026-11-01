@@ -145,7 +145,7 @@ radius = 243.00822
 
 [node name="werewolf" type="CharacterBody2D" unique_id=56684005 node_paths=PackedStringArray("sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 4
-collision_mask = 3
+collision_mask = 1
 script = ExtResource("1_rdsq3")
 sprite = NodePath("pivot/werewolf")
 detection_area = NodePath("pivot/detection_range")

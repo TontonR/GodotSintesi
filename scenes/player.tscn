@@ -435,7 +435,7 @@ size = Vector2(71, 48)
 
 [node name="player" type="CharacterBody2D" unique_id=1277556182 groups=["player"]]
 collision_layer = 2
-collision_mask = 5
+collision_mask = 1
 script = ExtResource("1_3v2ag")
 
 [node name="SpritePivot" type="Node2D" parent="." unique_id=1450528728]
