@@ -87,6 +87,8 @@ var _last_last: int = -999999
 
 
 func _ready() -> void:
+	# Los enemigos lo buscan por grupo para leer la configuración del mundo.
+	add_to_group("world_generator")
 	# La capa antigua sigue en game.tscn como plantilla de TileSet.
 	if solid_tile_set == null and _template_solid:
 		solid_tile_set = _template_solid.tile_set

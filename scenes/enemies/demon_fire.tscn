@@ -1,0 +1,81 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/demon_fire.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enemies/demon/breath.png" id="2_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fire0"]
+atlas = ExtResource("2_sheet")
+region = Rect2(0, 0, 160, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fire1"]
+atlas = ExtResource("2_sheet")
+region = Rect2(160, 0, 160, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fire2"]
+atlas = ExtResource("2_sheet")
+region = Rect2(320, 0, 160, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fire3"]
+atlas = ExtResource("2_sheet")
+region = Rect2(480, 0, 160, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fire4"]
+atlas = ExtResource("2_sheet")
+region = Rect2(640, 0, 160, 96)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_fire"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fire0")
+}],
+"loop": 0,
+"name": &"start",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fire1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fire2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fire3")
+}],
+"loop": 1,
+"name": &"loop",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fire4")
+}],
+"loop": 0,
+"name": &"end",
+"speed": 8.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fire"]
+size = Vector2(28, 120)
+
+[node name="demon_fire" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="RayCast2D" type="RayCast2D" parent="."]
+target_position = Vector2(0, 240)
+collision_mask = 1
+
+[node name="beam" type="Node2D" parent="."]
+scale = Vector2(1, 0.55)
+
+[node name="sprite" type="AnimatedSprite2D" parent="beam"]
+position = Vector2(-69, 0)
+sprite_frames = SubResource("SpriteFrames_fire")
+animation = &"loop"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 60)
+shape = SubResource("RectangleShape2D_fire")

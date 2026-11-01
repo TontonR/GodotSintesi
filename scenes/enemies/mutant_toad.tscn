@@ -1,0 +1,141 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/mutant_toad.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-idle.png" id="2_idle"]
+[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-jump.png" id="3_jump"]
+[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-attack.png" id="4_attack"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/toad_projectile.tscn" id="5_projectile"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle0"]
+atlas = ExtResource("2_idle")
+region = Rect2(0, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle1"]
+atlas = ExtResource("2_idle")
+region = Rect2(80, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle2"]
+atlas = ExtResource("2_idle")
+region = Rect2(160, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle3"]
+atlas = ExtResource("2_idle")
+region = Rect2(240, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jump0"]
+atlas = ExtResource("3_jump")
+region = Rect2(0, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jump1"]
+atlas = ExtResource("3_jump")
+region = Rect2(80, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jump2"]
+atlas = ExtResource("3_jump")
+region = Rect2(160, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jump3"]
+atlas = ExtResource("3_jump")
+region = Rect2(240, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack0"]
+atlas = ExtResource("4_attack")
+region = Rect2(0, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack1"]
+atlas = ExtResource("4_attack")
+region = Rect2(80, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack2"]
+atlas = ExtResource("4_attack")
+region = Rect2(160, 0, 80, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_toad"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_attack0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_attack1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_attack2")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle3")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jump0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jump1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jump2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jump3")
+}],
+"loop": 0,
+"name": &"jump",
+"speed": 8.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(24, 18)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
+radius = 220.0
+
+[node name="mutant_toad" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_script")
+sprite = NodePath("pivot/mutant_toad")
+detection_area = NodePath("pivot/detection_range")
+flip_pivot = NodePath("pivot")
+projectile = ExtResource("5_projectile")
+projectile_speed = 230.0
+projectile_spawn = NodePath("pivot/muzzle")
+
+[node name="body_hitbox" type="CollisionShape2D" parent="."]
+position = Vector2(0, -9)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="pivot" type="Node2D" parent="."]
+
+[node name="mutant_toad" type="AnimatedSprite2D" parent="pivot"]
+position = Vector2(0, -18.6)
+scale = Vector2(0.6, 0.6)
+sprite_frames = SubResource("SpriteFrames_toad")
+animation = &"idle"
+
+[node name="muzzle" type="Marker2D" parent="pivot"]
+position = Vector2(13.5, -10.5)
+
+[node name="detection_range" type="Area2D" parent="pivot"]
+collision_layer = 0
+collision_mask = 2
+
+[node name="detection_hitbox" type="CollisionShape2D" parent="pivot/detection_range"]
+shape = SubResource("CircleShape2D_detection")
