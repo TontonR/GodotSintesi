@@ -37,11 +37,26 @@ func trigger_attack_passives(target: Node, base_damage: float) -> float:
 	return current_damage
 
 ## Runs when the player takes damage
-func trigger_take_damage_passives(base_damage: float) -> float:
+func trigger_take_damage_passives(base_damage: float, attacker: Node = null) -> float:
 	var current_damage = base_damage
 	for passive in active_passives:
-		current_damage = passive.on_player_take_damage(current_damage)
+		current_damage = passive.on_player_take_damage(current_damage, attacker)
 	return current_damage
+
+## Runs when the player starts an attack (step = 1, 2, 3... of the combo)
+func trigger_attack_started_passives(player: Node, step: int, direction: Vector2) -> void:
+	for passive in active_passives:
+		passive.on_player_attack_started(player, step, direction)
+
+## Runs when the player blocks a frontal hit
+func trigger_blocked_passives(player: Node) -> void:
+	for passive in active_passives:
+		passive.on_player_blocked(player)
+
+## Runs when the player kills an enemy
+func trigger_kill_passives(player: Node, enemy: Node) -> void:
+	for passive in active_passives:
+		passive.on_enemy_killed(player, enemy)
 
 ## Update loop for passives with timers/regeneration
 func _process(delta: float) -> void:

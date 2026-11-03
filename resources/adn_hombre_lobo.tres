@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="NightBonusPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/NightBonusPassive.gd" id="1_night"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/neuronW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_night")
+passive_id = "adn_hombre_lobo"
+id = "adn_hombre_lobo"
+item_name = "ADN de hombre lobo"
+description = "De noche: +15% de ataque y +15% de velocidad."
+icon = ExtResource("1_tex")
+quality = "Raro"
+value = 80
+damage_multiplier = 1.15
+speed_multiplier = 1.15

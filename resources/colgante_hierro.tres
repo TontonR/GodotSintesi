@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/healthW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_stat")
+passive_id = "colgante_hierro"
+id = "colgante_hierro"
+item_name = "Colgante de hierro"
+description = "Aumenta 25 la vida máxima. No cura."
+icon = ExtResource("1_tex")
+quality = "Normal"
+value = 60
+bonus_max_health = 25

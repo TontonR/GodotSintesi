@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3 uid="uid://dtgx6pv22swik"]
+
+[ext_resource type="Script" uid="uid://dnyihphr8iu08" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
+[ext_resource type="Texture2D" uid="uid://cjbag1hxjk1vi" path="res://assets/items/iconos/strenghtenW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_stat")
+bonus_attack = 2
+passive_id = "maza"
+id = "maza"
+item_name = "Maza"
+description = "Aumenta 2 el ataque."
+icon = ExtResource("1_tex")
+value = 40

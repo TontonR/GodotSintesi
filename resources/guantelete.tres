@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GauntletPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/GauntletPassive.gd" id="1_gntl"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/strenghtenW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_gntl")
+id = "guantelete"
+item_name = "Guantelete"
+description = "Cada quinto ataque de la rotación, el siguiente impacto hace el doble de daño."
+icon = ExtResource("2_icon")
+value = 75
+passive_id = "guantelete"
+every_n_attacks = 5
+damage_multiplier = 2.0

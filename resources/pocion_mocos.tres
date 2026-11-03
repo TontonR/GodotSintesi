@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MocoPotion" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/MocoPotion.gd" id="1_scr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/bombPotionW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_scr")
+duration = 60.0
+id = "pocion_mocos"
+item_name = "Poción de mocos"
+description = "Aumenta el salto durante 60 s y deja al jugador soltando partículas de moco."
+icon = ExtResource("1_tex")
+quality = "Normal"
+value = 30
+jump_multiplier = 1.3
+moco_levels = 1

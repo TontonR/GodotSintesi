@@ -32,7 +32,11 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Spawns y persistencia
 
-- Por chunk: `enemy_counts_per_chunk` [4 orcos, 1 fantasma] y 8 monedas. Con 256 tiles de ancho la densidad es la mitad que con 128; para más o menos, tocar los contadores (la densidad no cambia con el alto). Márgenes de 2 tiles; en el chunk 0 no se genera hasta `safe_start_tiles + 6` (88 px de hueco con el spawn del jugador).
+- Por chunk: `enemy_counts_per_chunk` base `[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]` (13 enemigos) y 2 monedas.
+- Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`, quedan 6), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`, 16 con el redondeo por tipo).
+- **Reparto uniforme** (2026-11-03): se monta la lista de tipos del chunk y se parte `enemy_min_x..max_x` en un hueco por enemigo; cada uno cae en el centro de su hueco con ruido de ±25 % del hueco. Antes cada enemigo sacaba su X al azar y se apelotonaban.
+- **Voladores aparcados**: `WorldGenerator.DISABLED_ENEMY_SCENES` lista `ghost.tscn` y `demon.tscn`, que ya no están en `enemy_scenes` (escenas y scripts siguen en el repo).
+- Márgenes de 2 tiles; en el chunk 0 los enemigos empiezan en `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~320 px del spawn del jugador).
 - La base del collider del enemigo se apoya en el suelo (`_body_bottom`), no el origen: los enemigos están escalados ×2.
 - Cada spawn tiene un id estable (`e:x:y:índice`, `c:x:y:índice`). `EnemyBase` emite `died` y `coin.gd` emite `collected`; el generador guarda esos ids y no los vuelve a instanciar.
 - Los enemigos vivos que se descargan reaparecen; las bajas y monedas recogidas no.
@@ -41,7 +45,27 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 - Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Prueban 1 px por delante y suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
 - 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
-- El primer chunk (x=0) no genera enemigos: zona segura para spawnear.
+- Con el aumento de enemigos, un chunk maduro mete 16: si el rendimiento cae, bajar `enemy_ramp_max_multiplier` o `enemy_counts_per_chunk`.
+
+## Ciclo día/noche (2026-11-03, ampliado)
+
+- `scripts/world/day_night.gd` (`DayNightCycle`), nodo `day_night` en `scenes/game.tscn`. Día 300 s (5 min) y noche 180 s (3 min); ciclo total 480 s. Empieza de día.
+- El cielo es el `RenderingServer.set_default_clear_color` del viewport; nada de `CanvasModulate`, así que tiles, sprites y HUD conservan su color.
+- Colores por defecto: día `Color(0.5098, 0.7882, 0.9922)` (el `default_clear_color` de `project.godot`) y noche `Color(0.0431, 0.0627, 0.1647)`. Editables en el inspector.
+- `fade_seconds` (12 s) funde el color en cada cambio de fase, recortado a la mitad de la fase más corta; poner 0 para el salto seco. El mismo factor 0→1 (`_night_factor_at`) mueve los otros tres efectos, así que entran y salen con el cielo.
+- Estrellas: `StarField` (clase interna) en un `CanvasLayer` con `layer = -1`, por debajo del mundo; puntos fijos de `star_size` px, semilla fija 20261103, límite superior 90% de la pantalla. `star_count` 110; su alfa es el factor de noche.
+- Montañas: el nodo `../mountains` recibe `modulate` = blanco → `mountain_night_tint` (`Color(0.33, 0.36, 0.52)`), bastante más oscuras de noche. El resto del parallax no cambia.
+- Velo: `ColorRect` negro en un `CanvasLayer` con `layer = 11` (encima del HUD, que está en 10), alfa `night_veil_alpha` = 0.1 (10%) escalado por la noche. `mouse_filter` en `IGNORE` para no bloquear clics.
+- Todos los valores son `@export`: se cambian desde la escena sin tocar código. El reloj es `fmod` sobre `_process`, así que no se guarda entre partidas.
+
+## Caída inicial y pantalla de carga (2026-11-03, reescrita)
+
+- `scripts/world/fall_intro.gd` (`FallIntro`), nodo `fall_intro` al final de `scenes/game.tscn`: coloca al jugador `fall_height_px` (520) por encima de su spawn y lo deja caer a `fall_speed` (300 px/s, ~1,7 s) con `player.fall_speed_cap`; el control sigue desactivado hasta aterrizar.
+- La cámara **sigue al jugador desde el primer frame** (`camera_follow_enabled`). El parqueo anterior (`_park_camera`, `follow_after_px`) no podía funcionar: la `Camera2D` es hija del jugador, así que el parqueo viajaba con él y al enganchar la vista pegaba un salto de ~270 px. Fuera parqueo y fuera tirón.
+- Con 2200 px el intro eran 7 s de cielo vacío: ahora son 520 px (~1,7 s) y el suelo entra enseguida en cámara. `max_seconds` (6 s) devuelve el control aunque el aterrizaje se atasque.
+- El intro hace de **pantalla de carga**: si `WorldGenerator.is_ready_at(x)` (nuevo, mira `_loaded_chunks` del chunk que contiene X) dijera que no hay mundo, la caída se queda suspendida a 240 px del suelo en vez de aterrizar en el vacío. En la práctica la generación es síncrona en `_ready`, así que nunca se ve.
+- Sin negro de transición (quitado el 2026-11-03): se entra directo al cielo. Al aterrizar se devuelve el control y se muestra el `UILayer` (oculto durante la caída).
+- Todos los valores son `@export` en el nodo `fall_intro`.
 
 ## Capas y cámara
 

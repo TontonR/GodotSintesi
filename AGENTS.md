@@ -21,10 +21,12 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 | `docs/world.md` | Generación por zonas, suelo, población y capas |
 | `docs/historial.md` | Bugs ya resueltos (drops, loot); leer solo si algo huele a eso |
 | `documentation.md` | Histórico (396 líneas). Solo arqueología; no usar como fuente |
+| `vault/README.md` | Plan y canal con el opencode del compañero: tickets, estado y bitácora |
 
 ## Reglas de trabajo
 
 - **No tocar nada que no se haya pedido.** Sin tests, validaciones, commits ni comandos de Godot salvo petición explícita.
+- **Antes de tocar código**: lee `vault/estado.md` y trabaja desde un ticket de `vault/tickets/` (contrato en `vault/README.md`). Al cerrar, actualiza ticket, `changelog.md` y `estado.md`.
 - El editor de Godot suele estar **abierto**: tras un `checkout/reset` reserializa las escenas abiertas (añade `unique_id`/`node_paths`). Si `git status` muestra una escena que no tocaste, es el editor.
 - Salidas de terminal: **filtra siempre**. Nunca listes `assets/` sin filtrar (+1000 PNG revientan el contexto).
 

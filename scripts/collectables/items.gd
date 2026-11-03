@@ -6,6 +6,8 @@ extends Resource
 @export var item_name: String = ""
 @export_multiline var description: String = ""
 @export var icon: Texture2D
+## Item quality used by loot tables and (later) UI colours.
+@export_enum("Normal", "Raro") var quality: String = "Normal"
 @export var max_stack: int = 99
 @export var value: int = 10
 

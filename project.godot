@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="test"
-run/main_scene="uid://copiyrk0io0oy"
+config/name="OffBeaten Path"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PoisonCloudPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/PoisonCloudPassive.gd" id="1_scr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/poisonW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_scr")
+passive_id = "tuberculos_cutaneos"
+id = "tuberculos_cutaneos"
+item_name = "Túberculos cutáneos"
+description = "Al recibir daño sueltas una nube de veneno en el suelo que daña a los enemigos."
+icon = ExtResource("1_tex")
+quality = "Raro"
+value = 80
+cooldown_seconds = 4.0
+radius = 44.0
+damage_per_tick = 2.0
+cloud_lifetime = 4.0

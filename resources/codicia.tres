@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GreedPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/GreedPassive.gd" id="1_grdp"]
+[ext_resource type="Texture2D" path="res://assets/items/moneda_oro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_grdp")
+id = "codicia"
+item_name = "Codicia"
+description = "Ganas 1 moneda extra cada vez que matas a un enemigo."
+icon = ExtResource("2_icon")
+value = 60
+passive_id = "codicia"
+coins_on_kill = 1

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ComboProjectilePassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/ComboProjectilePassive.gd" id="1_scr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/swirlW.png" id="1_tex"]
+[ext_resource type="PackedScene" path="res://scenes/collectables/player_projectile.tscn" id="2_proj"]
+
+[resource]
+script = ExtResource("1_scr")
+passive_id = "burbuja_rana"
+id = "burbuja_rana"
+item_name = "Burbuja de rana"
+description = "Al acabar el combo lanza 3 proyectiles de saliva en abanico (15% del daño base cada uno) que atraviesan a todos los enemigos."
+icon = ExtResource("1_tex")
+quality = "Normal"
+value = 45
+projectile_scene = ExtResource("2_proj")
+every_n_attacks = 3
+damage_ratio = 0.15
+projectile_count = 3
+spread_degrees = 40.0
+projectile_speed = 300.0
+spawn_offset = Vector2(24, -10)
+piercing = true

@@ -9,6 +9,13 @@ const TILE_SIZE := 16
 ## Chunks extra a cada lado que se mantienen cargados: los enemigos no
 ## desaparecen al cruzar una costura (solo se liberan 2 chunks más atrás).
 const KEEP_CHUNKS_SIDE := 2
+## Voladores aparcados por ahora: sus escenas siguen en el repo, pero no entran
+## en `enemy_scenes` (el fantasma se teleporta y el demonio lanza el chorro sin
+## estar probados). Volver a añadirlos a mano cuando toque.
+const DISABLED_ENEMY_SCENES: Array[String] = [
+	"res://scenes/enemies/ghost.tscn",
+	"res://scenes/enemies/demon.tscn",
+]
 
 @export_group("Mundo")
 ## Semilla del mundo; 0 = aleatoria por partida.
@@ -55,16 +62,30 @@ const KEEP_CHUNKS_SIDE := 2
 ## Lista de escenas de enemigos.
 @export var enemy_scenes: Array[PackedScene] = [
 	preload("res://scenes/enemies/orc.tscn"),
-	preload("res://scenes/enemies/ghost.tscn")
+	preload("res://scenes/enemies/mutant_toad.tscn"),
+	preload("res://scenes/enemies/werewolf.tscn"),
+	preload("res://scenes/enemies/slime.tscn"),
+	preload("res://scenes/enemies/skeleton.tscn"),
+	preload("res://scenes/enemies/archer.tscn")
 ]
-## Cantidades por chunk, en el mismo orden que las escenas.
-@export var enemy_counts_per_chunk: Array[int] = [4, 1]
+## Cantidades base por chunk, en el mismo orden que las escenas.
+@export var enemy_counts_per_chunk: Array[int] = [4, 2, 1, 2, 2, 2]
 ## Margen en tiles para no aparecer pegado al borde del chunk.
 @export var enemy_spawn_margin_tiles: int = 2
+## Tiles de margen seguro tras el spawn del jugador antes del primer enemigo.
+@export var enemy_safe_gap_tiles: int = 20
+## Chunks iniciales con menos enemigos (cuenta base × multiplicador).
+@export var enemy_ramp_first_chunks: int = 2
+## Multiplicador de enemigos en esos primeros chunks.
+@export var enemy_ramp_first_multiplier: float = 0.5
+## Subida del multiplicador por cada chunk más allá del tramo inicial.
+@export var enemy_ramp_per_chunk: float = 0.2
+## Tope del multiplicador de enemigos por chunk.
+@export var enemy_ramp_max_multiplier: float = 1.8
 
 @export_group("Monedas")
 @export var coin_scene: PackedScene = preload("res://scenes/collectables/coin.tscn")
-@export var coins_per_chunk: int = 8
+@export var coins_per_chunk: int = 2
 ## Las monedas no caen: su base queda sobre el suelo.
 @export var coin_ground_offset: float = 8.0
 
@@ -87,6 +108,8 @@ var _last_last: int = -999999
 
 
 func _ready() -> void:
+	# El lobo busca el generador por grupo para saber dónde puede merodear.
+	add_to_group("world_generator")
 	# La capa antigua sigue en game.tscn como plantilla de TileSet.
 	if solid_tile_set == null and _template_solid:
 		solid_tile_set = _template_solid.tile_set
@@ -125,6 +148,14 @@ func _height_at(tile_x: int) -> int:
 		var t := float(tile_x - safe_start_tiles) / float(maxi(1, start_blend_tiles))
 		return roundi(lerpf(base_height, h, t))
 	return h
+
+
+## Menos enemigos en los primeros chunks y bastantes más cuanto más lejos.
+func _enemy_count_multiplier(chunk_x: int) -> float:
+	if chunk_x < enemy_ramp_first_chunks:
+		return enemy_ramp_first_multiplier
+	var steps := float(chunk_x - enemy_ramp_first_chunks) + 1.0
+	return minf(1.0 + enemy_ramp_per_chunk * steps, enemy_ramp_max_multiplier)
 
 
 func _noise_height(tile_x: int) -> int:
@@ -189,6 +220,13 @@ func _update_chunks(force: bool) -> void:
 			_chunk_data.erase(coord)
 
 
+## True cuando el chunk que contiene `world_x` ya está instanciado. Lo usa la
+## caída inicial: sin mundo debajo, la caída no puede terminar.
+func is_ready_at(world_x: float) -> bool:
+	var coord_x := floori(world_x / float(chunk_width_tiles * TILE_SIZE))
+	return _loaded_chunks.has(Vector2i(coord_x, 0))
+
+
 func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
@@ -208,27 +246,46 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 
 	var min_x := enemy_spawn_margin_tiles
 	var max_x := chunk_width_tiles - enemy_spawn_margin_tiles - 1
-	# El primer chunk es zona segura: sin enemigos, así no atacan al spawnear.
-	var enemy_room := coord.x != 0
+	# En el chunk del spawn los enemigos empiezan un poco más allá del jugador,
+	# no en el chunk siguiente (antes había que andar media pantalla y pico).
+	var enemy_min_x := min_x
+	if coord.x == 0:
+		enemy_min_x = maxi(enemy_min_x, safe_start_tiles + enemy_safe_gap_tiles)
 
-	var enemies: Array[Dictionary] = []
-	var enemy_index := 0
+	# Tipos del chunk antes de repartir las X (uno por enemigo).
+	var spawn_scenes: Array[PackedScene] = []
+	# Los primeros chunks van al 50 % y a partir de ahí cada chunk suma más.
+	var count_multiplier := _enemy_count_multiplier(coord.x)
 	for idx in range(enemy_scenes.size()):
 		var count := 0
 		if idx < enemy_counts_per_chunk.size():
-			count = enemy_counts_per_chunk[idx]
+			count = maxi(floori(float(enemy_counts_per_chunk[idx]) * count_multiplier), 0)
 		for i in range(count):
-			var spawn_id := "e:%d:%d:%d" % [coord.x, coord.y, enemy_index]
-			enemy_index += 1
-			# Consumir el RNG siempre para que las posiciones no cambien al persistir bajas.
-			var local_x := rng.randi_range(min_x, max_x)
-			if not enemy_room or _defeated_spawns.has(spawn_id) or enemy_scenes[idx] == null:
-				continue
-			enemies.append({
-				"id": spawn_id,
-				"scene": enemy_scenes[idx],
-				"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE)
-			})
+			spawn_scenes.append(enemy_scenes[idx])
+
+	# Reparto uniforme: un hueco por enemigo a lo ancho del chunk, con algo de
+	# ruido para que no queden en fila. Antes cada enemigo tiraba su X al azar y
+	# se apelotonaban todos en la misma zona del chunk.
+	var enemies: Array[Dictionary] = []
+	var total := spawn_scenes.size()
+	var slot_width := float(maxi(max_x - enemy_min_x + 1, 1)) / float(maxi(total, 1))
+	var jitter := maxi(floori(slot_width * 0.25), 0)
+	for k in range(total):
+		var spawn_id := "e:%d:%d:%d" % [coord.x, coord.y, k]
+		# Consumir el RNG siempre para que las posiciones no cambien al persistir bajas.
+		var offset_px := rng.randi_range(-jitter, jitter) if jitter > 0 else 0
+		var local_x := clampi(
+			enemy_min_x + floori((float(k) + 0.5) * slot_width) + offset_px,
+			enemy_min_x,
+			max_x
+		)
+		if _defeated_spawns.has(spawn_id) or spawn_scenes[k] == null:
+			continue
+		enemies.append({
+			"id": spawn_id,
+			"scene": spawn_scenes[k],
+			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE)
+		})
 
 	var coins: Array[Dictionary] = []
 	for i in range(coins_per_chunk):

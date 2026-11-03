@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="IronHeartPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/IronHeartPassive.gd" id="1_irhn"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/healthW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_irhn")
+id = "corazon_hierro"
+item_name = "Corazón de hierro"
+description = "Aumenta tu vida máxima en 25 y te cura esa misma cantidad."
+icon = ExtResource("2_icon")
+value = 85
+passive_id = "corazon_hierro"
+max_health_bonus = 25

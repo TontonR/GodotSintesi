@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CoinDropBonusPassive" format=3 uid="uid://bw24s4qmlk5g3"]
+
+[ext_resource type="Script" uid="uid://b35ni664gfvsi" path="res://scripts/collectables/CoinDropBonusPassive.gd" id="1_coin"]
+[ext_resource type="Texture2D" uid="uid://cliyicpm4rdpe" path="res://assets/items/moneda_oro.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_coin")
+extra_coin_chance = 0.1
+passive_id = "piedra_oro"
+id = "piedra_oro"
+item_name = "Piedra con oro"
+description = "Aumenta un 10% la probabilidad de que un enemigo suelte moneda al morir."
+icon = ExtResource("1_tex")
+quality = "Raro"
+value = 80

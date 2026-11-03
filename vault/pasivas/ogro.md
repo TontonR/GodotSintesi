@@ -1,0 +1,17 @@
+# Pasivas del Ogro
+
+_2026-11-03 · tabla de Jorge · loot: `loot_preset = "Ogro"` en `scenes/enemies/orc.tscn`_
+
+| Nombre | Qué hace | Calidad | `.tres` | Script |
+|---|---|---|---|---|
+| Tapoarrabos | +10 estamina base | Normal | `resources/tapoarrabos.tres` | `StatBonusPassive` |
+| Maza | +1 ataque | Normal | `resources/maza.tres` | `StatBonusPassive` |
+| Uña de ogro | +5 velocidad | Normal | `resources/una_ogro.tres` | `StatBonusPassive` |
+| Colgante de hierro (forma de corazón) | +25 vida máx (no cura) | Normal | `resources/colgante_hierro.tres` | `StatBonusPassive` |
+| Piedra con oro | +5% de monedas al matar | Raro | `resources/piedra_oro.tres` | `CoinDropBonusPassive` |
+
+- El colgante sube el máximo y deja el hueco nuevo vacío (`health = mini(health, max_health)`).
+- La piedra con oro no depende del pool: `EnemyBase._drop_loot()` le suma
+  `_coin_drop_bonus()` a la probabilidad de la entrada de monedas de cualquier enemigo.
+- Iconos provisionales: `boostW`, `strenghtenW`, `lightningW`, `healthW` y
+  `assets/items/moneda_oro.png` (recorte del primer frame de `coins/MonedaD.png`).

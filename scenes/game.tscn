@@ -10,12 +10,12 @@
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://scripts/world_generator.gd" id="8_vtaks"]
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dnwqqwxweihvq" path="res://assets/map/tile/grass_tile.png" id="10_vtaks"]
-[ext_resource type="PackedScene" uid="uid://fqwwivfv2w2f" path="res://item_pickup.tscn" id="11_pick"]
-[ext_resource type="Resource" uid="uid://d22di4a6y33ew" path="res://resources/pocion_cura.tres" id="12_poci"]
-[ext_resource type="Resource" uid="uid://b1kwx1jao7004" path="res://resources/pocion_stamina.tres" id="13_pocs"]
 [ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scenes/inventory/inventory_ui.gd" id="15_invui"]
 [ext_resource type="Script" uid="uid://b63sr5c2s357d" path="res://scripts/passive_ui.gd" id="16_pasui"]
 [ext_resource type="PackedScene" uid="uid://cwey05xwtoo11" path="res://scenes/inventory/inventory_screen.tscn" id="18_invs"]
+[ext_resource type="Script" uid="uid://btkqmw0a1dpf6" path="res://scripts/world/day_night.gd" id="19_dnt"]
+[ext_resource type="Script" uid="uid://17j5g7nkqv5i" path="res://scripts/debug_tools.gd" id="20_dbg"]
+[ext_resource type="Script" uid="uid://cp600p2cwd4r1" path="res://scripts/world/fall_intro.gd" id="21_fall"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -269,6 +269,12 @@ sources/0 = SubResource("TileSetAtlasSource_kvpfn")
 
 [node name="game" type="Node2D" unique_id=2045042830]
 
+[node name="day_night" type="Node" parent="." unique_id=1535686532]
+script = ExtResource("19_dnt")
+
+[node name="debug_tools" type="Node" parent="." unique_id=89544874]
+script = ExtResource("20_dbg")
+
 [node name="clouds" type="Parallax2D" parent="." unique_id=132653793]
 z_index = -100
 scroll_scale = Vector2(0.01, 0)
@@ -290,6 +296,14 @@ repeat_times = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="mountains" unique_id=980443225]
 texture = ExtResource("2_efco6")
+
+[node name="MountainBase" type="ColorRect" parent="mountains" unique_id=980443226]
+offset_left = -1032.0
+offset_top = 62.0
+offset_right = 1032.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0.156863, 0.239216, 0.262745, 1)
 
 [node name="far_forest" type="Parallax2D" parent="." unique_id=1950092743]
 z_index = -100
@@ -425,14 +439,6 @@ tile_set = SubResource("TileSet_yb26g")
 [node name="coin" parent="." unique_id=2022432403 instance=ExtResource("8_a2bvq")]
 position = Vector2(61, 0)
 
-[node name="drop_pocion_cura" parent="." unique_id=131457314 instance=ExtResource("11_pick")]
-position = Vector2(110, 350)
-item = ExtResource("12_poci")
-
-[node name="drop_pocion_stamina" parent="." unique_id=1723610242 instance=ExtResource("11_pick")]
-position = Vector2(150, 350)
-item = ExtResource("13_pocs")
-
 [node name="map" type="Node" parent="." unique_id=1287760833]
 script = ExtResource("8_vtaks")
 safe_start_tiles = 50
@@ -447,3 +453,6 @@ tile_map_data = PackedByteArray("AAAQAAEAAAAAAAAAAAARAAEAAAABAAAAAAASAAEAAAACAAA
 tile_set = SubResource("TileSet_mdkdc")
 
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]
+
+[node name="fall_intro" type="Node" parent="." unique_id=1899368322]
+script = ExtResource("21_fall")

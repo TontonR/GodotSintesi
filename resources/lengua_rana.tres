@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SlowOnHitPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/SlowOnHitPassive.gd" id="1_scr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/weakenW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_scr")
+passive_id = "lengua_rana"
+id = "lengua_rana"
+item_name = "Lengua de rana"
+description = "Al golpear a un enemigo le bajas la velocidad durante 3 s."
+icon = ExtResource("1_tex")
+quality = "Normal"
+value = 40
+slow_multiplier = 0.5
+slow_seconds = 3.0

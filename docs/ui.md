@@ -20,6 +20,15 @@ _2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
 - **Selección (2026-10-20)**: ratón (clic en el hueco), **A/D** anterior/siguiente dentro de la columna activa y **W/S** suben/bajan dentro de la columna activa (izquierda: skills ↔ consumibles; centro: filas del grid). **Tab** alterna entre columna 1 y 2; la columna 3 (preview) nunca se selecciona. Resaltado = borde azul 1 px, mismo ancho que el normal (el hueco no cambia de tamaño) y **conserva el azul al pasar el ratón**. **Páginas**: **← / →** y **Q** (anterior/izquierda) / **E** (siguiente/derecha) cambian de página y seleccionan el primer coleccionable; los botones **← / →** están en la cabecera, al lado de "Coleccionables". Huecos vacíos = botones deshabilitados con el mismo fondo; `focus_mode = NONE` (Tab se gestiona a mano para alternar columnas).
 - **Sin** botones de usar/equipar (no pedidos). Teclas 1-5 no responden mientras está abierta (la pausa lo bloquea). Se re-monta con `slots_changed`/`passives_changed` solo si está visible.
 
+## Menú principal (2026-11-03)
+
+- `scenes/main_menu.tscn` + `scripts/ui/main_menu.gd`, ahora `run/main_scene` de `project.godot`. El juego se llama **OffBeaten Path** (`config/name`).
+- Fondo: el mismo parallax de la partida (nubes, montañas y dos capas de pinos, `z_index` -100) sobre el cielo, que es el `default_clear_color` del proyecto. `Camera2D` con el mismo `offset (60,-70)` que la del jugador para que las capas caigan en el mismo sitio que en juego.
+- UI en `CanvasLayer` 10: `VBoxContainer` centrado con el título (Label 44 px, sombra) y el botón `Jugar` (con foco al arrancar, así que Enter/Espacio también sirven).
+- Sin fundidos: Jugar llama directo a `change_scene_to_file("res://scenes/game.tscn")` (el negro de transición se quitó el 2026-11-03).
+- `MountainBase`: `ColorRect` hijo de `mountains` (local y 62 → 400, 2064 px de ancho) con `#283D43` (`Color(0.157, 0.239, 0.263)`), para que no se vea cielo por debajo de la cordillera. Desde el 2026-11-03 está **también** en `game.tscn` con el mismo color: la banda plana se ve siempre, en el menú y en partida, y el ciclo día/noche la oscurece junto al resto del nodo `mountains`.
+- La partida empieza con la caída desde el cielo (`FallIntro`, ver `docs/world.md`).
+
 ## Convención de idioma (2026-10-15)
 
 - **En inglés**: identificadores (funciones/vars/constantes/enum), `@export`, títulos de `@export_group` y doc `##` (lo que muestra el inspector).

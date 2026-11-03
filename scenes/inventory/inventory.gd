@@ -14,14 +14,37 @@ const SKILL_SLOTS: int = 2
 # cuando ya no haga falta.
 const DEBUG_TOOLS: bool = true
 const _DEBUG_CONSUMABLES: Array[String] = [
-	"res://resources/pocion_cura.tres",
-	"res://resources/pocion_stamina.tres",
-	"res://resources/pocion_mayor.tres",
+	"res://resources/pocion_mocos.tres",
 ]
 const _DEBUG_PASSIVES: Array[String] = [
-	"res://resources/amuleto_ataque.tres",
-	"res://resources/armadura_ligera.tres",
-	"res://resources/talisman_regen.tres",
+	"res://resources/tapoarrabos.tres",
+	"res://resources/maza.tres",
+	"res://resources/una_ogro.tres",
+	"res://resources/colgante_hierro.tres",
+	"res://resources/piedra_oro.tres",
+	"res://resources/piel_lobo.tres",
+	"res://resources/colmillo_lobo.tres",
+	"res://resources/garras_lobo.tres",
+	"res://resources/adn_hombre_lobo.tres",
+	"res://resources/saliva_rana.tres",
+	"res://resources/lengua_rana.tres",
+	"res://resources/burbuja_rana.tres",
+	"res://resources/tuberculos_cutaneos.tres",
+	"res://resources/moco.tres",
+	"res://resources/pocion_mocos.tres",
+	"res://resources/moco_compacto.tres",
+	"res://resources/corazon_mucosil.tres",
+	"res://resources/cazador.tres",
+	"res://resources/codicia.tres",
+	"res://resources/corazon_hierro.tres",
+	"res://resources/espinas.tres",
+	"res://resources/guantelete.tres",
+	"res://resources/ira_guardian.tres",
+	"res://resources/pies_ligeros.tres",
+	"res://resources/proyectil_tercer_golpe.tres",
+	"res://resources/rafaga.tres",
+	"res://resources/segundo_aliento.tres",
+	"res://resources/vampirismo.tres",
 ]
 
 ## Stored items: one item per slot (null = empty slot)

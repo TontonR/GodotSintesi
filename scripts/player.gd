@@ -22,6 +22,19 @@ extends CharacterBody2D
 var _visual_step_offset: float = 0.0
 # Y entera de la cámara; los escalones se reparten en varios frames.
 var _cam_y: float = NAN
+## Control del jugador; la intro de caída lo desactiva hasta aterrizar.
+var control_enabled: bool = true
+## Si es false la cámara no sigue al jugador (lo usa la intro de caída).
+var camera_follow_enabled: bool = true
+## Tope de velocidad de caída con el control desactivado (0 = sin tope, px/s).
+var fall_speed_cap: float = 0.0
+# Segundos de bloqueo de control tras un knockup (lobo).
+var _control_lock_timer: float = 0.0
+# Multiplicador temporal de salto (poción de mocos).
+var _jump_bonus_factor: float = 1.0
+var _jump_bonus_timer: float = 0.0
+# Emisor de partículas de moco; lo crean las pasivas y la poción de slime.
+var _moco_emitter: Node2D
 # endregion
 
 # region Estadísticas y Economía
@@ -149,12 +162,41 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_attack()
 
 
+## Debug: salto seco para probar zonas lejanas. Corta la inercia y reinicia
+## cámara y subida visual para que el viaje no deje desfases.
+func debug_teleport(offset: Vector2) -> void:
+	global_position += offset
+	velocity = Vector2.ZERO
+	_visual_step_offset = 0.0
+	sprite_pivot.position.y = 0.0
+	_cam_y = NAN
+	_update_camera()
+
+
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.y += gravity * delta
 		move_and_slide()
 		return
+
+	# Sin control (intro de caída): nada de input, salto, ataque ni guardia; la
+	# velocidad de caída se limita con `fall_speed_cap` para que sea predecible.
+	if not control_enabled:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+		velocity.y += gravity * delta * fall_gravity_multiplier
+		if fall_speed_cap > 0.0:
+			velocity.y = minf(velocity.y, fall_speed_cap)
+		move_and_slide()
+		if camera_follow_enabled:
+			_update_camera()
+		_update_animation()
+		return
+
+	_control_lock_timer = maxf(_control_lock_timer - delta, 0.0)
+	_jump_bonus_timer = maxf(_jump_bonus_timer - delta, 0.0)
+	if _jump_bonus_timer <= 0.0:
+		_jump_bonus_factor = 1.0
 
 	_update_stamina(delta)
 
@@ -178,7 +220,9 @@ func _physics_process(delta: float) -> void:
 		raw_direction -= 1.0
 
 	var direction: float = raw_direction
-	if _is_guarding:
+	if _control_lock_timer > 0.0:
+		direction = 0.0
+	elif _is_guarding:
 		direction = 0.0
 	elif _is_attacking:
 		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
@@ -241,7 +285,7 @@ func _physics_process(delta: float) -> void:
 			_coyote_timer = maxf(_coyote_timer - delta, 0.0)
 
 		if _jump_buffer_timer > 0.0 and _coyote_timer > 0.0:
-			velocity.y = jump_velocity
+			velocity.y = jump_velocity * _jump_bonus_factor
 			_jump_buffer_timer = 0.0
 			_coyote_timer = 0.0
 
@@ -261,6 +305,11 @@ func _physics_process(delta: float) -> void:
 func _try_attack() -> void:
 	if _is_dead or _is_attacking:
 		return
+	# Hook de pasivas de combo (proyectiles, golpes potenciados...).
+	if passives:
+		passives.trigger_attack_started_passives(
+			self, _combo_index + 1, Vector2(1.0 if _facing_right else -1.0, 0.0)
+		)
 	var anim: String = _ATTACK_ANIMS[_combo_index]
 	_is_attacking = true
 	_active_hitbox = _combo_index
@@ -316,8 +365,31 @@ func take_damage(amount: int) -> void:
 	_apply_damage(amount, true)
 
 
-func take_damage_from(amount: int, attacker_position: Vector2) -> void:
-	_apply_damage(amount, is_attack_from_front(attacker_position))
+## Los enemigos nuevos (lobo, sapo, demonio) mandan también empuje, knockup y
+## bloqueo de control; los que no los pasan se comportan como antes.
+func take_damage_from(
+	amount: int,
+	attacker_position: Vector2,
+	knockback: float = 0.0,
+	knockup_lock: float = 0.0,
+	knockup: float = 0.0,
+	attacker: Node = null
+) -> void:
+	_apply_damage(amount, is_attack_from_front(attacker_position), attacker)
+	var away := signf(global_position.x - attacker_position.x)
+	if is_zero_approx(away):
+		away = -1.0 if _facing_right else 1.0
+	if knockback > 0.0:
+		velocity.x = away * knockback
+	if knockup > 0.0:
+		velocity.y = -knockup
+	if knockup_lock > 0.0:
+		_control_lock_timer = maxf(_control_lock_timer, knockup_lock)
+
+
+## La usa el chorro del demonio para saber si el golpe lo para la guardia.
+func is_guarding() -> bool:
+	return _is_guarding
 
 
 func is_attack_from_front(attacker_position: Vector2) -> bool:
@@ -326,13 +398,20 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 	return (attacker_position.x > global_position.x) == _facing_right
 
 
-func _apply_damage(amount: int, from_front: bool) -> void:
-	if _is_dead or (_is_guarding and from_front):
+func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void:
+	if _is_dead:
+		return
+	if _is_guarding and from_front:
+		# La guardia para el golpe frontal (aviso para las pasivas de bloqueo).
+		if passives:
+			passives.trigger_blocked_passives(self)
 		return
 	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
 	var final_amount := amount
 	if passives:
-		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount))), 0)
+		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount), attacker)), 0)
+	# El moco compacto come daño plano (cuantas más partículas, más defensa).
+	final_amount = maxi(final_amount - moco_defense(), 0)
 	health = maxi(health - final_amount, 0)
 	_update_health_ui()
 	if health <= 0:
@@ -342,6 +421,62 @@ func _apply_damage(amount: int, from_front: bool) -> void:
 func heal(amount: int) -> void:
 	health = mini(health + amount, max_health)
 	_update_health_ui()
+
+
+# ==============================================================================
+# ESTADÍSTICAS (pasivas)
+# ==============================================================================
+## Sube la vida máxima sin curar: el hueco nuevo queda vacío.
+func add_max_health(amount: int) -> void:
+	max_health = maxi(max_health + amount, 1)
+	health = mini(health, max_health)
+	_update_health_ui()
+
+
+## Sube la stamina máxima; la barra actual se recorta si hiciera falta.
+func add_max_stamina(amount: float) -> void:
+	max_stamina = maxf(max_stamina + amount, 1.0)
+	stamina = minf(stamina, max_stamina)
+	_update_stamina_ui()
+
+
+## Daño plano extra por golpe (pasivas tipo maza o colmillo).
+func add_attack_bonus(amount: int) -> void:
+	hitbox_damage = maxi(hitbox_damage + amount, 0)
+
+
+## Velocidad plana extra en px/s (pasivas tipo uña de ogro).
+func add_speed_bonus(amount: float) -> void:
+	move_speed = maxf(move_speed + amount, 0.0)
+
+
+## Multiplicador de velocidad (pasivas tipo pies ligeros).
+func multiply_move_speed(factor: float) -> void:
+	move_speed = maxf(move_speed * factor, 0.0)
+
+
+## Salto multiplicado durante `seconds` (poción de mocos).
+func apply_jump_bonus(factor: float, seconds: float) -> void:
+	_jump_bonus_factor = maxf(factor, 0.1)
+	_jump_bonus_timer = maxf(seconds, 0.0)
+
+
+## Crea (si hace falta) el emisor de moco y devuelve el nivel actual.
+func moco_emitter() -> Node2D:
+	if _moco_emitter != null and is_instance_valid(_moco_emitter):
+		return _moco_emitter
+	var emitter_script := preload("res://scripts/collectables/moco_emitter.gd")
+	_moco_emitter = emitter_script.new()
+	_moco_emitter.name = "MocoEmitter"
+	add_child(_moco_emitter)
+	return _moco_emitter
+
+
+## Defensa plana que dan las partículas de moco (moco compacto).
+func moco_defense() -> float:
+	if _moco_emitter == null or not is_instance_valid(_moco_emitter):
+		return 0.0
+	return float(_moco_emitter.call("get_defense"))
 
 
 func _die() -> void:

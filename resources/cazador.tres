@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="HunterPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/HunterPassive.gd" id="1_hntr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/swingW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_hntr")
+id = "cazador"
+item_name = "Cazador"
+description = "Haces un 20% más de daño a enemigos que estén por debajo del 30% de su vida."
+icon = ExtResource("2_icon")
+value = 70
+passive_id = "cazador"
+damage_bonus = 0.2
+health_threshold = 0.3

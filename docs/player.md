@@ -23,6 +23,19 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 - Vida `max_health` 100: `take_damage()`, `heal()`; `_die()` es placeholder (respawn lleno).
 - Monedas: `current_coins`, `initial_coins`.
 
+## Caída inicial (2026-11-03)
+
+- Tres variables públicas que maneja `scripts/world/fall_intro.gd`: `control_enabled` (false = sin input, salto, ataque ni guardia), `camera_follow_enabled` (false = la cámara no sigue) y `fall_speed_cap` (tope de caída en px/s, 0 = sin tope).
+- Con `control_enabled = false`, `_physics_process` corta antes de stamina/combate: frena la X, aplica gravedad ×1.6, limita la Y y hace `move_and_slide()`. La animación se sigue actualizando.
+- Por defecto las tres quedan en su valor normal (`true`, `true`, `0`): fuera de la intro el jugador se comporta igual que antes.
+
+## Debug (temporal, 2026-11-03)
+
+- `scripts/debug_tools.gd` (`DebugTools`, nodo `debug_tools` en `game.tscn`): KP7/KP8/KP9 fijan `Engine.time_scale` a x1/x5/x20 y KP4/KP6 hacen un viaje rápido de 64 tiles a izquierda/derecha subiendo 10 tiles (para salir de montañas). Distancias en `teleport_distance_tiles` y `teleport_lift_tiles`.
+- El viaje llama a `player.debug_teleport(offset)`: mueve, corta la velocidad, borra el desfase visual de escalón y reinicia `_cam_y` para que la cámara no arrastre el salto.
+- `_exit_tree` devuelve `time_scale` a 1.0: salir de la escena no deja el juego acelerado.
+- Los ítems de prueba (KP0-KP3) viven aparte, en `scenes/inventory/inventory.gd` (ver `docs/items.md`).
+
 ## Trampas
 
 - Giro con `sprite_pivot.scale.x`, nunca `flip_h`: con `flip_h` los pies se desplazan por el padding de la espada.

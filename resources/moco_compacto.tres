@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MocoLevelPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/MocoLevelPassive.gd" id="1_scr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/iceW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_scr")
+passive_id = "moco_compacto"
+id = "moco_compacto"
+item_name = "Moco compacto"
+description = "Más partículas de moco: cada partícula te da defensa."
+icon = ExtResource("1_tex")
+quality = "Normal"
+value = 50
+level_bonus = 3
+doubles_level = false

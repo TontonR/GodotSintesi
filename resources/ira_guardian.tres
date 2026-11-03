@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GuardianWrathPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/GuardianWrathPassive.gd" id="1_grwr"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/fireW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_grwr")
+id = "ira_guardian"
+item_name = "Ira del guardián"
+description = "Al bloquear un ataque, haces un 30% más de daño durante 10 segundos."
+icon = ExtResource("2_icon")
+value = 80
+passive_id = "ira_guardian"
+damage_bonus = 0.3
+duration = 10.0

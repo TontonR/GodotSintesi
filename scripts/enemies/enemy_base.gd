@@ -24,6 +24,12 @@ signal died
 ## Desplazamiento vertical (px) al aparecer en el mundo; positivo lo sube.
 @export var spawn_y_offset: float = 0.0
 
+@export_group("Difficulty")
+## Multiplicador de vida aplicado al aparecer (1 = stats de la escena).
+@export var health_multiplier: float = 1.35
+## Multiplicador de daño aplicado al aparecer (1 = stats de la escena).
+@export var attack_multiplier: float = 1.25
+
 @export_group("Enemy Config")
 ## No gravity; moves freely on X and Y.
 @export var flying_enemy: bool = false
@@ -53,25 +59,53 @@ signal died
 const DEFAULT_COIN: PackedScene = preload("res://scenes/collectables/coin.tscn")
 const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
 ## Pool de objetos que pueden soltarse al morir (uno al azar por drop)
-const DROP_ITEMS: Array[Items] = [
-	preload("res://resources/pocion_cura.tres"),
-	preload("res://resources/pocion_stamina.tres"),
-	preload("res://resources/pocion_mayor.tres"),
-	preload("res://resources/amuleto_ataque.tres"),
-	preload("res://resources/armadura_ligera.tres"),
-	preload("res://resources/talisman_regen.tres"),
-]
-
+## Pasivas de cada tipo de enemigo (tabla de Jorge, T-0019).
+const PRESET_POOLS := {
+	"Ogro": [
+		preload("res://resources/tapoarrabos.tres"),
+		preload("res://resources/maza.tres"),
+		preload("res://resources/una_ogro.tres"),
+		preload("res://resources/colgante_hierro.tres"),
+		preload("res://resources/piedra_oro.tres"),
+	],
+	"Lobo": [
+		preload("res://resources/piel_lobo.tres"),
+		preload("res://resources/colmillo_lobo.tres"),
+		preload("res://resources/garras_lobo.tres"),
+		preload("res://resources/adn_hombre_lobo.tres"),
+	],
+	"Rana": [
+		preload("res://resources/saliva_rana.tres"),
+		preload("res://resources/lengua_rana.tres"),
+		preload("res://resources/burbuja_rana.tres"),
+		preload("res://resources/tuberculos_cutaneos.tres"),
+	],
+	"Slime": [
+		preload("res://resources/moco.tres"),
+		preload("res://resources/pocion_mocos.tres"),
+		preload("res://resources/moco_compacto.tres"),
+		preload("res://resources/corazon_mucosil.tres"),
+	],
+}
 @export_group("Loot")
-## Items dropped on death, with chance and amount per entry.
-@export var loot_table: Array[LootDropItem] = [
-	LootDropItem.new(DEFAULT_COIN, 1.0, 1, 3),
-	LootDropItem.new(ITEM_PICKUP_SCENE, 0.75, 1, 1, DROP_ITEMS)
-]
+## Probabilidad de soltar moneda al morir (baja a propósito: las monedas escasean).
+@export_range(0.0, 1.0, 0.05) var coin_drop_chance: float = 0.45
+## Monedas que suelta cuando cae la moneda.
+@export var coin_drop_amount: int = 1
+## Tabla de drops; `_build_loot_table()` la reconstruye al aparecer.
+@export var loot_table: Array[LootDropItem] = []
 ## Horizontal spread (px) when dropping loot.
 @export var loot_drop_spread: float = 15.0
 ## Vertical spread (px) when dropping loot.
 @export var loot_drop_y: float = 15.0
+## Preset de pasivas que suelta este enemigo (ver `PRESET_POOLS`).
+@export_enum("Ninguno", "Ogro", "Lobo", "Rana", "Slime") var loot_preset: String = "Ninguno"
+## Objetos extra del enemigo, se suman al preset.
+@export var loot_pool: Array[Items] = []
+## Probabilidad de que suelte uno de esos objetos al morir.
+@export_range(0.0, 1.0, 0.05) var item_drop_chance: float = 0.3
+## Peso relativo de los objetos `Raro` dentro del pool (1.0 = igual que Normal).
+@export_range(0.0, 1.0, 0.05) var rare_loot_weight: float = 0.25
 
 @export_group("Nodes")
 ## Main sprite of the enemy.
@@ -108,12 +142,20 @@ var _attack_range_offset_x: float = 0.0
 var _projectile_spawn_offset_x: float = 0.0
 var _is_dead: bool = false
 var _is_facing_left: bool = false
+## Ralentización activa (lengua de rana): factor y segundos restantes.
+var _slow_factor: float = 1.0
+var _slow_timer: float = 0.0
 var _hit_tween: Tween
 
 
 func _ready() -> void:
+	# Ajuste global de dificultad: los hijos fijan sus stats en `_init()` y las
+	# escenas pueden sobrescribirlos, así que se aplica aquí, al final.
+	max_health = maxf(max_health * health_multiplier, 1.0)
+	base_attack = maxf(base_attack * attack_multiplier, 0.0)
 	health = max_health
 	defence = base_defense
+	_build_loot_table()
 
 	# Modo flotante: sin suelo ni "arriba/abajo", ideal para voladores.
 	if flying_enemy:
@@ -147,6 +189,11 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
+
+	if _slow_timer > 0.0:
+		_slow_timer = maxf(_slow_timer - delta, 0.0)
+		if _slow_timer <= 0.0:
+			_slow_factor = 1.0
 
 	# Los voladores no sufren gravedad.
 	if not flying_enemy and not is_on_floor():
@@ -209,18 +256,18 @@ func _stop() -> void:
 ## to_player: vector desde el enemigo hasta el jugador.
 func _chase(to_player: Vector2) -> void:
 	if flying_enemy:
-		velocity = to_player.normalized() * speed_movement
+		velocity = to_player.normalized() * _current_speed()
 	else:
-		velocity.x = signf(to_player.x) * speed_movement
+		velocity.x = signf(to_player.x) * _current_speed()
 	_play_animation(move_animation)
 
 
 ## Se aleja del jugador (dirección contraria a to_player).
 func _flee(to_player: Vector2) -> void:
 	if flying_enemy:
-		velocity = - to_player.normalized() * speed_movement
+		velocity = - to_player.normalized() * _current_speed()
 	else:
-		velocity.x = - signf(to_player.x) * speed_movement
+		velocity.x = - signf(to_player.x) * _current_speed()
 	_play_animation(move_animation)
 
 
@@ -477,6 +524,7 @@ func _die() -> void:
 		attack_range.set_deferred("monitoring", false)
 	if flee_area:
 		flee_area.set_deferred("monitoring", false)
+	_notify_player_kill()
 	_drop_loot()
 	_on_death()
 
@@ -484,6 +532,69 @@ func _die() -> void:
 ## Los hijos pueden sobrescribirlo para animaciones de muerte.
 func _on_death() -> void:
 	queue_free()
+
+
+## Ralentiza al enemigo (lengua de rana): 0.5 = mitad de velocidad.
+func apply_slow(multiplier: float, seconds: float) -> void:
+	if _is_dead:
+		return
+	_slow_factor = clampf(multiplier, 0.1, 1.0)
+	_slow_timer = maxf(seconds, 0.0)
+
+
+func _current_speed() -> float:
+	return speed_movement * _slow_factor
+
+
+## Monta la tabla de loot del enemigo: moneda a veces + una pasiva de su preset.
+func _build_loot_table() -> void:
+	var items: Array[Items] = _preset_pool(loot_preset)
+	items.append_array(loot_pool)
+	loot_table = [
+		LootDropItem.new(DEFAULT_COIN, coin_drop_chance, coin_drop_amount, coin_drop_amount)
+	]
+	if items.is_empty():
+		return
+	loot_table.append(LootDropItem.new(ITEM_PICKUP_SCENE, item_drop_chance, 1, 1, items))
+
+
+func _preset_pool(preset: String) -> Array[Items]:
+	var items: Array[Items] = []
+	var source: Array = PRESET_POOLS.get(preset, [])
+	for entry in source:
+		if entry:
+			items.append(entry)
+	return items
+
+
+## Elección con peso: los `Raro` caen menos que los `Normal`.
+func _pick_loot(pool: Array) -> Items:
+	if pool.is_empty():
+		return null
+	var total := 0.0
+	for entry in pool:
+		if entry:
+			total += 1.0 if entry.quality == "Normal" else rare_loot_weight
+	if total <= 0.0:
+		return pool.pick_random()
+	var roll := randf() * total
+	for entry in pool:
+		if entry == null:
+			continue
+		roll -= 1.0 if entry.quality == "Normal" else rare_loot_weight
+		if roll <= 0.0:
+			return entry
+	return pool[pool.size() - 1]
+
+
+## Avisa a las pasivas del jugador (vampirismo, codicia...).
+func _notify_player_kill() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+	var passives := player.get_node_or_null("PlayerPassives")
+	if passives and passives.has_method("trigger_kill_passives"):
+		passives.call("trigger_kill_passives", player, self)
 
 
 func _drop_loot() -> void:
@@ -498,14 +609,18 @@ func _drop_loot() -> void:
 		if not drop_entry or not drop_entry.item_scene:
 			continue
 
-		if randf() <= drop_entry.drop_chance:
+		var drop_chance := drop_entry.drop_chance
+		# Pasivas del jugador (Piedra con oro) suben la probabilidad de moneda.
+		if drop_entry.item_scene == DEFAULT_COIN:
+			drop_chance = minf(drop_chance + _coin_drop_bonus(), 1.0)
+		if randf() <= drop_chance:
 			var amount := randi_range(drop_entry.min_amount, drop_entry.max_amount)
 			for i in amount:
 				var item := drop_entry.item_scene.instantiate()
 				if item:
 					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
 					if drop_entry.item_pool.size() > 0 and "item" in item:
-						item.set("item", drop_entry.item_pool.pick_random())
+						item.set("item", _pick_loot(drop_entry.item_pool))
 					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
 					var offset_y := randf_range(-loot_drop_y, loot_drop_y)
 					var drop_position := global_position + Vector2(offset_x, offset_y)
@@ -513,6 +628,24 @@ func _drop_loot() -> void:
 					# Asignar global_position después de parentarlo evita sumar dos veces
 					# el offset del chunk; la física del pickup empieza en el siguiente tick.
 					item.global_position = drop_position
+
+
+## Extra de probabilidad de moneda que aportan las pasivas del jugador actual.
+func _coin_drop_bonus() -> float:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return 0.0
+	var passives := player.get_node_or_null("PlayerPassives")
+	if passives == null:
+		return 0.0
+	var list = passives.get("active_passives")
+	if not (list is Array):
+		return 0.0
+	var bonus := 0.0
+	for passive in list:
+		if passive and passive.has_method("get_coin_drop_bonus"):
+			bonus += float(passive.call("get_coin_drop_bonus"))
+	return bonus
 
 
 ## Parpadeo rojo al recibir daño.

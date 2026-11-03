@@ -1,0 +1,96 @@
+[gd_scene format=4 uid="uid://b7m3nq0ffbtpa"]
+
+[ext_resource type="Texture2D" path="res://assets/map/background/cloud.png" id="1_cloud"]
+[ext_resource type="Texture2D" path="res://assets/map/background/mountain2.png" id="2_mount"]
+[ext_resource type="Texture2D" path="res://assets/map/background/pine1.png" id="3_far"]
+[ext_resource type="Texture2D" path="res://assets/map/background/pine2.png" id="4_near"]
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="5_menu"]
+
+[node name="main_menu" type="Node2D"]
+script = ExtResource("5_menu")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(60, -70)
+
+[node name="clouds" type="Parallax2D" parent="."]
+z_index = -100
+scroll_scale = Vector2(0.01, 0)
+scroll_offset = Vector2(-5, 90)
+repeat_size = Vector2(688, 0)
+autoscroll = Vector2(-1, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="clouds"]
+texture = ExtResource("1_cloud")
+
+[node name="mountains" type="Parallax2D" parent="."]
+z_index = -100
+scale = Vector2(1.6, 1.6)
+scroll_scale = Vector2(0.02, 0)
+scroll_offset = Vector2(0, 213)
+repeat_size = Vector2(688, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="mountains"]
+texture = ExtResource("2_mount")
+
+[node name="MountainBase" type="ColorRect" parent="mountains"]
+offset_left = -1032.0
+offset_top = 62.0
+offset_right = 1032.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0.156863, 0.239216, 0.262745, 1)
+
+[node name="far_forest" type="Parallax2D" parent="."]
+z_index = -100
+scale = Vector2(1.6, 1.6)
+scroll_scale = Vector2(0.2, 0.1)
+scroll_offset = Vector2(-1072, 363)
+repeat_size = Vector2(688, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="far_forest"]
+texture = ExtResource("3_far")
+
+[node name="near_forest" type="Parallax2D" parent="."]
+z_index = -100
+scale = Vector2(1.6, 1.6)
+scroll_scale = Vector2(0.5, 0.25)
+scroll_offset = Vector2(-84, 520)
+repeat_size = Vector2(688, 0)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="near_forest"]
+texture = ExtResource("4_near")
+
+[node name="Menu" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Layout" type="VBoxContainer" parent="Menu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 48.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 34
+
+[node name="Title" type="Label" parent="Menu/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.086, 0.121, 0.278, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 44
+text = "OffBeaten Path"
+horizontal_alignment = 1
+
+[node name="Play" type="Button" parent="Menu/Layout"]
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(190, 44)
+theme_override_font_sizes/font_size = 20
+text = "Jugar"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SecondWindPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/SecondWindPassive.gd" id="1_scnd"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/boostW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_scnd")
+id = "segundo_aliento"
+item_name = "Segundo aliento"
+description = "Si bajas del 30% de vida, recuperas 2 de vida por segundo."
+icon = ExtResource("2_icon")
+value = 70
+passive_id = "segundo_aliento"
+health_threshold = 0.3
+heal_per_second = 2.0

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3 uid="uid://djkeu27rn7a5r"]
+
+[ext_resource type="Script" uid="uid://dnyihphr8iu08" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
+[ext_resource type="Texture2D" uid="uid://bvf5qysbh37hq" path="res://assets/items/iconos/swingW.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_stat")
+bonus_attack = 3
+passive_id = "colmillo_lobo"
+id = "colmillo_lobo"
+item_name = "Colmillo de lobo"
+description = "Aumenta 3 el ataque."
+icon = ExtResource("1_tex")
+value = 40
