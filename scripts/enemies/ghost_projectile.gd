@@ -34,7 +34,9 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	print("Proyectil impactó con: ", body.name)
 
 	if body.is_in_group("player") or body.has_method("take_damage"):
-		if body.has_method("take_damage"):
+		if body.has_method("take_damage_from"):
+			body.take_damage_from(damage, global_position, 0.0, 0.15, 0.0, self)
+		elif body.has_method("take_damage"):
 			body.take_damage(damage)
 			print("¡Daño realizado al jugador!")
 		queue_free()

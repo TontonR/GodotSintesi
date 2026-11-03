@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ComboProjectilePassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/ComboProjectilePassive.gd" id="1_cmbp"]
+[ext_resource type="PackedScene" path="res://scenes/collectables/player_projectile.tscn" id="2_proj"]
+[ext_resource type="Texture2D" path="res://assets/icons/pasiva_proyectil.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_cmbp")
+id = "proyectil_tercer_golpe"
+item_name = "Proyectil del tercer golpe"
+description = "Cada tercer ataque de la rotación lanza un proyectil que hace un 25% de tu daño."
+icon = ExtResource("3_icon")
+value = 80
+passive_id = "proyectil_tercer_golpe"
+projectile_scene = ExtResource("2_proj")
+every_n_attacks = 3
+damage_ratio = 0.25
+projectile_count = 1
+spread_degrees = 0.0
+projectile_speed = 300.0
+spawn_offset = Vector2(24, -10)

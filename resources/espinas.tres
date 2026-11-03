@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ThornsPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/ThornsPassive.gd" id="1_thrn"]
+[ext_resource type="Texture2D" path="res://assets/icons/pasiva_espinas.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_thrn")
+id = "espinas"
+item_name = "Espinas"
+description = "Devuelve un 20% del daño recibido al atacante. Máximo 15 de daño y 2 segundos de espera."
+icon = ExtResource("2_icon")
+value = 75
+passive_id = "espinas"
+damage_ratio = 0.2
+max_reflect = 15
+cooldown = 2.0

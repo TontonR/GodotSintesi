@@ -54,6 +54,17 @@ const DROP_ITEMS: Array[Items] = [
 	preload("res://resources/amuleto_ataque.tres"),
 	preload("res://resources/armadura_ligera.tres"),
 	preload("res://resources/talisman_regen.tres"),
+	preload("res://resources/proyectil_tercer_golpe.tres"),
+	preload("res://resources/rafaga.tres"),
+	preload("res://resources/segundo_aliento.tres"),
+	preload("res://resources/cazador.tres"),
+	preload("res://resources/guantelete.tres"),
+	preload("res://resources/corazon_hierro.tres"),
+	preload("res://resources/pies_ligeros.tres"),
+	preload("res://resources/vampirismo.tres"),
+	preload("res://resources/codicia.tres"),
+	preload("res://resources/espinas.tres"),
+	preload("res://resources/ira_guardian.tres"),
 ]
 
 @export_group("Loot")
@@ -326,9 +337,9 @@ func _get_projectile_damage() -> float:
 
 
 func _deal_damage_to(body: Node2D) -> void:
-	# Si el objetivo soporta knockback le pasamos nuestra posición.
+	# Si el objetivo soporta knockback le pasamos nuestra posición y el atacante.
 	if body.has_method("take_damage_from"):
-		body.take_damage_from(base_attack, global_position)
+		body.take_damage_from(base_attack, global_position, 0.0, 0.15, 0.0, self)
 	else:
 		body.take_damage(base_attack)
 
@@ -445,6 +456,9 @@ func _die() -> void:
 		attack_range.set_deferred("monitoring", false)
 	if flee_area:
 		flee_area.set_deferred("monitoring", false)
+	# Avisa al jugador antes de liberar el nodo para que las pasivas reaccionen.
+	if is_inside_tree():
+		get_tree().call_group("player", "notify_enemy_killed", self)
 	_drop_loot()
 	_on_death()
 

@@ -45,7 +45,7 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 
 	if body.has_method("take_damage_from"):
-		body.take_damage_from(damage, global_position)
+		body.take_damage_from(damage, global_position, 0.0, 0.15, 0.0, self)
 	elif body.has_method("take_damage"):
 		body.take_damage(damage)
 	_begin_disappear()

@@ -403,7 +403,7 @@ func _try_contact_damage() -> void:
 func _hit_target(body: Node2D, amount: float, knockup: float = 0.0) -> void:
 	var damage := roundi(amount)
 	if body.has_method("take_damage_from"):
-		body.take_damage_from(damage, global_position, 0.0, knockup_lock, knockup)
+		body.take_damage_from(damage, global_position, 0.0, knockup_lock, knockup, self)
 	elif body.has_method("take_damage"):
 		body.take_damage(damage)
 

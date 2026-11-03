@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LightFeetPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/LightFeetPassive.gd" id="1_lgft"]
+[ext_resource type="Texture2D" path="res://assets/icons/pasiva_pies_ligeros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_lgft")
+id = "pies_ligeros"
+item_name = "Pies ligeros"
+description = "Aumenta un 15% tu velocidad de movimiento."
+icon = ExtResource("2_icon")
+value = 80
+passive_id = "pies_ligeros"
+speed_multiplier = 1.15

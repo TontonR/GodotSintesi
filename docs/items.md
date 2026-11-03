@@ -1,10 +1,10 @@
 # Objetos e inventario — diseño y estado
 
-_2026-10-14 · rama `feat/items-demo`_
+_2026-11-03_
 
 ## Jerarquía
 
-`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`.
+`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`, `ComboProjectilePassive`, `SecondWindPassive`, `HunterPassive`, `GauntletPassive`, `IronHeartPassive`, `LightFeetPassive`, `VampirismPassive`, `GreedPassive`, `ThornsPassive`, `GuardianWrathPassive`.
 `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
 
 ## Huecos y teclas (5 huecos)
@@ -16,53 +16,75 @@ _2026-10-14 · rama `feat/items-demo`_
 
 - `Inventory.add_item` enruta por tipo: `Skills` → 1-2, resto → 3-5; barra llena de su tipo = **no pasa nada**.
 - Destino fuera del inventario: pasivas → `PlayerPassives`. Las skills sin `on_pickup` entran por fallback en `item_pickup.gd`.
-- Entradas nuevas: `use_slot_4` (tecla 4), `use_slot_5` (tecla 5). `interact` = F.
+- `interact` = F. `use_slot_4` = 4, `use_slot_5` = 5.
 
-## HUD (2026-10-14, más compacto)
+## HUD
 
-- `ConsumableBar` (`InventoryUI`) **arriba-izquierda**: huecos 18×18 (iconos 16 a 1:1), separación 2, borde 1 px; separador de 4 px entre skills (borde azulado) y consumibles.
-- Vida/stamina **arriba-derecha**: barras 94×12 (antes 120×20), fuentes 10 (antes 14), borde 1 px. Monedas: fuente 10.
-- **Pasivas** (`PassiveUI` en `UILayer/PassiveBar`, arriba-derecha bajo las barras): columna de iconos 12×12 con alpha 0.55 (preview estilo The Binding of Isaac). `PlayerPassives` emite `passives_changed` y enlaza la lista en `_ready` (mismo patrón que Inventory con su barra).
+- `ConsumableBar` (`InventoryUI`) arriba-izquierda: huecos 18×18 (iconos 16 a 1:1), separación 2, borde 1 px; separador de 4 px entre skills y consumibles.
+- Vida/stamina arriba-derecha: barras 94×12, fuentes 10, borde 1 px. Monedas: fuente 10.
+- **Pasivas** (`PassiveUI` en `UILayer/PassiveBar`, arriba-derecha bajo las barras): columna de iconos 12×12 con alpha 0.55. `PlayerPassives` emite `passives_changed`.
 
-## Catálogo de objetos (6)
+## Catálogo (17)
 
-| .tres | Tipo | Efecto |
-|---|---|---|
-| `pocion_cura` | Consumible | +30 vida |
-| `pocion_stamina` | Consumible | +40 stamina |
-| `pocion_mayor` ("Elixir de vigor") | Consumible | +60 vida |
-| `amuleto_ataque` | Pasiva | +6 de daño por golpe |
-| `armadura_ligera` | Pasiva | −25% del daño recibido |
-| `talisman_regen` | Pasiva | +1 vida/segundo |
+**Consumibles (3)**
 
-Eliminada `heal_potion_passive.tres` + `HealPassive.gd` (2026-10-14, git lo conserva).
+| .tres | Efecto |
+|---|---|
+| `pocion_cura` | +30 vida |
+| `pocion_stamina` | +40 stamina |
+| `pocion_mayor` | +60 vida |
+
+**Pasivas (14)**
+
+| .tres | Efecto |
+|---|---|
+| `amuleto_ataque` | +6 daño por golpe |
+| `armadura_ligera` | −25% daño recibido |
+| `talisman_regen` | +1 vida/s |
+| `proyectil_tercer_golpe` | 3.er ataque: 1 proyectil al frente, 25% del daño base |
+| `rafaga` | 3.er ataque: 3 proyectiles en abanico (±12°), 15% cada uno |
+| `segundo_aliento` | Bajo 30% de vida: +2 vida/s |
+| `cazador` | +20% daño a enemigos bajo 30% de vida |
+| `guantelete` | Cada 5.º ataque, el siguiente impacto hace x2 |
+| `corazon_hierro` | +25 vida máxima y cura 25 al recogerla |
+| `pies_ligeros` | +15% velocidad de movimiento |
+| `vampirismo` | +2 vida por enemigo muerto |
+| `codicia` | +1 moneda por enemigo muerto |
+| `espinas` | Devuelve 20% del daño al atacante; tope 15, CD 2 s |
+| `ira_guardian` | Al bloquear: +30% daño durante 10 s (se refresca) |
+
+## Hooks de pasivas (2026-11-03)
+
+- `on_player_attack_started(player, paso, direccion)`: se llama al **iniciar** cada ataque (paso 1-3), aunque no impacte.
+- `on_player_attack(target, damage)`: al impactar; modifica el daño.
+- `on_player_take_damage(amount, attacker)`: recibe el atacante (para Espinas).
+- `on_player_blocked(player)`: al bloquear un golpe frontal (Ira del guardián).
+- `on_enemy_killed(player, enemy)`: `EnemyBase._die()` avisa al grupo `player` antes de liberarse.
+- `on_update(player, delta)`: temporizadores y regeneración.
+- Las pasivas de estadísticas (`corazon_hierro`, `pies_ligeros`) aplican en `on_equip`. **No se revierten** porque aún no hay `unequip`; al añadir intercambio habrá que pasar a modificadores.
+- Cada recogida hace `duplicate()` del recurso: dos copias de la misma pasiva mantienen contadores/cooldowns independientes.
+
+## Proyectil del jugador
+
+- `scenes/collectables/player_projectile.tscn` + `player_projectile.gd`: `Area2D` capa 16, máscara 13 (mundo + enemigos + proyectiles enemigos).
+- Ignora al jugador y al `shooter`; daña enemigos, destruye proyectiles enemigos y desaparece contra el mundo. Vida 1.5 s.
+- `ComboProjectilePassive` instancia la escena y llama a `setup(dir, velocidad, daño, jugador)`.
 
 ## Cómo salen los objetos
 
-- **Loot de enemigos**: `LootDropItem.item_pool` con los 6 objetos; `enemy_base.gd` suelta `item_pickup.tscn` con uno **al azar** con **75% de probabilidad** (además de monedas 100%). El `item` se asigna **antes de `add_child`**.
-- **Escena**: 2 drops en `game.tscn` a y=350 (x=110/150); la pasiva curación fue eliminada.
+- **Loot de enemigos**: `LootDropItem.item_pool` con los 17 objetos; `enemy_base.gd` suelta `item_pickup.tscn` con uno al azar al **75%** (además de monedas 100%). El `item` se asigna antes de `add_child`.
+- **Escena**: 2 drops en `game.tscn` a y=350 (x=110/150).
+- **Sin pesos/rareza todavía**: todos los objetos tienen la misma probabilidad dentro del pool.
 
 ## Física de los drops (`item_pickup.gd`)
 
-- **Recogida automática**: `body_entered` con el jugador recoge al instante (sin tecla); si el hueco está ocupado, no pasa nada y se reintenta al volver a tocarlo. `action_prompt`/F eliminados.
-- **Gravedad** 900 px/s² → cae hasta el suelo (raycast contra capa 1, la física de los `TileMapLayer` está en `physics_layer_0/collision_layer = 1`).
-- **Rebote**: restitución 0.45; por debajo de 35 px/s de impacto se asienta.
-- **Vaivén**: al asentarse, `sin(t·2.5 + fase)` con amplitud 1.5 px y fase aleatoria (bucle sutil, no sincronizado). `z_index = 1` para no quedar tras los tiles.
-- **Búsqueda de suelo perezosa**: se hace en el **primer tick de física**, no en `_ready`, y `_drop_loot` asigna posición **antes** de `add_child` — antes el chequeo corría con el objeto en (0, 0) y podía asentarlo a una altura falsa (objeto "luchando" con la posición real).
-- Si no encuentra suelo cerca, flota donde aparece (evita caer al vacío).
-
-## Trampa de altura (BUG 2026-10-14)
-
-El suelo generado está en `ground_level * 16` = **y=400** (`ground_level = 25`). Todo lo colocado en y=0 quedaba en el aire fuera de cámara: por eso "no spawneaban" los drops (y el editor revirtió un arreglo a y=392 antes del primer commit — ahora la gravedad lo auto-corrige). Los enemigos sueltan loot a su altura. El `coin` legacy en `game.tscn (61, 0)` sigue con ese problema (no tocado).
-
-## Otros arreglos
-
-- `ghost.tscn`: override de `loot_table` con entrada vacía eliminado (antes los fantasmas no soltaban nada).
-- `Skills.gd`: enum `EquipSlot { NONE = 0 }` (antes el export no compilaba).
-- Triggers en `player.gd`: pasivas modifican daño al atacar y al recibir.
+- **Recogida automática** con `body_entered`; si el hueco está ocupado, no pasa nada.
+- **Gravedad** 900 px/s², **rebote** 0.45 (se asienta bajo 35 px/s) y **vaivén** `sin(t·2.5 + fase)` de 1.5 px.
+- El suelo se busca en el **primer tick de física**; `_drop_loot` asigna posición antes de `add_child`. Si no hay suelo, flota.
 
 ## Pendiente
 
-- Equipamiento (`Skills`): `use()` llama a `equip()` pero el jugador no lo tiene; bonuses sin aplicar. Huecos 1-2 funcionales pero sin objetos skill que poner.
-- Prompt de interacción en pantalla ("F") y mantener-para-intercambiar con barra llena.
-- `player.tscn` legacy de la raíz sin `Inventory`/`PlayerPassives` (no se usa).
+- Equipamiento (`Skills`): `use()` llama a `equip()` pero el jugador no lo tiene.
+- Intercambio de pasivas/objetos y revertir estadísticas al desequipar.
+- Pesos/rareza en `LootDropItem`.
+- `player.tscn` legacy de la raíz sin `Inventory`/`PlayerPassives`.

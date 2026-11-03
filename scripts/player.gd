@@ -232,6 +232,12 @@ func _try_attack() -> void:
 	set_hitbox_active(true)
 	animated_sprite.play(anim)
 
+	# Las pasivas complejas pueden reaccionar al inicio del ataque (p. ej.
+	# lanzar un proyectil en el tercer golpe), aunque no llegue a impactar.
+	if passives:
+		var direction: Vector2 = Vector2.RIGHT if _facing_right else Vector2.LEFT
+		passives.trigger_attack_started_passives(_combo_index + 1, direction)
+
 
 func _on_attack_finished() -> void:
 	_is_attacking = false
@@ -281,9 +287,9 @@ func take_damage(amount: int) -> void:
 	_apply_damage(amount, true)
 
 
-func take_damage_from(amount: int, attacker_position: Vector2, knockback_force: float = 0.0, knockback_lock: float = 0.15, knockup_force: float = 0.0) -> void:
+func take_damage_from(amount: int, attacker_position: Vector2, knockback_force: float = 0.0, knockback_lock: float = 0.15, knockup_force: float = 0.0, attacker: Node = null) -> void:
 	var from_front: bool = is_attack_from_front(attacker_position)
-	if not _apply_damage(amount, from_front):
+	if not _apply_damage(amount, from_front, attacker):
 		return
 	if knockback_force > 0.0:
 		var dir := signf(global_position.x - attacker_position.x)
@@ -317,13 +323,17 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 
 
 ## Devuelve true si el daño se aplicó (false si estaba muerto o lo bloqueó la guardia).
-func _apply_damage(amount: int, from_front: bool) -> bool:
-	if _is_dead or (_is_guarding and from_front):
+func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool:
+	if _is_dead:
+		return false
+	if _is_guarding and from_front:
+		if passives:
+			passives.trigger_block_passives()
 		return false
 	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
 	var final_amount := amount
 	if passives:
-		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount))), 0)
+		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount), attacker)), 0)
 	health = maxi(health - final_amount, 0)
 	_update_health_ui()
 	if health <= 0:
@@ -334,6 +344,30 @@ func _apply_damage(amount: int, from_front: bool) -> bool:
 func heal(amount: int) -> void:
 	health = mini(health + amount, max_health)
 	_update_health_ui()
+
+
+## Sube la vida máxima y cura la misma cantidad (usado por pasivas).
+func add_max_health(amount: int) -> void:
+	if amount <= 0:
+		return
+	max_health += amount
+	health = mini(health + amount, max_health)
+	_update_health_ui()
+
+
+## Multiplica la velocidad de movimiento (usado por pasivas).
+func multiply_move_speed(factor: float) -> void:
+	if factor <= 0.0:
+		return
+	move_speed *= factor
+
+
+## Lo llama EnemyBase al morir un enemigo para que las pasivas reaccionen.
+func notify_enemy_killed(enemy: Node) -> void:
+	if _is_dead:
+		return
+	if passives:
+		passives.trigger_enemy_killed_passives(enemy)
 
 
 func _die() -> void:

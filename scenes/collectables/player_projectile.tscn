@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/player_projectile.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enemies/All_Fire_Bullet_Pixel_16x16_02.png" id="2_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_projectile"]
+atlas = ExtResource("2_sheet")
+region = Rect2(0, 288, 16, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_projectile"]
+radius = 4.0
+
+[node name="PlayerProjectile" type="Area2D"]
+z_index = 1
+collision_layer = 16
+collision_mask = 13
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.62, 0.9, 1, 1)
+texture = SubResource("AtlasTexture_projectile")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_projectile")

@@ -171,7 +171,7 @@ func _damage_player() -> void:
 			return
 
 	if _player.has_method("take_damage_from"):
-		_player.take_damage_from(damage_per_tick, origin)
+		_player.take_damage_from(damage_per_tick, origin, 0.0, 0.15, 0.0, self)
 	elif _player.has_method("take_damage"):
 		_player.take_damage(damage_per_tick)
 

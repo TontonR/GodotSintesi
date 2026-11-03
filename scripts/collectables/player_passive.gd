@@ -36,11 +36,26 @@ func trigger_attack_passives(target: Node, base_damage: float) -> float:
 		current_damage = passive.on_player_attack(target, current_damage)
 	return current_damage
 
+## Al iniciar un ataque de la rotación, avisa a todas las pasivas
+func trigger_attack_started_passives(step: int, direction: Vector2) -> void:
+	for passive in active_passives:
+		passive.on_player_attack_started(get_parent(), step, direction)
+
+## Cuando el jugador bloquea, avisa a todas las pasivas
+func trigger_block_passives() -> void:
+	for passive in active_passives:
+		passive.on_player_blocked(get_parent())
+
+## Cuando el jugador mata a un enemigo, avisa a todas las pasivas
+func trigger_enemy_killed_passives(enemy: Node) -> void:
+	for passive in active_passives:
+		passive.on_enemy_killed(get_parent(), enemy)
+
 ## Cuando el jugador recibe daño, ejecuta este método
-func trigger_take_damage_passives(base_damage: float) -> float:
+func trigger_take_damage_passives(base_damage: float, attacker: Node = null) -> float:
 	var current_damage = base_damage
 	for passive in active_passives:
-		current_damage = passive.on_player_take_damage(current_damage)
+		current_damage = passive.on_player_take_damage(current_damage, attacker)
 	return current_damage
 
 ## Bucle de actualización para pasivas con temporizadores/regeneración
