@@ -26,7 +26,10 @@ extends Node
 	preload("res://scenes/enemies/ghost.tscn"),
 	preload("res://scenes/enemies/werewolf.tscn"),
 	preload("res://scenes/enemies/mutant_toad.tscn"),
-	preload("res://scenes/enemies/demon.tscn")
+	preload("res://scenes/enemies/demon.tscn"),
+	preload("res://scenes/enemies/slime.tscn"),
+	preload("res://scenes/enemies/skeleton.tscn"),
+	preload("res://scenes/enemies/archer.tscn")
 ]
 ## Cantidades por zona correspondientes EN ORDEN a las escenas de arriba:
 ## Posición 0 -> 4 Orcos por zona
@@ -34,7 +37,10 @@ extends Node
 ## Posición 2 -> 1 Lobo por zona
 ## Posición 3 -> 1 Sapo mutante por zona
 ## Posición 4 -> 1 Demonio por zona
-@export var enemy_counts_per_zone: Array[int] = [4, 1, 1, 1, 1]
+## Posición 5 -> 2 Slimes por zona
+## Posición 6 -> 1 Esqueleto por zona
+## Posición 7 -> 1 Arquero por zona
+@export var enemy_counts_per_zone: Array[int] = [4, 1, 1, 1, 1, 2, 1, 1]
 
 # Margen en tiles desde el inicio (x=0) para que el jugador aparezca seguro
 @export var safe_start_tiles: int = 15

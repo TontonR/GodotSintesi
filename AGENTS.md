@@ -18,6 +18,7 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 | `docs/enemigo_werewolf.md` | Lobo: merodeo por zona, embestidas 2+1, salto con daño doble |
 | `docs/enemigo_mutant_toad.md` | Sapo: saltos altos, ráfaga de 3 proyectiles destructibles y charcos tóxicos |
 | `docs/enemigo_demon.md` | Demonio: vuela alrededor, chorro de fuego y aturdimiento al bloquearlo |
+| `docs/enemigos_basicos.md` | Slime, esqueleto (primer golpe nulo) y arquero con flecha placeholder |
 | `documentation.md` | Legacy: jugador, stamina, mundo, enemigos. ⚠️ §13.2 fantasma DESACTUALIZADO (ahora `tp_cooldown = 8.0`, `offset.y = minf(...)`, sin `post_attack_tp_delay`) |
 | `docs/<sistema>.md` | Los que se vayan creando al terminar tareas |
 

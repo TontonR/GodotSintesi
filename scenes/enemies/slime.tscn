@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://resources/enemies/slime_frames.tres" id="2_frames"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(20, 12)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(22, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
+radius = 180.0
+
+[node name="Slime" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_script")
+sprite = NodePath("Pivot/Slime")
+detection_area = NodePath("Pivot/detection_area")
+attack_range = NodePath("Pivot/attack_range")
+flip_pivot = NodePath("Pivot")
+
+[node name="body_hitbox" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="Pivot" type="Node2D" parent="."]
+
+[node name="Slime" type="AnimatedSprite2D" parent="Pivot"]
+position = Vector2(0, -4.5)
+scale = Vector2(1.5, 1.5)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="attack_range" type="Area2D" parent="Pivot"]
+position = Vector2(14, -6)
+collision_layer = 16
+collision_mask = 2
+
+[node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range"]
+shape = SubResource("RectangleShape2D_attack")
+
+[node name="detection_area" type="Area2D" parent="Pivot"]
+collision_layer = 0
+collision_mask = 2
+
+[node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area"]
+shape = SubResource("CircleShape2D_detection")

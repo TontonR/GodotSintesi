@@ -1,0 +1,169 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/enemies/ArcherHero/Final/Idle and running.png" id="1_idle_run"]
+[ext_resource type="Texture2D" path="res://assets/enemies/ArcherHero/Final/Normal Attack.png" id="2_attack"]
+
+[sub_resource type="AtlasTexture" id="idle0"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="idle1"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk0"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk1"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk2"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(128, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk3"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(192, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk4"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(256, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk5"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(320, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk6"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(384, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="walk7"]
+atlas = ExtResource("1_idle_run")
+region = Rect2(448, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack0"]
+atlas = ExtResource("2_attack")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack1"]
+atlas = ExtResource("2_attack")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack2"]
+atlas = ExtResource("2_attack")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack3"]
+atlas = ExtResource("2_attack")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack4"]
+atlas = ExtResource("2_attack")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack5"]
+atlas = ExtResource("2_attack")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack6"]
+atlas = ExtResource("2_attack")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack7"]
+atlas = ExtResource("2_attack")
+region = Rect2(448, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack8"]
+atlas = ExtResource("2_attack")
+region = Rect2(0, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack9"]
+atlas = ExtResource("2_attack")
+region = Rect2(64, 64, 64, 64)
+
+[sub_resource type="AtlasTexture" id="attack10"]
+atlas = ExtResource("2_attack")
+region = Rect2(128, 64, 64, 64)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("attack0")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack1")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack2")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack3")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack4")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack5")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack6")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack7")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack8")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack9")
+}, {
+"duration": 1.0,
+"texture": SubResource("attack10")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("idle0")
+}, {
+"duration": 1.0,
+"texture": SubResource("idle1")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("walk0")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk1")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk2")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk3")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk4")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk5")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk6")
+}, {
+"duration": 1.0,
+"texture": SubResource("walk7")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 10.0
+}]
