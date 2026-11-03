@@ -256,6 +256,7 @@ radius = 304.9985
 [sub_resource type="CircleShape2D" id="CircleShape2D_6dhoe"]
 radius = 218.94214
 
+<<<<<<< Updated upstream
 [node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area", "sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 8
 collision_mask = 0
@@ -271,6 +272,15 @@ sprite = NodePath("Pivot/ghost")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")
 flip_pivot = NodePath("Pivot")
+=======
+[node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_kjq22")
+projectile = ExtResource("2_jw18l")
+flee_enemy = true
+flee_area = NodePath("Pivot/flee_range")
+>>>>>>> Stashed changes
 sprite_faces_right = false
 
 [node name="ghost_hitbox" type="CollisionShape2D" parent="." unique_id=1769343006]
@@ -295,15 +305,29 @@ collision_mask = 2
 shape = SubResource("CircleShape2D_3ay35")
 
 [node name="attack_range" type="Area2D" parent="Pivot" unique_id=1249047959]
+<<<<<<< Updated upstream
 scale = Vector2(0.6, 0.3)
+=======
+scale = Vector2(0.5, 0.35)
+>>>>>>> Stashed changes
 collision_mask = 2
 
 [node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=387268454]
 shape = SubResource("CircleShape2D_6dhoe")
 
 [node name="flee_range" type="Area2D" parent="Pivot" unique_id=357702545]
+<<<<<<< Updated upstream
 scale = Vector2(0.35, 0.2)
+=======
+scale = Vector2(0.3, 0.2)
+>>>>>>> Stashed changes
 collision_mask = 2
 
 [node name="flee_hitbox" type="CollisionShape2D" parent="Pivot/flee_range" unique_id=91382080]
 shape = SubResource("CircleShape2D_6dhoe")
+<<<<<<< Updated upstream
+=======
+
+[node name="SpawnPoint" type="Marker2D" parent="Pivot"]
+position = Vector2(-21, 1)
+>>>>>>> Stashed changes

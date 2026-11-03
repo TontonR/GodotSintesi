@@ -1,7 +1,10 @@
 class_name EnemyBase
 extends CharacterBody2D
+<<<<<<< Updated upstream
 ## Se emite al morir; el generador del mundo lo usa para no reaparecerlo.
 signal died
+=======
+>>>>>>> Stashed changes
 ## Enemigo base: persigue al jugador, ataca (cuerpo a cuerpo o a distancia),
 ## puede huir si el jugador se acerca demasiado y suelta loot al morir.
 ## Los enemigos voladores (flying_enemy) se mueven libremente en 2D y sin gravedad.
@@ -19,10 +22,13 @@ signal died
 @export var speed_movement: float = 50.0
 ## Seconds between two consecutive attacks.
 @export var attack_cooldown: float = 2.0
+<<<<<<< Updated upstream
 ## Auto-subida de escalones de 1 tile (16px) para enemigos terrestres.
 @export var step_height: float = 16.0
 ## Desplazamiento vertical (px) al aparecer en el mundo; positivo lo sube.
 @export var spawn_y_offset: float = 0.0
+=======
+>>>>>>> Stashed changes
 
 @export_group("Enemy Config")
 ## No gravity; moves freely on X and Y.
@@ -51,6 +57,7 @@ signal died
 @export var attack_duration: float = 1.0
 
 const DEFAULT_COIN: PackedScene = preload("res://scenes/collectables/coin.tscn")
+<<<<<<< Updated upstream
 const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
 ## Pool de objetos que pueden soltarse al morir (uno al azar por drop)
 const DROP_ITEMS: Array[Items] = [
@@ -71,12 +78,18 @@ const DROP_ITEMS: Array[Items] = [
 	preload("res://resources/anillo_vigor.tres"),
 	preload("res://resources/pulso_vampirico.tres"),
 ]
+=======
+>>>>>>> Stashed changes
 
 @export_group("Loot")
 ## Items dropped on death, with chance and amount per entry.
 @export var loot_table: Array[LootDropItem] = [
+<<<<<<< Updated upstream
 	LootDropItem.new(DEFAULT_COIN, 1.0, 1, 3),
 	LootDropItem.new(ITEM_PICKUP_SCENE, 0.75, 1, 1, DROP_ITEMS)
+=======
+	LootDropItem.new(DEFAULT_COIN, 1.0, 1, 3)
+>>>>>>> Stashed changes
 ]
 ## Horizontal spread (px) when dropping loot.
 @export var loot_drop_spread: float = 15.0
@@ -175,6 +188,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
+<<<<<<< Updated upstream
 func _try_step_up(direction: float) -> void:
 	# Misma comprobación que el jugador: forma real del cuerpo, no rayos a
 	# media altura (el origen está por encima de los pies).
@@ -196,6 +210,8 @@ func _try_step_up(direction: float) -> void:
 	global_position += up
 
 
+=======
+>>>>>>> Stashed changes
 # ---------------------------------------------------------------------------
 # Movimiento (separado por tipo: suelo = solo X, volador = X e Y)
 # ---------------------------------------------------------------------------
@@ -228,9 +244,15 @@ func _chase(to_player: Vector2) -> void:
 ## Se aleja del jugador (dirección contraria a to_player).
 func _flee(to_player: Vector2) -> void:
 	if flying_enemy:
+<<<<<<< Updated upstream
 		velocity = - to_player.normalized() * speed_movement
 	else:
 		velocity.x = - signf(to_player.x) * speed_movement
+=======
+		velocity = -to_player.normalized() * speed_movement
+	else:
+		velocity.x = -signf(to_player.x) * speed_movement
+>>>>>>> Stashed changes
 	_play_animation(move_animation)
 
 
@@ -395,9 +417,15 @@ func _set_facing_direction(look_left: bool) -> void:
 	if sprite:
 		sprite.flip_h = flipped
 	if attack_range:
+<<<<<<< Updated upstream
 		attack_range.position.x = - _attack_range_offset_x if look_left else _attack_range_offset_x
 	if projectile_spawn:
 		projectile_spawn.position.x = - _projectile_spawn_offset_x if look_left else _projectile_spawn_offset_x
+=======
+		attack_range.position.x = -_attack_range_offset_x if look_left else _attack_range_offset_x
+	if projectile_spawn:
+		projectile_spawn.position.x = -_projectile_spawn_offset_x if look_left else _projectile_spawn_offset_x
+>>>>>>> Stashed changes
 
 
 ## Con force = true reinicia la animación aunque ya sea la actual (útil al atacar).
@@ -471,7 +499,10 @@ func take_damage(amount: float) -> void:
 
 func _die() -> void:
 	_is_dead = true
+<<<<<<< Updated upstream
 	died.emit()
+=======
+>>>>>>> Stashed changes
 	_is_attacking = false
 	_can_attack = false
 	_player = null
@@ -513,6 +544,7 @@ func _drop_loot() -> void:
 			for i in amount:
 				var item := drop_entry.item_scene.instantiate()
 				if item:
+<<<<<<< Updated upstream
 					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
 					if drop_entry.item_pool.size() > 0 and "item" in item:
 						item.set("item", drop_entry.item_pool.pick_random())
@@ -523,6 +555,12 @@ func _drop_loot() -> void:
 					# Asignar global_position después de parentarlo evita sumar dos veces
 					# el offset del chunk; la física del pickup empieza en el siguiente tick.
 					item.global_position = drop_position
+=======
+					parent.add_child(item)
+					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
+					var offset_y := randf_range(-loot_drop_y, loot_drop_y)
+					item.global_position = global_position + Vector2(offset_x, offset_y)
+>>>>>>> Stashed changes
 
 
 ## Parpadeo rojo al recibir daño.

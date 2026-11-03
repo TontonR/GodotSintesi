@@ -3,8 +3,12 @@ extends EnemyBase
 ## Al huir intenta TP; si no puede, se queda y sigue atacando (no corre).
 ## El TP se sitúa alrededor del jugador: offsets en X e Y entre el radio
 ## de flee_area y el de attack_area (no hace falta círculo perfecto).
+<<<<<<< Updated upstream
 ## La Y del destino varía al azar, pero nunca queda por debajo del jugador
 ## (ni, por tanto, por debajo del suelo).
+=======
+## Tras un ataque, el TP queda bloqueado tp_cooldown + post_attack_tp_delay.
+>>>>>>> Stashed changes
 
 @export_group("Extra Animations")
 ## Animation played when disappearing before a teleport.
@@ -18,7 +22,13 @@ extends EnemyBase
 
 @export_group("Teleport")
 ## Seconds before the ghost can teleport again.
+<<<<<<< Updated upstream
 @export var tp_cooldown: float = 8.0
+=======
+@export var tp_cooldown: float = 4.0
+## Extra TP lockout after a full attack (added to tp_cooldown).
+@export var post_attack_tp_delay: float = 0.5
+>>>>>>> Stashed changes
 ## Margin (px) outside flee and inside attack when picking a spot.
 @export var tp_zone_margin: float = 10.0
 ## Minimum distance (px) between the previous and the new TP spot.
@@ -33,6 +43,11 @@ const SCREEN_MARGIN := 30.0
 var _is_teleporting: bool = false
 var _tp_applied: bool = false
 var _charge_timer: float = 0.0
+<<<<<<< Updated upstream
+=======
+var _can_teleport: bool = true
+var _hold_ground_attack: bool = false
+>>>>>>> Stashed changes
 var _last_tp_pos := Vector2.INF
 
 var _tp_cooldown_timer: Timer
@@ -73,6 +88,10 @@ func _ready() -> void:
 
 	_tp_cooldown_timer = Timer.new()
 	_tp_cooldown_timer.one_shot = true
+<<<<<<< Updated upstream
+=======
+	_tp_cooldown_timer.timeout.connect(func(): _can_teleport = true)
+>>>>>>> Stashed changes
 	add_child(_tp_cooldown_timer)
 
 	if sprite:
@@ -92,8 +111,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_behavior(delta: float) -> void:
+<<<<<<< Updated upstream
 	_refresh_area_flags()
 
+=======
+	# Re-busca al jugador si la detección se perdió (p. ej. tras un TP).
+	if not is_instance_valid(_player):
+		_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
+
+	# Las señales no se actualizan al teletransportarse: se consulta de golpe.
+	_refresh_area_flags()
+
+	# La carga avanza en rango de ataque; si huye con TP, _start_teleport la pone a 0.
+>>>>>>> Stashed changes
 	if _player_in_attack_range:
 		_charge_timer += delta
 	else:
@@ -106,6 +136,12 @@ func _update_behavior(delta: float) -> void:
 # ATTACK & FLEE (EnemyBase hooks)
 # ==============================================================================
 
+<<<<<<< Updated upstream
+=======
+## No arranca el ataque de la base hasta terminar la carga.
+## Al terminar un ataque "normal" bloquea el TP tp_cooldown + post_attack_tp_delay.
+## Los ataques de "aguanta el suelo" (sin TP) no reinician el cooldown completo.
+>>>>>>> Stashed changes
 func _start_attack() -> void:
 	if _is_teleporting:
 		return
@@ -113,7 +149,21 @@ func _start_attack() -> void:
 		_play_animation(idle_animation)
 		return
 	_charge_timer = 0.0
+<<<<<<< Updated upstream
 	await super()
+=======
+	# await super() espera a que el ataque termine por completo.
+	await super()
+	if _is_dead:
+		return
+	if _hold_ground_attack:
+		# Solo un pequeño margen: el cooldown de TP ya está corriendo o está cerca.
+		_hold_ground_attack = false
+		if not _can_teleport:
+			_tp_cooldown_timer.start(maxf(_tp_cooldown_timer.time_left, post_attack_tp_delay))
+	else:
+		_tp_cooldown_timer.start(tp_cooldown + post_attack_tp_delay)
+>>>>>>> Stashed changes
 
 
 func _chase(to_player: Vector2) -> void:
@@ -121,12 +171,24 @@ func _chase(to_player: Vector2) -> void:
 	super(to_player)
 
 
+<<<<<<< Updated upstream
+=======
+## Huir = solo intentar TP a la zona de ataque.
+## Si no puede (cooldown / sin posición), se queda quieto y sigue atacando.
+>>>>>>> Stashed changes
 func _flee(_to_player: Vector2) -> void:
 	if _try_teleport():
 		return
 
+<<<<<<< Updated upstream
 	_stop()
 	if _can_attack and not _is_attacking:
+=======
+	# Sin TP disponible: no corre; aguanta el suelo y ataca si puede.
+	_stop()
+	if _can_attack and not _is_attacking:
+		_hold_ground_attack = true
+>>>>>>> Stashed changes
 		_start_attack()
 	else:
 		_play_animation(idle_animation)
@@ -142,12 +204,23 @@ func take_damage(amount: float) -> void:
 # TELEPORT
 # ==============================================================================
 
+<<<<<<< Updated upstream
 func _try_teleport() -> bool:
 	if _is_dead or _is_teleporting or _is_attacking or not _tp_cooldown_timer.is_stopped():
+=======
+## Devuelve true si el TP se ha iniciado correctamente.
+## Jamás durante un ataque ni si ya hay otro TP en curso.
+func _try_teleport() -> bool:
+	if _is_dead or _is_teleporting or _is_attacking or not _can_teleport:
+>>>>>>> Stashed changes
 		return false
 	if not is_instance_valid(_player):
 		return false
 
+<<<<<<< Updated upstream
+=======
+	# Comprobación previa: no desaparece si no hay posición posible.
+>>>>>>> Stashed changes
 	if not _find_attack_zone_position().is_finite():
 		return false
 
@@ -156,11 +229,20 @@ func _try_teleport() -> bool:
 
 
 func _start_teleport() -> void:
+<<<<<<< Updated upstream
+=======
+	_can_teleport = false
+>>>>>>> Stashed changes
 	_is_teleporting = true
 	_tp_applied = false
 	_charge_timer = 0.0
 	velocity = Vector2.ZERO
 
+<<<<<<< Updated upstream
+=======
+	# El lógico se agenda con la duración real de la animación (si existe).
+	# Así no dependemos de animation_finished, que a veces no llega.
+>>>>>>> Stashed changes
 	var vanish_dur := _anim_duration(vanish_animation)
 	if vanish_dur > 0.0:
 		_play_animation(vanish_animation, true)
@@ -201,6 +283,7 @@ func _on_animation_finished() -> void:
 	if not sprite or _is_dead or not _is_teleporting:
 		return
 
+	# Refuerzo por si el timer se pierde: si la animación ya terminó, avanza.
 	match sprite.animation:
 		vanish_animation:
 			if not _tp_applied:
@@ -214,6 +297,14 @@ func _on_animation_finished() -> void:
 # POSITION SEARCH
 # ==============================================================================
 
+<<<<<<< Updated upstream
+=======
+## TP a la zona de ataque: se parte de la posición del jugador y se elige
+## un punto en el anillo elíptico entre flee_area y attack_area.
+## Cada eje usa su propio radio (rx ≠ ry), así que no hace falta círculo perfecto.
+## Reintenta hasta encontrar un punto válido (incluida tp_min_travel).
+## Solo entra en el bucle si attack es estrictamente mayor que flee en ambos ejes.
+>>>>>>> Stashed changes
 func _find_attack_zone_position() -> Vector2:
 	if not is_instance_valid(_player):
 		return Vector2.INF
@@ -221,12 +312,18 @@ func _find_attack_zone_position() -> Vector2:
 	var attack_ext := _area_extents(attack_range)
 	var flee_ext := _area_extents(flee_area)
 
+<<<<<<< Updated upstream
+=======
+	# Precondición: el anillo debe existir en ambos ejes (attack > flee + márgenes).
+	# Sin esto el bucle de abajo podría no terminar nunca.
+>>>>>>> Stashed changes
 	if attack_ext.x <= flee_ext.x + tp_zone_margin * 2.0:
 		return Vector2.INF
 	if attack_ext.y <= flee_ext.y + tp_zone_margin * 2.0:
 		return Vector2.INF
 
 	var player_pos := _player.global_position
+<<<<<<< Updated upstream
 	var from_pos := _last_tp_pos if _last_tp_pos.is_finite() else global_position
 
 	var flee_keep_out := flee_ext + Vector2.ONE * tp_zone_margin
@@ -237,6 +334,18 @@ func _find_attack_zone_position() -> Vector2:
 		var angle := randf() * TAU
 		var dir := Vector2.from_angle(angle)
 
+=======
+	# Origen de la distancia mínima: último TP si lo hay; si no, la posición actual.
+	var from_pos := _last_tp_pos if _last_tp_pos.is_finite() else global_position
+
+	# Red de seguridad: con la precondición cumplida casi siempre se sale en pocos
+	# intentos; el tope evita colgar el juego si el mundo/cámara lo bloquea todo.
+	var max_tries := maxi(tp_attempts, 1) * 20
+	for i in range(max_tries):
+		var angle := randf() * TAU
+		var dir := Vector2.from_angle(angle)
+
+>>>>>>> Stashed changes
 		var d_flee := _ellipse_ray_distance(dir, flee_ext)
 		var d_attack := _ellipse_ray_distance(dir, attack_ext)
 		if d_flee < 0.0 or d_attack < 0.0:
@@ -248,6 +357,7 @@ func _find_attack_zone_position() -> Vector2:
 			continue
 
 		var offset := dir * randf_range(d_min, d_max)
+<<<<<<< Updated upstream
 		offset.y = minf(offset.y, 0.0)
 
 		var candidate := _clamp_to_camera(player_pos + offset)
@@ -259,6 +369,17 @@ func _find_attack_zone_position() -> Vector2:
 			continue
 		if _is_blocked(candidate):
 			continue
+=======
+		# Nunca por encima del jugador (Y hacia abajo en Godot).
+		offset.y = maxf(offset.y, 0.0)
+
+		var candidate := _clamp_to_camera(player_pos + offset)
+		if candidate.y < player_pos.y:
+			continue
+		if _is_blocked(candidate):
+			continue
+		# Debe alejarse lo suficiente del último punto de TP; si no, se reintenta.
+>>>>>>> Stashed changes
 		if candidate.distance_to(from_pos) < tp_min_travel:
 			continue
 		return candidate
@@ -266,6 +387,7 @@ func _find_attack_zone_position() -> Vector2:
 	return Vector2.INF
 
 
+<<<<<<< Updated upstream
 func _is_inside_ellipse(point: Vector2, center: Vector2, extents: Vector2) -> bool:
 	if extents.x <= 0.0 or extents.y <= 0.0:
 		return false
@@ -273,6 +395,10 @@ func _is_inside_ellipse(point: Vector2, center: Vector2, extents: Vector2) -> bo
 	return rel.length_squared() < 1.0
 
 
+=======
+## Distancia desde el origen hasta la elipse extents en la dirección dir.
+## Devuelve -1 si no hay intersección válida.
+>>>>>>> Stashed changes
 func _ellipse_ray_distance(dir: Vector2, extents: Vector2) -> float:
 	if extents.x <= 0.0 or extents.y <= 0.0:
 		return -1.0
@@ -284,6 +410,11 @@ func _ellipse_ray_distance(dir: Vector2, extents: Vector2) -> float:
 	return 1.0 / sqrt(denom)
 
 
+<<<<<<< Updated upstream
+=======
+## Mitades globales (rx, ry) de la primera forma del área.
+## Con escala no uniforme un círculo se comporta como elipse: cada eje se mide aparte.
+>>>>>>> Stashed changes
 func _area_extents(area: Area2D) -> Vector2:
 	if not area:
 		return Vector2.ZERO
@@ -337,6 +468,10 @@ func _has_anim(anim: StringName) -> bool:
 	)
 
 
+<<<<<<< Updated upstream
+=======
+## Duración en segundos de una animación (0 si no existe).
+>>>>>>> Stashed changes
 func _anim_duration(anim: StringName) -> float:
 	if not _has_anim(anim):
 		return 0.0
@@ -359,9 +494,14 @@ func _on_death() -> void:
 	if _body_shape:
 		_body_shape.set_deferred("disabled", true)
 
+	# Se desvanece antes de eliminarse.
 	if _has_anim(vanish_animation):
 		_is_teleporting = true
 		_play_animation(vanish_animation, true)
+<<<<<<< Updated upstream
+=======
+		# Red de seguridad por si no llega animation_finished.
+>>>>>>> Stashed changes
 		get_tree().create_timer(1.0).timeout.connect(queue_free, CONNECT_ONE_SHOT)
 	else:
 		queue_free()
