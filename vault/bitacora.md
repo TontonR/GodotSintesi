@@ -244,3 +244,13 @@ Formato de entrada:
 - Panel `UILayer/StatsPanel`: `GridContainer` de 2 columnas en (5, 26), fuente 9,
   alpha 0,6, refresco por `_stats_dirty` (no cada frame).
 - F5 pendiente (regla de `AGENTS.md`); commit al cerrar.
+
+## 2026-11-05 · `buffy` · Daño en el panel y ambiente horizontal (T-0032)
+
+- `humano-ruben`: faltaba la stat de daño, el panel chocaba con las monedas y
+  las partículas de ambiente dejaban huecos al derivar de lado.
+- `scripts/player.gd`: fila `Daño` (`hitbox_damage`) y panel movido a (5, 82),
+  por debajo de la línea de monedas (y≈63); 6 filas y refresco por `_stats_dirty`.
+- `scripts/world/biome_particles.gd`: `emission_rect_extents.x` de `view.x × 0,6`
+  a `× 1,2` y cantidad al doble (56 hojas, 440 copos) para mantener densidad.
+- F5 pendiente (regla de `AGENTS.md`); commit al cerrar.

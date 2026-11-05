@@ -22,8 +22,11 @@ var _tweens: Dictionary = {}
 func _ready() -> void:
 	_player = get_parent().get_node_or_null("player") as Node2D
 	var view := get_viewport().get_visible_rect().size
-	_leaves = _make_emitter("leaves", _leaf_texture(), 28, 7.0, 30.0, Vector2(14.0, 25.0), view)
-	_snow = _make_emitter("snow", _snow_texture(), 220, 12.0, 18.0, Vector2(10.0, 5.0), view)
+	# El doble de partículas que antes, repartidas en el doble de ancho (ver
+	# `_make_emitter`): la nube cubre también fuera de pantalla y no se ven
+	# huecos cuando las partículas derivan de lado.
+	_leaves = _make_emitter("leaves", _leaf_texture(), 56, 7.0, 30.0, Vector2(14.0, 25.0), view)
+	_snow = _make_emitter("snow", _snow_texture(), 440, 12.0, 18.0, Vector2(10.0, 5.0), view)
 
 
 func _process(delta: float) -> void:
@@ -85,7 +88,9 @@ func _make_emitter(
 	particles.preprocess = lifetime
 	particles.position = Vector2(view.x * 0.5, -6.0)
 	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	particles.emission_rect_extents = Vector2(view.x * 0.6, 2.0)
+	# ±120 % del ancho de pantalla desde el centro (antes 60 %): el doble de
+	# ancho, para que el viento lateral no descubra zonas vacías.
+	particles.emission_rect_extents = Vector2(view.x * 1.2, 2.0)
 	particles.direction = Vector2(0.0, 1.0)
 	particles.spread = 20.0
 	particles.gravity = gravity

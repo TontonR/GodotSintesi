@@ -981,7 +981,8 @@ func _ensure_stats_ui() -> void:
 		grid.name = "StatsPanel"
 		grid.columns = 2
 		grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		grid.position = Vector2(5.0, 26.0)
+		# Bajo la línea de monedas (y≈63): el panel empieza en 82 para no taparla.
+		grid.position = Vector2(5.0, 82.0)
 		grid.add_theme_constant_override("h_separation", 8)
 		grid.add_theme_constant_override("v_separation", 0)
 		# Translúcido para que no tape el juego.
@@ -990,7 +991,7 @@ func _ensure_stats_ui() -> void:
 	if not _stats_values.is_empty():
 		return
 	var stat_names: Array[String] = [
-		"Vel. ataque", "Daño crítico", "Prob. crítico", "Velocidad", "Suerte"
+		"Daño", "Vel. ataque", "Daño crítico", "Prob. crítico", "Velocidad", "Suerte"
 	]
 	for stat_name in stat_names:
 		var key := Label.new()
@@ -1018,10 +1019,11 @@ func _ensure_stats_ui() -> void:
 
 func _update_stats_ui() -> void:
 	_stats_dirty = false
-	if _stats_values.size() < 5:
+	if _stats_values.size() < 6:
 		return
-	_stats_values[0].text = "%d%%" % roundi(attack_speed * 100.0)
-	_stats_values[1].text = "%d%%" % roundi(crit_damage * 100.0)
-	_stats_values[2].text = "%d%%" % roundi(crit_chance * 100.0)
-	_stats_values[3].text = "%d" % roundi(move_speed)
-	_stats_values[4].text = "%d%%" % roundi(luck)
+	_stats_values[0].text = "%d" % hitbox_damage
+	_stats_values[1].text = "%d%%" % roundi(attack_speed * 100.0)
+	_stats_values[2].text = "%d%%" % roundi(crit_damage * 100.0)
+	_stats_values[3].text = "%d%%" % roundi(crit_chance * 100.0)
+	_stats_values[4].text = "%d" % roundi(move_speed)
+	_stats_values[5].text = "%d%%" % roundi(luck)

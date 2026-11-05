@@ -11,8 +11,8 @@ _2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
 
 ## Panel de estadísticas (2026-11-05)
 
-- `UILayer/StatsPanel`: `GridContainer` de **2 columnas** anclado arriba-izquierda en `position (5, 26)` (justo bajo `ConsumableBar`, que ocupa hasta y=22). Lo crea `player.gd::_ensure_stats_ui()` si no existe, igual que las barras de vida/stamina.
-- **Siempre visible**, fuente 9 con sombra y `modulate` alpha **0,6** para que no tape el juego. Cinco filas: `Vel. ataque`, `Daño crítico`, `Prob. crítico`, `Velocidad`, `Suerte`; valores en dorado claro alineados a la derecha.
+- `UILayer/StatsPanel`: `GridContainer` de **2 columnas** anclado arriba-izquierda en `position (5, 82)`, por debajo de la línea de monedas (y≈63) para no taparla. Lo crea `player.gd::_ensure_stats_ui()` si no existe, igual que las barras de vida/stamina.
+- **Siempre visible**, fuente 9 con sombra y `modulate` alpha **0,6** para que no tape el juego. Seis filas: `Daño`, `Vel. ataque`, `Daño crítico`, `Prob. crítico`, `Velocidad`, `Suerte`; valores en dorado claro alineados a la derecha.
 - Solo se refresca cuando cambia algo (`_stats_dirty`): no reescribe etiquetas cada frame. Los valores salen de `attack_speed`, `crit_damage`, `crit_chance`, `move_speed` y `luck` del jugador.
 
 ## Pantalla de inventario (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)

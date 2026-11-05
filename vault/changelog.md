@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — daño en el panel y ambiente más ancho
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Fila `Daño` en el panel de stats y panel bajado a (5, 82) para no pisar las monedas | `scripts/player.gd` | [T-0032](tickets/T-0032-panel-dano-y-ambiente-horizontal.md) |
+| Emisión de hojas/copos al doble de ancho (extents X ×1,2) y al doble de cantidad (56 hojas, 440 copos) | `scripts/world/biome_particles.gd` | [T-0032](tickets/T-0032-panel-dano-y-ambiente-horizontal.md) |
+
 ## 2026-11-05 · `main` — parry retocado y estadísticas del jugador
 
 | Qué | Dónde | Ticket |
