@@ -150,3 +150,15 @@ Formato de entrada:
 - Afectados: `assets/map/background/`, `scenes/game.tscn`, `scripts/world_generator.gd`,
   `scripts/world/biome.gd`, `resources/world/biomes/bosque_rojo.tres`, `docs/world.md`.
 - Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit de la tanda al cerrar.
+
+## 2026-11-05 · `buffy` · Gris medio y verde original en la pradera (T-0025)
+
+- `humano-ruben`: el gris claro de T-0024 fue un error; bajarlo y que el bosque
+  normal (pradera) recupere el verde de antes.
+- Assets regenerados con gris `100 + 0.35 × max(R,G,B)` (~113–129).
+- Nuevo `Biome.forest_color` (solo fondos): pradera `(0.233,0.388,0.388)` = verde
+  original `(27,45,45)` sobre el gris 116; bosque rojo `(1,0.32,0.28)`.
+- `_biome_tint_at_tile()` usa `forest_color`; el césped sigue con `grass_color`.
+- Afectados: `assets/map/background/*_gray.png`, `scripts/world/biome.gd`,
+  `scripts/world_generator.gd`, `resources/world/biomes/*.tres`, `docs/world.md`.
+- Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.

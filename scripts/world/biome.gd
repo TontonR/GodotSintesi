@@ -7,6 +7,8 @@ extends Resource
 @export var display_name: String = ""
 ## Tinte del césped (la textura es gris); blanco = sin teñir.
 @export var grass_color: Color = Color.WHITE
+## Tinte de los bosques de fondo y de la vegetación de la montaña; independiente del césped.
+@export var forest_color: Color = Color.WHITE
 ## Peso relativo en el reparto de biomas del mundo.
 @export var spawn_weight: float = 1.0
 ## Multiplicador de la amplitud del ruido del terreno (1 = sin cambio); más alto = alturas más marcadas.

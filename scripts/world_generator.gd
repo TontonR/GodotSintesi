@@ -334,16 +334,17 @@ func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
 		counts[index] = remaining
 
 
-## Color del bioma en un bloque: media móvil de la ventana de transición. Así el
-## cambio se reparte bloque a bloque y no hay cortes en la costura del chunk.
+## Tinte de los bosques de fondo en un bloque: usa `forest_color`, que puede ser
+## distinto del verde del césped (la pradera recupera el verde oscuro original).
 func _biome_tint_at_tile(tile_x: int) -> Color:
 	if biomes.is_empty():
 		return Color.WHITE
-	return _mixed_biome_color(_biome_counts_at_tile(tile_x))
+	return _mixed_biome_color(_biome_counts_at_tile(tile_x), true)
 
 
-## Media de los colores de los biomas contados en la ventana.
-func _mixed_biome_color(counts: Dictionary) -> Color:
+## Media de los colores de los biomas contados en la ventana. `forest` elige el
+## tinte de los fondos; por defecto, el del césped.
+func _mixed_biome_color(counts: Dictionary, forest: bool = false) -> Color:
 	var samples := 0
 	for index in range(biomes.size()):
 		samples += int(counts.get(index, 0))
@@ -351,7 +352,8 @@ func _mixed_biome_color(counts: Dictionary) -> Color:
 		return Color.WHITE
 	var total := Color(0.0, 0.0, 0.0, 0.0)
 	for index in range(biomes.size()):
-		total += biomes[index].grass_color * float(counts.get(index, 0))
+		var color := biomes[index].forest_color if forest else biomes[index].grass_color
+		total += color * float(counts.get(index, 0))
 	return total / float(samples)
 
 

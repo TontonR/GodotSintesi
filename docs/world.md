@@ -32,7 +32,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 ## Biomas (2026-11-01 · transición por bloques 2026-11-05)
 
-- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `spawn_weight`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
+- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `spawn_weight`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
 - Recursos: `resources/world/biomes/pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.6) y `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.4).
 - **El bioma se decide por bloque** (`_biome_index_at_tile()`): `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12 en unidades de chunk que se divide por `chunk_width_tiles`, `biome_contrast` 2) devuelve un valor 0..1 que se reparte por los `spawn_weight` acumulados: por debajo del peso de la pradera es pradera y el resto bosque rojo. Todo `tile_x < chunk_width_tiles` (incluidos los negativos) es el primer bioma: la zona segura del spawn.
 - **Enemigos**: siguen siendo por chunk; `_biome_for_chunk()` toma el bioma del bloque central. Con `biome_frequency` 0.12 cada bioma dura ~8 chunks (con 0.04 eran ~25 chunks, por eso casi todo salía pradera). Los pesos son umbrales sobre el ruido, no porcentajes exactos del mapa.
@@ -43,14 +43,15 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 - El césped usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone el `modulate` del dibujado con el `grass_color` del bioma, así cualquier color vale (un futuro nevado sería `Color(0.93, 0.96, 1)`).
 - `WorldChunk.paint()` recibe `grass_tints` (un color por bloque, 257 por chunk) y `GrassPaint` dibuja cada tile de césped con su color; `Solid` (suelo marrón) no se tiñe. `_chunk_biome_data()` calcula colores y modificadores de terreno con una ventana deslizante, y el nodo `Grass` desapareció de `chunk.tscn` porque un `TileMapLayer` solo se puede teñir entero.
-- Los bosques del fondo usan `assets/map/background/pine1_gray.png` / `pine2_gray.png`, con la misma regla de gris. `WorldGenerator.forest_tint_paths` apunta a los `Sprite2D` de `far_forest` y `near_forest`; su `modulate` se actualiza al cambiar de bloque con el tinte visual del bioma.
+- Los bosques del fondo usan `assets/map/background/pine1_gray.png` / `pine2_gray.png`, con la misma regla de gris. `WorldGenerator.forest_tint_paths` apunta a los `Sprite2D` de `far_forest` y `near_forest`; su `modulate` se actualiza al cambiar de bloque con el `forest_color` del bioma.
 - Para añadir un bioma basta con crear otro `.tres` y meterlo en `biomes` del generador.
 
 ## Fondos tintables (2026-11-05)
 
-- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris claro (`140 + 0.55 × max(R,G,B)`); el resto no se toca. Antes el gris era el máximo directo (~45) y el `modulate` rojo del bosque rojo las dejaba casi negras.
-- La montaña conserva `mountain2.png` (piedra y punta sin teñir) y añade `Sprite2DGreen` con `mountain2_gray.png`, que solo tiene el bosque teal en gris claro y transparencia en el resto. Ese overlay es el único nodo de la montaña dentro de `forest_tint_paths`: la punta y la piedra nunca reciben el color del bioma.
-- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos siguen la misma receta, aclarada para que el tinte se vea.
+- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris medio (`100 + 0.35 × max(R,G,B)`, ~113–129); el resto no se toca. El gris máximo directo (~45) dejaba el bosque rojo casi negro; el gris claro de la primera prueba (~165) lavaba el verde normal.
+- **`Biome.forest_color`** tiñe solo los fondos, separado de `grass_color`: la pradera usa `(0.233, 0.388, 0.388)`, que sobre el gris 116 reproduce el verde-teal original `(27, 45, 45)`; el bosque rojo usa `(1, 0.32, 0.28)` para que el rojo se vea sin aclarar más el gris. El césped sigue con `grass_color`.
+- La montaña conserva `mountain2.png` (piedra y punta sin teñir) y añade `Sprite2DGreen` con `mountain2_gray.png`, que solo tiene el bosque teal en gris medio y transparencia en el resto. Ese overlay es el único nodo de la montaña dentro de `forest_tint_paths`: la punta y la piedra nunca reciben el color del bioma.
+- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos reutilizan la receta con gris medio (`100 + 0.35 × max`) para que el verde de la pradera recupere su tono original y el rojo del bosque siga viéndose.
 
 ## Spawns y persistencia
 

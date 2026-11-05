@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — gris medio y verde original en la pradera
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Fondos de vegetación con gris medio (~113–129) en vez del gris claro (~165) | `assets/map/background/pine1_gray.png`, `pine2_gray.png`, `mountain2_gray.png` | [T-0025](tickets/T-0025-gris-medio-y-verde-original-pradera.md) |
+| `Biome.forest_color` separa el tinte de los fondos del césped; la pradera recupera `(27,45,45)` y el bosque rojo usa un rojo saturado | `scripts/world/biome.gd`, `scripts/world_generator.gd`, `resources/world/biomes/*.tres` | [T-0025](tickets/T-0025-gris-medio-y-verde-original-pradera.md) |
+
 ## 2026-11-05 · `main` — fondos tintables y terreno por bioma
 
 | Qué | Dónde | Ticket |

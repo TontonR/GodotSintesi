@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="Biome" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="Biome" format=3 uid="uid://dljmurslp4ius"]
 
-[ext_resource type="Script" path="res://scripts/world/biome.gd" id="1_biome"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/werewolf.tscn" id="2_lobo"]
+[ext_resource type="Script" uid="uid://ds3uuejorgxyv" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="PackedScene" uid="uid://bbwk7g6kxmhbj" path="res://scenes/enemies/werewolf.tscn" id="2_lobo"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/mutant_toad.tscn" id="3_sapo"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/demon.tscn" id="4_demonio"]
 
@@ -9,6 +9,7 @@
 script = ExtResource("1_biome")
 display_name = "Bosque rojo"
 grass_color = Color(0.78, 0.24, 0.2, 1)
+forest_color = Color(1, 0.32, 0.28, 1)
 spawn_weight = 0.4
 terrain_amplitude_multiplier = 1.7
 terrain_frequency_multiplier = 1.25
