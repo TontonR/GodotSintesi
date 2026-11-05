@@ -188,3 +188,14 @@ Formato de entrada:
 - Terreno: rojo 1.35/1.1; pradera 0.95.
 - `biome_particles.gd`: hojas (28) y copos (220) con texturas generadas en código.
 - Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.
+
+## 2026-11-05 · `buffy` · FX de combate y feedback de HUD (T-0028)
+
+- `humano-ruben`: añadir muchas mejoras de partículas y UX.
+- `scripts/fx.gd` + nodo `fx` (grupo `fx`): chispas de golpe, estallido de
+  muerte, polvo al saltar/aterrizar/correr, chispas de moneda/objeto/curación,
+  números flotantes, sacudida de cámara y flash rojo.
+- HUD: pop del contador de monedas y latido de la barra bajo el 30 % de vida.
+- Biome particles: fundido de 0,4 s al entrar/salir y viento lateral.
+- Enganches en player, enemy_base, coin, item_pickup y biome_particles.
+- F5 pendiente (regla de `AGENTS.md`); commit al cerrar.

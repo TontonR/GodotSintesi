@@ -500,6 +500,9 @@ func take_damage(amount: float) -> void:
 		return
 	var damage := amount * (amount / (amount + defence))
 	health = maxf(health - damage, 0.0)
+	var fx := _fx()
+	if fx:
+		fx.call("enemy_hit", global_position + Vector2(0.0, -20.0), damage)
 	if health <= 0.0:
 		_die()
 	else:
@@ -508,6 +511,9 @@ func take_damage(amount: float) -> void:
 
 func _die() -> void:
 	_is_dead = true
+	var fx := _fx()
+	if fx:
+		fx.call("enemy_death", global_position + Vector2(0.0, -20.0))
 	died.emit()
 	_is_attacking = false
 	_can_attack = false
@@ -676,6 +682,10 @@ func _coin_drop_bonus() -> float:
 		if passive and passive.has_method("get_coin_drop_bonus"):
 			bonus += float(passive.call("get_coin_drop_bonus"))
 	return bonus
+
+
+func _fx() -> Node:
+	return get_tree().get_first_node_in_group("fx")
 
 
 ## Parpadeo rojo al recibir daño.

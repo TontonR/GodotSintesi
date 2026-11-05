@@ -19,6 +19,7 @@ Este es el único fichero siempre en contexto. **No leas nada más "por si acaso
 | `docs/player.md` | Movimiento, combo, guardia, vida, stamina y teclas |
 | `docs/enemies.md` | `EnemyBase`, fantasma (TP) y orco; loot |
 | `docs/world.md` | Generación por zonas, suelo, población y capas |
+| `docs/fx.md` | Partículas de combate, números de daño, sacudida y feedback del HUD |
 | `docs/historial.md` | Bugs ya resueltos (drops, loot); leer solo si algo huele a eso |
 | `documentation.md` | Histórico (396 líneas). Solo arqueología; no usar como fuente |
 | `vault/README.md` | Plan y canal con el opencode del compañero: tickets, estado y bitácora |

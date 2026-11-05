@@ -16,13 +16,14 @@ var _leaves: CPUParticles2D
 var _snow: CPUParticles2D
 var _elapsed := 0.0
 var _last_ambient := ""
+var _tweens: Dictionary = {}
 
 
 func _ready() -> void:
 	_player = get_parent().get_node_or_null("player") as Node2D
 	var view := get_viewport().get_visible_rect().size
-	_leaves = _make_emitter("leaves", _leaf_texture(), 28, 7.0, 30.0, Vector2(0.0, 25.0), view)
-	_snow = _make_emitter("snow", _snow_texture(), 220, 12.0, 18.0, Vector2(0.0, 5.0), view)
+	_leaves = _make_emitter("leaves", _leaf_texture(), 28, 7.0, 30.0, Vector2(14.0, 25.0), view)
+	_snow = _make_emitter("snow", _snow_texture(), 220, 12.0, 18.0, Vector2(10.0, 5.0), view)
 
 
 func _process(delta: float) -> void:
@@ -40,8 +41,24 @@ func _process(delta: float) -> void:
 	if ambient == _last_ambient:
 		return
 	_last_ambient = ambient
-	_leaves.emitting = ambient == "leaves"
-	_snow.emitting = ambient == "snow"
+	_set_emitter(_leaves, ambient == "leaves")
+	_set_emitter(_snow, ambient == "snow")
+
+
+## Enciende o apaga un emisor con un fundido corto para que no entre de golpe.
+func _set_emitter(particles: CPUParticles2D, enabled: bool) -> void:
+	if particles == null:
+		return
+	var key := particles.name
+	if _tweens.has(key):
+		(_tweens[key] as Tween).kill()
+	if enabled:
+		particles.emitting = true
+	var tween := create_tween()
+	_tweens[key] = tween
+	tween.tween_property(particles, "modulate:a", 1.0 if enabled else 0.0, 0.4)
+	if not enabled:
+		tween.tween_callback(func(): particles.emitting = false)
 
 
 ## Emisor a pantalla completa: nace por encima del borde superior y cae.
@@ -62,6 +79,8 @@ func _make_emitter(
 	particles.lifetime = lifetime
 	particles.one_shot = false
 	particles.emitting = false
+	# Empieza invisible: el fundido de `_set_emitter()` lo enciende.
+	particles.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	# Entra con la pantalla ya llena de partículas, no a gotas.
 	particles.preprocess = lifetime
 	particles.position = Vector2(view.x * 0.5, -6.0)

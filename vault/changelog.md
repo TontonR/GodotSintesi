@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — efectos de combate y feedback de HUD
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Nodo `fx`: chispas, estallidos, polvo, chispas de pickups, números de daño, sacudida y flash rojo | `scripts/fx.gd`, `scenes/game.tscn` | [T-0028](tickets/T-0028-fx-de-combate-y-feedback-de-hud.md) |
+| Enganches de VFX en jugador, enemigos, monedas y pickups | `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `scripts/collectables/coin.gd`, `item_pickup.gd` | [T-0028](tickets/T-0028-fx-de-combate-y-feedback-de-hud.md) |
+| Pop del contador de monedas y latido de la barra de vida con poca vida | `scripts/player.gd` | [T-0028](tickets/T-0028-fx-de-combate-y-feedback-de-hud.md) |
+| Fundido y viento en hojas/copos | `scripts/world/biome_particles.gd` | [T-0028](tickets/T-0028-fx-de-combate-y-feedback-de-hud.md) |
+
 ## 2026-11-05 · `main` — nieve separada, bioma de nieve y ambiente
 
 | Qué | Dónde | Ticket |

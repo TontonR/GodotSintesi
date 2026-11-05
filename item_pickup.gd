@@ -141,11 +141,20 @@ func _on_body_entered(body: Node2D) -> void:
 	# (p. ej. las skills), va al inventario
 	if item.has_method("on_pickup"):
 		if item.on_pickup(body):
+			_pickup_fx()
 			queue_free()
 		return
 	var inventory := body.get_node_or_null("Inventory")
 	if inventory and inventory.call("add_item", item):
+		_pickup_fx()
 		queue_free()
+
+
+## Chispas al recoger el objeto; el FX del juego las dibuja en el mundo.
+func _pickup_fx() -> void:
+	var fx := get_tree().get_first_node_in_group("fx")
+	if fx:
+		fx.call("item_pickup", global_position)
 
 ## Shows the tooltip when the player gets close
 func _on_proximity_body_entered(body: Node2D) -> void:

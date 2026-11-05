@@ -57,7 +57,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 - `Biome.ambient`: `"none"`, `"leaves"` (hojas rojas) o `"snow"` (copos). El bosque rojo lleva hojas, nieve lleva copos y pradera nada.
 - `scripts/world/biome_particles.gd` (nodo `biome_particles`, `CanvasLayer` layer 5 en `game.tscn`) crea dos `CPUParticles2D` a pantalla completa con texturas de píxeles generadas en código. Cada 0,25 s pide `WorldGenerator.biome_at_world_x()` en la X del jugador y enciende el emisor del `ambient` del bioma; al apagarlo, las partículas vivas terminan su vida.
-- Hojas: 28 partículas, caída lenta con giro. Nieve: 220 copos, caída más lenta todavía. Al activarse el emisor la pantalla ya está llena (`preprocess`).
+- Hojas: 28 partículas, caída lenta con giro. Nieve: 220 copos, caída más lenta todavía. Al activarse el emisor la pantalla ya está llena (`preprocess`), y entra/sale con un fundido de 0,4 s y viento lateral.
 
 ## Spawns y persistencia
 

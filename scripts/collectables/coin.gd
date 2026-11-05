@@ -17,5 +17,8 @@ func _on_body_entered(body: Node2D) -> void:
 	if target == null or not target.has_method("add_coin"):
 		return
 	target.add_coin(coin_value)
+	var fx := get_tree().get_first_node_in_group("fx")
+	if fx:
+		fx.call("coin_pickup", global_position)
 	collected.emit()
 	queue_free()

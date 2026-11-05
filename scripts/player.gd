@@ -37,6 +37,10 @@ var _jump_bonus_factor: float = 1.0
 var _jump_bonus_timer: float = 0.0
 # Emisor de partículas de moco; lo crean las pasivas y la poción de slime.
 var _moco_emitter: Node2D
+# Cadencia del polvo al correr y pulso del HUD con poca vida.
+var _run_dust_timer: float = 0.0
+var _hud_pulse: float = 0.0
+var _coins_tween: Tween
 # endregion
 
 # region Estadísticas y Economía
@@ -132,6 +136,20 @@ func _ready() -> void:
 	_update_coins_ui()
 
 
+func _process(delta: float) -> void:
+	# Poca vida: la barra late en rojo para que se note sin mirar el número.
+	if health_bar == null:
+		return
+	var ratio := float(health) / float(maxi(max_health, 1))
+	if health > 0 and ratio <= 0.3:
+		_hud_pulse += delta
+		var pulse := 0.5 + 0.5 * sin(_hud_pulse * 7.0)
+		health_bar.modulate = Color(1.0, 1.0 - 0.45 * pulse, 1.0 - 0.45 * pulse)
+	elif health_bar.modulate != Color.WHITE:
+		_hud_pulse = 0.0
+		health_bar.modulate = Color.WHITE
+
+
 func _try_step_up(direction: float) -> void:
 	# Se comprueba con la forma real del cuerpo: los rayos a media altura no
 	# veían los escalones de 1 tile (el origen está ~27 px sobre los pies).
@@ -207,6 +225,9 @@ func _physics_process(delta: float) -> void:
 		_jump_bonus_factor = 1.0
 
 	_update_stamina(delta)
+
+	# Para el polvo al aterrizar: se mira si venía del aire antes de moverse.
+	var was_on_floor := is_on_floor()
 
 	# Reloj del combo
 	if not _is_attacking and _combo_timer > 0.0:
@@ -296,13 +317,23 @@ func _physics_process(delta: float) -> void:
 			velocity.y = jump_velocity * _jump_bonus_factor
 			_jump_buffer_timer = 0.0
 			_coyote_timer = 0.0
+			_dust_at(Vector2(0.0, -2.0), 4, 0.7)
 
 		if not jump_pressed and _jump_was_pressed and velocity.y < 0.0:
 			velocity.y *= 0.45
 			
 		_jump_was_pressed = jump_pressed
 
+	var landing_speed := velocity.y
 	move_and_slide()
+	if not was_on_floor and is_on_floor() and landing_speed > 140.0:
+		_dust_at(Vector2(0.0, -2.0), clampf(landing_speed / 70.0, 3.0, 9.0), 1.0)
+	# Polvo de carrera: pequeño y espaciado para no tapar el suelo.
+	if _is_running and is_on_floor() and absf(velocity.x) > 40.0:
+		_run_dust_timer = maxf(_run_dust_timer - delta, 0.0)
+		if _run_dust_timer <= 0.0:
+			_run_dust_timer = 0.14
+			_dust_at(Vector2(-signf(velocity.x) * 6.0, -2.0), 2, 0.55)
 	_update_camera()
 	_update_animation()
 
@@ -422,6 +453,10 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void
 	final_amount = maxi(final_amount - moco_defense(), 0)
 	health = maxi(health - final_amount, 0)
 	_update_health_ui()
+	if final_amount > 0:
+		var fx := _fx()
+		if fx:
+			fx.call("player_hit", global_position + Vector2(0.0, -26.0), final_amount)
 	if health <= 0:
 		_die()
 
@@ -429,6 +464,10 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void
 func heal(amount: int) -> void:
 	health = mini(health + amount, max_health)
 	_update_health_ui()
+	if amount > 0:
+		var fx := _fx()
+		if fx:
+			fx.call("heal", global_position + Vector2(0.0, -20.0), amount)
 
 
 # ==============================================================================
@@ -487,6 +526,16 @@ func moco_defense() -> float:
 	return float(_moco_emitter.call("get_defense"))
 
 
+func _fx() -> Node:
+	return get_tree().get_first_node_in_group("fx")
+
+
+func _dust_at(offset: Vector2, amount: float, strength: float = 1.0) -> void:
+	var fx := _fx()
+	if fx:
+		fx.call("dust", global_position + offset, int(round(amount)), strength)
+
+
 func _die() -> void:
 	if _is_dead:
 		return
@@ -507,6 +556,19 @@ func _die() -> void:
 func add_coin(amount: int = 1) -> void:
 	current_coins += amount
 	_update_coins_ui()
+	_pop_coins_ui()
+
+
+## Pop del contador de monedas: se agranda y vuelve a su tamaño.
+func _pop_coins_ui() -> void:
+	if coins_label == null:
+		return
+	coins_label.pivot_offset = coins_label.size * 0.5
+	if _coins_tween and _coins_tween.is_valid():
+		_coins_tween.kill()
+	coins_label.scale = Vector2(1.28, 1.28)
+	_coins_tween = create_tween()
+	_coins_tween.tween_property(coins_label, "scale", Vector2.ONE, 0.18)
 
 
 func spend_coins(amount: int) -> bool:

@@ -1,0 +1,204 @@
+extends Node2D
+
+# ==============================================================================
+# EFECTOS DE COMBATE, PICKUPS Y UI
+# ==============================================================================
+# Partículas y textos viven en el mundo; el flash rojo, en una capa de pantalla.
+# Todo se crea en código: este nodo no necesita escenas ni texturas externas.
+# Los demás sistemas lo buscan en el grupo "fx".
+
+var _camera: Camera2D
+var _shake_time := 0.0
+var _shake_duration := 0.01
+var _shake_strength := 0.0
+var _flash: ColorRect
+var _flash_tween: Tween
+var _text_layer: CanvasLayer
+var _dot_texture: ImageTexture
+
+
+func _ready() -> void:
+	add_to_group("fx")
+	_dot_texture = _solid_texture(2)
+	_build_layers()
+
+
+func _process(delta: float) -> void:
+	if _shake_time <= 0.0:
+		return
+	_shake_time = maxf(_shake_time - delta, 0.0)
+	var camera := _get_camera()
+	if camera == null:
+		return
+	if _shake_time <= 0.0:
+		camera.offset = Vector2.ZERO
+		_shake_strength = 0.0
+		return
+	var amount := _shake_strength * (_shake_time / _shake_duration)
+	camera.offset = Vector2(randf_range(-amount, amount), randf_range(-amount, amount))
+
+
+# ==============================================================================
+# API PARA EL RESTO DEL JUEGO
+# ==============================================================================
+
+## Golpe a un enemigo: chispas y número de daño.
+func enemy_hit(world_position: Vector2, damage: float) -> void:
+	_burst(world_position, Color(1.0, 0.85, 0.55), 8, 90.0, 0.35, 0.9)
+	if damage >= 1.0:
+		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
+
+
+## Muerte de un enemigo: un estallido cálido y otro blanco.
+func enemy_death(world_position: Vector2) -> void:
+	_burst(world_position, Color(0.95, 0.35, 0.3), 18, 150.0, 0.6, 1.4)
+	_burst(world_position, Color(1.0, 1.0, 1.0), 6, 90.0, 0.45, 1.0)
+
+
+## Daño al jugador: número rojo, chispas, sacudida de cámara y flash.
+func player_hit(world_position: Vector2, damage: float) -> void:
+	_burst(world_position, Color(1.0, 0.3, 0.28), 10, 110.0, 0.4, 1.0)
+	_number(world_position, str(-roundi(damage)), Color(1.0, 0.42, 0.38))
+	shake(2.5, 0.18)
+	damage_flash()
+
+
+## Moneda recogida: chispas doradas y "+1".
+func coin_pickup(world_position: Vector2) -> void:
+	_burst(world_position, Color(1.0, 0.85, 0.3), 10, 80.0, 0.45, 0.9)
+	_number(world_position + Vector2(0.0, -8.0), "+1", Color(1.0, 0.88, 0.35))
+
+
+## Objeto recogido: chispas verdes.
+func item_pickup(world_position: Vector2) -> void:
+	_burst(world_position, Color(0.55, 1.0, 0.65), 14, 70.0, 0.6, 1.0)
+
+
+## Curación: chispas verdes y "+N".
+func heal(world_position: Vector2, amount: int) -> void:
+	_burst(world_position, Color(0.45, 1.0, 0.55), 12, 60.0, 0.5, 1.0)
+	if amount > 0:
+		_number(world_position, "+%d" % amount, Color(0.55, 1.0, 0.6))
+
+
+## Polvo (saltar, aterrizar, correr). `strength` escala tamaño y velocidad.
+func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> void:
+	_burst(world_position, Color(0.84, 0.8, 0.72, 0.75), amount, 40.0 * strength, 0.38, 1.1 * strength)
+
+
+## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
+func shake(strength: float, duration: float) -> void:
+	if _get_camera() == null:
+		return
+	_shake_strength = maxf(_shake_strength, strength)
+	_shake_duration = maxf(duration, 0.01)
+	_shake_time = _shake_duration
+
+
+## Flash rojo a pantalla completa (por debajo del HUD).
+func damage_flash() -> void:
+	if _flash == null:
+		return
+	if _flash_tween and _flash_tween.is_valid():
+		_flash_tween.kill()
+	_flash.color.a = 0.0
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_flash, "color:a", 0.3, 0.04)
+	_flash_tween.tween_property(_flash, "color:a", 0.0, 0.28)
+
+
+# ==============================================================================
+# CONSTRUCCIÓN
+# ==============================================================================
+
+## Capa de números (8, bajo el HUD) y capa del flash (9, también bajo el HUD).
+func _build_layers() -> void:
+	_text_layer = CanvasLayer.new()
+	_text_layer.name = "DamageNumbers"
+	_text_layer.layer = 8
+	add_child(_text_layer)
+
+	var flash_layer := CanvasLayer.new()
+	flash_layer.name = "DamageFlash"
+	flash_layer.layer = 9
+	add_child(flash_layer)
+	var root := Control.new()
+	root.name = "FlashRoot"
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash_layer.add_child(root)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_flash = ColorRect.new()
+	_flash.name = "Color"
+	_flash.color = Color(1.0, 0.12, 0.12, 0.0)
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_flash)
+	_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+## Número flotante: sube y se desvanece. Se coloca en coordenadas de pantalla
+## para que el zoom de la cámara no cambie su tamaño.
+func _number(world_position: Vector2, text: String, color: Color) -> void:
+	if _text_layer == null:
+		return
+	var label := Label.new()
+	label.text = text
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
+	label.add_theme_constant_override("outline_size", 3)
+	_text_layer.add_child(label)
+	label.position = (get_viewport().get_canvas_transform() * world_position).round()
+	var target := label.position + Vector2(randf_range(-3.0, 3.0), -18.0)
+	var tween := label.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position", target, 0.65)
+	tween.tween_property(label, "modulate:a", 0.0, 0.45).set_delay(0.2)
+	tween.finished.connect(label.queue_free)
+
+
+## Estallido de partículas de un solo uso.
+func _burst(
+	world_position: Vector2,
+	color: Color,
+	amount: int,
+	speed: float,
+	lifetime: float,
+	strength: float
+) -> void:
+	var particles := CPUParticles2D.new()
+	particles.texture = _dot_texture
+	particles.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	particles.one_shot = true
+	particles.emitting = false
+	particles.amount = maxi(amount, 1)
+	particles.lifetime = lifetime
+	particles.explosiveness = 1.0
+	particles.direction = Vector2.UP
+	particles.spread = 180.0
+	particles.gravity = Vector2(0.0, 320.0)
+	particles.initial_velocity_min = speed * 0.45
+	particles.initial_velocity_max = speed
+	particles.scale_amount_min = 0.5 * strength
+	particles.scale_amount_max = 1.0 * strength
+	particles.color = color
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	particles.emission_sphere_radius = 3.0
+	add_child(particles)
+	particles.global_position = world_position
+	particles.emitting = true
+	get_tree().create_timer(lifetime + 0.3).timeout.connect(particles.queue_free)
+
+
+## Píxel blanco reutilizado por todas las partículas (se tiñen con `color`).
+func _solid_texture(size: int) -> ImageTexture:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+
+func _get_camera() -> Camera2D:
+	if _camera and is_instance_valid(_camera):
+		return _camera
+	_camera = get_viewport().get_camera_2d() as Camera2D
+	return _camera
