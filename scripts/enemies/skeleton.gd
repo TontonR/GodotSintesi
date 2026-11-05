@@ -36,7 +36,7 @@ func _ready() -> void:
 
 ## El primer golpe recibido no resta vida; a partir del segundo se usa el daño
 ## normal de EnemyBase.
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, critical: bool = false) -> void:
 	if _is_dead:
 		return
 
@@ -45,4 +45,4 @@ func take_damage(amount: float) -> void:
 		_flash_hit()
 		return
 
-	super.take_damage(amount)
+	super.take_damage(amount, critical)

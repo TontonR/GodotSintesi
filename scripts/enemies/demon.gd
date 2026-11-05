@@ -235,12 +235,12 @@ func _end_stun() -> void:
 	_play_animation(idle_animation, true)
 
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, critical: bool = false) -> void:
 	if _is_dead:
 		return
 
 	var was_stunned := _state == State.STUN
-	super.take_damage(amount)
+	super.take_damage(amount, critical)
 	if _is_dead:
 		return
 

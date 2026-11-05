@@ -132,10 +132,10 @@ func _flee(_to_player: Vector2) -> void:
 		_play_animation(idle_animation)
 
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, critical: bool = false) -> void:
 	if invulnerable_while_teleporting and _is_teleporting:
 		return
-	super(amount)
+	super(amount, critical)
 
 
 # ==============================================================================

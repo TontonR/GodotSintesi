@@ -15,7 +15,7 @@ _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 - Config: `flying_enemy`; `step_height` 16 (auto-subida de 1 tile, mismo criterio que el jugador: mira por delante y sube 17 px); `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
 - Loot: `loot_table` la monta `_build_loot_table()`: moneda al `coin_drop_chance` 45 % (`coin_drop_amount` 1) y un `ItemPickup` con el pool del enemigo al `item_drop_chance` 30 %. Asignar el item antes de `add_child`, parentar y luego fijar `global_position` para respetar el transform del chunk.
-- `take_damage(amount, critical = false)` reenvía el aviso de crítico a `fx.enemy_hit()` (T-0031).
+- `take_damage(amount, critical = false)` reenvía el aviso de crítico a `fx.enemy_hit()` (T-0031). **Cualquier override** (fantasma, esqueleto, demonio) debe repetir esa firma y pasar `critical` al `super`, o Godot no parsea la escena.
 - Suerte: `_luck_drop_bonus()` lee `player.luck` y suma `luck × 0,01` a todas las `drop_chance` (0 por defecto, no altera el balance base).
 
 ## Fantasma

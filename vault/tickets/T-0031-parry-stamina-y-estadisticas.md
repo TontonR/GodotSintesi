@@ -46,3 +46,8 @@
 
 Pendiente de F5. Código en `scripts/player.gd`, `scripts/fx.gd` y
 `scripts/enemies/enemy_base.gd`; docs y vault actualizados en el mismo cierre.
+
+Fix tras el primer arranque: los overrides de `take_damage()` del fantasma,
+esqueleto y demonio no aceptaban `critical` y Godot daba «function signature
+doesn't match the parent». Ya repiten `(amount: float, critical: bool = false)`
+y pasan `critical` al `super`.
