@@ -4,16 +4,18 @@ extends Node
 # ==============================================================================
 # HERRAMIENTAS DE PRUEBA (temporal)
 # ==============================================================================
-# Numpad: 7/8/9 cambian la velocidad del juego (x1/x5/x20) y 4/6 hacen un viaje
+# Numpad: 7/8/9 cambian la velocidad del juego (x1/x5/x20), 4/6 hacen un viaje
 # rápido a izquierda/derecha + algo hacia arriba, para no quedarse encerrado
-# dentro de una montaña al probar. Los ítems de prueba (KP0-KP3) siguen en
-# `scenes/inventory/inventory.gd`, que es del inventario.
+# dentro de una montaña al probar, y 5 alterna la inmortalidad del jugador.
+# Los ítems de prueba (KP0-KP3) siguen en `scenes/inventory/inventory.gd`, que
+# es del inventario.
 
 const TILE_SIZE := 16
 ## Factores de `Engine.time_scale` para KP7, KP8 y KP9.
 const SPEEDS: Array[float] = [1.0, 5.0, 20.0]
 const SPEED_LABELS: Array[String] = ["x1", "x5", "x20"]
-const HINT := "velocidad %s · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 viaje rápido"
+const HINT := "velocidad %s · inmortal %s · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 viaje rápido · KP5 inmortal"
+const IMMORTAL_LABELS: Array[String] = ["no", "sí"]
 
 ## Velocidad del juego al arrancar (también se cambia en caliente con el numpad).
 @export_enum("x1", "x5", "x20") var game_speed: int = 0
@@ -23,6 +25,8 @@ const HINT := "velocidad %s · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 viaje rápido"
 @export var teleport_lift_tiles: int = 10
 
 var _label: Label
+## Estado de la inmortalidad de depuración (lo alterna KP5).
+var _immortal: bool = false
 
 
 func _ready() -> void:
@@ -43,6 +47,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	match key:
 		KEY_KP_4:
 			_teleport(-1.0)
+		KEY_KP_5:
+			_toggle_immortal()
 		KEY_KP_6:
 			_teleport(1.0)
 		KEY_KP_7:
@@ -60,6 +66,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func _apply_speed(index: int) -> void:
 	game_speed = clampi(index, 0, SPEEDS.size() - 1)
 	Engine.time_scale = SPEEDS[game_speed]
+	_update_label()
+
+
+## Alterna la inmortalidad del jugador con KP5 (no recibe daño al estar activa).
+func _toggle_immortal() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		player = get_parent().get_node_or_null("player")
+	if player == null or not player.has_method("toggle_immortal"):
+		return
+	_immortal = bool(player.call("toggle_immortal"))
 	_update_label()
 
 
@@ -101,4 +118,4 @@ func _build_label() -> void:
 
 func _update_label() -> void:
 	if _label:
-		_label.text = HINT % SPEED_LABELS[game_speed]
+		_label.text = HINT % [SPEED_LABELS[game_speed], IMMORTAL_LABELS[1 if _immortal else 0]]

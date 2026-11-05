@@ -7,6 +7,14 @@ const HALF_HEIGHT: float = 16.0
 const WORLD_LAYER: int = 1
 ## Maximum distance (px) searched downwards for the ground when spawning
 const GROUND_SEARCH_DISTANCE: float = 1024.0
+## Seconds the pickup exists since it spawns (even if nobody sees it).
+const SPAWN_LIFETIME: float = 60.0
+## Seconds since first seen until the pickup starts blinking.
+const BLINK_START: float = 25.0
+## Seconds since first seen until the pickup disappears.
+const SEEN_LIFETIME: float = 30.0
+## Blink interval in seconds (sprite on/off).
+const BLINK_INTERVAL: float = 0.2
 
 @export_group("Item")
 ## Item this entity gives when picked up
@@ -34,6 +42,12 @@ var _ground_y: float = -1.0
 var _ground_searched: bool = false
 var _phase: float = 0.0
 var _time: float = 0.0
+## Time alive since spawn (`SPAWN_LIFETIME` safety net).
+var _spawn_age: float = 0.0
+## Time the pickup has been visible on screen (`BLINK_START`/`SEEN_LIFETIME`).
+var _seen_age: float = 0.0
+var _blink_timer: float = 0.0
+var _blink_visible: bool = true
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var _proximity_area: Area2D = get_node_or_null("ProximityArea")
@@ -52,6 +66,9 @@ func _ready() -> void:
 		_proximity_area.body_exited.connect(_on_proximity_body_exited)
 
 func _physics_process(delta: float) -> void:
+	if _update_expiry(delta):
+		return
+
 	# El suelo se busca una sola vez en el primer tick (con la posición real ya
 	# asignada) y el aterrizaje se compara contra esa altura fija. Antes se
 	# lanzaba un rayo corto por frame: los impactos lentos no lo detectaban y
@@ -78,6 +95,43 @@ func _physics_process(delta: float) -> void:
 			_velocity_y = -_velocity_y * bounce
 		return
 	global_position.y = next_y
+
+## Caducidad: `SPAWN_LIFETIME` desde que aparece y `SEEN_LIFETIME` desde que se
+## ve por primera vez (parpadea desde `BLINK_START`). Devuelve true cuando el
+## objeto ya se ha liberado y no debe seguir procesándose.
+func _update_expiry(delta: float) -> bool:
+	_spawn_age += delta
+	if _spawn_age >= SPAWN_LIFETIME:
+		queue_free()
+		return true
+	if not _is_seen():
+		return false
+	_seen_age += delta
+	if _seen_age >= SEEN_LIFETIME:
+		queue_free()
+		return true
+	if _seen_age >= BLINK_START:
+		_blink_timer += delta
+		if _blink_timer >= BLINK_INTERVAL:
+			_blink_timer = 0.0
+			_blink_visible = not _blink_visible
+			if sprite:
+				sprite.visible = _blink_visible
+	return false
+
+## True cuando el pickup cae dentro de la cámara (el reloj de 30 s no corre
+## para lo que todavía no se ha visto; las monedas no usan este script).
+func _is_seen() -> bool:
+	if not is_inside_tree():
+		return false
+	var viewport := get_viewport()
+	var camera := viewport.get_camera_2d()
+	if camera == null:
+		return true
+	var half := viewport.get_visible_rect().size * 0.5 / camera.zoom
+	var offset := global_position - camera.get_screen_center_position()
+	return absf(offset.x) <= half.x + HALF_HEIGHT and absf(offset.y) <= half.y + HALF_HEIGHT
+
 
 ## Auto pickup: touching the item is enough (no key press)
 func _on_body_entered(body: Node2D) -> void:

@@ -587,6 +587,29 @@ func _pick_loot(pool: Array) -> Items:
 	return pool[pool.size() - 1]
 
 
+## Pool sin las pasivas que el jugador ya tiene: los coleccionables no se repiten.
+func _available_loot(pool: Array) -> Array:
+	var available: Array = []
+	for entry in pool:
+		if entry == null:
+			continue
+		if entry is PassiveItems and _player_has_passive(entry):
+			continue
+		available.append(entry)
+	return available
+
+
+## True si el jugador ya lleva equipada esa pasiva.
+func _player_has_passive(item: PassiveItems) -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return false
+	var passives := player.get_node_or_null("PlayerPassives")
+	if passives == null or not passives.has_method("has_passive"):
+		return false
+	return bool(passives.call("has_passive", item))
+
+
 ## Avisa a las pasivas del jugador (vampirismo, codicia...).
 func _notify_player_kill() -> void:
 	var player := get_tree().get_first_node_in_group("player")
@@ -613,14 +636,21 @@ func _drop_loot() -> void:
 		# Pasivas del jugador (Piedra con oro) suben la probabilidad de moneda.
 		if drop_entry.item_scene == DEFAULT_COIN:
 			drop_chance = minf(drop_chance + _coin_drop_bonus(), 1.0)
+		# Las pasivas que el jugador ya lleva no pueden volver a soltarse.
+		var item_pool: Array = drop_entry.item_pool
+		if not item_pool.is_empty():
+			item_pool = _available_loot(item_pool)
+			if item_pool.is_empty():
+				continue
+
 		if randf() <= drop_chance:
 			var amount := randi_range(drop_entry.min_amount, drop_entry.max_amount)
 			for i in amount:
 				var item := drop_entry.item_scene.instantiate()
 				if item:
 					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
-					if drop_entry.item_pool.size() > 0 and "item" in item:
-						item.set("item", _pick_loot(drop_entry.item_pool))
+					if not item_pool.is_empty() and "item" in item:
+						item.set("item", _pick_loot(item_pool))
 					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
 					var offset_y := randf_range(-loot_drop_y, loot_drop_y)
 					var drop_position := global_position + Vector2(offset_x, offset_y)

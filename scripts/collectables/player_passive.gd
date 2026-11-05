@@ -16,11 +16,29 @@ func _ready() -> void:
 	if bar:
 		bar.call("bind", self)
 
-## Adds a new passive item to the array
-func add_passive(passive: PassiveItems) -> void:
+## Adds a new passive item once; duplicates are refused (collectables never stack).
+func add_passive(passive: PassiveItems) -> bool:
+	if passive == null or has_passive(passive):
+		return false
 	active_passives.append(passive)
 	passive.on_equip(get_parent()) # 'get_parent()' asume que es el nodo Jugador
 	passives_changed.emit()
+	return true
+
+## True when that passive is already equipped (same instance, resource or id).
+func has_passive(passive: PassiveItems) -> bool:
+	if passive == null:
+		return false
+	for owned in active_passives:
+		if owned == null:
+			continue
+		if owned == passive:
+			return true
+		if not owned.resource_path.is_empty() and owned.resource_path == passive.resource_path:
+			return true
+		if not owned.passive_id.is_empty() and owned.passive_id == passive.passive_id:
+			return true
+	return false
 
 ## Removes a passive item from the array
 func remove_passive(passive: PassiveItems) -> void:

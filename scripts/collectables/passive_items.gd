@@ -36,11 +36,10 @@ func on_enemy_killed(_player: Node, _enemy: Node) -> void:
 func on_update(_player: Node, _delta: float) -> void:
 	pass
 
-## On pickup it is equipped as an active player passive
+## On pickup it is equipped as an active player passive; only once per run.
 func on_pickup(player: Node) -> bool:
 	# Acceso por nombre para no crear referencia cíclica con PlayerPassives
-	var passives := player.get_node_or_null("PlayerPassives")
-	if passives == null or not passives.has_method("add_passive"):
+	var passives := player.get_node_or_null("PlayerPassives") as PlayerPassives
+	if passives == null:
 		return false
-	passives.add_passive(self)
-	return true
+	return passives.add_passive(self)

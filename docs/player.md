@@ -35,6 +35,7 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 ## Debug (temporal, 2026-11-03)
 
 - `scripts/debug_tools.gd` (`DebugTools`, nodo `debug_tools` en `game.tscn`): KP7/KP8/KP9 fijan `Engine.time_scale` a x1/x5/x20 y KP4/KP6 hacen un viaje rápido de 64 tiles a izquierda/derecha subiendo 10 tiles (para salir de montañas). Distancias en `teleport_distance_tiles` y `teleport_lift_tiles`.
+- **KP5** alterna la inmortalidad (`player.toggle_immortal()` → `immortal`): con ella activa `_apply_damage()` sale sin tocar vida; el empuje/knockback de `take_damage_from()` sigue aplicándose. El aviso de debug muestra `inmortal sí/no`. Tecla independiente de `use_slot_5` (que es la tecla 5 de la fila superior, no el numpad).
 - El viaje llama a `player.debug_teleport(offset)`: mueve, corta la velocidad, borra el desfase visual de escalón y reinicia `_cam_y` para que la cámara no arrastre el salto.
 - `_exit_tree` devuelve `time_scale` a 1.0: salir de la escena no deja el juego acelerado.
 - Los ítems de prueba (KP0-KP3) viven aparte, en `scenes/inventory/inventory.gd` (ver `docs/items.md`).

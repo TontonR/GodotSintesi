@@ -28,6 +28,8 @@ var control_enabled: bool = true
 var camera_follow_enabled: bool = true
 ## Tope de velocidad de caída con el control desactivado (0 = sin tope, px/s).
 var fall_speed_cap: float = 0.0
+## Inmortalidad de depuración (KP5): mientras esté activa no recibe daño.
+var immortal: bool = false
 # Segundos de bloqueo de control tras un knockup (lobo).
 var _control_lock_timer: float = 0.0
 # Multiplicador temporal de salto (poción de mocos).
@@ -160,6 +162,12 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_try_attack()
+
+
+## Debug: alterna la inmortalidad y devuelve el estado nuevo (KP5).
+func toggle_immortal() -> bool:
+	immortal = not immortal
+	return immortal
 
 
 ## Debug: salto seco para probar zonas lejanas. Corta la inercia y reinicia
@@ -399,7 +407,7 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 
 
 func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void:
-	if _is_dead:
+	if _is_dead or immortal:
 		return
 	if _is_guarding and from_front:
 		# La guardia para el golpe frontal (aviso para las pasivas de bloqueo).

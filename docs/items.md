@@ -100,3 +100,21 @@ Tabla completa por enemigo en `vault/pasivas/`. Aquí va lo técnico:
   `starsW`, `bombPotionW`, `iceW` y `healthW` del pack `assets/19+ icons`. Los originales
   del pack miden 380×380 y a tamaño real no cabían en pantalla (los 9 de T-0017 también
   pasaron a estos recortes).
+
+## No acumulación y caducidad de pickups (2026-11-05)
+
+- **Pasivas sin stack**: `PlayerPassives.has_passive()` compara instancia,
+  `resource_path` o `passive_id`; `add_passive()` devuelve `false` si ya está equipada,
+  así que `PassiveItems.on_pickup()` la rechaza y el pickup se queda en el suelo hasta
+  caducar. Con la pasiva equipada no se puede volver a obtener.
+- **Drop filtrado**: `EnemyBase._available_loot()` quita del pool del enemigo las pasivas
+  que el jugador ya lleva; si el pool queda vacío no se tira nada. La moneda no pasa por
+  ese filtro.
+- **Caducidad** (`item_pickup.gd`): 60 s desde que aparece (aunque nadie lo vea) y se
+  borra solo. Además, contando desde que se ve por primera vez: parpadea a los 25 s
+  (sprite on/off cada `BLINK_INTERVAL` = 0,2 s) y desaparece a los 30 s. "Ver" = dentro
+  de la cámara del jugador; estar fuera de pantalla no consume ese reloj.
+- Las **monedas** (`scripts/collectables/coin.gd`) no caducan ni parpadean: son otra
+  escena y no heredan de `ItemPickup`.
+- Constantes en `item_pickup.gd`: `SPAWN_LIFETIME`, `BLINK_START`, `SEEN_LIFETIME`
+  y `BLINK_INTERVAL`.
