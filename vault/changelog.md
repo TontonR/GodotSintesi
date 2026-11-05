@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — parry retocado y estadísticas del jugador
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Parry de 0,2 s con enfriamiento de 0,3 s, aviso dorado al abrir la ventana y +30 stamina al acertar; la guardia ya no empuja | `scripts/player.gd`, `scripts/fx.gd` | [T-0031](tickets/T-0031-parry-stamina-y-estadisticas.md) |
+| Estadísticas base: `attack_speed`, `crit_chance`, `crit_damage`, `luck` (la velocidad es `move_speed`); crítico con FX propio | `scripts/player.gd`, `scripts/fx.gd`, `scripts/enemies/enemy_base.gd` | [T-0031](tickets/T-0031-parry-stamina-y-estadisticas.md) |
+| Panel `UILayer/StatsPanel` a la izquierda, siempre visible y alpha 0,6 | `scripts/player.gd` | [T-0031](tickets/T-0031-parry-stamina-y-estadisticas.md) |
+| La suerte suma `luck × 0,01` a todas las probabilidades de drop | `scripts/enemies/enemy_base.gd` | [T-0031](tickets/T-0031-parry-stamina-y-estadisticas.md) |
+
 ## 2026-11-05 · `main` — polvo del bioma, parry y física de pickups
 
 | Qué | Dónde | Ticket |

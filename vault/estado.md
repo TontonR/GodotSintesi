@@ -7,16 +7,16 @@ _Actualizado 2026-11-05 por `buffy`_
 | Campo | Valor |
 |---|---|
 | Rama | `main`, commits locales de la sesión (T-0022..T-0030); sin push |
-| Árbol | commits locales: T-0022 (juego), T-0023/T-0024 (biomas y fondos), T-0025 (gris medio), T-0026 (un tono por capa), T-0027 (bioma de nieve), T-0028 (FX + HUD), T-0029 (polvo, sangre y moco) y T-0030 (polvo por bioma, parry y física de pickups); sin push |
+| Árbol | commits locales: T-0022 (juego), T-0023/T-0024 (biomas y fondos), T-0025 (gris medio), T-0026 (un tono por capa), T-0027 (bioma de nieve), T-0028 (FX + HUD), T-0029 (polvo, sangre y moco), T-0030 (polvo por bioma, parry y física de pickups) y T-0031 (parry retocado y estadísticas); sin push |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. 6 enemigos terrestres activos; los voladores (fantasma y demonio) aparcados. |
-| Siguiente paso | F5 de T-0022..T-0030 (pickups/pasivas, biomas, FX, polvo/sangre/moco y polvo por bioma/parry/monedas); después, arranque, reparto de enemigos y banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 de T-0022..T-0030 (pickups/pasivas, biomas, FX, polvo/sangre/moco y polvo por bioma/parry/monedas) y de T-0031 (timing del parry y panel de stats); después, arranque, reparto de enemigos y banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0030 polvo del bioma, parry y física de monedas/objetos (hecho, pendiente de F5); T-0022..T-0029 también pendientes de F5 | `scripts/fx.gd`, `scripts/player.gd`, `scripts/collectables/coin.gd`, `scripts/world_generator.gd`, `item_pickup.gd` |
+| `buffy` | T-0031 parry retocado y panel de estadísticas (hecho, pendiente de F5); T-0022..T-0030 también pendientes de F5 | `scripts/player.gd`, `scripts/fx.gd`, `scripts/enemies/enemy_base.gd` |
 | `opencode-jorge` | Sin confirmar desde este repo | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,7 @@ _Actualizado 2026-11-05 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-05 | T-0031 | Parry con enfriamiento, refund de stamina y panel fijo de estadísticas (ataque, crítico, velocidad y suerte) |
 | 2026-11-05 | T-0030 | Polvo teñido con el césped del bioma, parry con chispas y monedas/objetos con caída y rebote |
 | 2026-11-05 | T-0029 | Polvo a ras de suelo, reventón de sangre en 4 capas y moco por toda la hitbox |
 | 2026-11-05 | T-0028 | Chispas, números de daño, polvo, sacudida/flash y pop/latido del HUD |

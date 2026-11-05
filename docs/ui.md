@@ -9,6 +9,12 @@ _2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
 - **Paginación (2026-10-20)**: solo **10 filas por página** (60 iconos); **← / →** (`ui_left`/`ui_right`) pasan de página con vuelta circular. El contador `Pág. X/Y` (`UILayer/PassivePageLabel`) está **encima del grid** y solo se ve si hay más de una página. Las flechas ya no mueven al jugador (solo A/D + Espacio/W).
 - Iconos 12×12 con alpha 0.55, `h/v_separation` 2. Refresco por `PlayerPassives.passives_changed` → `_refresh` (patrón bind existente).
 
+## Panel de estadísticas (2026-11-05)
+
+- `UILayer/StatsPanel`: `GridContainer` de **2 columnas** anclado arriba-izquierda en `position (5, 26)` (justo bajo `ConsumableBar`, que ocupa hasta y=22). Lo crea `player.gd::_ensure_stats_ui()` si no existe, igual que las barras de vida/stamina.
+- **Siempre visible**, fuente 9 con sombra y `modulate` alpha **0,6** para que no tape el juego. Cinco filas: `Vel. ataque`, `Daño crítico`, `Prob. crítico`, `Velocidad`, `Suerte`; valores en dorado claro alineados a la derecha.
+- Solo se refresca cuando cambia algo (`_stats_dirty`): no reescribe etiquetas cada frame. Los valores salen de `attack_speed`, `crit_damage`, `crit_chance`, `move_speed` y `luck` del jugador.
+
 ## Pantalla de inventario (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)
 
 - **Apertura**: acción `inventory` = **Tab** o **I** (nueva en `project.godot`); **Esc** o **I** cierra. Con la pantalla abierta, **Tab alterna entre la columna 1 y la 2** (no cierra). **Pausa el juego** (`get_tree().paused = true`; la pantalla vive con `process_mode = ALWAYS` y `_exit_tree` se asegura de no dejar pausado el árbol).

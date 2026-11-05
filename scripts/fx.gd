@@ -44,8 +44,16 @@ func _process(delta: float) -> void:
 # API PARA EL RESTO DEL JUEGO
 # ==============================================================================
 
-## Golpe a un enemigo: chispas y número de daño.
-func enemy_hit(world_position: Vector2, damage: float) -> void:
+## Golpe a un enemigo: chispas y número de daño. Si es crítico, más chispas
+## doradas, número más grande y sacudida corta.
+func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -> void:
+	if critical:
+		_burst(world_position, Color(1.0, 0.8, 0.32), 14, 140.0, 0.45, 1.2, 280.0, 4.0)
+		_burst(world_position, Color(1.0, 1.0, 0.9), 6, 90.0, 0.25, 0.8, 120.0, 2.0)
+		shake(1.0, 0.06)
+		if damage >= 1.0:
+			_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.78, 0.28), 12)
+		return
 	_burst(world_position, Color(1.0, 0.85, 0.55), 8, 90.0, 0.35, 0.9)
 	if damage >= 1.0:
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
@@ -108,6 +116,11 @@ func parry(world_position: Vector2) -> void:
 	damage_flash(Color(1.0, 0.95, 0.72), 0.16)
 
 
+## Ventana de parry abierta: chispas pequeñas doradas, sin texto ni sacudida.
+func parry_ready(world_position: Vector2) -> void:
+	_burst(world_position, Color(1.0, 0.9, 0.55, 0.9), 4, 45.0, 0.22, 0.6, 0.0, 2.0, 70.0)
+
+
 ## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
 func shake(strength: float, duration: float) -> void:
 	if _get_camera() == null:
@@ -160,13 +173,13 @@ func _build_layers() -> void:
 
 ## Número flotante: sube y se desvanece. Se coloca en coordenadas de pantalla
 ## para que el zoom de la cámara no cambie su tamaño.
-func _number(world_position: Vector2, text: String, color: Color) -> void:
+func _number(world_position: Vector2, text: String, color: Color, font_size: int = 9) -> void:
 	if _text_layer == null:
 		return
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
 	label.add_theme_constant_override("outline_size", 3)

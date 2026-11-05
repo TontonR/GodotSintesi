@@ -495,14 +495,14 @@ func _on_flee_area_body_exited(body: Node2D) -> void:
 # Vida y muerte
 # ---------------------------------------------------------------------------
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, critical: bool = false) -> void:
 	if _is_dead:
 		return
 	var damage := amount * (amount / (amount + defence))
 	health = maxf(health - damage, 0.0)
 	var fx := _fx()
 	if fx:
-		fx.call("enemy_hit", global_position + Vector2(0.0, -20.0), damage)
+		fx.call("enemy_hit", global_position + Vector2(0.0, -20.0), damage, critical)
 	if health <= 0.0:
 		_die()
 	else:
@@ -638,7 +638,8 @@ func _drop_loot() -> void:
 		if not drop_entry or not drop_entry.item_scene:
 			continue
 
-		var drop_chance := drop_entry.drop_chance
+		# La suerte del jugador sube cualquier probabilidad de drop.
+		var drop_chance := minf(drop_entry.drop_chance + _luck_drop_bonus(), 1.0)
 		# Pasivas del jugador (Piedra con oro) suben la probabilidad de moneda.
 		if drop_entry.item_scene == DEFAULT_COIN:
 			drop_chance = minf(drop_chance + _coin_drop_bonus(), 1.0)
@@ -664,6 +665,14 @@ func _drop_loot() -> void:
 					# Asignar global_position después de parentarlo evita sumar dos veces
 					# el offset del chunk; la física del pickup empieza en el siguiente tick.
 					item.global_position = drop_position
+
+
+## Puntos porcentuales extra de drop que da la suerte del jugador (luck = 5 → +5 %).
+func _luck_drop_bonus() -> float:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or not ("luck" in player):
+		return 0.0
+	return maxf(float(player.luck) * 0.01, 0.0)
 
 
 ## Extra de probabilidad de moneda que aportan las pasivas del jugador actual.

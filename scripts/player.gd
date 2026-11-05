@@ -54,6 +54,18 @@ var health: int
 var stamina: float
 # endregion
 
+# region Estadísticas de combate
+@export_group("Estadísticas de combate")
+## Multiplicador de velocidad de ataque (1 = normal; 1.25 = 25 % más rápido).
+@export var attack_speed: float = 1.0
+## Probabilidad base de crítico (0-1). Las pasivas de crítico tiran aparte.
+@export_range(0.0, 1.0, 0.01) var crit_chance: float = 0.05
+## Multiplicador de daño de los golpes críticos.
+@export var crit_damage: float = 2.0
+## Suerte en puntos porcentuales: sube la probabilidad de drop de los enemigos.
+@export var luck: float = 0.0
+# endregion
+
 # region Mecánicas de Stamina
 @export_group("Costes de Stamina")
 @export var run_speed_multiplier: float = 1.7
@@ -71,7 +83,11 @@ var stamina: float
 @export var combo_window: float = 0.35
 ## Ventana de parry al levantar la guardia (s): un golpe frontal dentro de
 ## esta ventana se para con chispas y no hace daño.
-@export var parry_window: float = 0.18
+@export var parry_window: float = 0.2
+## Enfriamiento entre ventanas de parry (s): no se puede rearmar antes.
+@export var parry_cooldown: float = 0.3
+## Stamina que devuelve un parry (compensa el coste de haber levantado la guardia).
+@export var parry_stamina_refund: float = 30.0
 
 const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
 const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
@@ -115,6 +131,11 @@ var _combo_index: int = 0
 var _combo_timer: float = 0.0
 # Tiempo restante de parry desde que se levantó la guardia.
 var _parry_timer: float = 0.0
+# Enfriamiento que impide rearmar la ventana de parry spameando la guardia.
+var _parry_cooldown_timer: float = 0.0
+# Panel de estadísticas: se refresca solo cuando cambia algún valor.
+var _stats_dirty: bool = true
+var _stats_values: Array[Label] = []
 
 
 # ==============================================================================
@@ -137,12 +158,16 @@ func _ready() -> void:
 	_ensure_health_ui()
 	_ensure_stamina_ui()
 	_ensure_coins_ui()
+	_ensure_stats_ui()
 	_update_health_ui()
 	_update_stamina_ui()
 	_update_coins_ui()
+	_update_stats_ui()
 
 
 func _process(delta: float) -> void:
+	if _stats_dirty:
+		_update_stats_ui()
 	# Poca vida: la barra late en rojo para que se note sin mirar el número.
 	if health_bar == null:
 		return
@@ -228,6 +253,7 @@ func _physics_process(delta: float) -> void:
 	_control_lock_timer = maxf(_control_lock_timer - delta, 0.0)
 	_jump_bonus_timer = maxf(_jump_bonus_timer - delta, 0.0)
 	_parry_timer = maxf(_parry_timer - delta, 0.0)
+	_parry_cooldown_timer = maxf(_parry_cooldown_timer - delta, 0.0)
 	if _jump_bonus_timer <= 0.0:
 		_jump_bonus_factor = 1.0
 
@@ -360,11 +386,14 @@ func _try_attack() -> void:
 	_is_attacking = true
 	_active_hitbox = _combo_index
 	set_hitbox_active(true)
+	# Velocidad de ataque: acelera la animación (y con ella la cadencia del combo).
+	animated_sprite.speed_scale = attack_speed
 	animated_sprite.play(anim)
 
 
 func _on_attack_finished() -> void:
 	_is_attacking = false
+	animated_sprite.speed_scale = 1.0
 	set_hitbox_active(false)
 	if animated_sprite.animation in _ATTACK_ANIMS:
 		_combo_index = (_combo_index + 1) % _ATTACK_ANIMS.size()
@@ -395,16 +424,27 @@ func _register_hit(target: Node) -> void:
 
 
 func _deal_damage(target: Node) -> void:
-	# Las pasivas activas pueden modificar el daño del golpe
-	var damage := hitbox_damage
+	# Las pasivas activas pueden modificar el daño del golpe.
+	var damage := float(hitbox_damage)
 	if passives:
-		damage = roundi(passives.trigger_attack_passives(target, float(hitbox_damage)))
+		damage = passives.trigger_attack_passives(target, damage)
+	# Crítico base del jugador: tirada propia, aparte de las pasivas de crítico.
+	var critical := randf() < crit_chance
+	if critical:
+		damage *= crit_damage
+	var final_damage := roundi(damage)
 	if target.has_method("take_damage"):
-		target.take_damage(damage)
+		if target is EnemyBase:
+			target.take_damage(final_damage, critical)
+		else:
+			target.take_damage(final_damage)
 	else:
 		var parent := target.get_parent()
 		if parent and parent.has_method("take_damage"):
-			parent.take_damage(damage)
+			if parent is EnemyBase:
+				parent.take_damage(final_damage, critical)
+			else:
+				parent.take_damage(final_damage)
 
 
 func take_damage(amount: int) -> void:
@@ -421,7 +461,11 @@ func take_damage_from(
 	knockup: float = 0.0,
 	attacker: Node = null
 ) -> void:
-	_apply_damage(amount, is_attack_from_front(attacker_position), attacker)
+	var from_front := is_attack_from_front(attacker_position)
+	# Si la guardia (o el parry) para el golpe, no hay empuje ni bloqueo de control.
+	# La inmortalidad de depuración no cambia el empuje: sigue aplicándose.
+	if not _apply_damage(amount, from_front, attacker) and from_front and _is_guarding:
+		return
 	var away := signf(global_position.x - attacker_position.x)
 	if is_zero_approx(away):
 		away = -1.0 if _facing_right else 1.0
@@ -444,20 +488,25 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 	return (attacker_position.x > global_position.x) == _facing_right
 
 
-func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void:
+## Aplica daño y devuelve true solo si el golpe llegó a quitar vida (guardia y
+## parry devuelven false para que el atacante no empuje al jugador).
+func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool:
 	if _is_dead or immortal:
-		return
+		return false
 	if _is_guarding and from_front:
 		# Parry: el golpe entra dentro de la ventana de guardia perfecta.
 		if _parry_timer > 0.0:
 			_parry_timer = 0.0
+			_parry_cooldown_timer = parry_cooldown
+			# Parrear devuelve stamina: mantiene viva la guardia y premia el timing.
+			restore_stamina(parry_stamina_refund)
 			var fx := _fx()
 			if fx:
 				fx.call("parry", global_position + Vector2(0.0, -26.0))
 		# La guardia para el golpe frontal (aviso para las pasivas de bloqueo).
 		if passives:
 			passives.trigger_blocked_passives(self)
-		return
+		return false
 	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
 	var final_amount := amount
 	if passives:
@@ -472,6 +521,7 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void
 			fx.call("player_hit", global_position + Vector2(0.0, -26.0), final_amount)
 	if health <= 0:
 		_die()
+	return true
 
 
 func heal(amount: int) -> void:
@@ -503,16 +553,43 @@ func add_max_stamina(amount: float) -> void:
 ## Daño plano extra por golpe (pasivas tipo maza o colmillo).
 func add_attack_bonus(amount: int) -> void:
 	hitbox_damage = maxi(hitbox_damage + amount, 0)
+	_stats_dirty = true
 
 
 ## Velocidad plana extra en px/s (pasivas tipo uña de ogro).
 func add_speed_bonus(amount: float) -> void:
 	move_speed = maxf(move_speed + amount, 0.0)
+	_stats_dirty = true
 
 
 ## Multiplicador de velocidad (pasivas tipo pies ligeros).
 func multiply_move_speed(factor: float) -> void:
 	move_speed = maxf(move_speed * factor, 0.0)
+	_stats_dirty = true
+
+
+## Multiplicador extra de velocidad de ataque (1.25 = +25 %).
+func add_attack_speed(amount: float) -> void:
+	attack_speed = maxf(attack_speed + amount, 0.1)
+	_stats_dirty = true
+
+
+## Probabilidad extra de crítico (0-1).
+func add_crit_chance(amount: float) -> void:
+	crit_chance = clampf(crit_chance + amount, 0.0, 1.0)
+	_stats_dirty = true
+
+
+## Multiplicador extra de daño crítico.
+func add_crit_damage(amount: float) -> void:
+	crit_damage = maxf(crit_damage + amount, 0.0)
+	_stats_dirty = true
+
+
+## Puntos porcentuales extra de suerte.
+func add_luck(amount: float) -> void:
+	luck = maxf(luck + amount, 0.0)
+	_stats_dirty = true
 
 
 ## Salto multiplicado durante `seconds` (poción de mocos).
@@ -567,6 +644,7 @@ func _die() -> void:
 	_is_attacking = false
 	_combo_index = 0
 	_combo_timer = 0.0
+	animated_sprite.speed_scale = 1.0
 	set_hitbox_active(false)
 	velocity = Vector2.ZERO
 	animated_sprite.play("death")
@@ -638,8 +716,15 @@ func _update_stamina(delta: float) -> void:
 				_parry_timer = 0.0
 	elif guard_input and can_guard():
 		_is_guarding = true
-		_parry_timer = parry_window
 		spend_stamina(guard_initial_cost)
+		# Solo abre ventana si no está en enfriamiento: mantener pulsado o
+		# spamear la guardia no encadena parries, y cada intento cuesta stamina.
+		if _parry_cooldown_timer <= 0.0:
+			_parry_timer = parry_window
+			_parry_cooldown_timer = parry_window + parry_cooldown
+			_parry_ready_cue()
+		else:
+			_parry_timer = 0.0
 
 	if _is_running:
 		if not run_input or _is_guarding or _is_attacking or not is_on_floor():
@@ -871,3 +956,72 @@ func _update_stamina_ui() -> void:
 func _update_coins_ui() -> void:
 	if coins_label:
 		coins_label.text = str(current_coins)
+
+
+## Aviso discreto de que la ventana de parry está abierta (chispas doradas).
+func _parry_ready_cue() -> void:
+	var fx := _fx()
+	if fx:
+		fx.call("parry_ready", global_position + Vector2(0.0, -26.0))
+
+
+## Panel de estadísticas a la izquierda, siempre visible y translúcido.
+func _ensure_stats_ui() -> void:
+	var root = get_parent()
+	if root == null:
+		root = get_tree().current_scene
+	var ui_layer = root.get_node_or_null("UILayer")
+	if ui_layer == null:
+		ui_layer = get_node_or_null("../UILayer")
+	if ui_layer == null:
+		return
+	var grid := ui_layer.get_node_or_null("StatsPanel") as GridContainer
+	if grid == null:
+		grid = GridContainer.new()
+		grid.name = "StatsPanel"
+		grid.columns = 2
+		grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		grid.position = Vector2(5.0, 26.0)
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 0)
+		# Translúcido para que no tape el juego.
+		grid.modulate = Color(1.0, 1.0, 1.0, 0.6)
+		ui_layer.add_child(grid)
+	if not _stats_values.is_empty():
+		return
+	var stat_names: Array[String] = [
+		"Vel. ataque", "Daño crítico", "Prob. crítico", "Velocidad", "Suerte"
+	]
+	for stat_name in stat_names:
+		var key := Label.new()
+		key.text = stat_name
+		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		key.add_theme_font_size_override("font_size", 9)
+		key.add_theme_color_override("font_color", Color(0.87, 0.91, 0.87, 1.0))
+		key.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 1.0))
+		key.add_theme_constant_override("shadow_offset_x", 1)
+		key.add_theme_constant_override("shadow_offset_y", 1)
+		grid.add_child(key)
+		var value := Label.new()
+		value.text = "0"
+		value.custom_minimum_size.x = 34.0
+		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		value.add_theme_font_size_override("font_size", 9)
+		value.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7, 1.0))
+		value.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 1.0))
+		value.add_theme_constant_override("shadow_offset_x", 1)
+		value.add_theme_constant_override("shadow_offset_y", 1)
+		grid.add_child(value)
+		_stats_values.append(value)
+
+
+func _update_stats_ui() -> void:
+	_stats_dirty = false
+	if _stats_values.size() < 5:
+		return
+	_stats_values[0].text = "%d%%" % roundi(attack_speed * 100.0)
+	_stats_values[1].text = "%d%%" % roundi(crit_damage * 100.0)
+	_stats_values[2].text = "%d%%" % roundi(crit_chance * 100.0)
+	_stats_values[3].text = "%d" % roundi(move_speed)
+	_stats_values[4].text = "%d%%" % roundi(luck)

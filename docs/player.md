@@ -20,7 +20,17 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 
 - Click izquierdo: combo `attack_1/2/3`, `combo_window` 0.35 s, `hitbox_damage` 20.
 - Click derecho o E: guardia (-15 + -20/s); bloquea daño frontal (`from_front`).
-- Parry: `parry_window` (0,18 s) desde que se levanta la guardia. Si un golpe frontal entra dentro de la ventana, no hace daño y dispara `fx.parry()` (chispas, `¡PARRY!`, destello y sacudida); la ventana se consume, así que el resto de la guardia bloquea normal. Al soltar la guardia o quedarse sin stamina, `_parry_timer` vuelve a 0.
+- Parry: `parry_window` (0,2 s) desde que se levanta la guardia. Si un golpe frontal entra dentro de la ventana, no hace daño, devuelve `parry_stamina_refund` (30) y dispara `fx.parry()` (chispas, `¡PARRY!`, destello y sacudida); la ventana se consume y el resto de la guardia bloquea normal. Al abrir la ventana suena un aviso discreto (`fx.parry_ready()`).
+- Anti-spam: `parry_cooldown` (0,3 s) se suma a la ventana al abrirla (`_parry_cooldown_timer = parry_window + parry_cooldown`), así mantener o machacar el clic no encadena parries y cada intento paga la guardia (15 + 20/s). Un parry correcto también reinicia ese enfriamiento.
+- Guardia y parry no empujan: `_apply_damage()` devuelve si el golpe llegó a quitar vida y `take_damage_from()` corta antes del knockback/knockup cuando no llegó.
+
+## Estadísticas (2026-11-05)
+
+- Base en `player.gd` (grupo «Estadísticas de combate»): `attack_speed` 1.0 (escala la animación de ataque y con ella la cadencia del combo), `crit_chance` 0,05, `crit_damage` 2.0 y `luck` 0 (puntos porcentuales de drop). La velocidad es `move_speed` (130).
+- Crítico base: `_deal_damage()` hace su propia tirada después de las pasivas y multiplica por `crit_damage`; las pasivas tipo `amuleto_critico` siguen tirando aparte. Un crítico se anuncia en `fx.enemy_hit(..., critical)` con más chispas doradas, número de 12 px y sacudida corta.
+- Suerte: `EnemyBase._luck_drop_bonus()` suma `luck × 0,01` a cualquier `drop_chance` del loot (con 0 no cambia nada).
+- API para pasivas: `add_attack_speed()`, `add_crit_chance()`, `add_crit_damage()`, `add_luck()`.
+- Panel `UILayer/StatsPanel`: `GridContainer` de 2 columnas creado por `_ensure_stats_ui()` a la izquierda (5 px, 26 px, bajo los consumibles), siempre visible, `modulate` alpha 0,6 y fuente 9 con sombra. Se refresca con `_stats_dirty` (`_update_stats_ui()`) cuando cambian `attack_speed`, `crit_*`, `luck` o `move_speed`.
 - Vida `max_health` 100: `take_damage()`, `heal()`; `_die()` es placeholder (respawn lleno).
 - Empuje de enemigos: `take_damage_from(amount, attacker_pos, knockback, lock, knockup)` aplica daño y, si no lo bloquea la guardia, `apply_knockback()` / `apply_knockup()`. Mientras dura `lock` (0.12–0.15 s) se ignora el input horizontal.
 - `is_guarding()` para las áreas enemigas que distinguen bloqueo (fuego del demonio).

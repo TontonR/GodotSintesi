@@ -227,3 +227,20 @@ Formato de entrada:
   rebote 0,4 y vaivén de 1 px. `world_generator`: `coin_spawn_height` 40 px.
 - `item_pickup.gd`: `drop_hop` 150 px/s al aparecer.
 - F5 pendiente (regla de `AGENTS.md`); commit al cerrar.
+
+## 2026-11-05 · `buffy` · Parry retocado y estadísticas (T-0031)
+
+- `humano-ruben`: el parry iba raro, había que cambiar su stamina y faltaban
+  stats (velocidad de ataque, daño/prob. crítico, velocidad, suerte) que se
+  vieran siempre a la izquierda sin molestar.
+- `scripts/player.gd`: `parry_window` 0,2 s + `parry_cooldown` 0,3 s (no se
+  rearma spameando), `parry_stamina_refund` 30 al acertar, `fx.parry_ready()`
+  al abrir la ventana y `_apply_damage()` devuelve si el golpe llegó para no
+  empujar nunca con la guardia puesta.
+- Stats nuevas: `attack_speed` (escala la animación de ataque), `crit_chance`
+  0,05, `crit_damage` 2.0 y `luck` 0, con métodos `add_*` y crítico base en
+  `_deal_damage()`. `enemy_base.take_damage()` reenvía `critical` a
+  `fx.enemy_hit()` y `_luck_drop_bonus()` mete la suerte en el loot.
+- Panel `UILayer/StatsPanel`: `GridContainer` de 2 columnas en (5, 26), fuente 9,
+  alpha 0,6, refresco por `_stats_dirty` (no cada frame).
+- F5 pendiente (regla de `AGENTS.md`); commit al cerrar.
