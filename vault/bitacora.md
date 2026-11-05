@@ -199,3 +199,17 @@ Formato de entrada:
 - Biome particles: fundido de 0,4 s al entrar/salir y viento lateral.
 - Enganches en player, enemy_base, coin, item_pickup y biome_particles.
 - F5 pendiente (regla de `AGENTS.md`); commit al cerrar.
+
+## 2026-11-05 · `buffy` · Polvo a los pies, sangre y moco (T-0029)
+
+- `humano-ruben`: el polvo de correr/saltar salía del ombligo, el moco solo del
+  centro y la muerte de los enemigos se quedaba corta.
+- `scripts/player.gd`: `_feet_offset()` toma la mitad inferior de
+  `CollisionShape2D` (16×54 px) y las tres llamadas de polvo emiten a ras de
+  suelo; `dust()` baja a gravedad 240 y radio 4.
+- `scripts/collectables/moco_emitter.gd`: emisión en caja de 14×48 px que cubre
+  la hitbox, en vez de esfera de radio 8 en el centro.
+- `scripts/fx.gd`: `_burst()` acepta gravedad, radio, spread y alineación a la
+  velocidad; `enemy_death()` lanza 4 capas de sangre (32+26+14+8 partículas,
+  gota 2×5 con estela) y `shake(1.4, 0.12)`.
+- F5 pendiente; commit al cerrar.

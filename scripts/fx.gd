@@ -15,11 +15,13 @@ var _flash: ColorRect
 var _flash_tween: Tween
 var _text_layer: CanvasLayer
 var _dot_texture: ImageTexture
+var _streak_texture: ImageTexture
 
 
 func _ready() -> void:
 	add_to_group("fx")
 	_dot_texture = _solid_texture(2)
+	_streak_texture = _make_streak_texture()
 	_build_layers()
 
 
@@ -49,10 +51,14 @@ func enemy_hit(world_position: Vector2, damage: float) -> void:
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
 
 
-## Muerte de un enemigo: un estallido cálido y otro blanco.
+## Muerte de un enemigo: reventón de sangre en capas (chorro oscuro con
+## estela, salpicadura roja, niebla y chispas blancas) y golpe de cámara.
 func enemy_death(world_position: Vector2) -> void:
-	_burst(world_position, Color(0.95, 0.35, 0.3), 18, 150.0, 0.6, 1.4)
-	_burst(world_position, Color(1.0, 1.0, 1.0), 6, 90.0, 0.45, 1.0)
+	_burst(world_position, Color(0.52, 0.04, 0.06), 32, 300.0, 0.95, 1.7, 680.0, 7.0, 180.0, true)
+	_burst(world_position, Color(0.85, 0.12, 0.1), 26, 190.0, 0.7, 1.4, 380.0, 10.0)
+	_burst(world_position, Color(0.62, 0.06, 0.08, 0.55), 14, 55.0, 0.55, 2.6, 40.0, 6.0)
+	_burst(world_position, Color(1.0, 0.94, 0.88), 8, 120.0, 0.3, 0.7, 260.0, 4.0)
+	shake(1.4, 0.12)
 
 
 ## Daño al jugador: número rojo, chispas, sacudida de cámara y flash.
@@ -82,8 +88,9 @@ func heal(world_position: Vector2, amount: int) -> void:
 
 
 ## Polvo (saltar, aterrizar, correr). `strength` escala tamaño y velocidad.
+## El llamador pasa el punto de los pies: la nube se abre pegada al suelo.
 func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> void:
-	_burst(world_position, Color(0.84, 0.8, 0.72, 0.75), amount, 40.0 * strength, 0.38, 1.1 * strength)
+	_burst(world_position, Color(0.84, 0.8, 0.72, 0.75), amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
 
 
 ## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
@@ -164,10 +171,14 @@ func _burst(
 	amount: int,
 	speed: float,
 	lifetime: float,
-	strength: float
+	strength: float,
+	gravity: float = 320.0,
+	radius: float = 3.0,
+	spread: float = 180.0,
+	align_to_velocity: bool = false
 ) -> void:
 	var particles := CPUParticles2D.new()
-	particles.texture = _dot_texture
+	particles.texture = _streak_texture if align_to_velocity else _dot_texture
 	particles.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	particles.one_shot = true
 	particles.emitting = false
@@ -175,15 +186,16 @@ func _burst(
 	particles.lifetime = lifetime
 	particles.explosiveness = 1.0
 	particles.direction = Vector2.UP
-	particles.spread = 180.0
-	particles.gravity = Vector2(0.0, 320.0)
+	particles.spread = spread
+	particles.gravity = Vector2(0.0, gravity)
 	particles.initial_velocity_min = speed * 0.45
 	particles.initial_velocity_max = speed
 	particles.scale_amount_min = 0.5 * strength
 	particles.scale_amount_max = 1.0 * strength
 	particles.color = color
+	particles.particle_flag_align_y = align_to_velocity
 	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
-	particles.emission_sphere_radius = 3.0
+	particles.emission_sphere_radius = radius
 	add_child(particles)
 	particles.global_position = world_position
 	particles.emitting = true
@@ -193,6 +205,14 @@ func _burst(
 ## Píxel blanco reutilizado por todas las partículas (se tiñen con `color`).
 func _solid_texture(size: int) -> ImageTexture:
 	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+
+## Gota alargada (2×5) para la sangre: con `particle_flag_align_y` se estira en
+## la dirección del chorro y se lee como salpicadura, no como chispa cuadrada.
+func _make_streak_texture() -> ImageTexture:
+	var image := Image.create(2, 5, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
 

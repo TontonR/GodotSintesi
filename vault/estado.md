@@ -6,17 +6,17 @@ _Actualizado 2026-11-05 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `main` en `a914593` (2026-10-29, *Fix enemy loot drop placement*) |
-| Árbol | commits locales: T-0022 (juego), T-0023/T-0024 (biomas y fondos), T-0025 (gris medio), T-0026 (un tono por capa), T-0027 (bioma de nieve) y T-0028 (FX + HUD); sin push |
+| Rama | `main`, commits locales de la sesión (T-0022..T-0029); sin push |
+| Árbol | commits locales: T-0022 (juego), T-0023/T-0024 (biomas y fondos), T-0025 (gris medio), T-0026 (un tono por capa), T-0027 (bioma de nieve), T-0028 (FX + HUD) y T-0029 (polvo, sangre y moco); sin push |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. 6 enemigos terrestres activos; los voladores (fantasma y demonio) aparcados. |
-| Siguiente paso | F5 de T-0022 (pickups/pasivas) y T-0023 (biomas por bloque), más el arranque, el reparto de enemigos y la banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 de T-0022..T-0029 (pickups/pasivas, biomas, FX y la tanda de polvo/sangre/moco); después, arranque, reparto de enemigos y banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0028 FX de combate y feedback de HUD (hecho, pendiente de F5); T-0022..T-0027 también pendientes de F5 | `scripts/fx.gd`, `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `scripts/world/biome_particles.gd`, `scenes/game.tscn` |
+| `buffy` | T-0029 polvo a los pies, sangre grande y moco por la hitbox (hecho, pendiente de F5); T-0028 y T-0022..T-0027 también pendientes de F5 | `scripts/fx.gd`, `scripts/player.gd`, `scripts/collectables/moco_emitter.gd` |
 | `opencode-jorge` | Sin confirmar desde este repo | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,7 @@ _Actualizado 2026-11-05 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-05 | T-0029 | Polvo a ras de suelo, reventón de sangre en 4 capas y moco por toda la hitbox |
 | 2026-11-05 | T-0028 | Chispas, números de daño, polvo, sacudida/flash y pop/latido del HUD |
 | 2026-11-05 | T-0027 | Nieve en capa propia, bioma de nieve, relieve suavizado y hojas/copos por bioma |
 | 2026-11-05 | T-0026 | Gris por capa: montaña, pino lejano y pino cercano con tonos distintos en ambos biomas |

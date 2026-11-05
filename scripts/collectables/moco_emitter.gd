@@ -46,9 +46,11 @@ func _build_particles() -> void:
 	_particles.one_shot = false
 	_particles.emitting = false
 	_particles.amount = 1
-	_particles.position = Vector2(0, 8)
-	_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
-	_particles.emission_sphere_radius = 8.0
+	# La caja cubre la hitbox del jugador (16×54 px, centrada en el origen):
+	# el moco gotea de todo el cuerpo, no de un punto en el ombligo.
+	_particles.position = Vector2.ZERO
+	_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	_particles.emission_rect_extents = Vector2(7.0, 24.0)
 	_particles.direction = Vector2(0, 1)
 	_particles.spread = 40.0
 	_particles.gravity = Vector2(0, 220)

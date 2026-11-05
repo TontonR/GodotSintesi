@@ -76,6 +76,7 @@ const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 
 # region Nodos OnReady
 @onready var sprite_pivot: Node2D = $SpritePivot
+@onready var body_collision: CollisionShape2D = $CollisionShape2D
 @onready var animated_sprite: AnimatedSprite2D = $SpritePivot/AnimatedSprite2D
 @onready var camera: Camera2D = $Camera2D
 @onready var attack_hitboxes: Array[Area2D] = [$AttackHitbox1, $AttackHitbox2, $AttackHitbox3]
@@ -317,7 +318,7 @@ func _physics_process(delta: float) -> void:
 			velocity.y = jump_velocity * _jump_bonus_factor
 			_jump_buffer_timer = 0.0
 			_coyote_timer = 0.0
-			_dust_at(Vector2(0.0, -2.0), 4, 0.7)
+			_dust_at(_feet_offset(), 4, 0.7)
 
 		if not jump_pressed and _jump_was_pressed and velocity.y < 0.0:
 			velocity.y *= 0.45
@@ -327,13 +328,13 @@ func _physics_process(delta: float) -> void:
 	var landing_speed := velocity.y
 	move_and_slide()
 	if not was_on_floor and is_on_floor() and landing_speed > 140.0:
-		_dust_at(Vector2(0.0, -2.0), clampf(landing_speed / 70.0, 3.0, 9.0), 1.0)
+		_dust_at(_feet_offset(), clampf(landing_speed / 70.0, 3.0, 9.0), 1.0)
 	# Polvo de carrera: pequeño y espaciado para no tapar el suelo.
 	if _is_running and is_on_floor() and absf(velocity.x) > 40.0:
 		_run_dust_timer = maxf(_run_dust_timer - delta, 0.0)
 		if _run_dust_timer <= 0.0:
 			_run_dust_timer = 0.14
-			_dust_at(Vector2(-signf(velocity.x) * 6.0, -2.0), 2, 0.55)
+			_dust_at(_feet_offset() + Vector2(-signf(velocity.x) * 6.0, 0.0), 2, 0.55)
 	_update_camera()
 	_update_animation()
 
@@ -528,6 +529,15 @@ func moco_defense() -> float:
 
 func _fx() -> Node:
 	return get_tree().get_first_node_in_group("fx")
+
+
+## Altura de los pies sobre el origen del cuerpo (la hitbox mide 16×54 px y
+## está centrada): el polvo debe nacer a ras de suelo, no a media altura.
+func _feet_offset() -> Vector2:
+	var feet_y := 25.0
+	if body_collision and body_collision.shape is RectangleShape2D:
+		feet_y = (body_collision.shape as RectangleShape2D).size.y * 0.5 * body_collision.scale.y - 2.0
+	return Vector2(0.0, feet_y)
 
 
 func _dust_at(offset: Vector2, amount: float, strength: float = 1.0) -> void:

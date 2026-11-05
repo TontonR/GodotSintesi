@@ -2,6 +2,14 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — polvo a los pies, sangre grande y moco por la hitbox
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El polvo de saltar/aterrizar/correr nace a ras de suelo (`_feet_offset()`) | `scripts/player.gd` | [T-0029](tickets/T-0029-polvo-pies-sangre-y-moco.md) |
+| Muerte de enemigo con reventón de sangre en 4 capas y sacudida leve | `scripts/fx.gd` | [T-0029](tickets/T-0029-polvo-pies-sangre-y-moco.md) |
+| Moco emitido en caja por toda la hitbox, no desde el centro | `scripts/collectables/moco_emitter.gd` | [T-0029](tickets/T-0029-polvo-pies-sangre-y-moco.md) |
+
 ## 2026-11-05 · `main` — efectos de combate y feedback de HUD
 
 | Qué | Dónde | Ticket |

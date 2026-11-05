@@ -90,7 +90,8 @@ Tabla completa por enemigo en `vault/pasivas/`. Aquí va lo técnico:
   `Area2D` de 44 px durante 4 s que pega 2 cada 0.5 s a lo que esté dentro (capa 4);
   se instancia diferido.
 - **Moco / Moco compacto / Corazón mucosil** (`MocoLevelPassive`): suben el nivel del
-  `MocoEmitter` del jugador (partículas `CPUParticles2D` generadas por código). Cada nivel
+  `MocoEmitter` del jugador (partículas `CPUParticles2D` generadas por código que emiten en
+  una caja de 14×48 px, por toda la hitbox, no desde un punto). Cada nivel
   da +0.5 de defensa plana que resta `player._apply_damage()`; el corazón dobla el nivel.
 - **Poción de mocos** (`MocoPotion`, consumible): `jump_velocity × 1.3` durante 60 s y
   +1 nivel de moco permanente.
