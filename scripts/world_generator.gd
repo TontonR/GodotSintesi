@@ -77,10 +77,18 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 	preload("res://resources/world/biomes/pradera.tres"),
 	preload("res://resources/world/biomes/bosque_rojo.tres")
 ]
-## Frecuencia del ruido que reparte los biomas; más bajo = biomas más grandes.
+## Frecuencia del ruido que reparte los biomas (por chunk); más bajo = biomas más grandes.
 @export var biome_frequency: float = 0.12
 ## Contraste del ruido de biomas; más alto = extremos más frecuentes.
 @export var biome_contrast: float = 2.0
+## Bloques que dura la transición de color entre biomas (0 = un chunk completo).
+@export var biome_transition_tiles: int = 0
+## Nodos (Sprite2D) de los bosques y de la capa verde de la montaña que se tiñen con el bioma.
+@export var forest_tint_paths: Array[NodePath] = [
+	^"../far_forest/Sprite2D",
+	^"../near_forest/Sprite2D",
+	^"../mountains/Sprite2DGreen",
+]
 
 @export_group("Spawns")
 ## Margen en tiles para no aparecer pegado al borde del chunk.
@@ -119,6 +127,8 @@ var _defeated_spawns: Dictionary = {}
 var _collected_spawns: Dictionary = {}
 var _last_first: int = 999999
 var _last_last: int = -999999
+var _forest_tint_nodes: Array[CanvasItem] = []
+var _last_biome_tile: int = -999999
 
 
 func _ready() -> void:
@@ -139,7 +149,8 @@ func _ready() -> void:
 
 	_biome_noise.seed = _seed + 1000
 	_biome_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	_biome_noise.frequency = biome_frequency
+	# El bioma se decide por bloque: la frecuencia exportada sigue siendo por chunk.
+	_biome_noise.frequency = biome_frequency / float(maxi(chunk_width_tiles, 1))
 
 	if player:
 		_camera = player.get_node_or_null("Camera2D") as Camera2D
@@ -147,21 +158,34 @@ func _ready() -> void:
 		var spawn_y := _height_at(safe_start_tiles) * TILE_SIZE - player_spawn_height_tiles * TILE_SIZE
 		player.position = Vector2(spawn_x, spawn_y)
 
+	for path in forest_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_forest_tint_nodes.append(node)
+
 	_update_chunks(true)
+	_update_biome_tint(true)
 
 
 func _process(_delta: float) -> void:
 	if player:
 		_update_chunks(false)
+		_update_biome_tint(false)
 
 
 # ==============================================================================
 # ALTURA DEL TERRENO
 # ==============================================================================
 func _height_at(tile_x: int) -> int:
-	var h := _noise_height(tile_x)
+	var terrain := _terrain_at_tile(tile_x)
+	return _height_at_with(tile_x, float(terrain["amplitude"]), float(terrain["frequency"]))
+
+
+## Altura con los modificadores de bioma ya mezclados (los pasa el chunk).
+func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
 	if tile_x >= 0 and tile_x < safe_start_tiles:
 		return base_height
+	var h := _noise_height(tile_x, amplitude, frequency)
 	if tile_x >= safe_start_tiles and tile_x < safe_start_tiles + start_blend_tiles:
 		var t := float(tile_x - safe_start_tiles) / float(maxi(1, start_blend_tiles))
 		return roundi(lerpf(base_height, h, t))
@@ -176,13 +200,13 @@ func _enemy_count_multiplier(chunk_x: int) -> float:
 	return minf(1.0 + enemy_ramp_per_chunk * steps, enemy_ramp_max_multiplier)
 
 
-func _noise_height(tile_x: int) -> int:
+func _noise_height(tile_x: int, amplitude: float = 1.0, frequency: float = 1.0) -> int:
 	# 3 samples para algo de suavizado sin aplanar demasiado.
 	var value := 0.0
 	for offset in range(-1, 2):
-		value += _noise.get_noise_1d(float(tile_x + offset))
+		value += _noise.get_noise_1d(float(tile_x + offset) * frequency)
 	value /= 3.0
-	return clampi(roundi(base_height + value * height_amplitude), min_height, max_height)
+	return clampi(roundi(base_height + value * height_amplitude * amplitude), min_height, max_height)
 
 
 # ==============================================================================
@@ -245,30 +269,174 @@ func is_ready_at(world_x: float) -> bool:
 	return _loaded_chunks.has(Vector2i(coord_x, 0))
 
 
-## Bioma del chunk. El 0 es siempre el primero (zona segura del jugador).
-func _biome_for_chunk(chunk_x: int) -> Biome:
+## Índice del bioma de un bloque. Todo el primer chunk (incluidos los bloques
+## negativos) es la zona segura con el primer bioma.
+func _biome_index_at_tile(tile_x: int) -> int:
 	if biomes.is_empty():
-		return null
-	if chunk_x == 0:
-		return biomes[0]
+		return -1
+	if tile_x < chunk_width_tiles:
+		return 0
 	var total := 0.0
 	for biome in biomes:
 		total += maxf(biome.spawn_weight, 0.0)
-	var roll := _biome_noise.get_noise_1d(float(chunk_x))
+	if total <= 0.0:
+		return 0
+	# Mismo ruido de antes, muestreado bloque a bloque en vez de por chunk.
+	var roll := _biome_noise.get_noise_1d(float(tile_x))
 	roll = clampf(roll * biome_contrast + 0.5, 0.0, 1.0) * total
-	for biome in biomes:
-		roll -= maxf(biome.spawn_weight, 0.0)
+	for i in biomes.size():
+		roll -= maxf(biomes[i].spawn_weight, 0.0)
 		if roll <= 0.0:
-			return biome
-	return biomes[biomes.size() - 1]
+			return i
+	return biomes.size() - 1
+
+
+## Bioma del chunk para enemigos y recuentos: el del bloque central.
+func _biome_for_chunk(chunk_x: int) -> Biome:
+	var index := _biome_index_at_tile(chunk_x * chunk_width_tiles + chunk_width_tiles / 2)
+	if index < 0:
+		return null
+	return biomes[index]
+
+
+## Bloques que dura la transición entre dos biomas (0 = un chunk completo).
+func _transition_tiles() -> int:
+	return biome_transition_tiles if biome_transition_tiles > 0 else chunk_width_tiles
+
+
+func _transition_half_tiles() -> int:
+	return maxi(_transition_tiles() / 2, 0)
+
+
+## Recuento de biomas en la ventana de transición de un bloque.
+func _biome_counts_at_tile(tile_x: int) -> Dictionary:
+	var half := _transition_half_tiles()
+	var counts: Dictionary = {}
+	for i in range(-half, half + 1):
+		_add_biome_count(counts, tile_x + i)
+	return counts
+
+
+func _add_biome_count(counts: Dictionary, tile_x: int) -> void:
+	var index := _biome_index_at_tile(tile_x)
+	if index >= 0:
+		counts[index] = int(counts.get(index, 0)) + 1
+
+
+func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
+	var index := _biome_index_at_tile(tile_x)
+	if index < 0:
+		return
+	var remaining := int(counts.get(index, 0)) - 1
+	if remaining <= 0:
+		counts.erase(index)
+	else:
+		counts[index] = remaining
+
+
+## Color del bioma en un bloque: media móvil de la ventana de transición. Así el
+## cambio se reparte bloque a bloque y no hay cortes en la costura del chunk.
+func _biome_tint_at_tile(tile_x: int) -> Color:
+	if biomes.is_empty():
+		return Color.WHITE
+	return _mixed_biome_color(_biome_counts_at_tile(tile_x))
+
+
+## Media de los colores de los biomas contados en la ventana.
+func _mixed_biome_color(counts: Dictionary) -> Color:
+	var samples := 0
+	for index in range(biomes.size()):
+		samples += int(counts.get(index, 0))
+	if samples <= 0:
+		return Color.WHITE
+	var total := Color(0.0, 0.0, 0.0, 0.0)
+	for index in range(biomes.size()):
+		total += biomes[index].grass_color * float(counts.get(index, 0))
+	return total / float(samples)
+
+
+## Media de los modificadores de terreno de la ventana. Orden fijo por índice
+## para que dos chunks calculen exactamente el mismo float en su costura.
+func _mixed_terrain(counts: Dictionary) -> Dictionary:
+	var samples := 0
+	var amplitude := 0.0
+	var frequency := 0.0
+	for index in range(biomes.size()):
+		var weight := float(counts.get(index, 0))
+		if weight <= 0.0:
+			continue
+		samples += int(weight)
+		amplitude += biomes[index].terrain_amplitude_multiplier * weight
+		frequency += biomes[index].terrain_frequency_multiplier * weight
+	if samples <= 0:
+		return {"amplitude": 1.0, "frequency": 1.0}
+	return {
+		"amplitude": amplitude / float(samples),
+		"frequency": frequency / float(samples),
+	}
+
+
+## Modificadores del terreno ya mezclados para un bloque.
+func _terrain_at_tile(tile_x: int) -> Dictionary:
+	if biomes.is_empty():
+		return {"amplitude": 1.0, "frequency": 1.0}
+	return _mixed_terrain(_biome_counts_at_tile(tile_x))
+
+
+## Datos de bioma del chunk (más la columna extra): colores del césped y
+## modificadores del terreno en una sola pasada de ventana deslizante.
+func _chunk_biome_data(chunk_x: int) -> Dictionary:
+	var width := chunk_width_tiles
+	var tints := PackedColorArray()
+	var amplitudes := PackedFloat64Array()
+	var frequencies := PackedFloat64Array()
+	tints.resize(width + 1)
+	amplitudes.resize(width + 1)
+	frequencies.resize(width + 1)
+	if biomes.is_empty():
+		tints.fill(Color.WHITE)
+		amplitudes.fill(1.0)
+		frequencies.fill(1.0)
+		return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
+	var half := _transition_half_tiles()
+	var start_x := chunk_x * width
+	var counts: Dictionary = {}
+	for tile_x in range(start_x - half, start_x + half + 1):
+		_add_biome_count(counts, tile_x)
+	for i in range(width + 1):
+		tints[i] = _mixed_biome_color(counts)
+		var terrain := _mixed_terrain(counts)
+		amplitudes[i] = float(terrain["amplitude"])
+		frequencies[i] = float(terrain["frequency"])
+		_remove_biome_count(counts, start_x + i - half)
+		_add_biome_count(counts, start_x + i + half + 1)
+	return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
+
+
+## Aplica el tinte del bioma actual a los bosques de fondo. Se actualiza al
+## cambiar de bloque, no de chunk, para que el cambio sea continuo.
+func _update_biome_tint(force: bool) -> void:
+	if _forest_tint_nodes.is_empty() or not player:
+		return
+	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
+	if not force and tile_x == _last_biome_tile:
+		return
+	_last_biome_tile = tile_x
+	var tint := _biome_tint_at_tile(tile_x)
+	for node in _forest_tint_nodes:
+		node.modulate = tint
 
 
 func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
 	var start_x := coord.x * chunk_width_tiles
+	# Colores del césped y modificadores del terreno del chunk en una sola pasada.
+	var biome_data := _chunk_biome_data(coord.x)
+	var amplitudes: PackedFloat64Array = biome_data["amplitude"]
+	var frequencies: PackedFloat64Array = biome_data["frequency"]
 	for i in range(chunk_width_tiles):
-		heights[i] = _height_at(start_x + i)
+		heights[i] = _height_at_with(start_x + i, amplitudes[i], frequencies[i])
 	# Alturas vecinas para elegir los tiles de borde izquierdo/derecho.
 	var edge_left := _height_at(start_x - 1)
 	var edge_right := _height_at(start_x + chunk_width_tiles)
@@ -343,7 +511,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_ground_offset)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome, "tints": biome_data["tints"]}
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -351,7 +519,7 @@ func _load_chunk(coord: Vector2i) -> void:
 		_chunk_data[coord] = _generate_chunk(coord)
 	var data: Dictionary = _chunk_data[coord]
 
-	var biome: Biome = data.get("biome")
+	var tints: PackedColorArray = data.get("tints", PackedColorArray())
 	var chunk: WorldChunk = chunk_scene.instantiate()
 	chunk.name = "Chunk_%d" % coord.x
 	chunk.position = Vector2(coord.x * chunk_width_tiles * TILE_SIZE, 0)
@@ -367,7 +535,7 @@ func _load_chunk(coord: Vector2i) -> void:
 		grass_tile_set,
 		chunk_height_tiles,
 		swap_left_right,
-		biome.grass_color if biome else Color.WHITE
+		tints
 	)
 	_spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk

@@ -9,6 +9,8 @@
 script = ExtResource("1_biome")
 display_name = "Bosque rojo"
 grass_color = Color(0.78, 0.24, 0.2, 1)
-spawn_weight = 0.25
+spawn_weight = 0.4
+terrain_amplitude_multiplier = 1.7
+terrain_frequency_multiplier = 1.25
 enemy_scenes = Array[PackedScene]([ExtResource("2_lobo"), ExtResource("3_sapo"), ExtResource("4_demonio")])
 enemy_counts = Array[int]([2, 1, 1])

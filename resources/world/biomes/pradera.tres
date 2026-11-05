@@ -8,6 +8,6 @@
 script = ExtResource("1_biome")
 display_name = "Pradera"
 grass_color = Color(0.72, 1, 0.28, 1)
-spawn_weight = 0.75
+spawn_weight = 0.6
 enemy_scenes = Array[PackedScene]([ExtResource("2_orc"), ExtResource("3_ghost")])
 enemy_counts = Array[int]([4, 1])

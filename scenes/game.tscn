@@ -2,14 +2,15 @@
 
 [ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/map/background/cloud.png" id="1_8718u"]
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/map/background/mountain2.png" id="2_efco6"]
-[ext_resource type="Texture2D" uid="uid://dstunb0ojedcb" path="res://assets/map/background/pine1.png" id="3_ospag"]
-[ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/map/background/pine2.png" id="4_igjsd"]
+[ext_resource type="Texture2D" uid="uid://cwgit636dvtcv" path="res://assets/map/background/mountain2_gray.png" id="22_mgray"]
+[ext_resource type="Texture2D" uid="uid://bja0c7051ufje" path="res://assets/map/background/pine1_gray.png" id="3_ospag"]
+[ext_resource type="Texture2D" uid="uid://cbtws31mjipym" path="res://assets/map/background/pine2_gray.png" id="4_igjsd"]
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="5_u27ij"]
 [ext_resource type="PackedScene" uid="uid://diygwv781k3tm" path="res://scenes/player.tscn" id="7_o3jbc"]
 [ext_resource type="PackedScene" uid="uid://cu5od85b24g7x" path="res://scenes/collectables/coin.tscn" id="8_a2bvq"]
 [ext_resource type="Script" uid="uid://ci3iggome4v5j" path="res://scripts/world_generator.gd" id="8_vtaks"]
 [ext_resource type="Texture2D" uid="uid://c7etjw2amp6d0" path="res://assets/map/tile/ground_tile.png" id="9_0tnpc"]
-[ext_resource type="Texture2D" path="res://assets/map/tile/grass_tile_gray.png" id="10_vtaks"]
+[ext_resource type="Texture2D" uid="uid://b174swe84f56m" path="res://assets/map/tile/grass_tile_gray.png" id="10_vtaks"]
 [ext_resource type="Script" uid="uid://dssj4pnplq7pb" path="res://scenes/inventory/inventory_ui.gd" id="15_invui"]
 [ext_resource type="Script" uid="uid://b63sr5c2s357d" path="res://scripts/passive_ui.gd" id="16_pasui"]
 [ext_resource type="PackedScene" uid="uid://cwey05xwtoo11" path="res://scenes/inventory/inventory_screen.tscn" id="18_invs"]
@@ -296,6 +297,9 @@ repeat_times = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="mountains" unique_id=980443225]
 texture = ExtResource("2_efco6")
+
+[node name="Sprite2DGreen" type="Sprite2D" parent="mountains"]
+texture = ExtResource("22_mgray")
 
 [node name="MountainBase" type="ColorRect" parent="mountains" unique_id=980443226]
 offset_left = -1032.0

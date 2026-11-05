@@ -109,3 +109,44 @@ Formato de entrada:
 - `MountainBase` en `scenes/game.tscn` (hijo de `mountains`, local y 62→400, `mouse_filter` IGNORE) con `#283D43` (`Color(0.157, 0.239, 0.263)`), y el del menú cambia de `#2D5052` a ese mismo color: la banda es la misma en menú y partida y `day_night.gd` la oscurece con el resto del nodo `mountains`.
 - Documentados T-0020 y T-0021 en `docs/` y en el vault, y commit de toda la tanda (día/noche, menú, caída, 27 objetos, enemigos y ajustes de balance) sin push.
 - Afectados: `scripts/world_generator.gd`, `scenes/main_menu.tscn`, `scenes/game.tscn`, `docs/ui.md`, `docs/world.md`, `docs/enemies.md`, `vault/`.
+
+## 2026-11-05 · `buffy` · KP5 inmortal, pasivas sin stack y caducidad de pickups (T-0022)
+
+- Pedido por `humano-ruben`: KP5 alterna inmortalidad; pasivas que no se apilen ni se
+  vuelvan a soltar una vez equipadas; pickups que parpadean a los 25 s vistos y se van
+  a los 30 s, con borrado de seguridad a los 60 s desde el spawn; monedas excluidas.
+- Afectados: `scripts/debug_tools.gd`, `scripts/player.gd`,
+  `scripts/collectables/player_passive.gd`, `scripts/collectables/passive_items.gd`,
+  `scripts/enemies/enemy_base.gd`, `item_pickup.gd`, `docs/items.md`, `docs/player.md`.
+- Sin commit y sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente en el editor.
+
+## 2026-11-05 · `buffy` · Biomas por bloque y más bosque rojo (T-0023)
+
+- Pedido por `humano-ruben`: la transición de biomas pasa de chunks a bloques, con la
+  transición tan ancha como un chunk; hay muy poco bosque rojo.
+- `world_generator.gd`: bioma por bloque, ventana deslizante de 256 bloques para el
+  color, bosques de fondo teñidos al cambiar de bloque, `biome_frequency` 0.12 y
+  `biome_transition_tiles` (0 = un chunk). Pesos 0.6/0.4 en los `.tres`.
+- `chunk.gd`/`chunk.tscn`: el césped ya no es un `TileMapLayer` teñido entero; se
+  dibuja columna a columna con `GrassPaint`.
+- Afectados: `scripts/world_generator.gd`, `scripts/world/chunk.gd`,
+  `scenes/world/chunk.tscn`, `resources/world/biomes/pradera.tres`,
+  `resources/world/biomes/bosque_rojo.tres`, `docs/world.md`.
+- Sin commit y sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente en el editor.
+
+## 2026-11-05 · `buffy` · Fondos tintables y terreno por bioma (T-0024)
+
+- Pedido por `humano-ruben`: el bosque rojo se veía negro de fondo; regenerar pinos y
+  montaña con solo la vegetación en gris claro y la punta de la montaña sin pintar; y
+  que el bioma module el ruido Perlin (bosque rojo con alturas más marcadas).
+- Assets: `pine1_gray.png`/`pine2_gray.png` regenerados y `mountain2_gray.png` nuevo
+  (solo bosque teal, transparente en piedra/punta). Script de Python temporal, sin
+  ficheros extra en el repo.
+- `game.tscn`: pinos grises y `mountains/Sprite2DGreen`; `forest_tint_paths` incluye ese
+  overlay. La piedra de la montaña sigue sin teñirse por bioma.
+- `world_generator.gd`/`biome.gd`: modificadores de amplitud y frecuencia por bioma
+  (bosque rojo 1.7/1.25) mezclados en la ventana de 256 bloques, con alturas float64
+  deterministas en las costuras.
+- Afectados: `assets/map/background/`, `scenes/game.tscn`, `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/biomes/bosque_rojo.tres`, `docs/world.md`.
+- Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit de la tanda al cerrar.

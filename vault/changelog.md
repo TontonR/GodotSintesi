@@ -2,6 +2,29 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — fondos tintables y terreno por bioma
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Pinos y bosque de la montaña en gris claro; solo los píxeles verdes/teal se convierten y la punta de la montaña queda sin teñir | `assets/map/background/pine1_gray.png`, `pine2_gray.png`, `mountain2_gray.png`, `scenes/game.tscn` | [T-0024](tickets/T-0024-fondos-tintables-y-terreno-por-bioma.md) |
+| Bosque rojo con relieve más marcado: amplitud ×1.7 y frecuencia ×1.25, mezcladas en la transición de 256 bloques | `scripts/world/biome.gd`, `scripts/world_generator.gd`, `resources/world/biomes/bosque_rojo.tres` | [T-0024](tickets/T-0024-fondos-tintables-y-terreno-por-bioma.md) |
+
+## 2026-11-05 · `main` — biomas por bloque y más bosque rojo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Bioma y césped decididos por bloque, con transición de 256 bloques (1 chunk) en vez de por chunks | `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `scenes/world/chunk.tscn` | [T-0023](tickets/T-0023-biomas-por-bloque-y-bosque-rojo.md) |
+| Bosques de fondo teñidos al cambiar de bloque | `scripts/world_generator.gd` | [T-0023](tickets/T-0023-biomas-por-bloque-y-bosque-rojo.md) |
+| Más bosque rojo: pesos 0.6/0.4 y biomas de ~8 chunks (`biome_frequency` 0.12) | `resources/world/biomes/*.tres`, `scripts/world_generator.gd` | [T-0023](tickets/T-0023-biomas-por-bloque-y-bosque-rojo.md) |
+
+## 2026-11-05 · `main` — KP5 inmortal, pasivas sin stack y caducidad de pickups
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| KP5 alterna la inmortalidad del jugador y el aviso de debug lo muestra | `scripts/debug_tools.gd`, `scripts/player.gd` | [T-0022](tickets/T-0022-inmortal-kp5-pasivas-sin-stack-y-caducidad.md) |
+| Las pasivas equipadas no vuelven a recogerse ni a dropearse (`has_passive`/`add_passive` + pool filtrado) | `scripts/collectables/player_passive.gd`, `scripts/collectables/passive_items.gd`, `scripts/enemies/enemy_base.gd` | [T-0022](tickets/T-0022-inmortal-kp5-pasivas-sin-stack-y-caducidad.md) |
+| Pickups: borrado a los 60 s desde el spawn; parpadeo a los 25 s y desaparición a los 30 s desde que se ven; monedas excluidas | `item_pickup.gd` | [T-0022](tickets/T-0022-inmortal-kp5-pasivas-sin-stack-y-caducidad.md) |
+
 ## 2026-11-03 · `main` — voladores fuera, reparto y banda plana
 
 | Qué | Dónde | Ticket |

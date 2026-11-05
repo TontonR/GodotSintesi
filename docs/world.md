@@ -1,6 +1,6 @@
 # Mundo — generación procedural por chunks
 
-_2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 ## Qué hace y dónde vive
 
@@ -30,18 +30,27 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 - Antes de instanciar se generan los datos del chunk y del siguiente a la derecha. Al alejarse se borran datos y nodos.
 - Semilla: `world_seed` 0 = aleatoria; cualquier otro valor la fija. El RNG de cada chunk usa semilla + coordenada.
 
-## Biomas (2026-11-01)
+## Biomas (2026-11-01 · transición por bloques 2026-11-05)
 
 - `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `spawn_weight`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
-- Recursos: `resources/world/biomes/pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.75) y `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.25).
-- El bioma es **por chunk**: `_biome_for_chunk()` tira `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12, `biome_contrast` 2) y reparte el resultado entre los `spawn_weight`. El chunk 0 siempre es el primer bioma (zona segura).
-- La transición es dura en el borde del chunk (4096 px): no hay mezcla entre biomas.
+- Recursos: `resources/world/biomes/pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.6) y `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.4).
+- **El bioma se decide por bloque** (`_biome_index_at_tile()`): `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12 en unidades de chunk que se divide por `chunk_width_tiles`, `biome_contrast` 2) devuelve un valor 0..1 que se reparte por los `spawn_weight` acumulados: por debajo del peso de la pradera es pradera y el resto bosque rojo. Todo `tile_x < chunk_width_tiles` (incluidos los negativos) es el primer bioma: la zona segura del spawn.
+- **Enemigos**: siguen siendo por chunk; `_biome_for_chunk()` toma el bioma del bloque central. Con `biome_frequency` 0.12 cada bioma dura ~8 chunks (con 0.04 eran ~25 chunks, por eso casi todo salía pradera). Los pesos son umbrales sobre el ruido, no porcentajes exactos del mapa.
+- **Transición por bloques**: `biome_transition_tiles` (0 = `chunk_width_tiles`, o sea 256). Cada bloque usa la media móvil de los colores de los biomas de su ventana (±128 bloques), así que el cambio es un degradado a lo largo de ~256 bloques, no un escalón en la costura del chunk. La costura puede caer en mitad de un chunk: la lógica y el color ya no dependen de los bordes.
+- **Terreno por bioma**: cada `Biome` tiene `terrain_amplitude_multiplier` y `terrain_frequency_multiplier` (bosque rojo: 1.7 y 1.25; pradera 1.0). `_chunk_biome_data()` mezcla ambos con la misma ventana de 256 bloques que el color, así el relieve se exagera poco a poco al entrar en el bosque rojo. `_height_at_with()` usa los modificadores ya mezclados y los bordes de dos chunks coinciden porque la mezcla se hace en orden fijo y en float64.
 
-## Césped tintable
+## Césped y bosques tintables
 
-- La capa `Grass` usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone `modulate` con el `grass_color` del bioma, así cualquier color vale (un futuro nevado sería `Color(0.93, 0.96, 1)`).
-- `WorldChunk.paint()` recibe `grass_tint` y lo aplica a su `Grass`; `Solid` (suelo marrón) no se tiñe.
+- El césped usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone el `modulate` del dibujado con el `grass_color` del bioma, así cualquier color vale (un futuro nevado sería `Color(0.93, 0.96, 1)`).
+- `WorldChunk.paint()` recibe `grass_tints` (un color por bloque, 257 por chunk) y `GrassPaint` dibuja cada tile de césped con su color; `Solid` (suelo marrón) no se tiñe. `_chunk_biome_data()` calcula colores y modificadores de terreno con una ventana deslizante, y el nodo `Grass` desapareció de `chunk.tscn` porque un `TileMapLayer` solo se puede teñir entero.
+- Los bosques del fondo usan `assets/map/background/pine1_gray.png` / `pine2_gray.png`, con la misma regla de gris. `WorldGenerator.forest_tint_paths` apunta a los `Sprite2D` de `far_forest` y `near_forest`; su `modulate` se actualiza al cambiar de bloque con el tinte visual del bioma.
 - Para añadir un bioma basta con crear otro `.tres` y meterlo en `biomes` del generador.
+
+## Fondos tintables (2026-11-05)
+
+- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris claro (`140 + 0.55 × max(R,G,B)`); el resto no se toca. Antes el gris era el máximo directo (~45) y el `modulate` rojo del bosque rojo las dejaba casi negras.
+- La montaña conserva `mountain2.png` (piedra y punta sin teñir) y añade `Sprite2DGreen` con `mountain2_gray.png`, que solo tiene el bosque teal en gris claro y transparencia en el resto. Ese overlay es el único nodo de la montaña dentro de `forest_tint_paths`: la punta y la piedra nunca reciben el color del bioma.
+- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos siguen la misma receta, aclarada para que el tinte se vea.
 
 ## Spawns y persistencia
 

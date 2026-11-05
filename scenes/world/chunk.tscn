@@ -7,6 +7,4 @@ script = ExtResource("1_chunk")
 
 [node name="Solid" type="TileMapLayer" parent="."]
 
-[node name="Grass" type="TileMapLayer" parent="."]
-
 [node name="Entities" type="Node2D" parent="."]

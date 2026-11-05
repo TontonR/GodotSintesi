@@ -1,22 +1,22 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-03 por `buffy`_
+_Actualizado 2026-11-05 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
 | Rama | `main` en `a914593` (2026-10-29, *Fix enemy loot drop placement*) |
-| Árbol | limpio: día/noche (T-0014), debug (T-0015), noche (T-0016), 9 pasivas de ogro/lobo (T-0017), menú + caída (T-0018), enemigos/loot del compañero (T-0019), arranque/drops/dificultad (T-0020) y voladores/reparto/banda (T-0021) en un commit local |
+| Árbol | commits locales: T-0022 (juego) y T-0023/T-0024 (biomas, fondos tintables y relieve por bioma); sin push |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. 6 enemigos terrestres activos; los voladores (fantasma y demonio) aparcados. |
-| Siguiente paso | F5 del arranque (caída de ~1,7 s sin tirón), del reparto de enemigos y de la banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 de T-0022 (pickups/pasivas) y T-0023 (biomas por bloque), más el arranque, el reparto de enemigos y la banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0021 voladores fuera + reparto + banda bajo montañas (hecho, pendiente de F5) | `scripts/world_generator.gd`, `scenes/main_menu.tscn`, `scenes/game.tscn` |
+| `buffy` | T-0024 fondos tintables + terreno por bioma (hecho, pendiente de F5); T-0022/T-0023 también pendientes de F5 | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scenes/game.tscn`, `assets/map/background/*_gray.png`, `resources/world/biomes/*.tres` |
 | `opencode-jorge` | Sin confirmar desde este repo | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,9 @@ _Actualizado 2026-11-03 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-05 | T-0024 | Fondos grises claros solo de vegetación, overlay de montaña sin tocar la punta y relieve por bioma |
+| 2026-11-05 | T-0023 | Bioma y césped por bloque con transición de 256 bloques; más bosque rojo |
+| 2026-11-05 | T-0022 | KP5 inmortal, pasivas sin stack (ni drop ni recogida) y caducidad de pickups 25/30/60 s |
 | 2026-11-03 | T-0021 | Fantasma y demonio fuera, enemigos repartidos en huecos y banda `#283D43` bajo las montañas |
 | 2026-11-03 | T-0020 | Caída sin tirón, drops raros, 6 objetos originales desactivados, enemigos ×1.35/×1.25 y más densidad |
 | 2026-11-03 | T-0019 | 6 enemigos del compañero, 19 objetos nuevos y loot por enemigo con calidad |
