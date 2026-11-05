@@ -89,8 +89,23 @@ func heal(world_position: Vector2, amount: int) -> void:
 
 ## Polvo (saltar, aterrizar, correr). `strength` escala tamaño y velocidad.
 ## El llamador pasa el punto de los pies: la nube se abre pegada al suelo.
+## El color sale del césped del bioma (aclarado) para que se lea como tierra local.
 func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> void:
-	_burst(world_position, Color(0.84, 0.8, 0.72, 0.75), amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
+	var color := Color(0.84, 0.8, 0.72, 0.75)
+	var biome := _biome_at(world_position.x)
+	if biome:
+		color = biome.grass_color.lightened(0.35)
+		color.a = 0.75
+	_burst(world_position, color, amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
+
+
+## Parry: chispas blancas y doradas, aviso flotante, sacudida corta y destello.
+func parry(world_position: Vector2) -> void:
+	_burst(world_position, Color(1.0, 1.0, 0.92), 16, 180.0, 0.35, 1.2, 60.0, 5.0)
+	_burst(world_position, Color(1.0, 0.86, 0.42), 10, 120.0, 0.5, 0.9, 240.0, 4.0)
+	_number(world_position + Vector2(0.0, -12.0), "¡PARRY!", Color(1.0, 0.95, 0.65))
+	shake(1.2, 0.1)
+	damage_flash(Color(1.0, 0.95, 0.72), 0.16)
 
 
 ## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
@@ -102,15 +117,16 @@ func shake(strength: float, duration: float) -> void:
 	_shake_time = _shake_duration
 
 
-## Flash rojo a pantalla completa (por debajo del HUD).
-func damage_flash() -> void:
+## Flash a pantalla completa (por debajo del HUD). Por defecto, rojo de daño.
+func damage_flash(color: Color = Color(1.0, 0.12, 0.12), alpha: float = 0.3) -> void:
 	if _flash == null:
 		return
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
+	_flash.color = color
 	_flash.color.a = 0.0
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(_flash, "color:a", 0.3, 0.04)
+	_flash_tween.tween_property(_flash, "color:a", alpha, 0.04)
 	_flash_tween.tween_property(_flash, "color:a", 0.0, 0.28)
 
 
@@ -215,6 +231,14 @@ func _make_streak_texture() -> ImageTexture:
 	var image := Image.create(2, 5, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
+
+
+## Bioma bajo una X del mundo; null si el generador aún no existe.
+func _biome_at(world_x: float) -> Biome:
+	var world := get_tree().get_first_node_in_group("world_generator")
+	if world == null or not world.has_method("biome_at_world_x"):
+		return null
+	return world.call("biome_at_world_x", world_x) as Biome
 
 
 func _get_camera() -> Camera2D:

@@ -62,6 +62,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 ## Spawns y persistencia
 
 - Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 2 lobos + 1 sapo + 1 demonio (bosque rojo). `enemy_counts_per_chunk` (`[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]`) queda como respaldo para biomas sin `enemy_scenes`. 2 monedas por chunk.
+- Las monedas nacen `coin_spawn_height` (40 px) sobre el suelo y caen con su propia gravedad (`scripts/collectables/coin.gd`): buscan el suelo una vez por raycast, rebotan con `bounce` 0,4 mientras el impacto supere `min_bounce_speed` (40 px/s) y al asentarse hacen un vaivén de 1 px. Antes aparecían ya apoyadas (`coin_ground_offset`).
 - Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`).
 - **Reparto uniforme** (2026-11-03): se monta la lista de tipos del chunk y se parte `enemy_min_x..max_x` en un hueco por enemigo; cada uno cae en el centro de su hueco con ruido de ±25 % del hueco. Antes cada enemigo sacaba su X al azar y se apelotonaban.
 - **Voladores**: el merge con `feat/biomas` los devuelve a los biomas (la pradera lleva fantasma y el bosque rojo demonio). `DISABLED_ENEMY_SCENES` sigue como lista de referencia sin uso.

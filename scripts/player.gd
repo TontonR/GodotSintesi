@@ -69,6 +69,9 @@ var stamina: float
 @export_group("Combate")
 @export var hitbox_damage: int = 20
 @export var combo_window: float = 0.35
+## Ventana de parry al levantar la guardia (s): un golpe frontal dentro de
+## esta ventana se para con chispas y no hace daño.
+@export var parry_window: float = 0.18
 
 const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
 const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
@@ -110,6 +113,8 @@ var _is_running: bool = false
 var _is_dead: bool = false
 var _combo_index: int = 0
 var _combo_timer: float = 0.0
+# Tiempo restante de parry desde que se levantó la guardia.
+var _parry_timer: float = 0.0
 
 
 # ==============================================================================
@@ -222,6 +227,7 @@ func _physics_process(delta: float) -> void:
 
 	_control_lock_timer = maxf(_control_lock_timer - delta, 0.0)
 	_jump_bonus_timer = maxf(_jump_bonus_timer - delta, 0.0)
+	_parry_timer = maxf(_parry_timer - delta, 0.0)
 	if _jump_bonus_timer <= 0.0:
 		_jump_bonus_factor = 1.0
 
@@ -442,6 +448,12 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> void
 	if _is_dead or immortal:
 		return
 	if _is_guarding and from_front:
+		# Parry: el golpe entra dentro de la ventana de guardia perfecta.
+		if _parry_timer > 0.0:
+			_parry_timer = 0.0
+			var fx := _fx()
+			if fx:
+				fx.call("parry", global_position + Vector2(0.0, -26.0))
 		# La guardia para el golpe frontal (aviso para las pasivas de bloqueo).
 		if passives:
 			passives.trigger_blocked_passives(self)
@@ -618,12 +630,15 @@ func _update_stamina(delta: float) -> void:
 	if _is_guarding:
 		if not guard_input:
 			_is_guarding = false
+			_parry_timer = 0.0
 		else:
 			spend_stamina(guard_drain_per_second * delta)
 			if stamina <= 0.0:
 				_is_guarding = false
+				_parry_timer = 0.0
 	elif guard_input and can_guard():
 		_is_guarding = true
+		_parry_timer = parry_window
 		spend_stamina(guard_initial_cost)
 
 	if _is_running:

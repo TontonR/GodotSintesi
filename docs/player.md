@@ -20,6 +20,7 @@ _2026-10-20 · rama `feat/skills-and-complex-passives`_
 
 - Click izquierdo: combo `attack_1/2/3`, `combo_window` 0.35 s, `hitbox_damage` 20.
 - Click derecho o E: guardia (-15 + -20/s); bloquea daño frontal (`from_front`).
+- Parry: `parry_window` (0,18 s) desde que se levanta la guardia. Si un golpe frontal entra dentro de la ventana, no hace daño y dispara `fx.parry()` (chispas, `¡PARRY!`, destello y sacudida); la ventana se consume, así que el resto de la guardia bloquea normal. Al soltar la guardia o quedarse sin stamina, `_parry_timer` vuelve a 0.
 - Vida `max_health` 100: `take_damage()`, `heal()`; `_die()` es placeholder (respawn lleno).
 - Empuje de enemigos: `take_damage_from(amount, attacker_pos, knockback, lock, knockup)` aplica daño y, si no lo bloquea la guardia, `apply_knockback()` / `apply_knockup()`. Mientras dura `lock` (0.12–0.15 s) se ignora el input horizontal.
 - `is_guarding()` para las áreas enemigas que distinguen bloqueo (fuego del demonio).

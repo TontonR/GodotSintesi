@@ -116,6 +116,11 @@ Tabla completa por enemigo en `vault/pasivas/`. Aquí va lo técnico:
   (sprite on/off cada `BLINK_INTERVAL` = 0,2 s) y desaparece a los 30 s. "Ver" = dentro
   de la cámara del jugador; estar fuera de pantalla no consume ese reloj.
 - Las **monedas** (`scripts/collectables/coin.gd`) no caducan ni parpadean: son otra
-  escena y no heredan de `ItemPickup`.
+  escena y no heredan de `ItemPickup`. Tienen física propia: `fall_gravity` 900,
+  rebote 0,4 (mínimo de impacto 40 px/s) y vaivén de 1 px al asentarse; el generador
+  las hace nacer 40 px sobre el suelo para que se vea la caída.
+- Los **objetos** (`item_pickup.gd`) ya caían y rebotaban; ahora el drop da un salto
+  inicial de `drop_hop` (150 px/s) al aparecer, así se ve el arco y el aterrizaje en
+  vez de materializarse quieto en el suelo.
 - Constantes en `item_pickup.gd`: `SPAWN_LIFETIME`, `BLINK_START`, `SEEN_LIFETIME`
   y `BLINK_INTERVAL`.

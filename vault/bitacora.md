@@ -213,3 +213,17 @@ Formato de entrada:
   velocidad; `enemy_death()` lanza 4 capas de sangre (32+26+14+8 partículas,
   gota 2×5 con estela) y `shake(1.4, 0.12)`.
 - F5 pendiente; commit al cerrar.
+
+## 2026-11-05 · `buffy` · Polvo del bioma, parry y física de pickups (T-0030)
+
+- `humano-ruben`: el polvo no reflejaba el color del césped, faltaban efectos al
+  parrear y las monedas/objetos no tenían física visible.
+- `scripts/fx.gd`: `dust()` consulta `WorldGenerator.biome_at_world_x()` y usa
+  `grass_color.lightened(0.35)`; nuevo `parry()` con chispas blancas/doradas,
+  `¡PARRY!`, `shake(1.2, 0.1)` y `damage_flash()` con color/alfa opcionales.
+- `scripts/player.gd`: `parry_window` 0,18 s al levantar la guardia; el golpe
+  frontal dentro de la ventana se para con `fx.parry()` y consume la ventana.
+- `scripts/collectables/coin.gd`: gravedad 900, raycast al suelo con reintentos,
+  rebote 0,4 y vaivén de 1 px. `world_generator`: `coin_spawn_height` 40 px.
+- `item_pickup.gd`: `drop_hop` 150 px/s al aparecer.
+- F5 pendiente (regla de `AGENTS.md`); commit al cerrar.

@@ -23,6 +23,9 @@ const BLINK_INTERVAL: float = 0.2
 @export_group("Physics")
 ## Falling acceleration (px/s²)
 @export var fall_gravity: float = 900.0
+## Initial upward hop on spawn (px/s): the drop arches and falls instead of
+## appearing already still.
+@export var drop_hop: float = 150.0
 ## Bounce restitution on ground impact (0 = no bounce)
 @export var bounce: float = 0.45
 ## Minimum impact speed (px/s) allowed to bounce; below it the item settles
@@ -56,6 +59,9 @@ var _blink_visible: bool = true
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_phase = randf() * TAU
+	# Salto inicial: el primer tick aún no ha buscado el suelo, así que no se
+	# asienta de golpe y se ve la caída.
+	_velocity_y = -drop_hop
 	# Siempre por encima de los tiles: el vaivén nunca queda medio oculto
 	z_index = 1
 	if item and item.icon and sprite:
@@ -188,7 +194,8 @@ func _find_ground() -> void:
 		_settle(global_position.y)
 		return
 	_ground_y = surface
-	if global_position.y >= _ground_y - HALF_HEIGHT:
+	# Solo se asienta si ya cae: con el salto inicial todavía sube.
+	if _velocity_y >= 0.0 and global_position.y >= _ground_y - HALF_HEIGHT:
 		_settle(_ground_y - HALF_HEIGHT)
 
 ## Casts a ray against the world layer; returns the hit height or -1

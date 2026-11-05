@@ -112,8 +112,9 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 @export_group("Monedas")
 @export var coin_scene: PackedScene = preload("res://scenes/collectables/coin.tscn")
 @export var coins_per_chunk: int = 2
-## Las monedas no caen: su base queda sobre el suelo.
-@export var coin_ground_offset: float = 8.0
+## Altura sobre el suelo a la que aparecen las monedas: después caen, rebotan y
+## se asientan con su propia gravedad (`scripts/collectables/coin.gd`).
+@export var coin_spawn_height: float = 40.0
 
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
@@ -536,7 +537,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			continue
 		coins.append({
 			"id": spawn_id,
-			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_ground_offset)
+			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_spawn_height)
 		})
 
 	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome, "tints": biome_data["tints"]}

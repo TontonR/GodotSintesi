@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — polvo del bioma, parry y física de pickups
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Polvo teñido con el `grass_color` del bioma (verde en pradera) | `scripts/fx.gd` | [T-0030](tickets/T-0030-polvo-bioma-parry-y-fisica-de-pickups.md) |
+| Ventana de parry de 0,18 s con chispas, `¡PARRY!`, destello y sacudida | `scripts/player.gd`, `scripts/fx.gd` | [T-0030](tickets/T-0030-polvo-bioma-parry-y-fisica-de-pickups.md) |
+| Monedas con gravedad, rebote y vaivén; nacen 40 px sobre el suelo | `scripts/collectables/coin.gd`, `scripts/world_generator.gd` | [T-0030](tickets/T-0030-polvo-bioma-parry-y-fisica-de-pickups.md) |
+| Objetos con salto inicial al dropearse (`drop_hop` 150 px/s) | `item_pickup.gd` | [T-0030](tickets/T-0030-polvo-bioma-parry-y-fisica-de-pickups.md) |
+
 ## 2026-11-05 · `main` — polvo a los pies, sangre grande y moco por la hitbox
 
 | Qué | Dónde | Ticket |
