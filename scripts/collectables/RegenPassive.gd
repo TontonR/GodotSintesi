@@ -4,6 +4,8 @@ extends PassiveItems
 @export_group("Regeneration")
 ## Health restored every `interval` seconds
 @export var heal_per_tick: int = 1
+## Stamina restored every `interval` seconds
+@export var stamina_per_tick: int = 0
 ## Seconds elapsed between each heal tick
 @export var interval: float = 1.0
 
@@ -16,3 +18,5 @@ func on_update(player: Node, delta: float) -> void:
 	_timer -= interval
 	if heal_per_tick > 0 and player.has_method("heal"):
 		player.heal(heal_per_tick)
+	if stamina_per_tick > 0 and player.has_method("restore_stamina"):
+		player.restore_stamina(stamina_per_tick)

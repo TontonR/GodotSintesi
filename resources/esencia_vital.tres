@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Consumable" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://b3y6d7mpmp5aj" path="res://scripts/collectables/consumable.gd" id="1_csbl"]
+[ext_resource type="Texture2D" uid="uid://bvnoqa5u50g8m" path="res://assets/items/item410.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_csbl")
+heal_amount = 40
+stamina_amount = 40
+id = "esencia_vital"
+item_name = "Esencia vital"
+description = "Restaura 40 de vida y 40 de stamina."
+icon = ExtResource("1_tex")
+value = 90

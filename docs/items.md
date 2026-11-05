@@ -4,7 +4,7 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 
 ## Jerarquía
 
-`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`. `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
+`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`, `CritPassive`, `LifestealPassive`. `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
 
 ## Huecos (5) y teclas
 
@@ -16,13 +16,14 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 - `Inventory.add_item` enruta por tipo; si la barra del tipo está llena, el objeto se queda en el suelo.
 - Pasivas → `PlayerPassives`. Recogida automática al tocar (`body_entered`); F (`interact`) ya no recoge.
 
-## Catálogo (6 + 9 + 8 + 11)
+## Catálogo (6 + 9 + 8 + 11 + 16)
 
-- **Los 6 originales están desactivados (2026-11-03)**: `pocion_cura`, `pocion_stamina`,
-  `pocion_mayor`, `amuleto_ataque`, `armadura_ligera` y `talisman_regen` ya no salen de
-  ningún enemigo, ni están en el debug, ni hay pickups de prueba en `game.tscn`. Los
-  `.tres` siguen en `resources/` sin referencias, por si se quieren recuperar.
-- Ello deja `pocion_mocos` como único consumible.
+- **Los 6 originales siguen sin drop (2026-11-03)**: `pocion_cura`, `pocion_stamina`,
+  `pocion_mayor`, `amuleto_ataque`, `armadura_ligera` y `talisman_regen` no salen de
+  ningún enemigo ni hay pickups de prueba en `game.tscn`. Tras el merge con
+  `feat/biomas` sí están en las teclas de debug del inventario, junto a los objetos
+  nuevos de abajo.
+- `pocion_mocos` es el consumible propio del catálogo principal.
 
 ## Pasivas de ogro y lobo (9, T-0017 · 2026-11-03)
 
@@ -32,7 +33,14 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 - `garras_lobo` (vida <30% → ataque ×1.2) y `adn_hombre_lobo` (noche → ataque y velocidad ×1.15) aplican un delta sobre el valor sin su bonus, así que no pisan otros bonus ni se acumulan por frame. `DayNightCycle.is_night()` (factor ≥ 0.5) es la fuente del estado noche.
 - `Items.quality` (`Normal` / `Raro`) es nuevo en la clase base; los `.tres` viejos quedan en `Normal`.
 - Iconos provisionales del pack `assets/19+ icons` (`boostW`, `strenghtenW`, `lightningW`, `healthW`, `shieldW`, `swingW`, `fireW`, `neuronW`) y `assets/items/moneda_oro.png` (primer frame de 16×16 recortado de `assets/coins/MonedaD.png`, que es una tira de animación).
-- Todos están en `_DEBUG_PASSIVES` (KP2) para probarlos. **No** están en `DROP_ITEMS`: falta el cableado por enemigo/calidad y el lobo (T-0001).
+- Todos están en `_DEBUG_PASSIVES` (KP2) para probarlos. **No** están en las tablas de drop por enemigo: falta el cableado por enemigo/calidad y el lobo (T-0001).
+
+## Objetos del merge con `feat/biomas` (2026-11-03)
+
+- Consumibles (8): `pocion_cura` +30 vida, `pocion_cura_menor` +15, `pocion_mayor` +60, `elixir_vida` +100, `pocion_stamina` +40, `pocion_stamina_mayor` +70, `bebida_tonificante` +20/+20, `esencia_vital` +40/+40.
+- Pasivas (8): `amuleto_ataque` +6 daño, `amuleto_furia` +12, `amuleto_critico` 20% ×1.8, `pulso_vampirico` +2 vida por golpe, `armadura_ligera` −25% daño, `armadura_pesada` −40%, `talisman_regen` +1 vida/s, `anillo_vigor` +2 stamina/s.
+- Están en `_DEBUG_CONSUMABLES` / `_DEBUG_PASSIVES`, pero **no** en las tablas de drop (`loot_preset` de `enemy_base.gd`); `DROP_ITEMS` ya no existe.
+- `CritPassive` (probabilidad × multiplicador) y `LifestealPassive` (cura al golpear, guarda al jugador en `on_equip`) son las dos clases nuevas. `RegenPassive` tiene `stamina_per_tick`, así el anillo de vigor usa el mismo script con `heal_per_tick = 0`.
 
 ## Drops
 

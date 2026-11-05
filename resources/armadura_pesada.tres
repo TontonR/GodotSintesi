@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DamageReductionPassive" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://d1eal6j7fcg0i" path="res://scripts/collectables/DamageReductionPassive.gd" id="1_defn"]
+[ext_resource type="Texture2D" uid="uid://ysxf6mo02hjw" path="res://assets/items/item250.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_defn")
+reduction = 0.4
+passive_id = "armadura_pesada"
+id = "armadura_pesada"
+item_name = "Armadura pesada"
+description = "Reduce un 40% el daño recibido."
+icon = ExtResource("1_tex")
+value = 130

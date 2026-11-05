@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RegenPassive" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://j123g7qvbjf8" path="res://scripts/collectables/RegenPassive.gd" id="1_regn"]
+[ext_resource type="Texture2D" uid="uid://b42bm8gac2d46" path="res://assets/items/item888.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_regn")
+heal_per_tick = 0
+stamina_per_tick = 2
+interval = 1.0
+passive_id = "anillo_vigor"
+id = "anillo_vigor"
+item_name = "Anillo de vigor"
+description = "Recupera 2 de stamina por segundo."
+icon = ExtResource("1_tex")
+value = 80

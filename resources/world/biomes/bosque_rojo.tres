@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Biome" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/werewolf.tscn" id="2_lobo"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/mutant_toad.tscn" id="3_sapo"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/demon.tscn" id="4_demonio"]
+
+[resource]
+script = ExtResource("1_biome")
+display_name = "Bosque rojo"
+grass_color = Color(0.78, 0.24, 0.2, 1)
+spawn_weight = 0.25
+enemy_scenes = Array[PackedScene]([ExtResource("2_lobo"), ExtResource("3_sapo"), ExtResource("4_demonio")])
+enemy_counts = Array[int]([2, 1, 1])

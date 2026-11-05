@@ -135,21 +135,21 @@ func _update_behavior(delta: float) -> void:
 ## Limita el paseo a la zona del mundo donde apareció el lobo.
 func _setup_wander_bounds() -> void:
 	var gen := get_tree().get_first_node_in_group("world_generator")
-	var zone_tiles := 0
+	var chunk_tiles := 0
 	var safe_tiles := 0
 	if gen:
-		if gen.get("zone_width_tiles") != null:
-			zone_tiles = int(gen.get("zone_width_tiles"))
+		if gen.get("chunk_width_tiles") != null:
+			chunk_tiles = int(gen.get("chunk_width_tiles"))
 		if gen.get("safe_start_tiles") != null:
 			safe_tiles = int(gen.get("safe_start_tiles"))
 
-	if zone_tiles > 0:
-		var zone_width_px := float(zone_tiles) * 16.0
-		var zone_index := floori(global_position.x / zone_width_px)
-		_zone_min_x = zone_index * zone_width_px + wander_edge_margin
-		_zone_max_x = (zone_index + 1) * zone_width_px - wander_edge_margin
-		# En la zona inicial, no invade el tramo seguro del jugador.
-		if zone_index == 0 and safe_tiles > 0:
+	if chunk_tiles > 0:
+		var chunk_width_px := float(chunk_tiles) * 16.0
+		var chunk_index := floori(global_position.x / chunk_width_px)
+		_zone_min_x = chunk_index * chunk_width_px + wander_edge_margin
+		_zone_max_x = (chunk_index + 1) * chunk_width_px - wander_edge_margin
+		# En el chunk inicial, no invade el tramo seguro del jugador.
+		if chunk_index == 0 and safe_tiles > 0:
 			_zone_min_x = maxf(_zone_min_x, float(safe_tiles) * 16.0 + wander_edge_margin)
 	else:
 		_zone_min_x = global_position.x - wander_radius

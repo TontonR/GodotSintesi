@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CritPassive" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/CritPassive.gd" id="1_crit"]
+[ext_resource type="Texture2D" uid="uid://dyga8hhmhpb2n" path="res://assets/items/item555.png" id="1_tex"]
+
+[resource]
+script = ExtResource("1_crit")
+crit_chance = 0.2
+crit_multiplier = 1.8
+passive_id = "amuleto_critico"
+id = "amuleto_critico"
+item_name = "Amuleto crítico"
+description = "20% de probabilidad de golpe crítico (x1.8 de daño)."
+icon = ExtResource("1_tex")
+value = 110

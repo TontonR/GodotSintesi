@@ -30,12 +30,25 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 - Antes de instanciar se generan los datos del chunk y del siguiente a la derecha. Al alejarse se borran datos y nodos.
 - Semilla: `world_seed` 0 = aleatoria; cualquier otro valor la fija. El RNG de cada chunk usa semilla + coordenada.
 
+## Biomas (2026-11-01)
+
+- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `spawn_weight`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
+- Recursos: `resources/world/biomes/pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.75) y `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.25).
+- El bioma es **por chunk**: `_biome_for_chunk()` tira `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12, `biome_contrast` 2) y reparte el resultado entre los `spawn_weight`. El chunk 0 siempre es el primer bioma (zona segura).
+- La transición es dura en el borde del chunk (4096 px): no hay mezcla entre biomas.
+
+## Césped tintable
+
+- La capa `Grass` usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone `modulate` con el `grass_color` del bioma, así cualquier color vale (un futuro nevado sería `Color(0.93, 0.96, 1)`).
+- `WorldChunk.paint()` recibe `grass_tint` y lo aplica a su `Grass`; `Solid` (suelo marrón) no se tiñe.
+- Para añadir un bioma basta con crear otro `.tres` y meterlo en `biomes` del generador.
+
 ## Spawns y persistencia
 
-- Por chunk: `enemy_counts_per_chunk` base `[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]` (13 enemigos) y 2 monedas.
-- Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`, quedan 6), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`, 16 con el redondeo por tipo).
+- Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 2 lobos + 1 sapo + 1 demonio (bosque rojo). `enemy_counts_per_chunk` (`[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]`) queda como respaldo para biomas sin `enemy_scenes`. 2 monedas por chunk.
+- Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`).
 - **Reparto uniforme** (2026-11-03): se monta la lista de tipos del chunk y se parte `enemy_min_x..max_x` en un hueco por enemigo; cada uno cae en el centro de su hueco con ruido de ±25 % del hueco. Antes cada enemigo sacaba su X al azar y se apelotonaban.
-- **Voladores aparcados**: `WorldGenerator.DISABLED_ENEMY_SCENES` lista `ghost.tscn` y `demon.tscn`, que ya no están en `enemy_scenes` (escenas y scripts siguen en el repo).
+- **Voladores**: el merge con `feat/biomas` los devuelve a los biomas (la pradera lleva fantasma y el bosque rojo demonio). `DISABLED_ENEMY_SCENES` sigue como lista de referencia sin uso.
 - Márgenes de 2 tiles; en el chunk 0 los enemigos empiezan en `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~320 px del spawn del jugador).
 - La base del collider del enemigo se apoya en el suelo (`_body_bottom`), no el origen: los enemigos están escalados ×2.
 - Cada spawn tiene un id estable (`e:x:y:índice`, `c:x:y:índice`). `EnemyBase` emite `died` y `coin.gd` emite `collected`; el generador guarda esos ids y no los vuelve a instanciar.
@@ -43,7 +56,7 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 
 ## Subida automática
 
-- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. Prueban 1 px por delante y suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
+- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. El jugador prueba 1 px por delante; los enemigos prueban lo que avanzan en el frame (`|vx| * delta`, mínimo 2 px) + 1, porque el lobo llega a 300 px/s. Suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
 - 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
 - Con el aumento de enemigos, un chunk maduro mete 16: si el rendimiento cae, bajar `enemy_ramp_max_multiplier` o `enemy_counts_per_chunk`.
 
@@ -70,7 +83,6 @@ _2026-10-23 · 2026-10-25 · rama `feat/world_generation_2`_
 ## Capas y cámara
 
 - Capas 2D: 1 mundo, 2 jugador, 3 enemigos, 4 ataque jugador. Viewport 768×432 (ventana 1280×720).
-- `enemy_scenes` y `enemy_counts_per_chunk` deben tener el mismo orden. Para biomas futuros, elegir configuración en `_generate_chunk` y pasar sus tiles/spawns a `WorldChunk.paint`.
 
 ## Trampas
 

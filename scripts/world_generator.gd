@@ -59,7 +59,7 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 @export var swap_left_right: bool = false
 
 @export_group("Enemigos")
-## Lista de escenas de enemigos.
+## Lista de escenas de enemigos (respaldo si un bioma no define las suyas).
 @export var enemy_scenes: Array[PackedScene] = [
 	preload("res://scenes/enemies/orc.tscn"),
 	preload("res://scenes/enemies/mutant_toad.tscn"),
@@ -70,6 +70,19 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 ]
 ## Cantidades base por chunk, en el mismo orden que las escenas.
 @export var enemy_counts_per_chunk: Array[int] = [4, 2, 1, 2, 2, 2]
+
+@export_group("Biomas")
+## Biomas del mundo; el primero es el de la zona segura.
+@export var biomes: Array[Biome] = [
+	preload("res://resources/world/biomes/pradera.tres"),
+	preload("res://resources/world/biomes/bosque_rojo.tres")
+]
+## Frecuencia del ruido que reparte los biomas; más bajo = biomas más grandes.
+@export var biome_frequency: float = 0.12
+## Contraste del ruido de biomas; más alto = extremos más frecuentes.
+@export var biome_contrast: float = 2.0
+
+@export_group("Spawns")
 ## Margen en tiles para no aparecer pegado al borde del chunk.
 @export var enemy_spawn_margin_tiles: int = 2
 ## Tiles de margen seguro tras el spawn del jugador antes del primer enemigo.
@@ -97,6 +110,7 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 @onready var _template_grass: TileMapLayer = get_node_or_null("grass_map_layer")
 
 var _noise := FastNoiseLite.new()
+var _biome_noise := FastNoiseLite.new()
 var _seed: int = 0
 var _camera: Camera2D
 var _loaded_chunks: Dictionary = {}
@@ -108,7 +122,7 @@ var _last_last: int = -999999
 
 
 func _ready() -> void:
-	# El lobo busca el generador por grupo para saber dónde puede merodear.
+	# Los enemigos lo buscan por grupo para leer la configuración del mundo.
 	add_to_group("world_generator")
 	# La capa antigua sigue en game.tscn como plantilla de TileSet.
 	if solid_tile_set == null and _template_solid:
@@ -122,6 +136,10 @@ func _ready() -> void:
 	_noise.frequency = noise_frequency
 	_noise.fractal_octaves = noise_octaves
 	_noise.fractal_gain = noise_gain
+
+	_biome_noise.seed = _seed + 1000
+	_biome_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	_biome_noise.frequency = biome_frequency
 
 	if player:
 		_camera = player.get_node_or_null("Camera2D") as Camera2D
@@ -227,6 +245,24 @@ func is_ready_at(world_x: float) -> bool:
 	return _loaded_chunks.has(Vector2i(coord_x, 0))
 
 
+## Bioma del chunk. El 0 es siempre el primero (zona segura del jugador).
+func _biome_for_chunk(chunk_x: int) -> Biome:
+	if biomes.is_empty():
+		return null
+	if chunk_x == 0:
+		return biomes[0]
+	var total := 0.0
+	for biome in biomes:
+		total += maxf(biome.spawn_weight, 0.0)
+	var roll := _biome_noise.get_noise_1d(float(chunk_x))
+	roll = clampf(roll * biome_contrast + 0.5, 0.0, 1.0) * total
+	for biome in biomes:
+		roll -= maxf(biome.spawn_weight, 0.0)
+		if roll <= 0.0:
+			return biome
+	return biomes[biomes.size() - 1]
+
+
 func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
@@ -252,16 +288,24 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	if coord.x == 0:
 		enemy_min_x = maxi(enemy_min_x, safe_start_tiles + enemy_safe_gap_tiles)
 
+	# Enemigos del bioma; si no define, los de la lista general.
+	var biome := _biome_for_chunk(coord.x)
+	var scenes: Array[PackedScene] = enemy_scenes
+	var counts: Array[int] = enemy_counts_per_chunk
+	if biome and not biome.enemy_scenes.is_empty():
+		scenes = biome.enemy_scenes
+		counts = biome.enemy_counts
+
 	# Tipos del chunk antes de repartir las X (uno por enemigo).
 	var spawn_scenes: Array[PackedScene] = []
 	# Los primeros chunks van al 50 % y a partir de ahí cada chunk suma más.
 	var count_multiplier := _enemy_count_multiplier(coord.x)
-	for idx in range(enemy_scenes.size()):
+	for idx in range(scenes.size()):
 		var count := 0
-		if idx < enemy_counts_per_chunk.size():
-			count = maxi(floori(float(enemy_counts_per_chunk[idx]) * count_multiplier), 0)
+		if idx < counts.size():
+			count = maxi(floori(float(counts[idx]) * count_multiplier), 0)
 		for i in range(count):
-			spawn_scenes.append(enemy_scenes[idx])
+			spawn_scenes.append(scenes[idx])
 
 	# Reparto uniforme: un hueco por enemigo a lo ancho del chunk, con algo de
 	# ruido para que no queden en fila. Antes cada enemigo tiraba su X al azar y
@@ -299,7 +343,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_ground_offset)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome}
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -307,6 +351,7 @@ func _load_chunk(coord: Vector2i) -> void:
 		_chunk_data[coord] = _generate_chunk(coord)
 	var data: Dictionary = _chunk_data[coord]
 
+	var biome: Biome = data.get("biome")
 	var chunk: WorldChunk = chunk_scene.instantiate()
 	chunk.name = "Chunk_%d" % coord.x
 	chunk.position = Vector2(coord.x * chunk_width_tiles * TILE_SIZE, 0)
@@ -321,7 +366,8 @@ func _load_chunk(coord: Vector2i) -> void:
 		tile_atlas_origin,
 		grass_tile_set,
 		chunk_height_tiles,
-		swap_left_right
+		swap_left_right,
+		biome.grass_color if biome else Color.WHITE
 	)
 	_spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk
