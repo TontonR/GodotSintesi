@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — un tono por capa de fondo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Gris calibrado por capa (cercano 92, lejano 116, montaña 172/211) para que los tres fondos no queden del mismo color | `assets/map/background/{pine1,pine2,mountain2}_gray.png` | [T-0026](tickets/T-0026-fondos-con-tono-propio-por-capa.md) |
+| El tinte de cada bioma conserva los tres escalones de profundidad en pradera y bosque rojo | `resources/world/biomes/*.tres`, `docs/world.md` | [T-0026](tickets/T-0026-fondos-con-tono-propio-por-capa.md) |
+
 ## 2026-11-05 · `main` — gris medio y verde original en la pradera
 
 | Qué | Dónde | Ticket |

@@ -48,10 +48,10 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 ## Fondos tintables (2026-11-05)
 
-- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris medio (`100 + 0.35 × max(R,G,B)`, ~113–129); el resto no se toca. El gris máximo directo (~45) dejaba el bosque rojo casi negro; el gris claro de la primera prueba (~165) lavaba el verde normal.
-- **`Biome.forest_color`** tiñe solo los fondos, separado de `grass_color`: la pradera usa `(0.233, 0.388, 0.388)`, que sobre el gris 116 reproduce el verde-teal original `(27, 45, 45)`; el bosque rojo usa `(1, 0.32, 0.28)` para que el rojo se vea sin aclarar más el gris. El césped sigue con `grass_color`.
-- La montaña conserva `mountain2.png` (piedra y punta sin teñir) y añade `Sprite2DGreen` con `mountain2_gray.png`, que solo tiene el bosque teal en gris medio y transparencia en el resto. Ese overlay es el único nodo de la montaña dentro de `forest_tint_paths`: la punta y la piedra nunca reciben el color del bioma.
-- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos reutilizan la receta con gris medio (`100 + 0.35 × max`) para que el verde de la pradera recupere su tono original y el rojo del bosque siga viéndose.
+- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris; el resto no se toca. **Cada capa tiene su gris**: pino lejano 116, pino cercano 92 (más oscuro) y montaña 172/211 (la más clara). Así el tinte no iguala los tres fondos y se mantiene el escalón de profundidad de antes.
+- **`Biome.forest_color`** tiñe solo los fondos, separado de `grass_color`: la pradera usa `(0.233, 0.388, 0.388)`, que sobre esos grises devuelve los tonos originales (lejano `(27, 45, 45)`, cercano `(21, 36, 36)`, montaña `(40, 67, 67)` y `(49, 82, 82)`); el bosque rojo usa `(1, 0.32, 0.28)` y conserva la misma diferencia entre capas. El césped sigue con `grass_color`.
+- La montaña conserva `mountain2.png` (piedra y punta sin teñir) y añade `Sprite2DGreen` con `mountain2_gray.png`, que solo tiene los dos tonos del bosque teal en gris (172 y 211) y transparencia en el resto. Ese overlay es el único nodo de la montaña dentro de `forest_tint_paths`: la punta y la piedra nunca reciben el color del bioma.
+- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos reutilizan la receta con un gris calibrado por capa para que el tinte recupere el tono original de cada una y el rojo del bosque siga viéndose.
 
 ## Spawns y persistencia
 

@@ -162,3 +162,14 @@ Formato de entrada:
 - Afectados: `assets/map/background/*_gray.png`, `scripts/world/biome.gd`,
   `scripts/world_generator.gd`, `resources/world/biomes/*.tres`, `docs/world.md`.
 - Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.
+
+## 2026-11-05 · `buffy` · Un tono por capa de fondo (T-0026)
+
+- `humano-ruben`: los tres fondos salían del mismo color con T-0025; antes cada
+  capa era más oscura que la siguiente. Que se diferencien en todos los colores.
+- Gris calibrado por capa: pino cercano 92, pino lejano 116, montaña 172/211.
+  Con `forest_color` de pradera devuelven los tonos originales de cada capa.
+- Bosque rojo: mismos escalones, `(92,29,26)` < `(116,37,32)` < `(172,55,48)` <
+  `(211,68,59)`.
+- Sin cambios de código: solo assets y `docs/world.md`.
+- Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.
