@@ -9,6 +9,10 @@ extends Resource
 @export var grass_color: Color = Color.WHITE
 ## Tinte de los bosques de fondo y de la vegetación de la montaña; independiente del césped.
 @export var forest_color: Color = Color.WHITE
+## Tinte de la piedra de la montaña; blanco = sin teñir (la nieve va aparte y no se tiñe).
+@export var rock_color: Color = Color.WHITE
+## Partículas de ambiente: "none", "leaves" (hojas rojas) o "snow" (copos de nieve).
+@export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Peso relativo en el reparto de biomas del mundo.
 @export var spawn_weight: float = 1.0
 ## Multiplicador de la amplitud del ruido del terreno (1 = sin cambio); más alto = alturas más marcadas.

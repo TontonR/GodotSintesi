@@ -75,7 +75,8 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 ## Biomas del mundo; el primero es el de la zona segura.
 @export var biomes: Array[Biome] = [
 	preload("res://resources/world/biomes/pradera.tres"),
-	preload("res://resources/world/biomes/bosque_rojo.tres")
+	preload("res://resources/world/biomes/bosque_rojo.tres"),
+	preload("res://resources/world/biomes/nieve.tres")
 ]
 ## Frecuencia del ruido que reparte los biomas (por chunk); más bajo = biomas más grandes.
 @export var biome_frequency: float = 0.12
@@ -88,6 +89,10 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 	^"../far_forest/Sprite2D",
 	^"../near_forest/Sprite2D",
 	^"../mountains/Sprite2DGreen",
+]
+## Nodos (Sprite2D) de la piedra de la montaña, que usan el `rock_color` del bioma.
+@export var rock_tint_paths: Array[NodePath] = [
+	^"../mountains/Sprite2D",
 ]
 
 @export_group("Spawns")
@@ -128,6 +133,7 @@ var _collected_spawns: Dictionary = {}
 var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
+var _rock_tint_nodes: Array[CanvasItem] = []
 var _last_biome_tile: int = -999999
 
 
@@ -162,6 +168,10 @@ func _ready() -> void:
 		var node := get_node_or_null(path) as CanvasItem
 		if node:
 			_forest_tint_nodes.append(node)
+	for path in rock_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_rock_tint_nodes.append(node)
 
 	_update_chunks(true)
 	_update_biome_tint(true)
@@ -291,6 +301,14 @@ func _biome_index_at_tile(tile_x: int) -> int:
 	return biomes.size() - 1
 
 
+## Bioma del bloque que contiene `world_x`; lo usan las partículas de ambiente.
+func biome_at_world_x(world_x: float) -> Biome:
+	var index := _biome_index_at_tile(floori(world_x / float(TILE_SIZE)))
+	if index < 0:
+		return null
+	return biomes[index]
+
+
 ## Bioma del chunk para enemigos y recuentos: el del bloque central.
 func _biome_for_chunk(chunk_x: int) -> Biome:
 	var index := _biome_index_at_tile(chunk_x * chunk_width_tiles + chunk_width_tiles / 2)
@@ -334,17 +352,16 @@ func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
 		counts[index] = remaining
 
 
-## Tinte de los bosques de fondo en un bloque: usa `forest_color`, que puede ser
-## distinto del verde del césped (la pradera recupera el verde oscuro original).
-func _biome_tint_at_tile(tile_x: int) -> Color:
+## Tinte de un canal del bioma en un bloque ("grass", "forest" o "rock").
+func _biome_color_at_tile(tile_x: int, channel: String) -> Color:
 	if biomes.is_empty():
 		return Color.WHITE
-	return _mixed_biome_color(_biome_counts_at_tile(tile_x), true)
+	return _mixed_biome_color(_biome_counts_at_tile(tile_x), channel)
 
 
-## Media de los colores de los biomas contados en la ventana. `forest` elige el
-## tinte de los fondos; por defecto, el del césped.
-func _mixed_biome_color(counts: Dictionary, forest: bool = false) -> Color:
+## Media de los colores de los biomas contados en la ventana. Cada bioma puede
+## dar un color distinto para el césped, los bosques y la piedra de la montaña.
+func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
 	var samples := 0
 	for index in range(biomes.size()):
 		samples += int(counts.get(index, 0))
@@ -352,7 +369,13 @@ func _mixed_biome_color(counts: Dictionary, forest: bool = false) -> Color:
 		return Color.WHITE
 	var total := Color(0.0, 0.0, 0.0, 0.0)
 	for index in range(biomes.size()):
-		var color := biomes[index].forest_color if forest else biomes[index].grass_color
+		var biome := biomes[index]
+		var color := biome.grass_color
+		match channel:
+			"forest":
+				color = biome.forest_color
+			"rock":
+				color = biome.rock_color
 		total += color * float(counts.get(index, 0))
 	return total / float(samples)
 
@@ -418,15 +441,18 @@ func _chunk_biome_data(chunk_x: int) -> Dictionary:
 ## Aplica el tinte del bioma actual a los bosques de fondo. Se actualiza al
 ## cambiar de bloque, no de chunk, para que el cambio sea continuo.
 func _update_biome_tint(force: bool) -> void:
-	if _forest_tint_nodes.is_empty() or not player:
+	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty()) or not player:
 		return
 	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
 	if not force and tile_x == _last_biome_tile:
 		return
 	_last_biome_tile = tile_x
-	var tint := _biome_tint_at_tile(tile_x)
+	var forest := _biome_color_at_tile(tile_x, "forest")
+	var rock := _biome_color_at_tile(tile_x, "rock")
 	for node in _forest_tint_nodes:
-		node.modulate = tint
+		node.modulate = forest
+	for node in _rock_tint_nodes:
+		node.modulate = rock
 
 
 func _generate_chunk(coord: Vector2i) -> Dictionary:

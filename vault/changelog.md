@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-05 · `main` — nieve separada, bioma de nieve y ambiente
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Overlay del bosque corregido (ya no incluye piedra ni nieve) y nieve extraída a `mountain2_snow.png`, dibujada encima y sin teñir | `assets/map/background/mountain2_gray.png`, `mountain2_snow.png`, `scenes/game.tscn` | [T-0027](tickets/T-0027-biooma-nieve-nieve-separada-y-ambiente.md) |
+| `Biome.rock_color` para la piedra; bioma de nieve con sus colores y enemigos; pesos 0.55/0.3/0.2 | `scripts/world/biome.gd`, `scripts/world_generator.gd`, `resources/world/biomes/*.tres` | [T-0027](tickets/T-0027-biooma-nieve-nieve-separada-y-ambiente.md) |
+| Bosque rojo 1.35/1.1 y pradera 0.95 de amplitud | `resources/world/biomes/*.tres` | [T-0027](tickets/T-0027-biooma-nieve-nieve-separada-y-ambiente.md) |
+| Hojas rojas y copos de nieve por bioma (`Biome.ambient`) | `scripts/world/biome_particles.gd`, `scenes/game.tscn` | [T-0027](tickets/T-0027-biooma-nieve-nieve-separada-y-ambiente.md) |
+
 ## 2026-11-05 · `main` — un tono por capa de fondo
 
 | Qué | Dónde | Ticket |

@@ -173,3 +173,18 @@ Formato de entrada:
   `(211,68,59)`.
 - Sin cambios de código: solo assets y `docs/world.md`.
 - Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.
+
+## 2026-11-05 · `buffy` · Nieve separada, bioma de nieve y ambiente (T-0027)
+
+- `humano-ruben`: la punta de nieve salía teñida; separarla y ponerla encima,
+  añadir bioma de nieve, suavizar el relieve rojo, aplanar un poco la pradera y
+  meter hojas rojas / copos de nieve.
+- Causa: `mountain2_gray.png` se regeneró con toda la montaña; el overlay está
+  en `forest_tint_paths` y teñía piedra y nieve. Ahora solo el bosque.
+- `mountain2_snow.png` + `Sprite2DSnow` encima; `Biome.rock_color` +
+  `rock_tint_paths` para la piedra (gris solo en nieve).
+- `nieve.tres`: césped (0.93,0.96,1), bosque (0.82,0.88,0.96), 2 esqueletos +
+  2 arqueros + 1 lobo, peso 0.2. Pesos 0.55/0.3/0.2.
+- Terreno: rojo 1.35/1.1; pradera 0.95.
+- `biome_particles.gd`: hojas (28) y copos (220) con texturas generadas en código.
+- Sin ejecutar Godot (regla de `AGENTS.md`): F5 pendiente. Commit al cerrar.

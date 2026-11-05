@@ -1,14 +1,15 @@
-[gd_resource type="Resource" script_class="Biome" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="Biome" format=3 uid="uid://b17itjn0nvmrx"]
 
-[ext_resource type="Script" path="res://scripts/world/biome.gd" id="1_biome"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/orc.tscn" id="2_orc"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/ghost.tscn" id="3_ghost"]
+[ext_resource type="Script" uid="uid://ds3uuejorgxyv" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="PackedScene" uid="uid://dbyg0vpbauvxa" path="res://scenes/enemies/orc.tscn" id="2_orc"]
+[ext_resource type="PackedScene" uid="uid://ema1utjheove" path="res://scenes/enemies/ghost.tscn" id="3_ghost"]
 
 [resource]
 script = ExtResource("1_biome")
 display_name = "Pradera"
 grass_color = Color(0.72, 1, 0.28, 1)
 forest_color = Color(0.233, 0.388, 0.388, 1)
-spawn_weight = 0.6
+spawn_weight = 0.55
+terrain_amplitude_multiplier = 0.95
 enemy_scenes = Array[PackedScene]([ExtResource("2_orc"), ExtResource("3_ghost")])
 enemy_counts = Array[int]([4, 1])

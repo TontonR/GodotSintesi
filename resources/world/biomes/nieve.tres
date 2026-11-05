@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Biome" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/skeleton.tscn" id="2_esqueleto"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/archer.tscn" id="3_arquero"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/werewolf.tscn" id="4_lobo"]
+
+[resource]
+script = ExtResource("1_biome")
+display_name = "Nieve"
+grass_color = Color(0.93, 0.96, 1, 1)
+forest_color = Color(0.82, 0.88, 0.96, 1)
+rock_color = Color(0.75, 0.78, 0.82, 1)
+ambient = "snow"
+spawn_weight = 0.2
+enemy_scenes = Array[PackedScene]([ExtResource("2_esqueleto"), ExtResource("3_arquero"), ExtResource("4_lobo")])
+enemy_counts = Array[int]([2, 2, 1])

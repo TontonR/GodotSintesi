@@ -2,7 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/map/background/cloud.png" id="1_8718u"]
 [ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/map/background/mountain2.png" id="2_efco6"]
-[ext_resource type="Texture2D" uid="uid://cwgit636dvtcv" path="res://assets/map/background/mountain2_gray.png" id="22_mgray"]
 [ext_resource type="Texture2D" uid="uid://bja0c7051ufje" path="res://assets/map/background/pine1_gray.png" id="3_ospag"]
 [ext_resource type="Texture2D" uid="uid://cbtws31mjipym" path="res://assets/map/background/pine2_gray.png" id="4_igjsd"]
 [ext_resource type="Texture2D" uid="uid://cxagdxjpm3eji" path="res://tilesetgrass.png" id="5_u27ij"]
@@ -17,6 +16,9 @@
 [ext_resource type="Script" uid="uid://btkqmw0a1dpf6" path="res://scripts/world/day_night.gd" id="19_dnt"]
 [ext_resource type="Script" uid="uid://17j5g7nkqv5i" path="res://scripts/debug_tools.gd" id="20_dbg"]
 [ext_resource type="Script" uid="uid://cp600p2cwd4r1" path="res://scripts/world/fall_intro.gd" id="21_fall"]
+[ext_resource type="Texture2D" uid="uid://cwgit636dvtcv" path="res://assets/map/background/mountain2_gray.png" id="22_mgray"]
+[ext_resource type="Texture2D" path="res://assets/map/background/mountain2_snow.png" id="23_msnow"]
+[ext_resource type="Script" path="res://scripts/world/biome_particles.gd" id="24_parts"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -298,8 +300,11 @@ repeat_times = 3
 [node name="Sprite2D" type="Sprite2D" parent="mountains" unique_id=980443225]
 texture = ExtResource("2_efco6")
 
-[node name="Sprite2DGreen" type="Sprite2D" parent="mountains"]
+[node name="Sprite2DGreen" type="Sprite2D" parent="mountains" unique_id=1021180477]
 texture = ExtResource("22_mgray")
+
+[node name="Sprite2DSnow" type="Sprite2D" parent="mountains"]
+texture = ExtResource("23_msnow")
 
 [node name="MountainBase" type="ColorRect" parent="mountains" unique_id=980443226]
 offset_left = -1032.0
@@ -330,6 +335,10 @@ repeat_times = 3
 
 [node name="Sprite2D" type="Sprite2D" parent="near_forest" unique_id=706958388]
 texture = ExtResource("4_igjsd")
+
+[node name="biome_particles" type="CanvasLayer" parent="."]
+layer = 5
+script = ExtResource("24_parts")
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
 layer = 10
