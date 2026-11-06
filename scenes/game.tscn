@@ -17,9 +17,9 @@
 [ext_resource type="Script" uid="uid://17j5g7nkqv5i" path="res://scripts/debug_tools.gd" id="20_dbg"]
 [ext_resource type="Script" uid="uid://cp600p2cwd4r1" path="res://scripts/world/fall_intro.gd" id="21_fall"]
 [ext_resource type="Texture2D" uid="uid://cwgit636dvtcv" path="res://assets/map/background/mountain2_gray.png" id="22_mgray"]
-[ext_resource type="Texture2D" path="res://assets/map/background/mountain2_snow.png" id="23_msnow"]
-[ext_resource type="Script" path="res://scripts/world/biome_particles.gd" id="24_parts"]
-[ext_resource type="Script" path="res://scripts/fx.gd" id="25_fx"]
+[ext_resource type="Texture2D" uid="uid://cr0l2e6v6hl5k" path="res://assets/map/background/mountain2_snow.png" id="23_msnow"]
+[ext_resource type="Script" uid="uid://df47xxof140b8" path="res://scripts/world/biome_particles.gd" id="24_parts"]
+[ext_resource type="Script" uid="uid://18rsr7h1h1n1" path="res://scripts/fx.gd" id="25_fx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -304,7 +304,7 @@ texture = ExtResource("2_efco6")
 [node name="Sprite2DGreen" type="Sprite2D" parent="mountains" unique_id=1021180477]
 texture = ExtResource("22_mgray")
 
-[node name="Sprite2DSnow" type="Sprite2D" parent="mountains"]
+[node name="Sprite2DSnow" type="Sprite2D" parent="mountains" unique_id=1284109146]
 texture = ExtResource("23_msnow")
 
 [node name="MountainBase" type="ColorRect" parent="mountains" unique_id=980443226]
@@ -337,7 +337,7 @@ repeat_times = 3
 [node name="Sprite2D" type="Sprite2D" parent="near_forest" unique_id=706958388]
 texture = ExtResource("4_igjsd")
 
-[node name="biome_particles" type="CanvasLayer" parent="."]
+[node name="biome_particles" type="CanvasLayer" parent="." unique_id=1364164817]
 layer = 5
 script = ExtResource("24_parts")
 
@@ -471,6 +471,6 @@ tile_set = SubResource("TileSet_mdkdc")
 [node name="fall_intro" type="Node" parent="." unique_id=1899368322]
 script = ExtResource("21_fall")
 
-[node name="fx" type="Node2D" parent="."]
+[node name="fx" type="Node2D" parent="." unique_id=382679774]
 z_index = 60
 script = ExtResource("25_fx")

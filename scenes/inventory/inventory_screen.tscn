@@ -4,36 +4,36 @@
 [ext_resource type="PackedScene" uid="uid://bg0483jcrkkv1" path="res://scenes/inventory/inventory_slot.tscn" id="2_slot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.1, 0.1, 0.13, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.36, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_column"]
 content_margin_left = 8.0
 content_margin_top = 8.0
 content_margin_right = 8.0
 content_margin_bottom = 8.0
-bg_color = Color(0.1, 0.1, 0.13, 0.97)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.3, 0.3, 0.36, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_column"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
 bg_color = Color(0.13, 0.13, 0.17, 0.6)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
 border_color = Color(0.35, 0.35, 0.42, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="InventoryScreen" type="CanvasLayer" unique_id=1192594382]
 process_mode = 3
@@ -56,29 +56,29 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -186.0
-offset_top = -95.0
-offset_right = 186.0
-offset_bottom = 95.0
+offset_left = -372.0
+offset_top = -190.0
+offset_right = 372.0
+offset_bottom = 190.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 
 [node name="Layout" type="HBoxContainer" parent="Window" unique_id=159500234]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 20
 
 [node name="LeftPanel" type="PanelContainer" parent="Window/Layout" unique_id=539808641]
-custom_minimum_size = Vector2(84, 0)
+custom_minimum_size = Vector2(168, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_column")
 
 [node name="LeftColumn" type="VBoxContainer" parent="Window/Layout/LeftPanel" unique_id=1696017045]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="PortraitBox" type="Control" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=1718267865]
-custom_minimum_size = Vector2(72, 52)
+custom_minimum_size = Vector2(144, 104)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
@@ -91,13 +91,13 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 text = "Habilidades"
 
 [node name="SkillsFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=1045275017]
 layout_mode = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
 [node name="ConsumablesHeader" type="Label" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=1385370972]
 layout_mode = 2
@@ -105,26 +105,26 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 text = "Consumibles"
 
 [node name="ConsumablesFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=622045477]
 layout_mode = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
 [node name="CollectiblesPanel" type="PanelContainer" parent="Window/Layout" unique_id=435279133]
-custom_minimum_size = Vector2(136, 0)
+custom_minimum_size = Vector2(272, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_column")
 
 [node name="CollectiblesColumn" type="VBoxContainer" parent="Window/Layout/CollectiblesPanel" unique_id=1970293329]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="CollectiblesHeaderRow" type="HBoxContainer" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn" unique_id=1955087919]
 layout_mode = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 4
 
 [node name="CollectiblesHeader" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=2118808142]
 layout_mode = 2
@@ -132,7 +132,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 text = "Coleccionables"
 
 [node name="CollectiblesPage" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=1216784936]
@@ -141,42 +141,42 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 16
 text = "1/1"
 
 [node name="PrevPage" type="Button" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=1893090697]
-custom_minimum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 text = "←"
 
 [node name="NextPage" type="Button" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=46725914]
-custom_minimum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 text = "→"
 
 [node name="CollectiblesGrid" type="GridContainer" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn" unique_id=260377794]
 layout_mode = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 columns = 6
 
 [node name="RightPanel" type="PanelContainer" parent="Window/Layout" unique_id=1422098358]
-custom_minimum_size = Vector2(116, 0)
+custom_minimum_size = Vector2(232, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_column")
 
 [node name="RightColumn" type="VBoxContainer" parent="Window/Layout/RightPanel" unique_id=958003836]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="ItemIcon" type="TextureRect" parent="Window/Layout/RightPanel/RightColumn" unique_id=1271076506]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 size_flags_horizontal = 4
 expand_mode = 1
@@ -188,14 +188,14 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 20
 horizontal_alignment = 2
 autowrap_mode = 3
 
 [node name="ItemStats" type="Label" parent="Window/Layout/RightPanel/RightColumn" unique_id=612466456]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.6, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 horizontal_alignment = 2
 autowrap_mode = 3
 
@@ -203,5 +203,5 @@ autowrap_mode = 3
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_font_sizes/font_size = 18
 autowrap_mode = 3

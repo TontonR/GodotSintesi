@@ -2,9 +2,9 @@ class_name InventoryScreen
 extends CanvasLayer
 
 ## Size of each slot button in pixels (skills and consumables)
-const SLOT_SIZE := Vector2(20, 20)
+const SLOT_SIZE := Vector2(40, 40)
 ## Size of each collectible button (6 columns must fit the middle column)
-const COLLECTIBLE_SLOT_SIZE := Vector2(16, 16)
+const COLLECTIBLE_SLOT_SIZE := Vector2(32, 32)
 ## Rows of collectibles shown per page
 const COLLECTIBLE_ROWS: int = 6
 
@@ -155,6 +155,8 @@ func _fill_slots(container: Container, inventory: Inventory, from: int, to: int)
 func _add_slot(container: Container, item: Items, size: Vector2 = SLOT_SIZE) -> void:
 	var slot: InventorySlot = slot_scene.instantiate()
 	slot.custom_minimum_size = size
+	# El icono ocupa el hueco entero; en el HUD el mismo slot sigue a tamaño nativo
+	slot.expand_icon = true
 	slot.set_item(item)
 	if item:
 		var index := _entries.size()

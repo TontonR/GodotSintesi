@@ -1,6 +1,6 @@
 # Interfaz — HUD, grid de pasivas y pantalla de inventario
 
-_2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
+_2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives` · 2026-11-06_
 
 ## Grid de pasivas (`PassiveUI` · `UILayer/PassiveBar`)
 
@@ -18,7 +18,8 @@ _2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives`_
 ## Pantalla de inventario (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)
 
 - **Apertura**: acción `inventory` = **Tab** o **I** (nueva en `project.godot`); **Esc** o **I** cierra. Con la pantalla abierta, **Tab alterna entre la columna 1 y la 2** (no cierra). **Pausa el juego** (`get_tree().paused = true`; la pantalla vive con `process_mode = ALWAYS` y `_exit_tree` se asegura de no dejar pausado el árbol).
-- **Layout de 3 columnas (2026-10-20)**: izquierda = retrato del jugador (copia de `SpritePivot/AnimatedSprite2D`, animación `idle`) + **Habilidades** (slots 1-2) + **Consumibles** (slots 3-5); centro = **Coleccionables**; derecha = detalle/preview. Cada columna es un `PanelContainer` con **ancho fijo** (84/136/116 px) y contorno propio, así que no se redimensiona con el contenido. Ventana 372×190 centrada + fondo atenuado.
+- **Layout de 3 columnas (2026-10-20)**: izquierda = retrato del jugador (copia de `SpritePivot/AnimatedSprite2D`, animación `idle`) + **Habilidades** (slots 1-2) + **Consumibles** (slots 3-5); centro = **Coleccionables**; derecha = detalle/preview. Cada columna es un `PanelContainer` con **ancho fijo** (168/272/232 px) y contorno propio, así que no se redimensiona con el contenido. Ventana 744×380 centrada + fondo atenuado.
+- **Al doble (2026-11-06)**: el viewport pasó a 768×432 (T-0010) y el inventario se quedó con las medidas del de 384×216. Se duplicó todo en `inventory_screen.tscn`: ventana, márgenes (16/8), radios (12/8), bordes (2), separaciones (20 y 8), fuentes (18/16 y 20 para el nombre), retrato (144×104), preview (icono 128) y sliders de página (32×32). En `inventory_screen.gd`: `SLOT_SIZE` 40×40, `COLLECTIBLE_SLOT_SIZE` 32×32 y `slot.expand_icon = true` para que el icono llene el hueco; el HUD sigue con su slot de 18×18 sin expandir.
 - **Coleccionables = las pasivas activas** (`PlayerPassives.active_passives`, simples o complejas, las mismas del HUD). **Paginados**: `GridContainer` de 6 columnas × **6 filas por página** (36/página, botones 16×16); la cabecera muestra **"Coleccionables"**, el contador **X/Y** y las flechas **← / →** justo al lado.
 - **Derecha** (panel derecho): icono 64 px, **nombre**, línea de **estadísticas** y **descripción** del elemento seleccionado. Estadísticas: vida/stamina de consumibles; bonus de `Skills`; de las pasivas se leen propiedades dinámicas (`bonus`, `reduction`, `heal_per_tick`+`interval`) con `"prop" in item` + `item.get()`.
 - **GUI**: la estructura (paneles, labels y grids) vive en el `.tscn`; el código solo instancia/rellena los huecos dinámicos (`InventorySlot`) y enlaza los datos del `Inventory`/`PlayerPassives`.

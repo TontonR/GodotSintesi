@@ -254,3 +254,46 @@ Formato de entrada:
 - `scripts/world/biome_particles.gd`: `emission_rect_extents.x` de `view.x × 0,6`
   a `× 1,2` y cantidad al doble (56 hojas, 440 copos) para mantener densidad.
 - F5 pendiente (regla de `AGENTS.md`); commit al cerrar.
+
+## 2026-11-06 · `buffy` · Bóveda de ideas
+
+- Creado `vault/ideas.md` a partir de las notas de `humano-ruben`: personaje,
+  enemigos, DOT/estados, objetos, tienda y biomas, con estado
+  (`hecho`/`parcial`/`idea`/`por definir`) y las dudas abiertas agrupadas.
+- 17 pasivas ya están implementadas y en `EnemyBase.PRESET_POOLS`; los biomas
+  existentes son pradera, bosque rojo y nieve; no hay tienda ni sistema de efectos.
+- Detectado que `DISABLED_ENEMY_SCENES` no se usa y los biomas aún listan fantasma
+  y demonio: conviene comprobarlo en F5.
+- Registrado en el índice de `vault/README.md` y enlazado desde `roadmap.md`.
+  Sin cambios de código ni tickets nuevos.
+
+## 2026-11-06 · `buffy` · Entrega 2
+
+- Creado `vault/entrega-2.md` (catalán, para Google Docs): resumen, cambios
+  desde la entrega 1, explicación del cambio de herramientas (OpenCode →
+  FreeBuff y Gemini Chat → OpenCode) y funcionamiento del vault entre IAs.
+- Recalca los tres próximos objetivos (texturas de objetos, estructuras y
+  boses, objetos y mecánicas) y justifica la reestructuración como causa del
+  menor progreso visible. Sin cambios de código.
+
+## 2026-11-06 · `buffy` · Sacudida de cámara y encuadre (T-0033)
+
+- `humano-ruben`: tras el primer golpe la cámara se centraba en el jugador y no
+  volvía al encuadre del arranque.
+- Causa: `scripts/fx.gd` escribía `camera.offset` para la sacudida y al acabar
+  lo ponía a `Vector2.ZERO`, borrando el `(60, -70)` de `scenes/player.tscn`.
+- `scripts/fx.gd`: `_camera_base_offset` se captura al iniciar la sacudida (solo
+  si no hay otra activa) y se restaura al expirar; el temblor va sumado encima.
+- `docs/fx.md` actualizado. F5 pendiente (regla de `AGENTS.md`).
+
+## 2026-11-06 · `buffy` · Inventario al doble (T-0034)
+
+- `humano-ruben`: la GUI del inventario quedó pequeña tras el gran cambio de
+  tamaños; pide el doble solo en el inventario.
+- Causa: el viewport pasó a 768×432 (T-0010) y la pantalla conservó las medidas
+  de 384×216.
+- `scenes/inventory/inventory_screen.tscn`: todo duplicado (ventana 744×380,
+  márgenes, radios, bordes, separaciones, paneles, retrato, preview y fuentes).
+- `scenes/inventory/inventory_screen.gd`: huecos 40×40, coleccionables 32×32 y
+  `expand_icon`; el HUD sigue a 18×18.
+- `docs/ui.md` actualizado. F5 pendiente.

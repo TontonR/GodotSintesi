@@ -11,6 +11,9 @@ var _camera: Camera2D
 var _shake_time := 0.0
 var _shake_duration := 0.01
 var _shake_strength := 0.0
+## Encuadre propio de la cámara (la del jugador trae (60, -70)); la sacudida
+## se suma encima y al acabar se restaura este valor, no cero.
+var _camera_base_offset := Vector2.ZERO
 var _flash: ColorRect
 var _flash_tween: Tween
 var _text_layer: CanvasLayer
@@ -33,11 +36,11 @@ func _process(delta: float) -> void:
 	if camera == null:
 		return
 	if _shake_time <= 0.0:
-		camera.offset = Vector2.ZERO
+		camera.offset = _camera_base_offset
 		_shake_strength = 0.0
 		return
 	var amount := _shake_strength * (_shake_time / _shake_duration)
-	camera.offset = Vector2(randf_range(-amount, amount), randf_range(-amount, amount))
+	camera.offset = _camera_base_offset + Vector2(randf_range(-amount, amount), randf_range(-amount, amount))
 
 
 # ==============================================================================
@@ -123,8 +126,13 @@ func parry_ready(world_position: Vector2) -> void:
 
 ## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
 func shake(strength: float, duration: float) -> void:
-	if _get_camera() == null:
+	var camera := _get_camera()
+	if camera == null:
 		return
+	# Solo se captura al empezar: si se encadenan sacudidas, el offset actual
+	# ya lleva el temblor y no debe convertirse en el nuevo encuadre.
+	if _shake_time <= 0.0:
+		_camera_base_offset = camera.offset
 	_shake_strength = maxf(_shake_strength, strength)
 	_shake_duration = maxf(duration, 0.01)
 	_shake_time = _shake_duration

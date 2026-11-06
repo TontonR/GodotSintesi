@@ -34,6 +34,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 ## Ideas sin ticket
 
+El catálogo completo, con estado y dudas abiertas, está en [ideas.md](ideas.md).
 No empezar ninguna sin abrir ticket y acordarlo en la bitácora:
 
 - Guardado de partida (hoy la persistencia es por sesión: `_defeated_spawns` vive en memoria).

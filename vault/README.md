@@ -17,6 +17,8 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `vault/estado.md` | Panel de "ahora mismo": rama, fase, foco por agente, bloqueos | Al empezar y al cerrar un ticket |
 | `vault/roadmap.md` | Lo que queda por hacer, priorizado, con enlace a ticket | Al abrir/cerrar tickets |
 | `vault/changelog.md` | Histórico de lo ya hecho (append-only) | Al cerrar un ticket |
+| `vault/ideas.md` | Bóveda de ideas: todo el diseño (hecho, parcial, pendiente y por definir) con sus dudas | Al decidir qué construir o al añadir una idea |
+| `vault/entrega-2.md` | Texto de la entrega 2 (catalán): cambios desde la entrega 1, flujo con IA y los 3 objetivos | Al preparar entregas del proyecto |
 | `vault/bitacora.md` | Diario de sesiones y acuerdos entre agentes (append-only) | Al reclamar/entregar trabajo |
 | `vault/tickets/` | Un fichero por trabajo, con estado y resultado | Siempre que haya trabajo |
 | `vault/tickets/plantilla.md` | Copia base para abrir un ticket | — |

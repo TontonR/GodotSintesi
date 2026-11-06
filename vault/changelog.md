@@ -2,6 +2,18 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-06 · `main` — inventario al doble
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Ventana 744×380, paneles 168/272/232, fuentes 16-20, huecos 40×40 y coleccionables 32×32 con el icono expandido; el HUD no cambia | `scenes/inventory/inventory_screen.tscn`, `scenes/inventory/inventory_screen.gd` | [T-0034](tickets/T-0034-inventario-al-doble.md) |
+
+## 2026-11-06 · `main` — la sacudida respeta el encuadre de cámara
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| La sacudida se suma al `offset` base de la `Camera2D` (60, −70) y lo restaura al terminar, en vez de dejarlo a cero y recentrar la vista para siempre | `scripts/fx.gd` | [T-0033](tickets/T-0033-sacudida-camara-offset-base.md) |
+
 ## 2026-11-05 · `main` — daño en el panel y ambiente más ancho
 
 | Qué | Dónde | Ticket |

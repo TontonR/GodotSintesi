@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-05 por `buffy`_
+_Actualizado 2026-11-06 por `buffy`_
 
 ## Ahora mismo
 
@@ -9,14 +9,14 @@ _Actualizado 2026-11-05 por `buffy`_
 | Rama | `main`, commits locales de la sesión (T-0022..T-0030); sin push |
 | Árbol | commits locales: T-0022 (juego), T-0023/T-0024 (biomas y fondos), T-0025 (gris medio), T-0026 (un tono por capa), T-0027 (bioma de nieve), T-0028 (FX + HUD), T-0029 (polvo, sangre y moco), T-0030 (polvo por bioma, parry y física de pickups) y T-0031 (parry retocado y estadísticas); sin push |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. 6 enemigos terrestres activos; los voladores (fantasma y demonio) aparcados. |
-| Siguiente paso | F5 de T-0022..T-0030 (pickups/pasivas, biomas, FX, polvo/sangre/moco y polvo por bioma/parry/monedas), T-0031 (timing del parry y panel de stats) y T-0032 (fila de daño y ambiente horizontal); después, arranque, reparto de enemigos y banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 de T-0022..T-0030 (pickups/pasivas, biomas, FX, polvo/sangre/moco y polvo por bioma/parry/monedas), T-0031 (timing del parry y panel de stats), T-0032 (fila de daño y ambiente horizontal), T-0033 (cámara tras el golpe) y T-0034 (inventario al doble); después, arranque, reparto de enemigos y banda `#283D43`. Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0032 daño en el panel y ambiente horizontal (hecho, pendiente de F5); T-0022..T-0031 también pendientes de F5 | `scripts/player.gd`, `scripts/world/biome_particles.gd` |
+| `buffy` | T-0034 inventario al doble (hecho, pendiente de F5); T-0033 sacudida de cámara sin perder el encuadre (hecho, pendiente de F5); T-0032 daño en el panel y ambiente horizontal (hecho, pendiente de F5); T-0022..T-0031 también pendientes de F5 | `scenes/inventory/inventory_screen.tscn`, `scenes/inventory/inventory_screen.gd`, `scripts/fx.gd`, `scripts/player.gd`, `scripts/world/biome_particles.gd` |
 | `opencode-jorge` | Sin confirmar desde este repo | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
