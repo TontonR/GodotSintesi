@@ -1,51 +1,76 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://wk8mu4wmlpjf"]
 
-[ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="1_script"]
-[ext_resource type="SpriteFrames" path="res://resources/enemies/slime_frames.tres" id="2_frames"]
+[ext_resource type="Script" uid="uid://ccsmtpyb0qlr3" path="res://scripts/enemies/slime.gd" id="1_script"]
+[ext_resource type="SpriteFrames" uid="uid://cy6ju6ovspqey" path="res://resources/enemies/slime_frames.tres" id="2_frames"]
+[ext_resource type="Script" uid="uid://bmq3q0ht2faq2" path="res://scripts/resources/loot_entry.gd" id="9_loot"]
+[ext_resource type="Resource" path="res://resources/moco.tres" id="10_moco"]
+[ext_resource type="Resource" path="res://resources/pocion_mocos.tres" id="11_pocion"]
+[ext_resource type="Resource" path="res://resources/moco_compacto.tres" id="12_compacto"]
+[ext_resource type="Resource" path="res://resources/corazon_mucosil.tres" id="13_corazon"]
+
+[sub_resource type="Resource" id="LootEntry_slime_moco"]
+script = ExtResource("9_loot")
+item = ExtResource("10_moco")
+
+[sub_resource type="Resource" id="LootEntry_slime_pocion"]
+script = ExtResource("9_loot")
+item = ExtResource("11_pocion")
+
+[sub_resource type="Resource" id="LootEntry_slime_compacto"]
+script = ExtResource("9_loot")
+item = ExtResource("12_compacto")
+
+[sub_resource type="Resource" id="LootEntry_slime_corazon"]
+script = ExtResource("9_loot")
+item = ExtResource("13_corazon")
+drop_chance = 0.02
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(20, 12)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
-size = Vector2(22, 16)
+size = Vector2(67.5, 24.5)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
 radius = 180.0
 
-[node name="Slime" type="CharacterBody2D"]
+[node name="Slime" type="CharacterBody2D" unique_id=1462643304]
+scale = Vector2(1.2, 1.2)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_script")
-scale = Vector2(1.2, 1.2)
-loot_preset = "Slime"
+item_drops = Array[ExtResource("9_loot")]([SubResource("LootEntry_slime_moco"), SubResource("LootEntry_slime_pocion"), SubResource("LootEntry_slime_compacto"), SubResource("LootEntry_slime_corazon")])
 sprite = NodePath("Pivot/Slime")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")
 flip_pivot = NodePath("Pivot")
 
-[node name="body_hitbox" type="CollisionShape2D" parent="."]
+[node name="body_hitbox" type="CollisionShape2D" parent="." unique_id=321519558]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_body")
 
-[node name="Pivot" type="Node2D" parent="."]
+[node name="Pivot" type="Node2D" parent="." unique_id=553071967]
 
-[node name="Slime" type="AnimatedSprite2D" parent="Pivot"]
+[node name="Slime" type="AnimatedSprite2D" parent="Pivot" unique_id=738930301]
 position = Vector2(0, -4.5)
 scale = Vector2(1.5, 1.5)
 sprite_frames = ExtResource("2_frames")
-animation = &"idle"
+animation = &"attack"
+frame = 11
+frame_progress = 1.0
 
-[node name="attack_range" type="Area2D" parent="Pivot"]
+[node name="attack_range" type="Area2D" parent="Pivot" unique_id=1796723774]
 position = Vector2(14, -6)
 collision_layer = 16
 collision_mask = 2
 
-[node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range"]
+[node name="attack_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=1506034830]
+position = Vector2(6.416665, -4.250001)
 shape = SubResource("RectangleShape2D_attack")
 
-[node name="detection_area" type="Area2D" parent="Pivot"]
+[node name="detection_area" type="Area2D" parent="Pivot" unique_id=908690154]
 collision_layer = 0
 collision_mask = 2
 
-[node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area"]
+[node name="detection_hitbox" type="CollisionShape2D" parent="Pivot/detection_area" unique_id=1447241492]
 shape = SubResource("CircleShape2D_detection")

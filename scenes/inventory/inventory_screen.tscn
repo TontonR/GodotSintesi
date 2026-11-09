@@ -85,20 +85,6 @@ mouse_filter = 2
 
 [node name="Portrait" type="AnimatedSprite2D" parent="Window/Layout/LeftPanel/LeftColumn/PortraitBox" unique_id=672825259]
 
-[node name="SkillsHeader" type="Label" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=78004458]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 18
-text = "Habilidades"
-
-[node name="SkillsFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=1045275017]
-layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-
 [node name="ConsumablesHeader" type="Label" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=1385370972]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)

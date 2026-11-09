@@ -1,10 +1,47 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene format=3 uid="uid://r5htf5w2ha3y"]
 
-[ext_resource type="Script" path="res://scripts/enemies/mutant_toad.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-idle.png" id="2_idle"]
-[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-jump.png" id="3_jump"]
-[ext_resource type="Texture2D" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-attack.png" id="4_attack"]
+[ext_resource type="Script" uid="uid://c3x11xir2k1dj" path="res://scripts/enemies/mutant_toad.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d2myugkhrosm6" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-idle.png" id="2_idle"]
+[ext_resource type="Texture2D" uid="uid://t2ubm136k5uj" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-jump.png" id="3_jump"]
+[ext_resource type="Texture2D" uid="uid://bxto431td1nus" path="res://assets/enemies/mutant-toad/Spritesheets/mutant-toad-attack.png" id="4_attack"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/toad_projectile.tscn" id="5_projectile"]
+[ext_resource type="Script" uid="uid://bmq3q0ht2faq2" path="res://scripts/resources/loot_entry.gd" id="9_loot"]
+[ext_resource type="Resource" path="res://resources/saliva_rana.tres" id="10_saliva"]
+[ext_resource type="Resource" path="res://resources/lengua_rana.tres" id="11_lengua"]
+[ext_resource type="Resource" path="res://resources/burbuja_rana.tres" id="12_burbuja"]
+[ext_resource type="Resource" path="res://resources/tuberculos_cutaneos.tres" id="13_tuberculos"]
+
+[sub_resource type="Resource" id="LootEntry_rana_saliva"]
+script = ExtResource("9_loot")
+item = ExtResource("10_saliva")
+
+[sub_resource type="Resource" id="LootEntry_rana_lengua"]
+script = ExtResource("9_loot")
+item = ExtResource("11_lengua")
+
+[sub_resource type="Resource" id="LootEntry_rana_burbuja"]
+script = ExtResource("9_loot")
+item = ExtResource("12_burbuja")
+
+[sub_resource type="Resource" id="LootEntry_rana_tuberculos"]
+script = ExtResource("9_loot")
+item = ExtResource("13_tuberculos")
+drop_chance = 0.02
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(24, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack0"]
+atlas = ExtResource("4_attack")
+region = Rect2(0, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack1"]
+atlas = ExtResource("4_attack")
+region = Rect2(80, 0, 80, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_attack2"]
+atlas = ExtResource("4_attack")
+region = Rect2(160, 0, 80, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_idle0"]
 atlas = ExtResource("2_idle")
@@ -37,18 +74,6 @@ region = Rect2(160, 0, 80, 64)
 [sub_resource type="AtlasTexture" id="AtlasTexture_jump3"]
 atlas = ExtResource("3_jump")
 region = Rect2(240, 0, 80, 64)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_attack0"]
-atlas = ExtResource("4_attack")
-region = Rect2(0, 0, 80, 64)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_attack1"]
-atlas = ExtResource("4_attack")
-region = Rect2(80, 0, 80, 64)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_attack2"]
-atlas = ExtResource("4_attack")
-region = Rect2(160, 0, 80, 64)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_toad"]
 animations = [{
@@ -101,43 +126,39 @@ animations = [{
 "speed": 8.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
-size = Vector2(24, 18)
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
 radius = 220.0
 
-[node name="mutant_toad" type="CharacterBody2D"]
-collision_layer = 4
-collision_mask = 1
-script = ExtResource("1_script")
+[node name="mutant_toad" type="CharacterBody2D" unique_id=1008389578]
 scale = Vector2(2, 2)
-loot_preset = "Rana"
-sprite = NodePath("pivot/mutant_toad")
-detection_area = NodePath("pivot/detection_range")
-flip_pivot = NodePath("pivot")
+collision_layer = 4
+script = ExtResource("1_script")
 projectile = ExtResource("5_projectile")
 projectile_speed = 230.0
 projectile_spawn = NodePath("pivot/muzzle")
+item_drops = Array[ExtResource("9_loot")]([SubResource("LootEntry_rana_saliva"), SubResource("LootEntry_rana_lengua"), SubResource("LootEntry_rana_burbuja"), SubResource("LootEntry_rana_tuberculos")])
+sprite = NodePath("pivot/mutant_toad")
+detection_area = NodePath("pivot/detection_range")
+flip_pivot = NodePath("pivot")
 
-[node name="body_hitbox" type="CollisionShape2D" parent="."]
+[node name="body_hitbox" type="CollisionShape2D" parent="." unique_id=1791843595]
 position = Vector2(0, -9)
 shape = SubResource("RectangleShape2D_body")
 
-[node name="pivot" type="Node2D" parent="."]
+[node name="pivot" type="Node2D" parent="." unique_id=1334110916]
 
-[node name="mutant_toad" type="AnimatedSprite2D" parent="pivot"]
+[node name="mutant_toad" type="AnimatedSprite2D" parent="pivot" unique_id=1851943719]
 position = Vector2(0, -18.6)
 scale = Vector2(0.6, 0.6)
 sprite_frames = SubResource("SpriteFrames_toad")
 animation = &"idle"
 
-[node name="muzzle" type="Marker2D" parent="pivot"]
+[node name="muzzle" type="Marker2D" parent="pivot" unique_id=392833329]
 position = Vector2(13.5, -10.5)
 
-[node name="detection_range" type="Area2D" parent="pivot"]
+[node name="detection_range" type="Area2D" parent="pivot" unique_id=602705012]
 collision_layer = 0
 collision_mask = 2
 
-[node name="detection_hitbox" type="CollisionShape2D" parent="pivot/detection_range"]
+[node name="detection_hitbox" type="CollisionShape2D" parent="pivot/detection_range" unique_id=1175843873]
 shape = SubResource("CircleShape2D_detection")

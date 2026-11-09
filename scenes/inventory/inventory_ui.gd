@@ -19,9 +19,6 @@ func _init() -> void:
 		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(slot)
 		_slots.append(slot)
-		# Separador visual entre skills (1-2) y consumibles (3-5)
-		if i == Inventory.SKILL_SLOTS - 1:
-			_add_separator()
 
 func bind(source: Inventory) -> void:
 	if inventory and inventory.slots_changed.is_connected(_refresh):
@@ -35,10 +32,4 @@ func _refresh() -> void:
 		return
 	for i in _slots.size():
 		_slots[i].set_item(inventory.get_slot(i))
-
-func _add_separator() -> void:
-	var sep := Control.new()
-	sep.custom_minimum_size = Vector2(4, 0)
-	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(sep)
 

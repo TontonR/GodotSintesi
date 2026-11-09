@@ -1,6 +1,6 @@
 # Pasivas del Lobo
 
-_2026-11-03 · tabla de Jorge · loot: `loot_preset = "Lobo"` en `scenes/enemies/werewolf.tscn`_
+_2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/werewolf.tscn`_
 
 | Nombre | Qué hace | Calidad | `.tres` | Script |
 |---|---|---|---|---|

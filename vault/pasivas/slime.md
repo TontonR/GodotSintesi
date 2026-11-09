@@ -1,6 +1,6 @@
 # Pasivas del Slime
 
-_2026-11-03 · tabla de Jorge · loot: `loot_preset = "Slime"` en `scenes/enemies/slime.tscn`_
+_2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/slime.tscn`_
 
 | Nombre | Qué hace | Calidad | `.tres` | Script |
 |---|---|---|---|---|

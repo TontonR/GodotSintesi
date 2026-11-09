@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-06 por `buffy`_
+_Actualizado 2026-11-09 por `opencode-jorge`_
 
 ## Ahora mismo
 
@@ -25,6 +25,9 @@ _Actualizado 2026-11-06 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-09 | T-0037 | Loot por enemigo con `LootEntry` y probabilidad por objeto; fuera presets y pesos por calidad; F5 pendiente |
+| 2026-11-09 | T-0036 | Bosque rojo: +2 slimes por chunk y lobos de 2 a 1; F5 pendiente |
+| 2026-11-09 | T-0035 | Lobo: embestida a 150 px/s, 40 % del diámetro de detección y 1,5 s parado en el destino; F5 pendiente |
 | 2026-11-05 | T-0032 | Fila de daño en el panel (bajado para no pisar las monedas) y hojas/copos al doble de ancho y cantidad |
 | 2026-11-05 | T-0031 | Parry con enfriamiento, refund de stamina y panel fijo de estadísticas (ataque, crítico, velocidad y suerte) |
 | 2026-11-05 | T-0030 | Polvo teñido con el césped del bioma, parry con chispas y monedas/objetos con caída y rebote |

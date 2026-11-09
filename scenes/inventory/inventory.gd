@@ -4,14 +4,11 @@ extends Node
 ## Emitted when the content of any slot changes
 signal slots_changed
 
-## Total slots: the first 2 for skills, the last 3 for consumables
-const MAX_SLOTS: int = 5
-## Number of slots reserved for skills (the first ones)
-const SKILL_SLOTS: int = 2
+## Total slots: all 3 for consumables (keys 1-3)
+const MAX_SLOTS: int = 3
 
 # DEBUG temporal: teclas del numpad para generar objetos (0 limpia, 1 consumible,
-# 2 pasiva, 3 reservado para skills). Borrar este bloque y `_handle_debug_key`
-# cuando ya no haga falta.
+# 2 pasiva). Borrar este bloque y `_handle_debug_key` cuando ya no haga falta.
 const DEBUG_TOOLS: bool = true
 const _DEBUG_CONSUMABLES: Array[String] = [
 	"res://resources/pocion_mocos.tres",
@@ -126,31 +123,23 @@ func _give_debug_item(path: String) -> void:
 	else:
 		add_item(item)
 
-## Stores the item by type: skills → slots 1-2, the rest → 3-5.
-## Returns false when no slot of its type is free (the item is not picked up)
+## Stores the item in the first free slot.
+## Returns false when all slots are full (the item is not picked up)
 func add_item(item: Items) -> bool:
-	var inicio := 0
-	var fin := MAX_SLOTS
-	if item is Skills:
-		fin = SKILL_SLOTS
-	else:
-		inicio = SKILL_SLOTS
-	for i in range(inicio, fin):
+	for i in MAX_SLOTS:
 		if slots[i] == null:
 			slots[i] = item
 			slots_changed.emit()
 			return true
 	return false
 
-## Activates the item in the given slot (keys 1-5). Skills stay in
-## their slot; consumables are consumed when activated
+## Activates the item in the given slot (keys 1-3). Consumables are consumed.
 func use_slot(index: int, target: Node) -> void:
 	if index < 0 or index >= MAX_SLOTS or slots[index] == null:
 		return
 	var item := slots[index]
-	if not item is Skills:
-		slots[index] = null
-		slots_changed.emit()
+	slots[index] = null
+	slots_changed.emit()
 	item.use(target)
 
 ## Content of the given slot (null when empty)

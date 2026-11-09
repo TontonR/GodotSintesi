@@ -2,17 +2,16 @@
 
 [ext_resource type="Script" uid="uid://ds3uuejorgxyv" path="res://scripts/world/biome.gd" id="1_biome"]
 [ext_resource type="PackedScene" uid="uid://bbwk7g6kxmhbj" path="res://scenes/enemies/werewolf.tscn" id="2_lobo"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/mutant_toad.tscn" id="3_sapo"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/demon.tscn" id="4_demonio"]
+[ext_resource type="PackedScene" uid="uid://r5htf5w2ha3y" path="res://scenes/enemies/mutant_toad.tscn" id="3_sapo"]
 
 [resource]
 script = ExtResource("1_biome")
 display_name = "Bosque rojo"
-grass_color = Color(0.78, 0.24, 0.2, 1)
-forest_color = Color(1, 0.32, 0.28, 1)
+grass_color = Color(0.6735383, 0.19647256, 0.158919, 1)
+forest_color = Color(0.62482244, 0, 0.035757635, 1)
 ambient = "leaves"
 spawn_weight = 0.3
 terrain_amplitude_multiplier = 1.35
 terrain_frequency_multiplier = 1.1
-enemy_scenes = Array[PackedScene]([ExtResource("2_lobo"), ExtResource("3_sapo"), ExtResource("4_demonio")])
-enemy_counts = Array[int]([2, 1, 1])
+enemy_scenes = Array[PackedScene]([ExtResource("2_lobo"), ExtResource("3_sapo")])
+enemy_counts = Array[int]([1, 1, 1, 2])

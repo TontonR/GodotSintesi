@@ -2,6 +2,12 @@
 
 [ext_resource type="Script" uid="uid://bsr5qkarb2yoj" path="res://scripts/enemies/orc.gd" id="1_obyuh"]
 [ext_resource type="Texture2D" uid="uid://chp2xlodsbiti" path="res://assets/enemies/ogre-all.png" id="2_gici0"]
+[ext_resource type="Script" path="res://scripts/resources/loot_entry.gd" id="9_loot"]
+[ext_resource type="Resource" path="res://resources/tapoarrabos.tres" id="10_tapo"]
+[ext_resource type="Resource" path="res://resources/maza.tres" id="11_maza"]
+[ext_resource type="Resource" path="res://resources/una_ogro.tres" id="12_una"]
+[ext_resource type="Resource" path="res://resources/colgante_hierro.tres" id="13_colgante"]
+[ext_resource type="Resource" path="res://resources/piedra_oro.tres" id="14_piedra"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(34.51686, 46.18557)
@@ -151,17 +157,41 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6dhoe"]
-size = Vector2(50.15731, 49.484543)
+size = Vector2(68.224724, 49.484543)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hisia"]
 radius = 229.51352
 
+[sub_resource type="Resource" id="LootEntry_orc_tapo"]
+script = ExtResource("9_loot")
+item = ExtResource("10_tapo")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_orc_maza"]
+script = ExtResource("9_loot")
+item = ExtResource("11_maza")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_orc_una"]
+script = ExtResource("9_loot")
+item = ExtResource("12_una")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_orc_colgante"]
+script = ExtResource("9_loot")
+item = ExtResource("13_colgante")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_orc_piedra"]
+script = ExtResource("9_loot")
+item = ExtResource("14_piedra")
+drop_chance = 0.02
+
 [node name="Orc" type="CharacterBody2D" unique_id=561010859 node_paths=PackedStringArray("sprite", "detection_area", "attack_range", "flip_pivot")]
-collision_layer = 4
-collision_mask = 1
-script = ExtResource("1_obyuh")
-loot_preset = "Ogro"
 scale = Vector2(2, 2)
+collision_layer = 4
+script = ExtResource("1_obyuh")
+item_drops = Array[ExtResource("9_loot")]([SubResource("LootEntry_orc_tapo"), SubResource("LootEntry_orc_maza"), SubResource("LootEntry_orc_una"), SubResource("LootEntry_orc_colgante"), SubResource("LootEntry_orc_piedra")])
 sprite = NodePath("Pivot/Orc")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")
@@ -186,6 +216,7 @@ collision_layer = 16
 collision_mask = 2
 
 [node name="range_hitbox" type="CollisionShape2D" parent="Pivot/attack_range" unique_id=659728175]
+position = Vector2(-9.033703, 0)
 shape = SubResource("RectangleShape2D_6dhoe")
 
 [node name="detection_area" type="Area2D" parent="Pivot" unique_id=1422760256]

@@ -3,20 +3,21 @@
 _Sección del vault con la tabla de Jorge (2026-11-03). Un `.md` por enemigo (T-0019)._
 
 Cada pasiva es un `Resource` en `resources/*.tres` con `quality` = `Normal` / `Raro`. El
-reparto real lo hace `EnemyBase._build_loot_table()` con `PRESET_POOLS`: el enemigo lleva
-`loot_preset` en su escena y suelta **una** pasiva de su pool (75 %) más 1–3 monedas
-garantizadas. Los `Raro` pesan 0.35 frente a 1.0 de los `Normal` (`rare_loot_weight`).
+reparto es **por enemigo**: su escena define `item_drops` (`Array[LootEntry]`) con un
+objeto, su `drop_chance` y su cantidad. Las probabilidades se suman en **una sola tirada**
+(30 % + 10 % = 40 %) y, si sale, se elige un objeto ponderado. La moneda va siempre aparte
+(`coin_drop_chance` / `coin_drop_amount`, puede ser más de una). Sin presets compartidos:
+una variante nueva rehace su tabla.
 
-| Enemigo | Pool | `.md` |
+| Enemigo | Objetos | `.md` |
 |---|---|---|
-| Ogro | `Ogro` (5: 4 Normal + 1 Raro) | [ogro.md](ogro.md) |
-| Lobo | `Lobo` (4: 3 Normal + 1 Raro) | [lobo.md](lobo.md) |
-| Rana (sapo mutante) | `Rana` (4: 3 Normal + 1 Raro) | [rana.md](rana.md) |
-| Arquero | sin pasivas todavía (la tabla venía vacía) | [arquero.md](arquero.md) |
-| Slime | `Slime` (4: 3 Normal + 1 Raro) | [slime.md](slime.md) |
+| Ogro | 5: 4 Normal + 1 Raro | [ogro.md](ogro.md) |
+| Lobo | 4: 3 Normal + 1 Raro | [lobo.md](lobo.md) |
+| Rana (sapo mutante) | 4: 3 Normal + 1 Raro | [rana.md](rana.md) |
+| Arquero | sin pasivas todavía | [arquero.md](arquero.md) |
+| Slime | 4: 3 Normal + 1 Raro | [slime.md](slime.md) |
 
-Enemigos sin fila en la tabla (fantasma, demonio, esqueleto) siguen con el pool genérico
-de `EnemyBase.DROP_ITEMS` (pociones y pasivas antiguas).
+Fantasmas, demonios y esqueletos no sueltan objetos hasta que se les añada `item_drops`.
 
 ## Prelación de las imágenes
 

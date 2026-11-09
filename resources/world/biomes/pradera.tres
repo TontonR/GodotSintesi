@@ -1,8 +1,9 @@
 [gd_resource type="Resource" script_class="Biome" format=3 uid="uid://b17itjn0nvmrx"]
 
 [ext_resource type="Script" uid="uid://ds3uuejorgxyv" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="PackedScene" uid="uid://wk8mu4wmlpjf" path="res://scenes/enemies/slime.tscn" id="2_6un0d"]
 [ext_resource type="PackedScene" uid="uid://dbyg0vpbauvxa" path="res://scenes/enemies/orc.tscn" id="2_orc"]
-[ext_resource type="PackedScene" uid="uid://ema1utjheove" path="res://scenes/enemies/ghost.tscn" id="3_ghost"]
+[ext_resource type="PackedScene" uid="uid://r5htf5w2ha3y" path="res://scenes/enemies/mutant_toad.tscn" id="3_swogl"]
 
 [resource]
 script = ExtResource("1_biome")
@@ -11,5 +12,5 @@ grass_color = Color(0.72, 1, 0.28, 1)
 forest_color = Color(0.233, 0.388, 0.388, 1)
 spawn_weight = 0.55
 terrain_amplitude_multiplier = 0.95
-enemy_scenes = Array[PackedScene]([ExtResource("2_orc"), ExtResource("3_ghost")])
-enemy_counts = Array[int]([4, 1])
+enemy_scenes = Array[PackedScene]([ExtResource("2_orc"), ExtResource("2_6un0d"), ExtResource("3_swogl")])
+enemy_counts = Array[int]([4, 3, 1])

@@ -5,6 +5,11 @@
 [ext_resource type="Texture2D" uid="uid://dbr6r4ja2ur6g" path="res://assets/enemies/werewolf/werewolf-fall.png" id="2_na1uc"]
 [ext_resource type="Texture2D" uid="uid://dpv5rmkcuesd3" path="res://assets/enemies/werewolf/werewolf-jump.png" id="4_0n5ke"]
 [ext_resource type="Texture2D" uid="uid://bmpfxx2hdp0mn" path="res://assets/enemies/werewolf/werewolf-run.png" id="5_t87ih"]
+[ext_resource type="Script" path="res://scripts/resources/loot_entry.gd" id="9_loot"]
+[ext_resource type="Resource" path="res://resources/piel_lobo.tres" id="10_piel"]
+[ext_resource type="Resource" path="res://resources/colmillo_lobo.tres" id="11_colmillo"]
+[ext_resource type="Resource" path="res://resources/garras_lobo.tres" id="12_garras"]
+[ext_resource type="Resource" path="res://resources/adn_hombre_lobo.tres" id="13_adn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mjw2i"]
 size = Vector2(22.2, 29.4)
@@ -143,12 +148,32 @@ radius = 22.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_54epb"]
 radius = 243.00822
 
+[sub_resource type="Resource" id="LootEntry_lobo_piel"]
+script = ExtResource("9_loot")
+item = ExtResource("10_piel")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_lobo_colmillo"]
+script = ExtResource("9_loot")
+item = ExtResource("11_colmillo")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_lobo_garras"]
+script = ExtResource("9_loot")
+item = ExtResource("12_garras")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_lobo_adn"]
+script = ExtResource("9_loot")
+item = ExtResource("13_adn")
+drop_chance = 0.02
+
 [node name="werewolf" type="CharacterBody2D" unique_id=56684005 node_paths=PackedStringArray("sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_rdsq3")
 scale = Vector2(2, 2)
-loot_preset = "Lobo"
+item_drops = Array[ExtResource("9_loot")]([SubResource("LootEntry_lobo_piel"), SubResource("LootEntry_lobo_colmillo"), SubResource("LootEntry_lobo_garras"), SubResource("LootEntry_lobo_adn")])
 sprite = NodePath("pivot/werewolf")
 detection_area = NodePath("pivot/detection_range")
 attack_range = NodePath("pivot/attack_range")

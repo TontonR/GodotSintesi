@@ -9,15 +9,8 @@ const TILE_SIZE := 16
 ## Chunks extra a cada lado que se mantienen cargados: los enemigos no
 ## desaparecen al cruzar una costura (solo se liberan 2 chunks más atrás).
 const KEEP_CHUNKS_SIDE := 2
-## Voladores aparcados por ahora: sus escenas siguen en el repo, pero no entran
-## en `enemy_scenes` (el fantasma se teleporta y el demonio lanza el chorro sin
-## estar probados). Volver a añadirlos a mano cuando toque.
-const DISABLED_ENEMY_SCENES: Array[String] = [
-	"res://scenes/enemies/ghost.tscn",
-	"res://scenes/enemies/demon.tscn",
-]
 
-@export_group("Mundo")
+@export_group("World")
 ## Semilla del mundo; 0 = aleatoria por partida.
 @export var world_seed: int = 0
 ## Ancho de cada chunk en tiles.
@@ -33,7 +26,7 @@ const DISABLED_ENEMY_SCENES: Array[String] = [
 ## Altura sobre el suelo a la que aparece el jugador, en tiles.
 @export var player_spawn_height_tiles: int = 6
 
-@export_group("Terreno")
+@export_group("Terrain")
 ## Altura media del suelo en tiles (la fila crece hacia abajo).
 @export var base_height: int = 60
 ## Variación máxima de altura; más alto = montañas más grandes.

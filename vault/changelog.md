@@ -2,6 +2,24 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-09 · `main` — loot por enemigo, sin presets
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `item_drops` por escena con `LootEntry`; una sola tirada de objetos que suma probabilidades y elige ponderado, y monedas en tirada aparte (varias posibles) | `scripts/enemies/enemy_base.gd`, `scripts/resources/loot_entry.gd`, `scenes/enemies/{orc,werewolf,mutant_toad,slime}.tscn` | [T-0037](tickets/T-0037-loot-por-enemigo-sin-presets.md) |
+
+## 2026-11-09 · `main` — slimes en el bosque y menos lobos
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Bosque rojo: 2 slimes nuevos y lobos de 2 a 1 por chunk | `resources/world/biomes/bosque_rojo.tres` | [T-0036](tickets/T-0036-slime-y-lobo-en-bosque.md) |
+
+## 2026-11-09 · `main` — lobo menos agresivo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Embestida a 150 px/s, 40 % del diámetro de detección y 1,5 s parado en el destino antes de repetir | `scripts/enemies/werewolf.gd` | [T-0035](tickets/T-0035-lobo-menos-agresivo.md) |
+
 ## 2026-11-06 · `main` — inventario al doble
 
 | Qué | Dónde | Ticket |

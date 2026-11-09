@@ -297,3 +297,23 @@ Formato de entrada:
 - `scenes/inventory/inventory_screen.gd`: huecos 40×40, coleccionables 32×32 y
   `expand_icon`; el HUD sigue a 18×18.
 - `docs/ui.md` actualizado. F5 pendiente.
+
+## 2026-11-09 · `opencode-jorge` · Lobo menos agresivo (T-0035)
+- Petición de Ruben: el lobo corre demasiado y no deja pelear.
+- `scripts/enemies/werewolf.gd`: `charge_speed` 150, `charge_distance_scale` 0.4, `attack_recovery` 1.5 y recuperación quieto (sin persecución).
+- F5 pendiente; ticket en `revision`.
+
+## 2026-11-09 · `opencode-jorge` · Slime y lobo en el bosque (T-0036)
+- Petición de Ruben: slime en el bosque y menos lobos.
+- `resources/world/biomes/bosque_rojo.tres`: `enemy_counts` [1 lobo, 1 sapo, 1 demonio, 2 slimes].
+- F5 pendiente; ticket en `revision`.
+
+## 2026-11-09 · `opencode-jorge` · Loot por enemigo (T-0037)
+- Ruben rechaza los presets compartidos: quiere tabla y probabilidad por objeto en cada enemigo.
+- `LootEntry` nuevo y `item_drops` en `EnemyBase`; fuera `PRESET_POOLS`, `loot_preset`, `item_drop_chance` y `rare_loot_weight`.
+- Cuatro escenas migradas (ogro, lobo, rana y slime). F5 pendiente; ticket en `revision`.
+
+## 2026-11-09 · `opencode-jorge` · Corrección del loot (T-0037)
+- Ruben aclara: una sola tirada para todos los coleccionables (probabilidades sumadas) y monedas siempre aparte, pudiendo soltar varias.
+- `_drop_loot` separado en `_drop_coins` y `_drop_item`; elección del objeto ponderada por `drop_chance`.
+- Docs y ticket actualizados. F5 pendiente.

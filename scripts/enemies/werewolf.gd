@@ -26,12 +26,14 @@ const CHARGES_BEFORE_JUMP := 2
 @export var wander_radius: float = 400.0
 
 @export_group("Embestida")
-## Velocidad de la embestida (px/s).
-@export var charge_speed: float = 220.0
+## Velocidad de la embestida (px/s). Menor que el sprint del jugador (221).
+@export var charge_speed: float = 150.0
 ## Tiempo de aviso quieto antes de embestir (s).
 @export var charge_windup: float = 0.25
-## Pausa tras cada embestida o salto antes de decidir la siguiente vuelta (s).
-@export var attack_recovery: float = 0.35
+## Pausa quieto tras cada embestida o salto, antes de volver a embestir (s).
+@export var attack_recovery: float = 1.5
+## Fracción del diámetro de detección que recorre cada embestida.
+@export var charge_distance_scale: float = 0.4
 ## Daño por contacto: segundos mínimos entre dos golpes al mismo objetivo.
 @export var hit_cooldown: float = 0.5
 ## Fuerza del lanzamiento vertical al primer golpe de cada embestida (px/s).
@@ -65,8 +67,6 @@ var _charge_distance: float = 500.0
 var _charge_turned: bool = false
 ## El primer golpe de una embestida lanza al jugador por los aires (knockup).
 var _charge_hit_done: bool = false
-## La recuperación se hace corriendo hacia el jugador (embestida fallida).
-var _recover_chasing: bool = false
 var _charges_done: int = 0
 ## Jugador con el que ya se ha excluido la colisión física.
 var _collision_excluded_player: CharacterBody2D = null
@@ -97,7 +97,7 @@ func _ready() -> void:
 
 	super()
 
-	_charge_distance = _get_detection_diameter()
+	_charge_distance = _get_detection_diameter() * charge_distance_scale
 
 	_setup_wander_bounds()
 	_pick_wander_target()
@@ -273,8 +273,8 @@ func _finish_charge_pass() -> void:
 		_play_animation(move_animation, true)
 		return
 
-	# Si no golpeó, vuelve a trazar ruta persiguiendo al jugador.
-	_begin_recovery(not _charge_hit_done and is_instance_valid(_player))
+	# Al llegar al destino se para y espera el enfriamiento antes de repetir.
+	_begin_recovery()
 
 
 func _start_jump() -> void:
@@ -328,32 +328,21 @@ func _deal_impact_damage() -> void:
 			_hit_target(node, damage)
 
 
-func _begin_recovery(chase_target: bool = false) -> void:
+func _begin_recovery() -> void:
 	_state = State.RECOVER
 	_state_timer = attack_recovery
-	_recover_chasing = chase_target
-	if chase_target:
-		_play_animation(move_animation, true)
-	else:
-		_stop()
-		_play_animation(idle_animation, true)
+	_stop()
+	_play_animation(idle_animation, true)
 
 
 func _process_recovery(delta: float) -> void:
-	# Embestida fallida: re-traza ruta corriendo hacia el jugador.
-	if _recover_chasing and is_instance_valid(_player):
-		var dir := _dir_to_player()
-		_set_facing_direction(dir < 0.0)
-		velocity.x = dir * speed_movement
-		_play_animation(move_animation)
-	else:
-		_stop()
-		_play_animation(idle_animation)
+	# Quieto en el destino hasta que pase el enfriamiento.
+	_stop()
+	_play_animation(idle_animation)
 
 	_state_timer -= delta
 	if _state_timer > 0.0:
 		return
-	_recover_chasing = false
 	if is_instance_valid(_player):
 		_start_windup()
 	else:

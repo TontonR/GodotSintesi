@@ -33,22 +33,28 @@ _2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-com
 - `garras_lobo` (vida <30% → ataque ×1.2) y `adn_hombre_lobo` (noche → ataque y velocidad ×1.15) aplican un delta sobre el valor sin su bonus, así que no pisan otros bonus ni se acumulan por frame. `DayNightCycle.is_night()` (factor ≥ 0.5) es la fuente del estado noche.
 - `Items.quality` (`Normal` / `Raro`) es nuevo en la clase base; los `.tres` viejos quedan en `Normal`.
 - Iconos provisionales del pack `assets/19+ icons` (`boostW`, `strenghtenW`, `lightningW`, `healthW`, `shieldW`, `swingW`, `fireW`, `neuronW`) y `assets/items/moneda_oro.png` (primer frame de 16×16 recortado de `assets/coins/MonedaD.png`, que es una tira de animación).
-- Todos están en `_DEBUG_PASSIVES` (KP2) para probarlos. **No** están en las tablas de drop por enemigo: falta el cableado por enemigo/calidad y el lobo (T-0001).
+- Todos están en `_DEBUG_PASSIVES` (KP2) para probarlos y en el `item_drops` de su enemigo (T-0037).
 
 ## Objetos del merge con `feat/biomas` (2026-11-03)
 
 - Consumibles (8): `pocion_cura` +30 vida, `pocion_cura_menor` +15, `pocion_mayor` +60, `elixir_vida` +100, `pocion_stamina` +40, `pocion_stamina_mayor` +70, `bebida_tonificante` +20/+20, `esencia_vital` +40/+40.
 - Pasivas (8): `amuleto_ataque` +6 daño, `amuleto_furia` +12, `amuleto_critico` 20% ×1.8, `pulso_vampirico` +2 vida por golpe, `armadura_ligera` −25% daño, `armadura_pesada` −40%, `talisman_regen` +1 vida/s, `anillo_vigor` +2 stamina/s.
-- Están en `_DEBUG_CONSUMABLES` / `_DEBUG_PASSIVES`, pero **no** en las tablas de drop (`loot_preset` de `enemy_base.gd`); `DROP_ITEMS` ya no existe.
+- Están en `_DEBUG_CONSUMABLES` / `_DEBUG_PASSIVES`, pero solo caen si están añadidos a mano en el `item_drops` de un enemigo.
 - `CritPassive` (probabilidad × multiplicador) y `LifestealPassive` (cura al golpear, guarda al jugador en `on_equip`) son las dos clases nuevas. `RegenPassive` tiene `stamina_per_tick`, así el anillo de vigor usa el mismo script con `heal_per_tick = 0`.
 
 ## Drops
 
-- `enemy_base.gd` (2026-11-03): moneda al 45 % (`coin_drop_chance`, 1 moneda) y un objeto
-  del pool del enemigo al 30 % (`item_drop_chance`); `rare_loot_weight` 0.25. El pool
-  genérico anterior (`DROP_ITEMS`, los 6 originales) está eliminado: el arquero y el
-  esqueleto solo sueltan moneda hasta que tengan tabla propia. Las 2 monedas por chunk
-  del generador son pickups independientes del loot enemigo.
+- `enemy_base.gd` (2026-11-09): cada enemigo tiene su propia tabla `item_drops`
+  (`Array[LootEntry]`, editable en su escena). Cada entrada es un objeto (`.tres`) con
+  `drop_chance`, `min_amount` y `max_amount`.
+- **Una sola tirada de objetos**: las probabilidades se suman (30 % + 10 % = 40 % de que
+  caiga algo) y, si sale, se elige **un** objeto ponderado por su probabilidad. No pueden
+  caer dos objetos distintos del mismo enemigo.
+- **Monedas siempre aparte**: `coin_drop_chance` (45 %) + `coin_drop_amount` (1, admite más
+  de una) van en su propia tirada, independiente de los objetos.
+- No hay pools ni presets compartidos: una variante nueva copia o rehace su tabla. Las 2
+  monedas por chunk del generador son pickups independientes.
+- El arquero, el esqueleto y los voladores no tienen entradas hasta que se les añadan.
 - El drop se parenta primero y luego recibe `global_position`; asignarla antes hacía que el offset del chunk se sumara dos veces. No añadir pickups de prueba en `game.tscn`.
 - Física (`item_pickup.gd`): gravedad 900, rebote 0.45 hasta <35 px/s, vaivén 1,5 px, `z_index` 1; suelo fijado en el primer tick.
 - Recogida al doble: icono 32 px (`Sprite2D` ×2), `HALF_HEIGHT` 16 y radio de recogida 16; el tooltip sube 8 px.

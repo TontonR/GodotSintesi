@@ -48,7 +48,7 @@ No hay ataque a distancia ni magia para el jugador en el diseño actual.
 | Rana (sapo mutante) | Bosque | `hecho` | `mutant_toad.tscn`; salta y cada 3 aterrizajes lanza 3 proyectiles destructibles. |
 | Arquero | Bosque | `hecho` | `archer.tscn`; dispara flechas. **Sin pasivas propias todavía.** |
 | Esqueleto | Desierto | `hecho` | `skeleton.tscn`; hoy aparece en Nieve, no en Desierto. |
-| Slime | _(no estaba en la lista)_ | `hecho` | `slime.tscn`; añadido con el trabajo del compañero. |
+| Slime | Bosque | `hecho` | `slime.tscn`; añadido con el trabajo del compañero. |
 | Momia | Desierto | `por buscar` | Sin escena, script ni assets. |
 | Fantasma | Cementerio | `hecho`, aparcado | `ghost.tscn`; se teletransporta y es invulnerable durante el TP. |
 | Demonio | Cementerio | `hecho`, aparcado | `demon.tscn`; vuela y escupe fuego. Si le paran el chorro, queda aturdido. |
@@ -113,9 +113,10 @@ actual.
 
 ### 4.2 Pasivas por enemigo
 
-17 de las 32 ideas de la tabla están implementadas y ya entran en el loot del enemigo
-correspondiente mediante `EnemyBase.PRESET_POOLS`. Las calidades implementadas son
-`Normal` y `Raro`; `Épico` y `Mítico` del diseño **no existen todavía** en `Items`.
+17 de las 32 ideas de la tabla están implementadas y ya entran en el `item_drops` de la
+escena del enemigo correspondiente, cada una con su probabilidad. Las calidades
+implementadas son `Normal` y `Raro`; `Épico` y `Mítico` del diseño **no existen todavía**
+en `Items`.
 
 **Ogro** — las cinco implementadas y en su pool de drop:
 

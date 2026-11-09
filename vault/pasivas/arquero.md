@@ -9,11 +9,9 @@ columnas vacías: ni nombre de pasiva, ni efecto, ni calidad.
 
 - El arquero **sí** está integrado (`scenes/enemies/archer.tscn` en `enemy_scenes`):
   vive a distancia y dispara flechas (`archer_projectile.gd`).
-- No tiene `loot_preset` propio: al morir usa el pool genérico de
-  `EnemyBase.DROP_ITEMS` (pociones y pasivas antiguas), no una tabla del arquero.
-- Cuando Jorge mande los cuatro objetos, crear sus `.tres` + scripts, añadir el preset
-  `"Arquero"` a `EnemyBase.PRESET_POOLS` y `loot_preset = "Arquero"` en
-  `scenes/enemies/archer.tscn`.
+- No tiene `item_drops`: al morir solo suelta moneda según `coin_drop_chance`.
+- Cuando Jorge mande los cuatro objetos, crear sus `.tres` + scripts y añadirlos como
+  `LootEntry` en el `item_drops` de `scenes/enemies/archer.tscn`.
 
 ## Huecos a rellenar
 

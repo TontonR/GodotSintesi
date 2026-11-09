@@ -58,54 +58,21 @@ signal died
 
 const DEFAULT_COIN: PackedScene = preload("res://scenes/collectables/coin.tscn")
 const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
-## Pool de objetos que pueden soltarse al morir (uno al azar por drop)
-## Pasivas de cada tipo de enemigo (tabla de Jorge, T-0019).
-const PRESET_POOLS := {
-	"Ogro": [
-		preload("res://resources/tapoarrabos.tres"),
-		preload("res://resources/maza.tres"),
-		preload("res://resources/una_ogro.tres"),
-		preload("res://resources/colgante_hierro.tres"),
-		preload("res://resources/piedra_oro.tres"),
-	],
-	"Lobo": [
-		preload("res://resources/piel_lobo.tres"),
-		preload("res://resources/colmillo_lobo.tres"),
-		preload("res://resources/garras_lobo.tres"),
-		preload("res://resources/adn_hombre_lobo.tres"),
-	],
-	"Rana": [
-		preload("res://resources/saliva_rana.tres"),
-		preload("res://resources/lengua_rana.tres"),
-		preload("res://resources/burbuja_rana.tres"),
-		preload("res://resources/tuberculos_cutaneos.tres"),
-	],
-	"Slime": [
-		preload("res://resources/moco.tres"),
-		preload("res://resources/pocion_mocos.tres"),
-		preload("res://resources/moco_compacto.tres"),
-		preload("res://resources/corazon_mucosil.tres"),
-	],
-}
+
+
 @export_group("Loot")
 ## Probabilidad de soltar moneda al morir (baja a propósito: las monedas escasean).
 @export_range(0.0, 1.0, 0.05) var coin_drop_chance: float = 0.45
 ## Monedas que suelta cuando cae la moneda.
 @export var coin_drop_amount: int = 1
-## Tabla de drops; `_build_loot_table()` la reconstruye al aparecer.
-@export var loot_table: Array[LootDropItem] = []
+## Tabla de objetos propia de este enemigo. Las probabilidades se suman en una
+## única tirada y, si sale, se elige un objeto ponderado por ellas.
+@export var item_drops: Array[LootEntry] = []
 ## Horizontal spread (px) when dropping loot.
 @export var loot_drop_spread: float = 15.0
 ## Vertical spread (px) when dropping loot.
 @export var loot_drop_y: float = 15.0
-## Preset de pasivas que suelta este enemigo (ver `PRESET_POOLS`).
-@export_enum("Ninguno", "Ogro", "Lobo", "Rana", "Slime") var loot_preset: String = "Ninguno"
-## Objetos extra del enemigo, se suman al preset.
-@export var loot_pool: Array[Items] = []
-## Probabilidad de que suelte uno de esos objetos al morir.
-@export_range(0.0, 1.0, 0.05) var item_drop_chance: float = 0.3
-## Peso relativo de los objetos `Raro` dentro del pool (1.0 = igual que Normal).
-@export_range(0.0, 1.0, 0.05) var rare_loot_weight: float = 0.25
+
 
 @export_group("Nodes")
 ## Main sprite of the enemy.
@@ -155,7 +122,6 @@ func _ready() -> void:
 	base_attack = maxf(base_attack * attack_multiplier, 0.0)
 	health = max_health
 	defence = base_defense
-	_build_loot_table()
 
 	# Modo flotante: sin suelo ni "arriba/abajo", ideal para voladores.
 	if flying_enemy:
@@ -552,54 +518,14 @@ func _current_speed() -> float:
 	return speed_movement * _slow_factor
 
 
-## Monta la tabla de loot del enemigo: moneda a veces + una pasiva de su preset.
-func _build_loot_table() -> void:
-	var items: Array[Items] = _preset_pool(loot_preset)
-	items.append_array(loot_pool)
-	loot_table = [
-		LootDropItem.new(DEFAULT_COIN, coin_drop_chance, coin_drop_amount, coin_drop_amount)
-	]
-	if items.is_empty():
-		return
-	loot_table.append(LootDropItem.new(ITEM_PICKUP_SCENE, item_drop_chance, 1, 1, items))
-
-
-func _preset_pool(preset: String) -> Array[Items]:
-	var items: Array[Items] = []
-	var source: Array = PRESET_POOLS.get(preset, [])
-	for entry in source:
-		if entry:
-			items.append(entry)
-	return items
-
-
-## Elección con peso: los `Raro` caen menos que los `Normal`.
-func _pick_loot(pool: Array) -> Items:
-	if pool.is_empty():
-		return null
-	var total := 0.0
-	for entry in pool:
-		if entry:
-			total += 1.0 if entry.quality == "Normal" else rare_loot_weight
-	if total <= 0.0:
-		return pool.pick_random()
-	var roll := randf() * total
-	for entry in pool:
-		if entry == null:
+## Objetos que aún puede soltar: fuera los inválidos, los de prob. 0 y las
+## pasivas que el jugador ya lleva (los coleccionables no se repiten).
+func _available_drops() -> Array[LootEntry]:
+	var available: Array[LootEntry] = []
+	for entry in item_drops:
+		if entry == null or entry.item == null or entry.drop_chance <= 0.0:
 			continue
-		roll -= 1.0 if entry.quality == "Normal" else rare_loot_weight
-		if roll <= 0.0:
-			return entry
-	return pool[pool.size() - 1]
-
-
-## Pool sin las pasivas que el jugador ya tiene: los coleccionables no se repiten.
-func _available_loot(pool: Array) -> Array:
-	var available: Array = []
-	for entry in pool:
-		if entry == null:
-			continue
-		if entry is PassiveItems and _player_has_passive(entry):
+		if entry.item is PassiveItems and _player_has_passive(entry.item):
 			continue
 		available.append(entry)
 	return available
@@ -627,44 +553,59 @@ func _notify_player_kill() -> void:
 
 
 func _drop_loot() -> void:
-	if loot_table.is_empty():
-		return
 	var parent := get_parent()
 	if parent == null:
 		return
+	_drop_coins(parent)
+	_drop_item(parent)
 
-	for drop_entry in loot_table:
-		# 'continue' para que una entrada inválida no cancele el resto del loot.
-		if not drop_entry or not drop_entry.item_scene:
-			continue
 
-		# La suerte del jugador sube cualquier probabilidad de drop.
-		var drop_chance := minf(drop_entry.drop_chance + _luck_drop_bonus(), 1.0)
-		# Pasivas del jugador (Piedra con oro) suben la probabilidad de moneda.
-		if drop_entry.item_scene == DEFAULT_COIN:
-			drop_chance = minf(drop_chance + _coin_drop_bonus(), 1.0)
-		# Las pasivas que el jugador ya lleva no pueden volver a soltarse.
-		var item_pool: Array = drop_entry.item_pool
-		if not item_pool.is_empty():
-			item_pool = _available_loot(item_pool)
-			if item_pool.is_empty():
-				continue
+## Las monedas van siempre en su propia tirada y pueden ser varias.
+func _drop_coins(parent: Node) -> void:
+	var chance := minf(coin_drop_chance + _luck_drop_bonus() + _coin_drop_bonus(), 1.0)
+	if randf() > chance:
+		return
+	for _i in coin_drop_amount:
+		_spawn_pickup(DEFAULT_COIN, parent, null)
 
-		if randf() <= drop_chance:
-			var amount := randi_range(drop_entry.min_amount, drop_entry.max_amount)
-			for i in amount:
-				var item := drop_entry.item_scene.instantiate()
-				if item:
-					# El objeto se asigna ANTES de entrar en escena: _ready lee `item`
-					if not item_pool.is_empty() and "item" in item:
-						item.set("item", _pick_loot(item_pool))
-					var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
-					var offset_y := randf_range(-loot_drop_y, loot_drop_y)
-					var drop_position := global_position + Vector2(offset_x, offset_y)
-					parent.add_child(item)
-					# Asignar global_position después de parentarlo evita sumar dos veces
-					# el offset del chunk; la física del pickup empieza en el siguiente tick.
-					item.global_position = drop_position
+
+## Una única tirada para todos los objetos: la probabilidad total es la suma de
+## las entradas. Si sale, se elige uno ponderado por su probabilidad.
+func _drop_item(parent: Node) -> void:
+	var available := _available_drops()
+	var total := 0.0
+	for entry in available:
+		total += entry.drop_chance
+	if available.is_empty():
+		return
+	if randf() > minf(total + _luck_drop_bonus(), 1.0):
+		return
+
+	var roll := randf() * total
+	var chosen: LootEntry = available.back()
+	for entry in available:
+		roll -= entry.drop_chance
+		if roll <= 0.0:
+			chosen = entry
+			break
+	for _i in randi_range(chosen.min_amount, chosen.max_amount):
+		_spawn_pickup(ITEM_PICKUP_SCENE, parent, chosen.item)
+
+
+## Instancia un pickup y le asigna el objeto antes de entrar en escena.
+func _spawn_pickup(scene: PackedScene, parent: Node, item: Items) -> void:
+	var pickup := scene.instantiate()
+	if pickup == null:
+		return
+	if item != null and "item" in pickup:
+		pickup.set("item", item)
+	var offset_x := randf_range(-loot_drop_spread, loot_drop_spread)
+	var offset_y := randf_range(-loot_drop_y, loot_drop_y)
+	var drop_position := global_position + Vector2(offset_x, offset_y)
+	parent.add_child(pickup)
+	# Asignar global_position después de parentarlo evita sumar dos veces el
+	# offset del chunk; la física del pickup empieza en el siguiente tick.
+	pickup.global_position = drop_position
 
 
 ## Puntos porcentuales extra de drop que da la suerte del jugador (luck = 5 → +5 %).

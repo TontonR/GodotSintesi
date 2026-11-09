@@ -1,6 +1,6 @@
 # Pasivas de la Rana (sapo mutante)
 
-_2026-11-03 · tabla de Jorge · loot: `loot_preset = "Rana"` en `scenes/enemies/mutant_toad.tscn`_
+_2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/mutant_toad.tscn`_
 
 | Nombre | Qué hace | Calidad | `.tres` | Script |
 |---|---|---|---|---|

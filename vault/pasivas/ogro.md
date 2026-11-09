@@ -1,6 +1,6 @@
 # Pasivas del Ogro
 
-_2026-11-03 · tabla de Jorge · loot: `loot_preset = "Ogro"` en `scenes/enemies/orc.tscn`_
+_2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/orc.tscn`_
 
 | Nombre | Qué hace | Calidad | `.tres` | Script |
 |---|---|---|---|---|

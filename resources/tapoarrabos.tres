@@ -1,15 +1,14 @@
-[gd_resource type="Resource" script_class="StatBonusPassive" format=3]
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3 uid="uid://326dxlftvwmk"]
 
-[ext_resource type="Script" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/boostW.png" id="1_tex"]
+[ext_resource type="Script" uid="uid://dnyihphr8iu08" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
+[ext_resource type="Texture2D" uid="uid://dwfbi1ayhdegd" path="res://assets/items/iconos/boostW.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_stat")
+bonus_max_stamina = 10.0
 passive_id = "tapoarrabos"
 id = "tapoarrabos"
 item_name = "Tapoarrabos"
 description = "Aumenta 10 la estamina máxima."
 icon = ExtResource("1_tex")
-quality = "Normal"
 value = 40
-bonus_max_stamina = 10.0

@@ -14,7 +14,7 @@ _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 - Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
 - Config: `flying_enemy`; `step_height` 16 (auto-subida de 1 tile, mismo criterio que el jugador: mira por delante y sube 17 px); `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
-- Loot: `loot_table` la monta `_build_loot_table()`: moneda al `coin_drop_chance` 45 % (`coin_drop_amount` 1) y un `ItemPickup` con el pool del enemigo al `item_drop_chance` 30 %. Asignar el item antes de `add_child`, parentar y luego fijar `global_position` para respetar el transform del chunk.
+- Loot: `_drop_loot()` hace **dos tiradas**: monedas (`coin_drop_chance` 45 %, `coin_drop_amount` 1 o más) y objetos. En objetos, `item_drops` suma sus `drop_chance` en una sola tirada (30 % + 10 % = 40 %) y, si sale, elige uno ponderado por su probabilidad. Asignar el item antes de `add_child`, parentar y luego fijar `global_position` para respetar el transform del chunk.
 - `take_damage(amount, critical = false)` reenvía el aviso de crítico a `fx.enemy_hit()` (T-0031). **Cualquier override** (fantasma, esqueleto, demonio) debe repetir esa firma y pasar `critical` al `super`, o Godot no parsea la escena.
 - Suerte: `_luck_drop_bonus()` lee `player.luck` y suma `luck × 0,01` a todas las `drop_chance` (0 por defecto, no altera el balance base).
 
@@ -26,7 +26,7 @@ _2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
 ## Lobo, sapo y demonio (2026-11-01, rama `feat/biomas`)
 
 - Traídos de `origin/feat/enemigos-demon-toad-werewolf` sin su generador ni su `player.gd`.
-- **Lobo** (`werewolf`): 60 de vida, merodea su chunk (`chunk_width_tiles`), embiste de punta a punta del área de detección; cada 2 embestidas la siguiente vuelta es un salto con daño doble. El primer golpe de cada embestida lanza al jugador (`knockup`).
+- **Lobo** (`werewolf`): 60 de vida, merodea su chunk (`chunk_width_tiles`), embiste un 40 % del diámetro de detección a 150 px/s; cada 2 embestidas la siguiente vuelta es un salto con daño doble. El primer golpe de cada embestida lanza al jugador (`knockup`).
 - **Sapo** (`mutant_toad`): salta en arcos altos; cada 3 aterrizajes lanza una ráfaga de 3 proyectiles destructibles (`toad_projectile`, un golpe basta).
 - **Demonio** (`demon`): vuela 80 px sobre el spawn y cada 3 s se para sobre el jugador para escupir fuego (`demon_fire`, área que se alarga hasta el suelo). Si el jugador lo bloquea, queda aturdido 5 s o hasta 3 golpes.
 - Estos tres piden al jugador `take_damage_from(..., knockback, knockup)` e `is_guarding()`; ver `docs/player.md`.
@@ -63,7 +63,9 @@ Traídos de `origin/feat/enemigos-demon-toad-werewolf` con `git checkout`, sin m
   cada 3 aterrizajes lanza una ráfaga de 3 proyectiles destructibles.
 - **Lobo** (`werewolf.gd`): merodea por la zona que le da el generador (grupo
   `world_generator`), 2 embestidas + 1 salto; usa
-  `player.take_damage_from(..., knockup, knockup_lock, ...)`.
+  `player.take_damage_from(..., knockup, knockup_lock, ...)`. Ajustado (T-0035):
+  `charge_speed` 150 (menos que el sprint del jugador), `charge_distance_scale` 0.4
+  y `attack_recovery` 1.5 s parado en el destino antes de repetir.
 - **Slime** (`slime.gd`), **esqueleto** (`skeleton.gd`, primer golpe gratis) y
   **arquero** (`archer.gd`, `archer_projectile.gd`) son `EnemyBase` con stats en `_init()`.
 - Registro: `WorldGenerator.enemy_scenes` / `enemy_counts_per_chunk` en el mismo orden,
@@ -77,8 +79,9 @@ Traídos de `origin/feat/enemigos-demon-toad-werewolf` con `git checkout`, sin m
   `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~300 px del spawn); antes el
   chunk 0 estaba vacío y el enemigo más cercano quedaba a media pantalla y pico.
 - API nueva en `EnemyBase`: `apply_slow(multiplier, seconds)`, aviso `on_enemy_killed` a
-  las pasivas del jugador y `loot_preset` / `loot_pool` / `item_drop_chance`.
-- **Loot por enemigo**: `loot_preset` (`Ogro`, `Lobo`, `Rana`, `Slime`) monta la tabla en
-  `_build_loot_table()`. La elección es con peso: `Normal` 1.0, `Raro` 0.25. Tablas en
-  `vault/pasivas/`.
-- El arquero no tiene pasivas todavía (la tabla venía vacía): usa el pool genérico.
+  las pasivas del jugador y `item_drops` (`Array[LootEntry]`).
+- **Loot por enemigo (2026-11-09)**: cada escena define su propio `item_drops`, con un
+  `LootEntry` por objeto (`item`, `drop_chance`, `min_amount`, `max_amount`). Probabilidades
+  sumadas en una única tirada y elección ponderada. Sin presets compartidos; una variante
+  nueva rehace su tabla. Referencia: `vault/pasivas/`.
+- El arquero no tiene pasivas todavía (la tabla venía vacía): no tiene `item_drops`.

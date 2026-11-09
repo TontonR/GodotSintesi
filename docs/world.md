@@ -33,7 +33,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 ## Biomas (2026-11-01 · transición por bloques 2026-11-05)
 
 - `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
-- Recursos (3): `pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.55), `bosque_rojo.tres` (rojo, 2 lobos + 1 sapo + 1 demonio, peso 0.3) y `nieve.tres` (blanco-azul, 2 esqueletos + 2 arqueros + 1 lobo, peso 0.2).
+- Recursos (3): `pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.55), `bosque_rojo.tres` (rojo, 1 lobo + 1 sapo + 1 demonio + 2 slimes, peso 0.3) y `nieve.tres` (blanco-azul, 2 esqueletos + 2 arqueros + 1 lobo, peso 0.2).
 - **El bioma se decide por bloque** (`_biome_index_at_tile()`): `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12 en unidades de chunk que se divide por `chunk_width_tiles`, `biome_contrast` 2) devuelve un valor 0..1 que se reparte por los `spawn_weight` acumulados: por debajo del peso de la pradera es pradera y el resto bosque rojo. Todo `tile_x < chunk_width_tiles` (incluidos los negativos) es el primer bioma: la zona segura del spawn.
 - **Enemigos**: siguen siendo por chunk; `_biome_for_chunk()` toma el bioma del bloque central. Con `biome_frequency` 0.12 cada bioma dura ~8 chunks (con 0.04 eran ~25 chunks, por eso casi todo salía pradera). Los pesos son umbrales sobre el ruido, no porcentajes exactos del mapa.
 - **Transición por bloques**: `biome_transition_tiles` (0 = `chunk_width_tiles`, o sea 256). Cada bloque usa la media móvil de los colores de los biomas de su ventana (±128 bloques), así que el cambio es un degradado a lo largo de ~256 bloques, no un escalón en la costura del chunk. La costura puede caer en mitad de un chunk: la lógica y el color ya no dependen de los bordes.
@@ -62,7 +62,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
 
 ## Spawns y persistencia
 
-- Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 2 lobos + 1 sapo + 1 demonio (bosque rojo). `enemy_counts_per_chunk` (`[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]`) queda como respaldo para biomas sin `enemy_scenes`. 2 monedas por chunk.
+- Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 1 lobo + 1 sapo + 1 demonio + 2 slimes (bosque rojo). `enemy_counts_per_chunk` (`[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]`) queda como respaldo para biomas sin `enemy_scenes`. 2 monedas por chunk.
 - Las monedas nacen `coin_spawn_height` (40 px) sobre el suelo y caen con su propia gravedad (`scripts/collectables/coin.gd`): buscan el suelo una vez por raycast, rebotan con `bounce` 0,4 mientras el impacto supere `min_bounce_speed` (40 px/s) y al asentarse hacen un vaivén de 1 px. Antes aparecían ya apoyadas (`coin_ground_offset`).
 - Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`).
 - **Reparto uniforme** (2026-11-03): se monta la lista de tipos del chunk y se parte `enemy_min_x..max_x` en un hueco por enemigo; cada uno cae en el centro de su hueco con ruido de ±25 % del hueco. Antes cada enemigo sacaba su X al azar y se apelotonaban.

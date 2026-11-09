@@ -1,7 +1,7 @@
 class_name InventoryScreen
 extends CanvasLayer
 
-## Size of each slot button in pixels (skills and consumables)
+## Size of each slot button in pixels (consumables)
 const SLOT_SIZE := Vector2(40, 40)
 ## Size of each collectible button (6 columns must fit the middle column)
 const COLLECTIBLE_SLOT_SIZE := Vector2(32, 32)
@@ -16,11 +16,9 @@ var _entries: Array[Dictionary] = []
 ## Index of the highlighted entry (-1 = none)
 var _selected: int = -1
 var _signals_bound: bool = false
-## Index where the consumables entries begin (0.._consumable_start-1 are skills)
-var _consumable_start: int = 0
 ## Index where the collectibles entries begin
 var _collect_start: int = 0
-## Active column: 0 = skills/consumables, 1 = collectibles (preview is never selected)
+## Active column: 0 = consumables, 1 = collectibles (preview is never selected)
 var _focus_column: int = 0
 ## Number of collectible pages (1 when everything fits on screen)
 var _collect_pages: int = 1
@@ -29,7 +27,6 @@ var _collect_page: int = 0
 
 @onready var _portrait_box: Control = $Window/Layout/LeftPanel/LeftColumn/PortraitBox
 @onready var _portrait: AnimatedSprite2D = $Window/Layout/LeftPanel/LeftColumn/PortraitBox/Portrait
-@onready var _skills_flow: FlowContainer = $Window/Layout/LeftPanel/LeftColumn/SkillsFlow
 @onready var _consumables_flow: FlowContainer = $Window/Layout/LeftPanel/LeftColumn/ConsumablesFlow
 @onready var _collectibles_page: Label = $Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow/CollectiblesPage
 @onready var _collectibles_grid: GridContainer = $Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesGrid
@@ -118,17 +115,13 @@ func _on_data_changed() -> void:
 
 func _refresh() -> void:
 	_entries.clear()
-	_clear_flow(_skills_flow)
 	_clear_flow(_consumables_flow)
 	_clear_flow(_collectibles_grid)
-	_consumable_start = 0
 	_collect_start = 0
 
 	var inventory := _inventory()
 	if inventory:
-		_fill_slots(_skills_flow, inventory, 0, Inventory.SKILL_SLOTS)
-		_consumable_start = _entries.size()
-		_fill_slots(_consumables_flow, inventory, Inventory.SKILL_SLOTS, Inventory.MAX_SLOTS)
+		_fill_slots(_consumables_flow, inventory, 0, Inventory.MAX_SLOTS)
 	_collect_start = _entries.size()
 
 	# Solo los coleccionables de la página actual (6 filas de 6)
@@ -200,10 +193,7 @@ func _move_selection(step: int) -> void:
 
 ## Moves one row up/down inside the active column (stays on the current page)
 func _move_row(step: int) -> void:
-	if _entries.is_empty():
-		return
-	if _focus_column == 0:
-		_move_left_row(step)
+	if _entries.is_empty() or _focus_column == 0:
 		return
 	if _selected < _collect_start:
 		return
@@ -211,15 +201,7 @@ func _move_row(step: int) -> void:
 	if target >= _collect_start and target < _entries.size():
 		_select(target)
 
-## In the left column W/S jumps between the skills and consumables rows
-func _move_left_row(step: int) -> void:
-	if step < 0:
-		if _selected >= _consumable_start and _consumable_start > 0:
-			_select(mini(_selected - _consumable_start, _consumable_start - 1))
-	elif _selected < _consumable_start and _consumable_start < _collect_start:
-		_select(_consumable_start + mini(_selected, _collect_start - _consumable_start - 1))
-
-## Tab toggles between the skills/consumables and collectibles columns
+## Tab toggles between the consumables and collectibles columns
 func _toggle_column() -> void:
 	if _focus_column == 0:
 		if _collect_start < _entries.size():
@@ -265,20 +247,6 @@ func _stats_text(item: Items) -> String:
 			lines.append("+%d vida" % consumable.heal_amount)
 		if consumable.stamina_amount > 0:
 			lines.append("+%d stamina" % consumable.stamina_amount)
-	elif item is Skills:
-		var skill := item as Skills
-		if skill.attack_bonus != 0:
-			lines.append("Ataque: %+d" % int(skill.attack_bonus))
-		if skill.armor_bonus != 0:
-			lines.append("Armadura: %+d" % int(skill.armor_bonus))
-		if skill.attack_speed_bonus != 0:
-			lines.append("Vel. ataque: %+d" % int(skill.attack_speed_bonus))
-		if skill.crit_chance_bonus != 0:
-			lines.append("Crítico: %+d%%" % int(skill.crit_chance_bonus))
-		if skill.crit_dmg_bonus != 0:
-			lines.append("Daño crítico: %+d%%" % int(skill.crit_dmg_bonus))
-		if skill.cooldown > 0:
-			lines.append("Enfriamiento: %s s" % skill.cooldown)
 	elif item is PassiveItems:
 		# Propiedades de subclases (bonus/reduction/heal_per_tick): acceso dinámico
 		if "bonus" in item:
