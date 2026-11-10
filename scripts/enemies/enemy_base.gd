@@ -24,6 +24,10 @@ signal died
 ## Vertical offset (px) when spawning into the world; positive moves it up.
 @export var spawn_y_offset: float = 0.0
 
+@export_group("FX")
+## Blood color of this enemy's death burst; the burst layers derive from it.
+@export var blood_color: Color = Color(0.82, 0.11, 0.1)
+
 @export_group("Difficulty")
 ## Health multiplier applied on spawn (1 = scene stats).
 @export var health_multiplier: float = 1.35
@@ -479,7 +483,7 @@ func _die() -> void:
 	_is_dead = true
 	var fx := _fx()
 	if fx:
-		fx.call("enemy_death", global_position + Vector2(0.0, -20.0))
+		fx.call("enemy_death", global_position + Vector2(0.0, -20.0), blood_color)
 	died.emit()
 	_is_attacking = false
 	_can_attack = false

@@ -25,6 +25,16 @@ _Actualizado 2026-11-09 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-10 | T-0048 | Overlay de debug con `pos` (px y tiles) y la seed de la partida; Nueva partida pide semilla con vacío = aleatoria; F5 pendiente |
+| 2026-11-10 | T-0047 | Fondo del menú con la cámara del spawn (808, 773): se acaban los huecos entre las capas de pinos; F5 pendiente |
+| 2026-11-10 | T-0046 | Pantalla completa sin bandas con escala entera: viewport adaptativo a `ventana / factor` y 18 resoluciones; F5 pendiente |
+| 2026-11-10 | T-0045 | Escala siempre entera (fuera `fractional`): parallax sin tirones en fullscreen; resoluciones = solo múltiplos del viewport; F5 pendiente |
+| 2026-11-10 | T-0044 | Biomas por tramos (4–16 chunks), desbloqueo de la nieve a 4096 bloques y mundo solo hacia la derecha con tope en el borde; F5 pendiente |
+| 2026-11-10 | T-0043 | `EnemyBase.blood_color` con las 4 capas derivadas de un solo color; F5 pendiente |
+| 2026-11-10 | T-0042 | Pausa con Esc, ajustes compartidos, fullscreen a la resolución del monitor y guardado mínimo para Continuar; F5 pendiente |
+| 2026-11-10 | T-0041 | Menú principal con Nueva partida / Continuar / Ajustes / Salir y ajustes de ventana; F5 pendiente |
+| 2026-11-10 | T-0040 | `MountainBase` teñido con el `forest_color` del bioma (0.35 de oscurecido); F5 pendiente |
+| 2026-11-10 | T-0039 | Caída inicial de 520→260 px y 300→620 px/s (~0,7 s); F5 pendiente |
 | 2026-11-10 | T-0038 | Skills fuera: 3 consumibles con teclas 1-3 y catálogo completo en `docs/items.md`; F5 pendiente |
 | 2026-11-09 | T-0037 | Loot por enemigo con `LootEntry` y probabilidad por objeto; fuera presets y pesos por calidad; F5 pendiente |
 | 2026-11-09 | T-0036 | Bosque rojo: +2 slimes por chunk y lobos de 2 a 1; F5 pendiente |

@@ -77,11 +77,11 @@ use_slot_3={
 [physics]
 
 3d/physics_engine="Jolt Physics"
-layer_names/2d_physics/layer_1="Mundo"
-layer_names/2d_physics/layer_2="Jugador"
-layer_names/2d_physics/layer_3="Enemigos"
-layer_names/2d_physics/layer_4="Ataque jugador"
-layer_names/2d_physics/layer_5="Ataque enemigo"
+layer_names/2d_physics/layer_1="World"
+layer_names/2d_physics/layer_2="Player"
+layer_names/2d_physics/layer_3="Enemies"
+layer_names/2d_physics/layer_4="Player attack"
+layer_names/2d_physics/layer_5="Enemy attack"
 
 [rendering]
 

@@ -1,32 +1,32 @@
-# Documentación del Proyecto - test (Godot 4.7)
+# Project Documentation - test (Godot 4.7)
 
-> **Histórico** (2026-10-20). Superado por `docs/player.md`, `docs/enemies.md` y `docs/world.md`; se conserva por las explicaciones largas. No cargar por defecto.
+> **Historical** (2026-10-20). Superseded by `docs/player.md`, `docs/enemies.md` and `docs/world.md`; kept for the long explanations. Do not load by default.
 
-## 1. Visión General
-Proyecto 2D plataforma/action en **Godot 4.7 (Forward Plus)**. Escena principal `icon.tscn:1` (uid `uid://copiyrk0io0oy`) con **mundo plano infinito**, personaje **Knight_3** con física, salto, ataque, cámara desplazada y HUD de vida.
+## 1. Overview
+2D platform/action project in **Godot 4.7 (Forward Plus)**. Main scene `icon.tscn:1` (uid `uid://copiyrk0io0oy`) with an **infinite flat world**, **Knight_3** character with physics, jump, attack, offset camera and health HUD.
 
-Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir Godot 4.7 y dar Play.
+Run: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → open Godot 4.7 and press Play.
 
 ---
 
-## 2. Estructura de Archivos
+## 2. File Structure
 
-| Archivo | Descripción | Líneas clave |
+| File | Description | Key lines |
 |---|---|---|
-| `project.godot:1` | Configuración engine, input `movement` (A/D), `default_clear_color` cielo | `project.godot:40` |
-| `icon.tscn:1` | Escena principal (packed). Contiene TileSet, SpriteFrames, nodos `game`, `player`, `TileMapLayer`, `ParallaxBackground`, `UILayer`, `Camera2D` | `icon.tscn:432` `icon.tscn:488` |
-| `assets/forest_tileset_lite/Sprites/Background/` | Sprites parallax: `sky.png` 688×211, `sky_cloud.png` 688×211, `cloud.png` 634×136, `mountain2.png` 688×127, `pine1.png` 688×148, `pine2.png` 688×199 | `icon.tscn:3-9` |
-| `player.gd:1` | Lógica del `CharacterBody2D` jugador: movimiento, salto, ataque, vida, pivot | `player.gd:4` `player.gd:32` `player.gd:48` |
-| `world_generator.gd:1` | Generación procedural del suelo plano | `world_generator.gd:4` `world_generator.gd:13` |
-| `tilesetgrass.png` | `TileSet` 16×16 (`TileSet_yb26g` `icon.tscn:352`) atlas `1:0` hierba, `2:1` tierra, `2:2` tierra profunda | `icon.tscn:169` |
-| `assets/Knight_3/*.png` | Sprites `Idle.png` 4f, `Walk.png` 8f, `Attack 1.png` 5f (128×128) | `icon.tscn:4` |
-| `assets/...` | Resto de packs `Mystic Woods`, `Pixel Art Grassland` sin uso activo | - |
+| `project.godot:1` | Engine configuration, `movement` input (A/D), sky `default_clear_color` | `project.godot:40` |
+| `icon.tscn:1` | Main scene (packed). Contains TileSet, SpriteFrames, `game`, `player`, `TileMapLayer`, `ParallaxBackground`, `UILayer`, `Camera2D` nodes | `icon.tscn:432` `icon.tscn:488` |
+| `assets/forest_tileset_lite/Sprites/Background/` | Parallax sprites: `sky.png` 688×211, `sky_cloud.png` 688×211, `cloud.png` 634×136, `mountain2.png` 688×127, `pine1.png` 688×148, `pine2.png` 688×199 | `icon.tscn:3-9` |
+| `player.gd:1` | `CharacterBody2D` player logic: movement, jump, attack, health, pivot | `player.gd:4` `player.gd:32` `player.gd:48` |
+| `world_generator.gd:1` | Procedural generation of the flat ground | `world_generator.gd:4` `world_generator.gd:13` |
+| `tilesetgrass.png` | 16×16 `TileSet` (`TileSet_yb26g` `icon.tscn:352`), atlas `1:0` grass, `2:1` dirt, `2:2` deep dirt | `icon.tscn:169` |
+| `assets/Knight_3/*.png` | `Idle.png` 4f, `Walk.png` 8f, `Attack 1.png` 5f sprites (128×128) | `icon.tscn:4` |
+| `assets/...` | Rest of the `Mystic Woods`, `Pixel Art Grassland` packs, not actively used | - |
 
-### Jerarquía `icon.tscn`
+### `icon.tscn` hierarchy
 ```
-. (root implícito)
-├─ game (Node2D) uid 2045042830 — contenedor lógico
-├─ ParallaxBackground uid 510311040 — fondo multilayer
+. (implicit root)
+├─ game (Node2D) uid 2045042830 — logical container
+├─ ParallaxBackground uid 510311040 — multilayer background
 │  ├─ LayerSky     motion_scale 0,0    mirroring 447 → Sky (sprite 0.65, y -280)
 │  ├─ LayerSkyCloud motion_scale 0.02,0 mirroring 447 → SkyCloud (0.65, y -280)
 │  ├─ LayerCloud   motion_scale 0.08,0 mirroring 413 → Cloud (0.6, y -160, x 100)
@@ -34,157 +34,157 @@ Ejecución: `project.godot:13` `run/main_scene="uid://copiyrk0io0oy"` → abrir 
 │  ├─ LayerPine1   motion_scale 0.35,0 mirroring 447 → Pine1 (0.65, y -10)
 │  └─ LayerPine2   motion_scale 0.6,0  mirroring 447 → Pine2 (0.65, y 20)
 ├─ UILayer (CanvasLayer) layer 10 — HUD
-│  ├─ HealthBar (ProgressBar) top-right + Label "100 / 100" (rojo)
-│  └─ StaminaBar (ProgressBar) justo debajo + Label "100 / 100" (verde)
+│  ├─ HealthBar (ProgressBar) top-right + Label "100 / 100" (red)
+│  └─ StaminaBar (ProgressBar) just below + Label "100 / 100" (green)
 ├─ player (CharacterBody2D) script player.gd
 │  ├─ SpritePivot (Node2D) pos -5,-21 (hitbox)
 │  │  └─ AnimatedSprite2D pos 14,-14 scale 0.435, SpriteFrames
-│  ├─ Camera2D offset 60,-70 (nodo normal, sin lógica de script)
+│  ├─ Camera2D offset 60,-70 (plain node, no script logic)
 │  └─ CollisionShape2D pos -5,-21 size 5×17 scale 1.6
-└─ TileMapLayer (TileMapLayer) script world_generator.gd — terreno
+└─ TileMapLayer (TileMapLayer) script world_generator.gd — terrain
 ```
 
 ---
 
-## 3. Generación de Mundo Plano
+## 3. Flat World Generation
 
 **`world_generator.gd:1`**
 ```gdscript
-@export var world_width: int = 3000   # antes 500 → +600% más grande
-@export var ground_level: int = 20    # antes 12 → 8 tiles (128px) más bajo
+@export var world_width: int = 3000   # was 500 → +600% bigger
+@export var ground_level: int = 20    # was 12 → 8 tiles (128px) lower
 @export var ground_depth: int = 15
 func _generate_world() -> void:       # world_generator.gd:13
 	clear()
 	for x in world_width:
-		set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0)) # hierba
+		set_cell(Vector2i(x, ground_level), 0, Vector2i(1, 0)) # grass
 		for y in range(ground_level+1, ground_level+ground_depth):
 			if y == ground_level+1: set_cell(Vector2i(x,y),0,Vector2(2,1))
-			else: set_cell(Vector2i(x,y),0,Vector2i(2,2))     # tierra
+			else: set_cell(Vector2i(x,y),0,Vector2i(2,2))     # dirt
 	player.position = Vector2(player_x*16+8, ground_level*16-32)
 ```
-- Eliminado `FastNoiseLite`, `height_variation`, `noise_seed` y `heights[]` → mundo **100% plano sin montañas**.
-- 3000 tiles ×16 = 48.000px de ancho.
-- Suelo ajustado a `y=20` para ver más cielo (combinado con cámara).
+- Removed `FastNoiseLite`, `height_variation`, `noise_seed` and `heights[]` → **100% flat world with no mountains**.
+- 3000 tiles ×16 = 48,000px wide.
+- Ground moved to `y=20` to see more sky (combined with the camera).
 
 ---
 
-## 4. Jugador `player.gd:1` — Física
+## 4. Player `player.gd:1` — Physics
 
-### 4.1 Parámetros (`player.gd:3`)
+### 4.1 Parameters (`player.gd:3`)
 ```gdscript
-@export var move_speed: float = 130.0   # 320→160→130 (bajado bastante)
+@export var move_speed: float = 130.0   # 320→160→130 (lowered quite a bit)
 @export var acceleration: float = 750.0 # 1800→900→750
 @export var friction: float = 1000.0    # 2400→1200→1000
-@export var jump_velocity: float = -340.0 # -650→-340 (salto bastante menos)
+@export var jump_velocity: float = -340.0 # -650→-340 (much lower jump)
 @export var gravity: float = 1400.0      # 1800→1400
-@export var fall_gravity_multiplier: float = 1.6 # cae más rápido
+@export var fall_gravity_multiplier: float = 1.6 # falls faster
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.12
 ```
-`move_speed` y `jump_velocity` son exportables → ajustables en inspector sin tocar código.
+`move_speed` and `jump_velocity` are exported → adjustable in the inspector without touching code.
 
-### 4.2 Movimiento `player.gd:140`
-- `Input A/D` → `raw_direction ±1` → filtrado si ataca.
-- Si `raw_direction` es contraria a `_facing_right` mientras `_is_attacking`, `direction=0` (`player.gd:151`) → **no puede avanzar ni girar al lado contrario**.
-- Si `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)` con `effective_speed = move_speed*0.38` durante ataque (`player.gd:155`) → camina ~49px/s, **no se para solo** salvo que sueltes tecla (aplica `friction`).
-- `if not _is_attacking` para actualizar `_facing_right` (`player.gd:162`) → dirección de ataque bloqueada.
+### 4.2 Movement `player.gd:140`
+- `Input A/D` → `raw_direction ±1` → filtered while attacking.
+- If `raw_direction` is opposite to `_facing_right` while `_is_attacking`, `direction=0` (`player.gd:151`) → **it can neither move forward nor turn to the other side**.
+- If `direction !=0`: `move_toward(velocity.x, direction*effective_speed, effective_accel*delta)` with `effective_speed = move_speed*0.38` while attacking (`player.gd:155`) → walks ~49px/s, **it doesn't stop by itself** unless you release the key (`friction` applies).
+- `if not _is_attacking` to update `_facing_right` (`player.gd:162`) → attack direction is locked.
 
-### 4.3 Salto `player.gd:172`
-- `coyote_time` y `jump_buffer` clásicos.
-- **Bloqueado al atacar** (`player.gd:173` `if _is_attacking: reset buffers` ) → no puedes saltar en mitad de `attack`.
-- Salto variable: soltar espacio corta `velocity.y *=0.45`.
+### 4.3 Jump `player.gd:172`
+- Classic `coyote_time` and `jump_buffer`.
+- **Blocked while attacking** (`player.gd:173` `if _is_attacking: reset buffers` ) → you can't jump in the middle of `attack`.
+- Variable jump: releasing space cuts `velocity.y *=0.45`.
 
-### 4.4 Cámara `player.tscn:450`
+### 4.4 Camera `player.tscn:450`
 ```ini
 Camera2D offset = Vector2(60, -70)
 ```
-- La cámara es un nodo normal **sin lógica en el script**: sigue al jugador libremente en ambos ejes.
-- `x=60` → personaje a la izquierda, de dónde viene el look-ahead hacia la derecha.
-- `y=-70` → más cielo, menos suelo (con `ground_level=20`).
-- **Eliminado** el bloqueo estilo Mario (`camera_lock_left`, `_camera_max_center_x`) y los límites de pantalla (`_clamp_to_view`, `_camera_view_half`, `_player_half_width`): el jugador ya no choca con los bordes y la cámara puede volver hacia la izquierda. Se restauró el comportamiento de `main`.
+- The camera is a plain node **with no logic in the script**: it follows the player freely on both axes.
+- `x=60` → character on the left, where the look-ahead to the right comes from.
+- `y=-70` → more sky, less ground (with `ground_level=20`).
+- **Removed** the Mario-style lock (`camera_lock_left`, `_camera_max_center_x`) and the screen limits (`_clamp_to_view`, `_camera_view_half`, `_player_half_width`): the player no longer collides with the edges and the camera can move back left. The `main` behaviour was restored.
 
-### 4.5 Fondo `project.godot:40` + `ParallaxBackground` `icon.tscn:432`
-- `project.godot:40` `environment/defaults/default_clear_color=Color(0.51,0.79,0.99,1)` → solo visible si falta textura.
-- `ParallaxBackground` con 6 `ParallaxLayer` (tabla jerarquía §2): todas con `motion_mirroring` horizontal → tiling infinito; `motion_scale.y=0` → no se mueven al saltar.
-- **Parallax con zoom out**: cada `Sprite2D` tiene `scale` 0.6–0.65 (antes 1.0 → las montañas salían recortadas por el `Camera2D zoom 3`). `Sky`/`SkyCloud` bajados a `y=-280` para cubrir el hueco superior.
-- Antes había un `SkyLayer`/`Sky ColorRect` fullscreen que sobresalía por encima del parallax → **eliminado**.
+### 4.5 Background `project.godot:40` + `ParallaxBackground` `icon.tscn:432`
+- `project.godot:40` `environment/defaults/default_clear_color=Color(0.51,0.79,0.99,1)` → only visible if a texture is missing.
+- `ParallaxBackground` with 6 `ParallaxLayer` (hierarchy table §2): all with horizontal `motion_mirroring` → infinite tiling; `motion_scale.y=0` → they don't move when jumping.
+- **Parallax with zoom out**: each `Sprite2D` has `scale` 0.6–0.65 (previously 1.0 → the mountains were cropped by `Camera2D zoom 3`). `Sky`/`SkyCloud` lowered to `y=-280` to cover the top gap.
+- There used to be a fullscreen `SkyLayer`/`Sky ColorRect` sticking out above the parallax → **removed**.
 
 ---
 
-## 5. Animaciones `icon.tscn:97`
+## 5. Animations `icon.tscn:97`
 
-| Nombre | Frames | Textura | Loop | Speed | Uso |
+| Name | Frames | Texture | Loop | Speed | Use |
 |---|---|---|---|---|---|
 | `attack` | 5 (0-510×128) | `Knight_3/Attack 1.png` | `0` (no loop) | 10 | `player.gd:210` |
-| `idle` | 4 (0-384×128) | `Knight_3/Idle.png` | `1` | 5 | reposo / caída |
-| `movement_right` | 8 (0-896×128) | `Knight_3/Walk.png` | `1` | 10 | andar / salto ascendente |
-| `run_right` | 6 (0-768×128) | `Knight_3/Run.png` | `1` | 8 | correr (con `Shift`) |
-| `defend` | — | `Knight_3/Defend.png` | `1` | — | guardia (`Click Derecho` / `E`) |
+| `idle` | 4 (0-384×128) | `Knight_3/Idle.png` | `1` | 5 | idle / falling |
+| `movement_right` | 8 (0-896×128) | `Knight_3/Walk.png` | `1` | 10 | walking / rising jump |
+| `run_right` | 6 (0-768×128) | `Knight_3/Run.png` | `1` | 8 | running (with `Shift`) |
+| `defend` | — | `Knight_3/Defend.png` | `1` | — | guard (`Right click` / `E`) |
 
-Histórico: antes `idle_center` + `idle_right` duplicados (ambos 8f de Walk) → unificado a un único `idle` de 4f de `Idle.png` (`icon.tscn:114`).
+History: before there were duplicated `idle_center` + `idle_right` (both 8f of Walk) → unified into a single 4f `idle` from `Idle.png` (`icon.tscn:114`).
 
-`AnimatedSprite2D` `icon.tscn:357` `pos 14,-14` dentro de `SpritePivot` scale `0.435`, animación inicial `idle`.
+`AnimatedSprite2D` `icon.tscn:357` `pos 14,-14` inside `SpritePivot` scale `0.435`, initial animation `idle`.
 
-### 5.1 Pivot en Hitbox (fix teleporte) `icon.tscn:354` `player.gd:53`
-Problema: textura 128×128 con padding derecho para espada. `flip_h` sobre centro de imagen movía pies 2× offset al girar.
+### 5.1 Pivot on the Hitbox (teleport fix) `icon.tscn:354` `player.gd:53`
+Problem: 128×128 texture with right padding for the sword. `flip_h` around the image center moved the feet 2× the offset when turning.
 
-Solución:
+Solution:
 ```ini
 SpritePivot (Node2D) pos -5,-21 # = CollisionShape2D pos
   └─ AnimatedSprite2D pos 14,-14 # 9-(-5), -35-(-21)
 ```
 ```gdscript
 # player.gd:53
-sprite_pivot.scale.x = 1.0 if _facing_right else -1.0 # rota sobre hitbox
+sprite_pivot.scale.x = 1.0 if _facing_right else -1.0 # mirrors around the hitbox
 animated_sprite.flip_h = false
 ```
-Giro alrededor de `CollisionShape2D`, pies anclados, padding irrelevante.
+Turn around the `CollisionShape2D`, feet anchored, padding irrelevant.
 
 ---
 
-## 6. Ataque Click Izquierdo `player.gd:30`
+## 6. Left-Click Attack `player.gd:30`
 
 ```gdscript
 var _is_attacking: bool = false # player.gd:30
-func _input(event): # player.gd:132 y _unhandled_input:136
+func _input(event): # player.gd:132 and _unhandled_input:136
 	if event is InputEventMouseButton and button_index==MOUSE_BUTTON_LEFT and pressed:
 		_try_attack()
 func _try_attack(): # player.gd:206
 	if _is_attacking: return
 	_is_attacking = true
 	animated_sprite.play("attack")
-func _on_attack_finished(): # player.gd:212 conectado en _ready:34
+func _on_attack_finished(): # player.gd:212 connected in _ready:34
 	if animation=="attack":
 		_is_attacking=false
 		_update_animation()
 func _update_animation(): # player.gd:217
-	if _is_attacking: return # prioridad
+	if _is_attacking: return # priority
 	if not is_on_floor(): play(movement_right/idle)
 	elif abs(velocity.x)>10: play(movement_right)
 	else: play(idle)
 ```
-- `loop=0` → `animation_finished` dispara fin.
-- Durante ataque: `_update_animation` bloqueado, movimiento 38% velocidad, salto bloqueado.
+- `loop=0` → `animation_finished` fires the end.
+- While attacking: `_update_animation` blocked, movement at 38% speed, jump blocked.
 
 ---
 
-## 7. Sistema de Vida — Explicación Detallada
+## 7. Health System — Detailed Explanation
 
 ### 7.1 Variables `player.gd:11`
 ```gdscript
-@export var max_health: int = 100 # vida base, editable en inspector
-var health: int                    # vida actual
-var health_bar: ProgressBar        # referencia UI (asignada dinámicamente)
+@export var max_health: int = 100 # base health, editable in the inspector
+var health: int                    # current health
+var health_bar: ProgressBar        # UI reference (assigned dynamically)
 var health_label: Label
 ```
 
-### 7.2 Inicialización `player.gd:32`
+### 7.2 Initialisation `player.gd:32`
 ```gdscript
 func _ready() -> void:
 	health = max_health            # 100
 	animated_sprite.animation_finished.connect(_on_attack_finished)
-	_ensure_health_ui()            # crea/busca HUD
-	_update_health_ui()            # refleja 100/100
+	_ensure_health_ui()            # creates/finds the HUD
+	_update_health_ui()            # shows 100/100
 ```
 
 ### 7.3 API `player.gd:38`
@@ -208,191 +208,191 @@ func _update_health_ui() -> void:
 func _die() -> void:
 	health = max_health            # respawn placeholder
 	_update_health_ui()
-	# aquí puedes: get_tree().reload_current_scene() o animación muerte
+	# here you can: get_tree().reload_current_scene() or a death animation
 ```
-Uso externo:
+External use:
 ```gdscript
-player.take_damage(15) # enemigo
-player.heal(20)        # poción
-player.health # leer
+player.take_damage(15) # enemy
+player.heal(20)        # potion
+player.health # read
 ```
 
 ### 7.4 HUD `icon.tscn:370` + `_ensure_health_ui()` `player.gd:48`
-**Declarativo** (`icon.tscn:370`):
+**Declarative** (`icon.tscn:370`):
 ```ini
 UILayer (CanvasLayer) layer 10
  └─ HealthBar (ProgressBar) anchor 1.0,0.0 offset -220/12/-12/36 (=208×24)
-	 theme_override_styles/background = StyleBoxFlat_health_bg (gris 0.176 borde negro 2px radius 6)
-	 theme_override_styles/fill = StyleBoxFlat_health_fg (rojo 0.86 radius 4)
-	 └─ Label anchors 15 full, center, "100 / 100" font 14 blanco sombra negra
+	 theme_override_styles/background = StyleBoxFlat_health_bg (grey 0.176, black 2px border, radius 6)
+	 theme_override_styles/fill = StyleBoxFlat_health_fg (red 0.86 radius 4)
+	 └─ Label anchors 15 full, center, "100 / 100" font 14 white with black shadow
 ```
 **Procedural fallback** (`player.gd:48` `_ensure_health_ui`):
-- Busca `get_parent().get_node_or_null("UILayer/HealthBar")` y `../UILayer/HealthBar` (soporta ambas jerarquías).
-- Si no existe (editor lo borró), crea `CanvasLayer`, `ProgressBar`, `StyleBoxFlat` y `Label` por código con mismos valores. Así el HUD **nunca desaparece** aunque el `.tscn` se sobrescriba.
-- Se llama en `_ready` antes de `_update_health_ui`.
+- Looks for `get_parent().get_node_or_null("UILayer/HealthBar")` and `../UILayer/HealthBar` (supports both hierarchies).
+- If it doesn't exist (the editor deleted it), it creates `CanvasLayer`, `ProgressBar`, `StyleBoxFlat` and `Label` in code with the same values. That way the HUD **never disappears** even if the `.tscn` is overwritten.
+- It is called in `_ready` before `_update_health_ui`.
 
-**Por qué arriba-derecha:**
-`anchor_left=1.0, anchor_top=0.0` ancla a esquina superior derecha, independiente de resolución (`project.godot:21` `aspect=expand`). `offset_left=-220` lo desplaza 220px a la izquierda del borde.
+**Why top-right:**
+`anchor_left=1.0, anchor_top=0.0` anchors to the top-right corner, independent of resolution (`project.godot:21` `aspect=expand`). `offset_left=-220` shifts it 220px left of the edge.
 
-Flujo: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value` + `Label.text` → render en `UILayer` (CanvasLayer no afectado por `Camera2D` ni `zoom`).
-
----
-
-## 8. Historial de Cambios (orden cronológico peticiones)
-
-1. **Mundo plano grande** `world_generator.gd:4` 500→3000 tiles, eliminado ruido.
-2. **Idle único** `icon.tscn:114` dos `idle_*` → uno `idle` 4f.
-3. **Fondo azul + suelo bajo + cámara** `project.godot:40` clear_color cielo, `ground_level 12→20`, `Camera2D offset 0,0→80,-60`.
-4. **Personaje a la izquierda** `Camera2D offset.x 0→80`.
-5. **Ataque click izquierdo** `SpriteFrames attack` 5f `loop 0` + `player.gd:206` `_try_attack`.
-6. **Pivot hitbox** `SpritePivot -5,-21` + `scale.x` en vez de `flip_h` (`player.gd:59`).
-7. **Fix ataque bloqueado** `Sky mouse_filter=2` + doble `_input/_unhandled_input` + animación inicial `idle`.
-8. **Velocidad/salto** `move_speed 320→160, jump -650→-340`.
-9. **HUD vida + más lento** `max_health 100`, `UILayer/HealthBar`, `move_speed 160→130` (actual).
-10. **HUD fix + ataque ralentiza/bloquea salto** `move_speed*0.38 al atacar` (`player.gd:155`), `salto bloqueado` (`player.gd:173`), HUD dinámico (`player.gd:48`), offsets corregidos.
-11. **Ataque bloquea giro** `raw_direction` filtrado + `_facing_right` bloqueado si `_is_attacking` (`player.gd:151` `player.gd:162`) → no se puede cambiar dirección ni moverte al lado contrario mientras atacas.
-12. **Combo `attack_1/2/3`** `SpriteFrames` 3 animaciones de ataque, `loop 0`, `speed 14` en 2/3, ventana `combo_window=0.35s`.
-13. **Parallax 6 capas** `ParallaxBackground` con todos los sprites de `forest_tileset_lite/.../Background` (sky, sky_cloud, cloud, mountain2, pine1, pine2), `motion_scale` 0→0.6, `motion_mirroring` horizontal.
-14. **Fix fondo sobresaliente** eliminado `SkyLayer`/`Sky ColorRect` que se veía por encima del parallax; `Sky`/`SkyCloud` a `y=-280`.
-15. **Zoom out del parallax** `scale 0.6–0.65` en todos los sprites + `motion_mirroring` ajustado al ancho escalado (447/413) → las montañas se ven completas con `Camera2D zoom 3`.
-16. **Sistema de stamina** `max_stamina 100`, correr con `Shift` (‑10 inicial + ‑10/s, 1.7× velocidad, animación `run_right` ya existente en `SpriteFrames`), defender con `Click Derecho`/`E` (‑15 inicial + ‑20/s), regeneración +10/s, sin negatives y sin poder iniciar acciones sin stamina suficiente. `StaminaBar` verde bajo la barra de vida (`_ensure_stamina_ui()` con fallback por código).
-17. **Cámara sin lock ni bounds** eliminados `camera_lock_left`, `_update_camera()`, `_clamp_to_view()`, `_camera_view_half` y `_player_half_width` → la cámara sigue al jugador en ambos ejes y el personaje no choca con los bordes de pantalla, igual que en `main`. La vida vuelve a rojo y la stamina usa verde.
-18. **Test de stamina** `_stamina_test.gd` (24 comprobaciones headless) y borrado `_bounds_test.gd`.
+Flow: `take_damage` → `health` → `_update_health_ui` → `ProgressBar.value` + `Label.text` → rendered in `UILayer` (CanvasLayer unaffected by `Camera2D` or `zoom`).
 
 ---
 
-## 9. Controles
+## 8. Change History (chronological order of requests)
 
-| Tecla | Acción |
+1. **Big flat world** `world_generator.gd:4` 500→3000 tiles, noise removed.
+2. **Single idle** `icon.tscn:114` two `idle_*` → one 4f `idle`.
+3. **Blue background + lower ground + camera** `project.godot:40` sky clear_color, `ground_level 12→20`, `Camera2D offset 0,0→80,-60`.
+4. **Character on the left** `Camera2D offset.x 0→80`.
+5. **Left-click attack** `SpriteFrames attack` 5f `loop 0` + `player.gd:206` `_try_attack`.
+6. **Hitbox pivot** `SpritePivot -5,-21` + `scale.x` instead of `flip_h` (`player.gd:59`).
+7. **Fix blocked attack** `Sky mouse_filter=2` + double `_input/_unhandled_input` + initial `idle` animation.
+8. **Speed/jump** `move_speed 320→160, jump -650→-340`.
+9. **Health HUD + slower** `max_health 100`, `UILayer/HealthBar`, `move_speed 160→130` (current).
+10. **HUD fix + attack slows/blocks jump** `move_speed*0.38 while attacking` (`player.gd:155`), `jump blocked` (`player.gd:173`), dynamic HUD (`player.gd:48`), fixed offsets.
+11. **Attack locks turning** filtered `raw_direction` + `_facing_right` locked while `_is_attacking` (`player.gd:151` `player.gd:162`) → you can't change direction or move to the opposite side while attacking.
+12. **`attack_1/2/3` combo** `SpriteFrames` 3 attack animations, `loop 0`, `speed 14` on 2/3, `combo_window=0.35s` window.
+13. **6-layer parallax** `ParallaxBackground` with all the `forest_tileset_lite/.../Background` sprites (sky, sky_cloud, cloud, mountain2, pine1, pine2), `motion_scale` 0→0.6, horizontal `motion_mirroring`.
+14. **Fix protruding background** removed the `SkyLayer`/`Sky ColorRect` that showed above the parallax; `Sky`/`SkyCloud` to `y=-280`.
+15. **Parallax zoom out** `scale 0.6–0.65` on all sprites + `motion_mirroring` adjusted to the scaled width (447/413) → the mountains are fully visible with `Camera2D zoom 3`.
+16. **Stamina system** `max_stamina 100`, run with `Shift` (‑10 initial + ‑10/s, 1.7× speed, `run_right` animation already in `SpriteFrames`), guard with `Right click`/`E` (‑15 initial + ‑20/s), regeneration +10/s, no negatives and no starting actions without enough stamina. Green `StaminaBar` under the health bar (`_ensure_stamina_ui()` with a code fallback).
+17. **Camera without lock or bounds** removed `camera_lock_left`, `_update_camera()`, `_clamp_to_view()`, `_camera_view_half` and `_player_half_width` → the camera follows the player on both axes and the character no longer collides with the screen edges, same as in `main`. Health is red again and stamina uses green.
+18. **Stamina test** `_stamina_test.gd` (24 headless checks) and deleted `_bounds_test.gd`.
+
+---
+
+## 9. Controls
+
+| Key | Action |
 |---|---|
-| `A / ←` | Izquierda |
-| `D / →` | Derecha |
-| `Espacio / W / ↑` | Salto (coyote + buffer) |
-| `Shift` + dirección | **Correr** (1.7× velocidad, animación `run_right`, gasta stamina) |
-| `Click Izquierdo` | Ataque (no salta, 38% velocidad, bloquea giro/dirección contraria) |
-| `Click Derecho / E` | **Defender** (bloquea daño frontal, no mueve ni salta, gasta stamina) |
+| `A / ←` | Left |
+| `D / →` | Right |
+| `Space / W / ↑` | Jump (coyote + buffer) |
+| `Shift` + direction | **Run** (1.7× speed, `run_right` animation, drains stamina) |
+| `Left click` | Attack (no jump, 38% speed, locks turning/opposite direction) |
+| `Right click / E` | **Guard** (blocks frontal damage, no movement or jump, drains stamina) |
 
 ---
 
-## 10. Sistema de Stamina — Explicación Detallada
+## 10. Stamina System — Detailed Explanation
 
-### 9.1 Parámetros `player.gd:11`
+### 9.1 Parameters `player.gd:11`
 ```gdscript
-@export var max_stamina: float = 100.0            # stamina base
-@export var run_speed_multiplier: float = 1.7     # velocidad al correr (130 -> 221 px/s)
+@export var max_stamina: float = 100.0            # base stamina
+@export var run_speed_multiplier: float = 1.7     # running speed (130 -> 221 px/s)
 @export var run_acceleration_multiplier: float = 1.3
-@export var run_initial_cost: float = 10.0        # golpe inicial al empezar a correr
-@export var run_drain_per_second: float = 10.0    # goteo al correr
-@export var guard_initial_cost: float = 15.0      # golpe inicial al empezar a defender
-@export var guard_drain_per_second: float = 20.0  # goteo al defender
+@export var run_initial_cost: float = 10.0        # initial hit when starting to run
+@export var run_drain_per_second: float = 10.0    # drain while running
+@export var guard_initial_cost: float = 15.0      # initial hit when starting to guard
+@export var guard_drain_per_second: float = 20.0  # drain while guarding
 @export var stamina_regen_per_second: float = 10.0
 ```
 
-### 9.2 Tabla de costes
-| Acción | Golpe inicial | Continuo | Nota |
+### 9.2 Cost table
+| Action | Initial hit | Continuous | Note |
 |---|---|---|---|
-| Correr (`Shift` + dirección) | -10 | -10/s | animación `run_right`, 1.7× velocidad |
-| Defender (`Click Derecho` / `E`) | -15 | -20/s | bloquea movimiento, salto y giro |
-| Atacar / saltar / quieto | 0 | 0 | +10/s de regeneración |
+| Run (`Shift` + direction) | -10 | -10/s | `run_right` animation, 1.7× speed |
+| Guard (`Right click` / `E`) | -15 | -20/s | blocks movement, jump and turning |
+| Attack / jump / idle | 0 | 0 | +10/s regeneration |
 
-### 9.3 Lógica `_update_stamina()` `player.gd:236`
-Orden de prioridad en cada frame de física:
-1. **Defender** — si ya se defendía, sigue drenando; si se acaba la stamina la guardia **se rompe sola**.
-2. **Correr** — requiere `is_on_floor()`, no atacar y no defender. Al agotarse la carrera **se corta sola**.
-3. **Regenerar** — `+10/s` si no se está corriendo ni defendiendo (atacar no consume, así que regenera).
+### 9.3 Logic `_update_stamina()` `player.gd:236`
+Priority order on each physics frame:
+1. **Guard** — if already guarding, it keeps draining; if stamina runs out the guard **breaks by itself**.
+2. **Run** — requires `is_on_floor()`, not attacking and not guarding. When stamina runs out the run **cuts out by itself**.
+3. **Regenerate** — `+10/s` if not running or guarding (attacking doesn't consume, so it regenerates).
 
-### 9.4 Requisitos de stamina
-- `can_run()` / `can_guard()` devuelven `false` si no hay stamina para pagar el golpe inicial → **no se puede iniciar** la acción sin stamina.
-- Una vez iniciada, la acción continúa drenando hasta llegar a 0 (correr/defender no se cortan a mitad).
-- `spend_stamina()` usa `maxf(stamina - amount, 0.0)` → la stamina nunca queda en negativo.
-- API pública: `has_stamina(cantidad)`, `spend_stamina(cantidad)`, `restore_stamina(cantidad)`.
+### 9.4 Stamina requirements
+- `can_run()` / `can_guard()` return `false` when there is no stamina to pay the initial hit → **the action cannot start** without stamina.
+- Once started, the action keeps draining until it reaches 0 (run/guard don't stop halfway).
+- `spend_stamina()` uses `maxf(stamina - amount, 0.0)` → stamina never goes negative.
+- Public API: `has_stamina(amount)`, `spend_stamina(amount)`, `restore_stamina(amount)`.
 
 ### 9.5 HUD
-- Nodo `UILayer/StaminaBar` en `icon.tscn`, justo debajo de la vida, relleno verde (`StyleBoxFlat_stamina_fg`).
-- `_ensure_stamina_ui()` + `_update_stamina_ui()` replican el patrón de la vida (busca el nodo de la escena y, si falta, lo crea por código).
-- La vida vuelve a rojo (`StyleBoxFlat_health_fg`); la stamina es verde (`STAMINA_COLOR` como fallback).
+- `UILayer/StaminaBar` node in `icon.tscn`, just under health, green fill (`StyleBoxFlat_stamina_fg`).
+- `_ensure_stamina_ui()` + `_update_stamina_ui()` replicate the health pattern (look for the scene node and, if missing, create it in code).
+- Health is red again (`StyleBoxFlat_health_fg`); stamina is green (`STAMINA_COLOR` as fallback).
 
 ---
 
-## 11. Cómo Probar / Extender
+## 11. How to Test / Extend
 
-- **Ajustar vida**: inspector `player` `max_health` o código `player.max_health=200`.
-- **Ajustar stamina**: inspector `player` `max_stamina`, `run_drain_per_second`, `guard_drain_per_second`, etc.
-- **Prueba automática**: `godot --headless --script _stamina_test.gd` → 24 comprobaciones de costes, regeneración, requisitos de stamina y agotamiento.
-- **Daño prueba**: en consola o enemigo `get_node("../player").take_damage(10)`.
-- **Cambiar HUD**: editar `icon.tscn:273` offsets o colores `StyleBoxFlat_health_*` / `StyleBoxFlat_stamina_fg`.
-- **Muerte real**: editar `_die()` para `queue_free()` o `get_tree().reload_current_scene()`.
-- **Añadir enemigo**: instanciar `CharacterBody2D` con `Area2D` que llame `player.take_damage`.
+- **Adjust health**: inspector `player` `max_health` or code `player.max_health=200`.
+- **Adjust stamina**: inspector `player` `max_stamina`, `run_drain_per_second`, `guard_drain_per_second`, etc.
+- **Automated test**: `godot --headless --script _stamina_test.gd` → 24 checks of costs, regeneration, stamina requirements and exhaustion.
+- **Test damage**: in the console or from an enemy `get_node("../player").take_damage(10)`.
+- **Change the HUD**: edit `icon.tscn:273` offsets or the `StyleBoxFlat_health_*` / `StyleBoxFlat_stamina_fg` colours.
+- **Real death**: edit `_die()` to `queue_free()` or `get_tree().reload_current_scene()`.
+- **Add an enemy**: instantiate a `CharacterBody2D` with an `Area2D` that calls `player.take_damage`.
 
 ---
 
-## 12. Notas Técnicas
+## 12. Technical Notes
 
-- `AnimatedSprite2D` scale `0.435` para ajustar 128px a ~55px mundo.
+- `AnimatedSprite2D` scale `0.435` to fit 128px into ~55px of world.
 - `CollisionShape2D` `RectangleShape2D 5×17` scale `1.6` → hitbox ~8×27.
-- `TileMapLayer` colisión `physics_layer_0` todos los tiles con polígono 16×16.
-- `UILayer` es `CanvasLayer` → no sigue a `Camera2D`; `ParallaxBackground` sí, pero con `motion_scale` reducido.
-- Editor puede sobrescribir `icon.tscn`; `_ensure_health_ui()` y `_ensure_stamina_ui()` evitan pérdida de HUD.
-- Si cambias el `scale` de un sprite del parallax, recalcula `motion_mirroring = ancho_textura * scale` de su `ParallaxLayer` para que el tiling no deje huecos.
-- La animación `run_right` (8 frames de `Run.png`, loop, speed 8) ya existía en `player.tscn`; solo había que dispararla.
-- La cámara no tiene lógica en el script: para cambiar el comportamiento de límites usa las propiedades `limit_*` del nodo `Camera2D` en el editor.
+- `TileMapLayer` collision `physics_layer_0`, every tile with a 16×16 polygon.
+- `UILayer` is a `CanvasLayer` → it doesn't follow `Camera2D`; `ParallaxBackground` does, but with a reduced `motion_scale`.
+- The editor can overwrite `icon.tscn`; `_ensure_health_ui()` and `_ensure_stamina_ui()` prevent losing the HUD.
+- If you change the `scale` of a parallax sprite, recompute `motion_mirroring = texture_width * scale` on its `ParallaxLayer` so the tiling leaves no gaps.
+- The `run_right` animation (8 frames of `Run.png`, loop, speed 8) already existed in `player.tscn`; it only had to be triggered.
+- The camera has no logic in the script: to change the limit behaviour use the `limit_*` properties of the `Camera2D` node in the editor.
 
-*Última actualización: refactor de enemigos (EnemyBase + Ghost) en rama `refactor/base_enemies`.*
+*Last update: enemy refactor (EnemyBase + Ghost) on branch `refactor/base_enemies`.*
 
 ---
 
-## 13. Sistema de Enemigos (`EnemyBase` + hijos)
+## 13. Enemy System (`EnemyBase` + children)
 
-### 13.1 `scripts/enemies/enemy_base.gd` — clase base
-`CharacterBody2D` con IA genérica: perseguir → atacar (melee o proyectil) → huir opcional → loot al morir.
+### 13.1 `scripts/enemies/enemy_base.gd` — base class
+`CharacterBody2D` with generic AI: chase → attack (melee or projectile) → optional flee → loot on death.
 
-| Grupo export | Contenido clave |
+| Export group | Key content |
 |---|---|
 | Basic Stats | `max_health`, `base_attack`, `base_defense`, `speed_movement`, `attack_cooldown` |
-| Enemy Config | `flying_enemy` (sin gravedad, X+Y), `ranged_enemy` + `projectile` / `projectile_speed` / `projectile_spawn`, `flee_enemy` + `flee_area` |
-| Attack | `attack_impact_delay` (impacto), `attack_duration` (bloqueo) |
+| Enemy Config | `flying_enemy` (no gravity, X+Y), `ranged_enemy` + `projectile` / `projectile_speed` / `projectile_spawn`, `flee_enemy` + `flee_area` |
+| Attack | `attack_impact_delay` (impact), `attack_duration` (lock) |
 | Loot | `loot_table: Array[LootDropItem]`, spreads |
 | Nodes | `sprite`, `detection_area`, `attack_range`, `flip_pivot` |
 | Animations | `idle_animation`, `move_animation`, `attack_animation`, `sprite_faces_right` |
 
-**Hooks para hijos** (sobrescribir):
-- `_update_behavior(delta)` — prioridad huir > atacar > perseguir
+**Hooks for children** (override):
+- `_update_behavior(delta)` — priority flee > attack > chase
 - `_start_attack()` / `_perform_attack()` / `_chase` / `_flee`
-- `_on_death()` — por defecto `queue_free()`
-- `_refresh_area_flags()` — revalida `attack_range` / `flee_area` (útil tras TPs)
+- `_on_death()` — `queue_free()` by default
+- `_refresh_area_flags()` — revalidates `attack_range` / `flee_area` (useful after TPs)
 
-**Flujo de ataque**: `_start_attack` espera `attack_impact_delay` → `_perform_attack` (proyectil o melee) → espera el resto de `attack_duration`.
+**Attack flow**: `_start_attack` waits `attack_impact_delay` → `_perform_attack` (projectile or melee) → waits out the rest of `attack_duration`.
 
-### 13.2 `scripts/enemies/ghost.gd` — fantasma volador
-Extiende `EnemyBase`. Sin máquina de estados; usa los hooks de la base.
+### 13.2 `scripts/enemies/ghost.gd` — flying ghost
+Extends `EnemyBase`. No state machine; it uses the base hooks.
 
-| Export | Default | Descripción |
+| Export | Default | Description |
 |---|---|---|
-| `charge_time` | 0.4s | Tiempo en rango antes de disparar |
-| `tp_cooldown` | 4s | Enfriamiento del teletransporte |
-| `post_attack_tp_delay` | 0.5s | TP extra bloqueado tras cada ataque (se suma al cooldown) |
-| `tp_zone_margin` | 10px | Margen fuera del flee / dentro del attack |
-| `tp_min_travel` | 80px | Distancia mínima entre el último TP y el nuevo |
-| `tp_attempts` | 12 | Intentos aleatorios (×20 de red de seguridad en el bucle) |
-| `invulnerable_while_teleporting` | true | Sin daño durante el TP |
+| `charge_time` | 0.4s | Time in range before firing |
+| `tp_cooldown` | 4s | Teleport cooldown |
+| `post_attack_tp_delay` | 0.5s | Extra TP blocked after each attack (added to the cooldown) |
+| `tp_zone_margin` | 10px | Margin outside flee / inside attack |
+| `tp_min_travel` | 80px | Minimum distance between the last TP and the new one |
+| `tp_attempts` | 12 | Random attempts (×20 safety net in the loop) |
+| `invulnerable_while_teleporting` | true | No damage during the TP |
 
-**Comportamiento**:
-1. **Huir** = solo intentar TP a la zona de ataque. Si no puede (cooldown / sin posición), **no corre**: se queda y sigue atacando.
-2. **TP** se calcula desde la posición del jugador, en el anillo elíptico entre `flee_range` y `attack_range` (rx ≠ ry). Nunca por encima del jugador (`offset.y >= 0`).
-3. **Búsqueda**: precondición `attack > flee + 2×margen` en ambos ejes; luego reintenta hasta cumplir `tp_min_travel` (tope de seguridad `tp_attempts × 20`).
-4. **Sin TP durante ataque**; al terminar un ataque normal: lockout `tp_cooldown + post_attack_tp_delay`. Los ataques de "aguantar el suelo" no reinician el cooldown completo.
-5. Invulnerable mientras hace `vanish`/`appear`.
+**Behaviour**:
+1. **Flee** = only try to TP to the attack zone. If it can't (cooldown / no position), it **doesn't run**: it stays and keeps attacking.
+2. **TP** is computed from the player's position, on the elliptical ring between `flee_range` and `attack_range` (rx ≠ ry). Never above the player (`offset.y >= 0`).
+3. **Search**: precondition `attack > flee + 2×margin` on both axes; then it retries until `tp_min_travel` is met (safety cap `tp_attempts × 20`).
+4. **No TP during an attack**; when a normal attack ends: lockout `tp_cooldown + post_attack_tp_delay`. The "hold the ground" attacks don't reset the full cooldown.
+5. Invulnerable while playing `vanish`/`appear`.
 
-**Escena** `scenes/enemies/ghost.tscn`:
-- Áreas elípticas: `attack_range` scale ≈ 0.6×0.45, `flee_range` ≈ 0.35×0.25 (misma `CircleShape2D`)
-- `Pivot/SpawnPoint` para el proyectil
-- Export del proyectil se llama **`projectile`** (no `projectile_scene`)
+**Scene** `scenes/enemies/ghost.tscn`:
+- Elliptical areas: `attack_range` scale ≈ 0.6×0.45, `flee_range` ≈ 0.35×0.25 (same `CircleShape2D`)
+- `Pivot/SpawnPoint` for the projectile
+- The projectile export is called **`projectile`** (not `projectile_scene`)
 
-### 13.3 `scripts/enemies/orc.gd` — melee de suelo
-Ejemplo mínimo de hijo: solo `_init` con stats y autodetección de nodos en `_ready` (~28 líneas). Sin gravedad off, melee cuerpo a cuerpo.
+### 13.3 `scripts/enemies/orc.gd` — ground melee
+Minimal child example: just `_init` with stats and node autodetection in `_ready` (~28 lines). No gravity off, body-to-body melee.
 
-### 13.4 Cómo añadir un enemigo nuevo
-1. Crear escena `CharacterBody2D` con script `extends EnemyBase` (o hijo existente).
-2. Añadir `AnimatedSprite2D`, `detection_area`, `attack_range` (+ `flee_area` / proyectil si hace falta).
-3. Asignar exports en el inspector o en `_init()` como hace `orc.gd`.
-4. El jugador debe estar en el grupo **`player`** para ser detectado.
+### 13.4 How to add a new enemy
+1. Create a `CharacterBody2D` scene with a script `extends EnemyBase` (or an existing child).
+2. Add `AnimatedSprite2D`, `detection_area`, `attack_range` (+ `flee_area` / projectile if needed).
+3. Assign the exports in the inspector or in `_init()` as `orc.gd` does.
+4. The player must be in the **`player`** group to be detected.

@@ -47,6 +47,25 @@ func remove_passive(passive: PassiveItems) -> void:
 		active_passives.erase(passive)
 		passives_changed.emit()
 
+## Resource paths of the equipped passives, in order. Used by the save.
+func serialized_passives() -> PackedStringArray:
+	var paths := PackedStringArray()
+	for passive in active_passives:
+		if passive and not passive.resource_path.is_empty():
+			paths.append(passive.resource_path)
+	return paths
+
+
+## Re-equips the passives of a save (Continue); their equip effects run again.
+func restore_from_save(paths: Array) -> void:
+	while not active_passives.is_empty():
+		remove_passive(active_passives.back())
+	for path in paths:
+		var item := load(String(path)) as PassiveItems
+		if item:
+			add_passive(item)
+
+
 ## Runs when the player attacks
 func trigger_attack_passives(target: Node, base_damage: float) -> float:
 	var current_damage = base_damage

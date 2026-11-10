@@ -659,6 +659,16 @@ func add_coin(amount: int = 1) -> void:
 	_pop_coins_ui()
 
 
+## Restores the run stats from a save, clamped to the current maxima.
+func restore_run_state(saved_health: int, saved_stamina: float, saved_coins: int) -> void:
+	health = clampi(saved_health, 1, max_health)
+	stamina = clampf(saved_stamina, 0.0, max_stamina)
+	current_coins = maxi(saved_coins, 0)
+	_update_health_ui()
+	_update_stamina_ui()
+	_update_coins_ui()
+
+
 ## Coin counter pop: grows and returns to its size.
 func _pop_coins_ui() -> void:
 	if coins_label == null:

@@ -15,6 +15,8 @@ extends Resource
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Relative weight in the world's biome distribution.
 @export var spawn_weight: float = 1.0
+## Distance from the start (tiles) before this biome can appear at all.
+@export var min_distance_tiles: int = 0
 ## Terrain noise amplitude multiplier (1 = unchanged); higher = more pronounced heights.
 @export_range(0.1, 3.0, 0.05) var terrain_amplitude_multiplier: float = 1.0
 ## Terrain noise frequency multiplier (1 = unchanged); higher = more broken relief.

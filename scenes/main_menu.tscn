@@ -1,18 +1,36 @@
-[gd_scene format=4 uid="uid://b7m3nq0ffbtpa"]
+[gd_scene format=3 uid="uid://b7m3nq0ffbtpa"]
 
-[ext_resource type="Texture2D" path="res://assets/map/background/cloud.png" id="1_cloud"]
-[ext_resource type="Texture2D" path="res://assets/map/background/mountain2.png" id="2_mount"]
-[ext_resource type="Texture2D" path="res://assets/map/background/pine1.png" id="3_far"]
-[ext_resource type="Texture2D" path="res://assets/map/background/pine2.png" id="4_near"]
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="5_menu"]
+[ext_resource type="Texture2D" uid="uid://dkt1xyub7v5sq" path="res://assets/map/background/cloud.png" id="1_cloud"]
+[ext_resource type="Texture2D" uid="uid://vf4s3jpo4gfq" path="res://assets/map/background/mountain2.png" id="2_mount"]
+[ext_resource type="Texture2D" uid="uid://dstunb0ojedcb" path="res://assets/map/background/pine1.png" id="3_far"]
+[ext_resource type="Texture2D" uid="uid://3na0ga7glp0b" path="res://assets/map/background/pine2.png" id="4_near"]
+[ext_resource type="Script" uid="uid://d4cdtquweia8m" path="res://scripts/ui/main_menu.gd" id="5_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="6_settings"]
 
-[node name="main_menu" type="Node2D"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_seed"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+bg_color = Color(0.078431, 0.109804, 0.14902, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="main_menu" type="Node2D" unique_id=2110153718]
 script = ExtResource("5_menu")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=251082834]
+position = Vector2(808, 773)
 offset = Vector2(60, -70)
 
-[node name="clouds" type="Parallax2D" parent="."]
+[node name="clouds" type="Parallax2D" parent="." unique_id=238917961]
 z_index = -100
 scroll_scale = Vector2(0.01, 0)
 scroll_offset = Vector2(-5, 90)
@@ -20,10 +38,10 @@ repeat_size = Vector2(688, 0)
 autoscroll = Vector2(-1, 0)
 repeat_times = 3
 
-[node name="Sprite2D" type="Sprite2D" parent="clouds"]
+[node name="Sprite2D" type="Sprite2D" parent="clouds" unique_id=1394247496]
 texture = ExtResource("1_cloud")
 
-[node name="mountains" type="Parallax2D" parent="."]
+[node name="mountains" type="Parallax2D" parent="." unique_id=540344953]
 z_index = -100
 scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.02, 0)
@@ -31,10 +49,10 @@ scroll_offset = Vector2(0, 213)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
-[node name="Sprite2D" type="Sprite2D" parent="mountains"]
+[node name="Sprite2D" type="Sprite2D" parent="mountains" unique_id=2020974186]
 texture = ExtResource("2_mount")
 
-[node name="MountainBase" type="ColorRect" parent="mountains"]
+[node name="MountainBase" type="ColorRect" parent="mountains" unique_id=1212510880]
 offset_left = -1032.0
 offset_top = 62.0
 offset_right = 1032.0
@@ -42,7 +60,7 @@ offset_bottom = 400.0
 mouse_filter = 2
 color = Color(0.156863, 0.239216, 0.262745, 1)
 
-[node name="far_forest" type="Parallax2D" parent="."]
+[node name="far_forest" type="Parallax2D" parent="." unique_id=824442988]
 z_index = -100
 scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.2, 0.1)
@@ -50,10 +68,10 @@ scroll_offset = Vector2(-1072, 363)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
-[node name="Sprite2D" type="Sprite2D" parent="far_forest"]
+[node name="Sprite2D" type="Sprite2D" parent="far_forest" unique_id=1803975739]
 texture = ExtResource("3_far")
 
-[node name="near_forest" type="Parallax2D" parent="."]
+[node name="near_forest" type="Parallax2D" parent="." unique_id=1149732940]
 z_index = -100
 scale = Vector2(1.6, 1.6)
 scroll_scale = Vector2(0.5, 0.25)
@@ -61,24 +79,24 @@ scroll_offset = Vector2(-84, 520)
 repeat_size = Vector2(688, 0)
 repeat_times = 3
 
-[node name="Sprite2D" type="Sprite2D" parent="near_forest"]
+[node name="Sprite2D" type="Sprite2D" parent="near_forest" unique_id=1660131734]
 texture = ExtResource("4_near")
 
-[node name="Menu" type="CanvasLayer" parent="."]
+[node name="Menu" type="CanvasLayer" parent="." unique_id=1806652290]
 layer = 10
 
-[node name="Layout" type="VBoxContainer" parent="Menu"]
+[node name="Layout" type="VBoxContainer" parent="Menu" unique_id=1196322217]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 48.0
-offset_bottom = -48.0
+offset_top = 34.0
+offset_bottom = -34.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 14
 alignment = 1
-theme_override_constants/separation = 34
 
-[node name="Title" type="Label" parent="Menu/Layout"]
+[node name="Title" type="Label" parent="Menu/Layout" unique_id=1985723400]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0.086, 0.121, 0.278, 1)
@@ -88,9 +106,93 @@ theme_override_font_sizes/font_size = 44
 text = "OffBeaten Path"
 horizontal_alignment = 1
 
-[node name="Play" type="Button" parent="Menu/Layout"]
+[node name="NewGame" type="Button" parent="Menu/Layout" unique_id=908916252]
+custom_minimum_size = Vector2(240, 40)
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(190, 44)
 theme_override_font_sizes/font_size = 20
-text = "Play"
+text = "New Game"
+
+[node name="Continue" type="Button" parent="Menu/Layout" unique_id=292636297]
+visible = false
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Continue"
+
+[node name="Settings" type="Button" parent="Menu/Layout" unique_id=1878912868]
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Settings"
+
+[node name="Quit" type="Button" parent="Menu/Layout" unique_id=1884756470]
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Quit"
+
+[node name="SeedDialog" type="PanelContainer" parent="Menu" unique_id=1738366604]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -110.0
+offset_right = 210.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_seed")
+
+[node name="Margin" type="MarginContainer" parent="Menu/SeedDialog" unique_id=607883287]
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Menu/SeedDialog/Margin" unique_id=484967523]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="SeedTitle" type="Label" parent="Menu/SeedDialog/Margin/Content" unique_id=1354164529]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "New world"
+horizontal_alignment = 1
+
+[node name="SeedLabel" type="Label" parent="Menu/SeedDialog/Margin/Content" unique_id=501283217]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "World seed (empty = random)"
+horizontal_alignment = 1
+
+[node name="SeedInput" type="LineEdit" parent="Menu/SeedDialog/Margin/Content" unique_id=528674999]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+placeholder_text = "Empty = random"
+alignment = 1
+max_length = 20
+
+[node name="Buttons" type="HBoxContainer" parent="Menu/SeedDialog/Margin/Content" unique_id=1983655410]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="SeedBack" type="Button" parent="Menu/SeedDialog/Margin/Content/Buttons" unique_id=1877138642]
+custom_minimum_size = Vector2(120, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Back"
+
+[node name="SeedStart" type="Button" parent="Menu/SeedDialog/Margin/Content/Buttons" unique_id=1489193126]
+custom_minimum_size = Vector2(120, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Start"
+
+[node name="SettingsPanel" parent="Menu" unique_id=580980420 instance=ExtResource("6_settings")]

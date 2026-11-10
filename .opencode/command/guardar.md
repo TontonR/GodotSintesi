@@ -1,12 +1,12 @@
 ---
-description: Vuelca a docs/ el conocimiento nuevo de la sesión, sin releer el proyecto.
+description: Save the session's new knowledge into docs/ without re-reading the project.
 agent: build
 ---
 
-Guarda en la documentación lo aprendido/decidido en esta sesión: $ARGUMENTS
+Save into the documentation what was learned/decided in this session: $ARGUMENTS
 
-1. No releas ficheros "por si acaso": usa lo que ya tienes en contexto de esta sesión.
-2. Elige el `docs/<sistema>.md` adecuado (si no existe, créalo) y añade un resumen de ~30 líneas con fecha `AAAA-MM-DD`: decisiones tomadas, qué quedó cableado/pendiente y errores encontrados.
-3. Si creas un fichero nuevo, añádelo al índice de `AGENTS.md`.
-4. **Nunca amplíes `AGENTS.md`** (máx. ~70 líneas): lo nuevo va a `docs/`.
-5. No toques código, no ejecutes tests ni comandos.
+1. Don't re-read files "just in case": use what you already have in this session's context.
+2. Pick the right `docs/<system>.md` (create it if missing) and add a ~30-line summary dated `YYYY-MM-DD`: decisions taken, what was wired/pending and mistakes found.
+3. If you create a new file, add it to the `AGENTS.md` index.
+4. **Never grow `AGENTS.md`** (max ~70 lines): new content goes to `docs/`.
+5. Don't touch code, don't run tests or commands.

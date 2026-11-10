@@ -7,6 +7,10 @@ extends Node2D
 # Everything is created in code: this node needs no scenes or external textures.
 # Other systems find it in the "fx" group.
 
+## Default blood red. Every layer of the death burst is derived from it, so an
+## enemy only has to set one `blood_color` to change its own.
+const BLOOD_COLOR := Color(0.82, 0.11, 0.1)
+
 var _camera: Camera2D
 var _shake_time := 0.0
 var _shake_duration := 0.01
@@ -62,13 +66,15 @@ func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
 
 
-## Enemy death: layered blood burst (dark jet with
-## trail, red splatter, mist and white sparks) and camera hit.
-func enemy_death(world_position: Vector2) -> void:
-	_burst(world_position, Color(0.52, 0.04, 0.06), 32, 300.0, 0.95, 1.7, 680.0, 7.0, 180.0, true)
-	_burst(world_position, Color(0.85, 0.12, 0.1), 26, 190.0, 0.7, 1.4, 380.0, 10.0)
-	_burst(world_position, Color(0.62, 0.06, 0.08, 0.55), 14, 55.0, 0.55, 2.6, 40.0, 6.0)
-	_burst(world_position, Color(1.0, 0.94, 0.88), 8, 120.0, 0.3, 0.7, 260.0, 4.0)
+## Enemy death: layered blood burst (dark jet with trail, splatter, mist and
+## sparks) in the enemy's `blood_color`, plus camera hit.
+func enemy_death(world_position: Vector2, blood_color: Color = BLOOD_COLOR) -> void:
+	var mist := blood_color
+	mist.a = 0.55
+	_burst(world_position, blood_color.darkened(0.4), 32, 300.0, 0.95, 1.7, 680.0, 7.0, 180.0, true)
+	_burst(world_position, blood_color, 26, 190.0, 0.7, 1.4, 380.0, 10.0)
+	_burst(world_position, mist, 14, 55.0, 0.55, 2.6, 40.0, 6.0)
+	_burst(world_position, blood_color.lightened(0.75), 8, 120.0, 0.3, 0.7, 260.0, 4.0)
 	shake(1.4, 0.12)
 
 

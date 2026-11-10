@@ -12,11 +12,11 @@ extends Node
 
 @export_group("Fall")
 ## Height above the spawn point from which the fall starts (px).
-@export var fall_height_px: float = 520.0
-## Fall speed (px/s). At 300 px/s the intro lasts ~1.7 s.
-@export var fall_speed: float = 300.0
+@export var fall_height_px: float = 260.0
+## Fall speed (px/s). 260 px at 620 px/s lasts ~0.4 s.
+@export var fall_speed: float = 620.0
 ## Safety cap (s): when reached, the player lands anyway and control is returned.
-@export var max_seconds: float = 6.0
+@export var max_seconds: float = 3.0
 
 var _player: CharacterBody2D
 var _world: Node
@@ -28,6 +28,10 @@ var _finished: bool = false
 
 
 func _ready() -> void:
+	# Continue: the run is restored at its saved position, without the fall.
+	if SaveGame.pending_load:
+		_finished = true
+		return
 	_player = get_parent().get_node_or_null("player") as CharacterBody2D
 	if _player == null:
 		_finished = true

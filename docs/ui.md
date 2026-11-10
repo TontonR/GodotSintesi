@@ -1,6 +1,6 @@
 # UI — HUD, passive grid and inventory screen
 
-_2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-11-06_
+_2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-11-06 · 2026-11-10_
 
 ## Passive grid (`PassiveUI` · `UILayer/PassiveBar`)
 
@@ -30,11 +30,38 @@ _2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-1
 ## Main menu (2026-11-03)
 
 - `scenes/main_menu.tscn` + `scripts/ui/main_menu.gd`, now `run/main_scene` in `project.godot`. The game is called **OffBeaten Path** (`config/name`).
-- Background: the same parallax as the game (clouds, mountains and two layers of pines, `z_index` -100) over the sky, which is the project's `default_clear_color`. `Camera2D` with the same `offset (60,-70)` as the player's so the layers fall in the same place as in-game.
-- UI in `CanvasLayer` 10: centered `VBoxContainer` with the title (44 px Label, shadow) and the `Play` button (focused on start, so Enter/Space also work).
-- No fades: Play calls `change_scene_to_file("res://scenes/game.tscn")` directly (the transition black was removed on 2026-11-03).
-- `MountainBase`: `ColorRect` child of `mountains` (local and 62 → 400, 2064 px wide) with `#283D43` (`Color(0.157, 0.239, 0.263)`), so no sky shows below the range. Since 2026-11-03 it is **also** in `game.tscn` with the same color: the flat band is always visible, in the menu and in-game, and the day/night cycle darkens it along with the rest of the `mountains` node.
+- Background: the same parallax as the game (clouds, mountains and two layers of pines, `z_index` -100) over the sky, which is the project's `default_clear_color`.
+- **Camera at the spawn point (2026-11-10, T-0047)**: `Camera2D` has the player's `offset (60,-70)` **and** `position (808, 773)`. `Parallax2D` moves each layer by camera position × `scroll_scale`, so a camera at (0,0) left the two pine layers 116 px apart relative to each other and sky showed between them while the in-game spawn looked right. The values are the in-game camera at rest on the spawn: x = `safe_start_tiles` 50 × 16 + 8 = 808; y = ground row (`base_height` 50) × 16 − half the player collider (17 × 3.2 / 2 = 27.2) = 772.8 → 773. If those exports or the collider change, the menu background drifts again and the menu looks like a different screen.
+- UI in `CanvasLayer` 10: centered `VBoxContainer` with the title (44 px Label, shadow) and **New Game / Continue / Settings / Quit** buttons. `NewGame` is focused on start, so Enter/Space work; arrows move between buttons.
+- **Seed dialog (2026-11-10, T-0048)**: New Game hides the buttons and shows `Menu/SeedDialog` (a `PanelContainer` styled like the settings panel): title, a `LineEdit` with `Empty = random`, and **Back** / **Start**. Enter starts too, **Esc** goes back. An empty field or text that is not an integer means random. The number is stored in `SaveGame.pending_seed` (static, like `pending_load`) because the scene change happens after; `WorldGenerator._ready()` consumes it and clears it. The debug overlay shows the live seed, so typing it back reproduces the world.
+- **Continue (2026-11-10)**: only visible when `SaveGame.has_save()` (`user://savegame.cfg`). It calls `SaveGame.request_load()` and changes scene; the new Game root (`scripts/game.gd`) applies the data. New Game cancels any pending load.
+- **Settings (2026-11-10)**: `scenes/ui/settings_panel.tscn` + `scripts/ui/settings_panel.gd` (`class_name SettingsPanel`), instanced both here and in the pause menu. Hidden until Settings is pressed, closes with `Back` or **Esc** and emits `closed`. Two rows: **Window mode** (`Windowed`, `Fullscreen` = exclusive, `Borderless fullscreen`) and **Resolution**. Both apply immediately and are stored in `user://settings.cfg` (`[display] window_mode`, `width`, `height`), then re-applied when the panel starts.
+- **Window handling (2026-11-10, T-0046)**: `window/stretch/mode="canvas_items"` and `content_scale_stretch = 1` (`integer`) never change. The panel changes the OS window (`window_set_mode()` / `window_set_size()`) **and the size of the game viewport** (`_apply_layout()`). Fullscreen reads `screen_get_size()`, windowed uses the chosen size; the viewport becomes `size / factor`, with `factor` the largest whole pixel size that still leaves 768×432 for the UI (`_best_factor()`). Every art pixel is exactly `factor` screen pixels, so the texel size is constant (no shimmer) and the leftover space is **more visible world, never black bars**. At most `factor - 1` px is left when the size is not divisible (1 px at 2×, e.g. the 1079-tall borderless window).
+- **Why not fractional (T-0045)**: forcing `fractional` to fill the screen was what made the mountains judder — at 2.5× the nearest-filtered texels change size every frame. Integer + adaptive viewport gets a full screen and crisp pixels at the same time.
+- Resolution list (2026-11-10, T-0046): 18 window sizes (`1024×576` … `3840×2160`, including `1366×768`, `1680×1050`, `1920×1200`, `2560×1600` and `3440×1440`), filtered to those that fit in the usable screen area and disabled outside windowed mode. A size saved by an older build is validated against the list and falls back to 2×.
+- Side effects of a viewport bigger than 768×432: HUD anchors stay at the corners, the inventory (744×380) still fits, and the code that reads `get_visible_rect()` (`day_night`, `biome_particles`, ghost teleport, item pickups) adapts on its own.
+- No fades: New Game/Continue call `change_scene_to_file("res://scenes/game.tscn")` directly (the transition black was removed on 2026-11-03).
+- `MountainBase`: `ColorRect` child of `mountains` (local and 62 → 400, 2064 px wide), so no sky shows below the range. Since 2026-11-03 it is also in `game.tscn`: the flat band is always visible, in the menu and in-game. In the menu it keeps `#283D43`; in-game it follows the biome (2026-11-10): `WorldGenerator.base_tint_paths` points to it and `_update_biome_tint()` sets its `color` to the biome's `forest_color` darkened 0.35, so the meadow reproduces `#283D43` and the red forest/snow shift with the rest of the background. The day/night cycle still darkens it along with the whole `mountains` node.
 - The game starts with the fall from the sky (`FallIntro`, see `docs/world.md`).
+
+## Debug overlay (2026-11-10, T-0048)
+
+- `scripts/debug_tools.gd` (`debug_tools` node in `game.tscn`) creates `UILayer/DebugHint`, an 11 px label anchored to the **bottom left** (alpha 0.75 + shadow) with two lines:
+  - `speed x1 · immortal no · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 quick travel · KP5 immortal` (the keys), and
+  - `pos 808, 773 · tile 50, 48 · seed 12345`: the player position in pixels (rounded), the same in tiles (`floori(px / 16)`) and the seed of the run (`WorldGenerator.current_seed()`, random when the menu field was left empty).
+- The second line is rebuilt in `_process` and only written to the label when it changes, so standing still costs nothing and the seed is readable without stopping.
+
+## Pause menu (2026-11-10)
+
+- `scenes/ui/pause_menu.tscn` + `scripts/ui/pause_menu.gd` (`class_name PauseMenu`), instanced in `game.tscn` as `PauseMenu` (CanvasLayer 20, `process_mode = ALWAYS`). Hidden until **Esc** (`ui_cancel`). Buttons: **Resume**, **Settings** (same `SettingsPanel`) and **Save and quit**.
+- It pauses the tree (`get_tree().paused = true`) and `_exit_tree` un-pauses it as a safety net. While the inventory screen is open the tree is already paused and Esc belongs to it: the pause menu returns without handling it, so the inventory closes first.
+- `Save and quit` saves the run (see below) and loads `scenes/main_menu.tscn`.
+
+## Save slot (2026-11-10)
+
+- `scripts/save_game.gd` (`class_name SaveGame`, static) writes `user://savegame.cfg` in `[run]` (seed, position, health, stamina, coins), `[inventory]`, `[passives]` (resource paths) and `[world]` (killed-enemy and collected-coin spawn ids).
+- On Continue, `pending_load` + `data` are static so they survive `change_scene_to_file()`: `WorldGenerator._ready()` uses the saved seed and restores the spawn ids before instancing chunks; `FallIntro` skips itself; `Game._ready()` (root `scripts/game.gd`) re-equips passives, restores inventory with `Inventory.restore_from_save()`, puts the player at the saved position (camera `reset_smoothing`) and sets health/stamina/coins with `Player.restore_run_state()`.
+- Not saved: passive internal state (levels/timers), live enemies that had not been killed, and the day/night clock. Saving only happens from the pause menu.
 
 ## Language convention (2026-10-15)
 

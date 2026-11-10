@@ -37,8 +37,9 @@ _2026-10-20 · branch `feat/skills-and-complex-passives`_
 - The player's body only collides with the world (`collision_mask` 1): it passes through enemies, can't climb on them. Damage and hits go through `Area2D`.
 - Coins: `current_coins`, `initial_coins`.
 
-## Initial fall (2026-11-03)
+## Initial fall (2026-11-03, retimed 2026-11-10)
 
+- `scripts/world/fall_intro.gd` defaults: `fall_height_px` 260 and `fall_speed` 620, so the drop lasts ~0.4 s (it used to be 520 px at 300 px/s, ~1.7 s) plus the 6 tiles the generator leaves between the spawn point and the ground; `max_seconds` 3 is only the safety net. Change the exports, not the world generator.
 - Three public variables handled by `scripts/world/fall_intro.gd`: `control_enabled` (false = no input, jump, attack or guard), `camera_follow_enabled` (false = camera doesn't follow) and `fall_speed_cap` (fall speed cap in px/s, 0 = no cap).
 - With `control_enabled = false`, `_physics_process` cuts before stamina/combat: it brakes X, applies gravity ×1.6, limits Y and calls `move_and_slide()`. The animation keeps updating.
 - By default all three stay at their normal value (`true`, `true`, `0`): outside the intro the player behaves as before.

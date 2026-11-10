@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="Biome" format=3]
+[gd_resource type="Resource" script_class="Biome" format=3 uid="uid://dgjhr12auvghn"]
 
-[ext_resource type="Script" path="res://scripts/world/biome.gd" id="1_biome"]
+[ext_resource type="Script" uid="uid://ds3uuejorgxyv" path="res://scripts/world/biome.gd" id="1_biome"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/skeleton.tscn" id="2_esqueleto"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/archer.tscn" id="3_arquero"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/werewolf.tscn" id="4_lobo"]
+[ext_resource type="PackedScene" uid="uid://bbwk7g6kxmhbj" path="res://scenes/enemies/werewolf.tscn" id="4_lobo"]
 
 [resource]
 script = ExtResource("1_biome")
@@ -13,5 +13,6 @@ forest_color = Color(0.82, 0.88, 0.96, 1)
 rock_color = Color(0.75, 0.78, 0.82, 1)
 ambient = "snow"
 spawn_weight = 0.2
+min_distance_tiles = 4096
 enemy_scenes = Array[PackedScene]([ExtResource("2_esqueleto"), ExtResource("3_arquero"), ExtResource("4_lobo")])
 enemy_counts = Array[int]([2, 2, 1])

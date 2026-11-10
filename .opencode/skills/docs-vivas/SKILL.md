@@ -3,46 +3,46 @@ name: docs-vivas
 description: Use before exploring the codebase for how a system works (player, enemies, world generation, HUD, inventory, passives, loot) and after any task that changes behavior or closes a decision. Keeps docs/*.md as the project memory so one small file is read instead of re-reading code.
 ---
 
-# Documentación viva (`docs/`)
+# Living documentation (`docs/`)
 
-La memoria del proyecto son `docs/*.md`. El código se lee solo cuando el doc no responde; si el doc no responde, se arregla el doc en esa misma tarea.
+The project memory is `docs/*.md`. Code is read only when the doc does not answer; if the doc does not answer, fix the doc in that same task.
 
-## Antes de investigar
+## Before investigating
 
-1. Mira el índice de `AGENTS.md`. Si hay fichero para el sistema, **léelo antes de tocar código**.
-2. Si el doc no cubre lo que necesitas, busca en `docs/` por palabras clave (`grep`) antes de abrir scripts.
-3. Solo entonces explora código, y acotado (fichero o función concreta), no el proyecto entero.
-4. Si el doc contradice al código, gana el código: corrige el doc al terminar.
+1. Check the index in `AGENTS.md`. If there is a file for the system, **read it before touching code**.
+2. If the doc does not cover what you need, search `docs/` by keyword (`grep`) before opening scripts.
+3. Only then explore code, and keep it scoped (a specific file or function), not the whole project.
+4. If the doc contradicts the code, the code wins: fix the doc when you finish.
 
-## Cuándo escribir
+## When to write
 
-- Cambió comportamiento, escena, escena de UI, recurso o export.
-- Se cerró una decisión (aunque sea "no se hace").
-- Un bug costó más de dos intentos: apunta la causa, no el síntoma.
-- Se descubrió una trampa del editor, de `.tscn`/`.tres` o de un export.
+- Behavior, a scene, a UI scene, a resource or an export changed.
+- A decision was closed (even if it was "not doing it").
+- A bug took more than two attempts: write down the cause, not the symptom.
+- An editor, `.tscn`/`.tres` or export trap was discovered.
 
-## Formato
+## Format
 
-`docs/<sistema>.md`, **≤30 líneas**, en español, con nombres de ficheros/nodos/clases en `` `code` ``:
+`docs/<system>.md`, **≤30 lines**, in English, with file/node/class names in `` `code` ``:
 
 ```md
-# <Sistema> — <qué cubre en una línea>
-_AAAA-MM-DD · rama `<rama>`_
+# <System> — <what it covers in one line>
+_YYYY-MM-DD · branch `<branch>`_
 
-## Qué hace y dónde vive
-- Nodo/script y ruta.
+## What it does and where it lives
+- Node/script and path.
 
-## Decisiones cerradas
-- Qué se eligió y por qué (una línea cada una).
+## Closed decisions
+- What was chosen and why (one line each).
 
-## Trampas
-- Error que ya picó y cómo se evita.
+## Traps
+- A mistake that already bit and how to avoid it.
 
-## Pendiente
-- Solo si hay algo acordado sin hacer.
+## Pending
+- Only if something was agreed but not done.
 ```
 
-- No pegues código entero: nombres, señales, exports y el porqué.
-- Un fichero por sistema. Si pasa de ~30 líneas, divide por subsistema y añade la fila al índice.
-- No repitas aquí lo que ya está en `AGENTS.md`: ese fichero no crece.
-- Al crear un fichero nuevo, añade su fila al índice de `AGENTS.md`.
+- Don't paste whole code: names, signals, exports and the reason.
+- One file per system. If it goes past ~30 lines, split by subsystem and add the row to the index.
+- Don't repeat here what `AGENTS.md` already says: that file doesn't grow.
+- When creating a new file, add its row to the `AGENTS.md` index.

@@ -142,6 +142,26 @@ func use_slot(index: int, target: Node) -> void:
 	slots_changed.emit()
 	item.use(target)
 
+## Resource paths of the slots, in order ("" = empty slot). Used by the save.
+func serialized_slots() -> PackedStringArray:
+	var paths := PackedStringArray()
+	for i in MAX_SLOTS:
+		var item := slots[i]
+		paths.append(item.resource_path if item and not item.resource_path.is_empty() else "")
+	return paths
+
+
+## Restores the slots from those paths (Continue).
+func restore_from_save(paths: Array) -> void:
+	for i in MAX_SLOTS:
+		var path := String(paths[i]) if i < paths.size() else ""
+		if path.is_empty():
+			slots[i] = null
+		else:
+			slots[i] = load(path) as Items
+	slots_changed.emit()
+
+
 ## Content of the given slot (null when empty)
 func get_slot(index: int) -> Items:
 	if index < 0 or index >= MAX_SLOTS:

@@ -2,6 +2,61 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-10 · `main` — coords y seed en el debug, semilla al crear mundo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El overlay de debug añade `pos`, `tile` y la seed de la partida; Nueva partida pide semilla (vacío = aleatoria) y se pasa al generador por `SaveGame.pending_seed` | `scripts/debug_tools.gd`, `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd`, `scripts/save_game.gd`, `scripts/world_generator.gd` | [T-0048](tickets/T-0048-coords-seed-en-debug-y-semilla-al-crear-mundo.md) |
+
+## 2026-11-10 · `main` — fondo del menú igual que el del spawn
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| La `Camera2D` del menú pasa a la posición del spawn (808, 773): las capas de pinos dejan de separarse y el menú encaja con el juego | `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd` | [T-0047](tickets/T-0047-fondo-del-menu-igual-al-spawn.md) |
+
+## 2026-11-10 · `main` — pantalla completa sin bandas (viewport adaptativo)
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Fuera las bandas sin volver al factor fraccional: la escala es entera y el viewport crece a `ventana / factor` (más mundo visible); lista ampliada a 18 resoluciones | `scripts/ui/settings_panel.gd` | [T-0046](tickets/T-0046-pantalla-completa-sin-bandas.md) |
+
+## 2026-11-10 · `main` — parallax sin tirones: escala entera también en fullscreen
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Fuera `STRETCH_FRACTIONAL`: la escala es siempre entera (fullscreen 1080p = 2× con bandas), lo que elimina el tirón de las montañas; la lista de resoluciones pasa a ser solo múltiplos exactos del viewport | `scripts/ui/settings_panel.gd` | [T-0045](tickets/T-0045-parallax-a-tirones-escala-fraccional.md) |
+
+## 2026-11-10 · `main` — biomas por tramos y sangre por enemigo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Biomas por tramos con duración mínima/máxima (sin microbiomas ni gigabiomas), desbloqueo por distancia y mundo generado solo hacia la derecha con tope en el borde izquierdo | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/biomes/nieve.tres` | [T-0044](tickets/T-0044-biomas-por-tramos-y-solo-derecha.md) |
+| `blood_color` por enemigo en el estallido de muerte (por defecto, el rojo de siempre) | `scripts/enemies/enemy_base.gd`, `scripts/fx.gd` | [T-0043](tickets/T-0043-sangre-por-enemigo.md) |
+
+## 2026-11-10 · `main` — pausa, ajustes compartidos y guardado
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Pausa con Esc (Reanudar / Ajustes / Guardar y salir), panel de ajustes reutilizado por menú y pausa, fullscreen y resoluciones no múltiplo a pantalla completa con `STRETCH_FRACTIONAL`, y guardado mínimo en `user://savegame.cfg` que Continúa donde se dejó | `scenes/ui/pause_menu.tscn`, `scenes/ui/settings_panel.tscn`, `scripts/ui/pause_menu.gd`, `scripts/ui/settings_panel.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scripts/player.gd`, `scenes/inventory/inventory.gd`, `scripts/collectables/player_passive.gd`, `scripts/world_generator.gd`, `scripts/world/fall_intro.gd` | [T-0042](tickets/T-0042-menu-de-pausa-y-guardado.md) |
+
+## 2026-11-10 · `main` — menú principal con ajustes
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Menú con Nueva partida, Continuar (solo si hay `user://savegame.cfg`), Ajustes y Salir; panel de ajustes con modo de ventana y resoluciones múltiplo del viewport guardadas en `user://settings.cfg` | `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd`, `docs/ui.md` | [T-0041](tickets/T-0041-menu-principal-y-ajustes.md) |
+
+## 2026-11-10 · `main` — banda de montaña con el color del bioma
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `MountainBase` pasa a teñirse con el `forest_color` del bioma oscurecido 0.35 (la pradera reproduce el `#283D43`), con la misma transición por bloque que pinos y roca | `scripts/world_generator.gd`, `docs/world.md`, `docs/ui.md` | [T-0040](tickets/T-0040-mountainbase-color-de-bioma.md) |
+
+## 2026-11-10 · `main` — caída inicial más corta
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Caída de entrada de 520→260 px y 300→620 px/s (~0,7 s en total con los 6 tiles del generador); red de seguridad de 6→3 s | `scripts/world/fall_intro.gd`, `docs/player.md` | [T-0039](tickets/T-0039-caida-inicial-mas-corta.md) |
+
 ## 2026-11-10 · `main` — fuera skills, 3 consumibles
 
 | Qué | Dónde | Ticket |

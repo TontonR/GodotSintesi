@@ -9,6 +9,9 @@ extends Node
 # inside a mountain while testing, and 5 toggles player immortality.
 # Test items (KP0-KP3) remain in `scenes/inventory/inventory.gd`, which
 # belongs to the inventory.
+# The bottom-left label always shows the speed, immortality, the player
+# position (pixels and tiles) and the seed of the run, so a world can be
+# reproduced from the menu's seed dialog.
 
 const TILE_SIZE := 16
 ## `Engine.time_scale` factors for KP7, KP8 and KP9.
@@ -27,11 +30,20 @@ const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 var _label: Label
 ## Debug immortality state (toggled by KP5).
 var _immortal: bool = false
+## Player and world are looked up lazily: the generator joins its group in `_ready`.
+var _player: Node2D
+var _world: Node
+## Position + seed line, rebuilt only when it changes.
+var _info: String = ""
 
 
 func _ready() -> void:
 	_apply_speed(game_speed)
 	_build_label()
+
+
+func _process(_delta: float) -> void:
+	_refresh_info()
 
 
 func _exit_tree() -> void:
@@ -106,16 +118,45 @@ func _build_label() -> void:
 	_label.anchor_top = 1.0
 	_label.anchor_bottom = 1.0
 	_label.offset_left = 8.0
-	_label.offset_top = -22.0
-	_label.offset_right = 520.0
+	# Two lines: the hint on top and position + seed below it.
+	_label.offset_top = -40.0
+	_label.offset_right = 620.0
 	_label.offset_bottom = -6.0
 	_label.add_theme_font_size_override("font_size", 11)
 	_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
 	_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 	ui_layer.add_child(_label)
-	_update_label()
+	_refresh_info()
 
 
 func _update_label() -> void:
 	if _label:
-		_label.text = HINT % [SPEED_LABELS[game_speed], IMMORTAL_LABELS[1 if _immortal else 0]]
+		_label.text = (HINT % [SPEED_LABELS[game_speed], IMMORTAL_LABELS[1 if _immortal else 0]]) + "\n" + _info
+
+
+## Rebuilds the position + seed line and only redraws the label when it changed.
+func _refresh_info() -> void:
+	if _player == null or not is_instance_valid(_player):
+		_player = get_tree().get_first_node_in_group("player") as Node2D
+	if _world == null or not is_instance_valid(_world):
+		_world = get_tree().get_first_node_in_group("world_generator")
+	var info := _info_text()
+	if info == _info:
+		return
+	_info = info
+	_update_label()
+
+
+## `pos px,py · tile tx,ty · seed N`; the seed is the one the generator is using
+## (random when the run was started with an empty seed).
+func _info_text() -> String:
+	var seed_value := 0
+	if _world and _world.has_method("current_seed"):
+		seed_value = int(_world.call("current_seed"))
+	if _player == null:
+		return "pos -, - · tile -, - · seed %d" % seed_value
+	var pos := _player.global_position
+	var tile := Vector2i(floori(pos.x / TILE_SIZE), floori(pos.y / TILE_SIZE))
+	return "pos %d, %d · tile %d, %d · seed %d" % [
+		roundi(pos.x), roundi(pos.y), tile.x, tile.y, seed_value
+	]

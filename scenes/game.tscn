@@ -19,6 +19,8 @@
 [ext_resource type="Texture2D" uid="uid://cr0l2e6v6hl5k" path="res://assets/map/background/mountain2_snow.png" id="23_msnow"]
 [ext_resource type="Script" uid="uid://df47xxof140b8" path="res://scripts/world/biome_particles.gd" id="24_parts"]
 [ext_resource type="Script" uid="uid://18rsr7h1h1n1" path="res://scripts/fx.gd" id="25_fx"]
+[ext_resource type="Script" uid="uid://cysx61qhfpsg2" path="res://scripts/game.gd" id="26_game"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="27_pause"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -84,6 +86,7 @@ texture = ExtResource("10_vtaks")
 sources/0 = SubResource("TileSetAtlasSource_kvpfn")
 
 [node name="game" type="Node2D" unique_id=2045042830]
+script = ExtResource("26_game")
 
 [node name="day_night" type="Node" parent="." unique_id=1535686532]
 script = ExtResource("19_dnt")
@@ -273,6 +276,8 @@ tile_set = SubResource("TileSet_0tnpc")
 tile_set = SubResource("TileSet_mdkdc")
 
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]
+
+[node name="PauseMenu" parent="." unique_id=933161359 instance=ExtResource("27_pause")]
 
 [node name="fall_intro" type="Node" parent="." unique_id=1899368322]
 script = ExtResource("21_fall")

@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · branch `feat/world_generation_2`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · branch `feat/world_generation_2`_
 
 ## What it does and where it lives
 
@@ -23,19 +23,24 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · branch `feat/world_generation_2`_
 - Viewport 768×432 and window 1536×864 = exactly 2×. With 1280×720 the factor was 1.667 and the pixel-art shimmered when scrolling (nearest-filtered textures change texel size every frame). If you change the window, use integer multiples: 768×432, 1536×864.
 - `window/stretch/scale_mode="integer"`: in fullscreen (1920×1080) the content is drawn at exactly 2× (1536×864) centered, with black bands; without this the factor was 2.5 and the shimmering came back. Measured: `screen_scale=(2.0, 2.0)` in windowed and fullscreen.
 - `snap_2d_transforms_to_pixel` is still active; with integer scale it doesn't produce shimmering.
+- **2026-11-10 (T-0045 → T-0046)**: the Settings panel briefly forced `fractional` to fill the screen; that is what brought the shimmering back (a slight judder in the slowest layer, the mountains), because at 2.5× the nearest texels change size every frame. The fix is not to stretch fractionally at all: the panel keeps `integer` and resizes the **viewport** to `window / factor` (`_apply_layout()`), so the screen fills with more world and each art pixel is a whole `factor` screen pixel. Framing: 1080p → 960×540 at 2×, 1440p → 853×480 at 3×, 4K → 768×432 at 5×; the base 768×432 is the floor, because the UI is built for it.
 
 ## Chunks and loading
 
 - Chunks of 256×140 tiles. Loading based on camera + `load_margin_px` 96 and `KEEP_CHUNKS_SIDE` = 2 extra chunks on each side are kept: enemies and coins only disappear when their chunk is 2 chunks behind (they are freed with the node, not before).
 - Before instantiating, the data for the chunk and the next one to the right are generated. When moving away, data and nodes are deleted.
+- **Right only** (2026-11-10): `_update_chunks()` clamps `first`/`last` to 0, so no chunk is ever generated left of the start (that was half the world wasted). `_height_at_with()` returns `base_height` for negative tiles, so chunk 0's left edge stays flat, and `_keep_player_inside_world()` stops the player at `TILE_SIZE` and cancels the leftward velocity: without a left chunk to stand on, the edge works as a wall instead of dropping the player into the void.
 - Seed: `world_seed` 0 = random; any other value fixes it. Each chunk's RNG uses the seed + coordinate.
+- **Seed from the menu (2026-11-10, T-0048)**: New Game asks for it (`Menu/SeedDialog`, empty = random) and the menu stores it in `SaveGame.pending_seed`, which `_ready()` consumes before the noise is built. The debug overlay prints `current_seed()`, so a world can be reproduced by typing that number.
 
-## Biomes (2026-11-01 · block transition 2026-11-05)
+## Biomes (2026-11-01 · block transition 2026-11-05 · runs 2026-11-10)
 
-- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (same order as the scenes).
+- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `min_distance_tiles`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (same order as the scenes).
 - Resources (3): `pradera.tres` (green, 4 orcs + 1 ghost, weight 0.55), `bosque_rojo.tres` (red, 1 wolf + 1 toad + 1 demon + 2 slimes, weight 0.3) and `nieve.tres` (blue-white, 2 skeletons + 2 archers + 1 wolf, weight 0.2).
-- **The biome is decided per block** (`_biome_index_at_tile()`): `_biome_noise` (1D Perlin, seed + 1000, `biome_frequency` 0.12 in chunk units divided by `chunk_width_tiles`, `biome_contrast` 2) returns a 0..1 value that is spread across the accumulated `spawn_weight`s: below the meadow weight it's meadow and the rest is red forest. Every `tile_x < chunk_width_tiles` (including negatives) is the first biome: the spawn safe zone.
-- **Enemies**: they are still per chunk; `_biome_for_chunk()` takes the biome of the central block. With `biome_frequency` 0.12 each biome lasts ~8 chunks (with 0.04 it was ~25 chunks, which is why almost everything came out meadow). The weights are thresholds over the noise, not exact percentages of the map.
+- **Biomes are decided per run, not per block** (2026-11-10, `_biome_index_at_tile()` / `_ensure_biome_runs()`): `_biome_runs` is a cached list of `{start, index, length}` built left to right, and any block resolves to the run containing it. The first run (tile 0) is the safe zone with the first biome; the whole window still blends, so the tint is smooth inside a run.
+- **Run length**: rolled between `min_biome_tiles` (1024 = 4 chunks) and `max_biome_tiles` (4096 = 16 chunks), rounded to `biome_sector_tiles` (0 = one chunk). This is what kills the micro-biomes (a red forest squeezed inside one transition) and the giga-biomes: no biome lasts under 4 or over 16 chunks. The 256-tile color/terrain blend is narrower than the shortest run, so two transitions can never overlap.
+- **Order** (2026-11-10): `_roll_biome_at()` picks among the biomes unlocked at that distance (`Biome.min_distance_tiles`, 0 by default; snow is set to 4096 tiles) and never repeats the previous one. `spawn_weight` only biases the pick, and the noise (`biome_frequency` 0.12 per chunk, sampled at the run start, `biome_contrast` 2) only decides the order: the weights no longer let the meadow swallow the map.
+- **Enemies**: they are still per chunk; `_biome_for_chunk()` takes the biome of the central block, so a chunk whose seam falls inside a transition keeps a single enemy set.
 - **Block transition**: `biome_transition_tiles` (0 = `chunk_width_tiles`, i.e. 256). Each block uses the moving average of its window's biome colors (±128 blocks), so the change is a gradient over ~256 blocks, not a step at the chunk seam. The seam can fall in the middle of a chunk: logic and color no longer depend on the edges.
 - **Terrain per biome**: each `Biome` has `terrain_amplitude_multiplier` and `terrain_frequency_multiplier`: red forest 1.35 and 1.1 (with 1.7/1.25 it was too noticeable), meadow 0.95 (flattens a bit) and snow 1.0. `_chunk_biome_data()` blends both with the same 256-block window as the color, so the relief is exaggerated little by little when entering the red forest. `_height_at_with()` uses the already-blended modifiers and the edges of two chunks match because the blend is done in a fixed order and in float64.
 
@@ -51,6 +56,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · branch `feat/world_generation_2`_
 - The pine layers use `assets/map/background/pine1_gray.png` and `pine2_gray.png`, generated with a Python script: only green/teal pixels (hue 100–210°, saturation ≥ 0.12) become gray; the rest is untouched. **Each layer has its own gray**: far pine 116, near pine 92 (darker) and mountain 172/211 (the lightest). That way the tint doesn't equalize the three backgrounds and the previous depth step is preserved.
 - **`Biome.forest_color`** tints only the backgrounds, separate from `grass_color`: the meadow uses `(0.233, 0.388, 0.388)`, which over those grays returns the original tones (far `(27, 45, 45)`, near `(21, 36, 36)`, mountain `(40, 67, 67)` and `(49, 82, 82)`); the red forest uses `(1, 0.32, 0.28)` and keeps the same difference between layers. The grass keeps using `grass_color`.
 - The mountain is three layers under `mountains`: `Sprite2D` (stone, `mountain2.png`), `Sprite2DGreen` (`mountain2_gray.png`, only the two forest tones in gray 172/211 and transparency elsewhere) and `Sprite2DSnow` (`mountain2_snow.png`, only the original snow pixels, drawn on top). `forest_tint_paths` tints the forest and `rock_tint_paths` the stone with `rock_color`; snow is never tinted, so it's the same in meadow and red forest and stays white in snow, where the stone turns gray.
+- The band under the mountains (`MountainBase`, `ColorRect`) is tinted as well: `WorldGenerator.base_tint_paths` points to it and `_update_biome_tint()` writes its `color` with the biome's `forest_color` darkened `MOUNTAIN_BASE_DARKENING` (0.35), so the meadow reproduces `#283D43` and the red forest/snow move with the rest of the background. It is set through `color`, not `modulate`, so the night multiplier of the `mountains` node keeps working.
 - The grass already used the idea (`grass_tile_gray.png`, gray = max(R,G,B)); the backgrounds reuse the recipe with a gray calibrated per layer so the tint recovers each one's original tone and the forest red keeps showing.
 
 ## Ambient per biome (2026-11-05)
@@ -70,7 +76,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · branch `feat/world_generation_2`_
 - 2-tile margins; in chunk 0 enemies start at `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~320 px from the player spawn).
 - The enemy collider's bottom rests on the ground (`_body_bottom`), not the origin: enemies are scaled ×2.
 - Each spawn has a stable id (`e:x:y:index`, `c:x:y:index`). `EnemyBase` emits `died` and `coin.gd` emits `collected`; the generator stores those ids and doesn't instantiate them again.
-- Live enemies that are unloaded respawn; kills and collected coins do not.
+- Live enemies that are unloaded respawn; kills and collected coins do not. `current_seed()` and `save_persistent_state()` (defeated/collected ids) feed `SaveGame`, and `_ready()` reads them back before instancing chunks on Continue.
 
 ## Auto step-up
 

@@ -1,6 +1,6 @@
 # Enemies — `EnemyBase`, ghost, orc, wolf, toad and demon
 
-_2026-10-20 · 2026-10-25 · branch `feat/skills-and-complex-passives`_
+_2026-10-20 · 2026-10-25 · 2026-11-10 · branch `feat/skills-and-complex-passives`_
 
 ## What it does and where it lives
 
@@ -14,6 +14,7 @@ _2026-10-20 · 2026-10-25 · branch `feat/skills-and-complex-passives`_
 - Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
 - Config: `flying_enemy`; `step_height` 16 (auto step-up of 1 tile, same criterion as the player: looks ahead and goes up 17 px); `spawn_y_offset` (px it rises when appearing); `ranged_enemy` + `projectile` (**not `projectile_scene`!**) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Attack: `attack_impact_delay` 0.5, `attack_duration` 1.0.
+- FX: `blood_color` (2026-11-10) is the color of its death burst, passed to `fx.enemy_death()`; every layer derives from it. Default is the usual red, so an enemy only changes it if the scene sets it.
 - Loot: `_drop_loot()` makes **two rolls**: coins (`coin_drop_chance` 45 %, `coin_drop_amount` 1 or more) and items. For items, `item_drops` adds its `drop_chance` values into a single roll (30 % + 10 % = 40 %) and, if it succeeds, picks one weighted by its probability. Assign the item before `add_child`, parent it and then set `global_position` to respect the chunk transform.
 - `take_damage(amount, critical = false)` forwards the critical notice to `fx.enemy_hit()` (T-0031). **Any override** (ghost, skeleton, demon) must repeat that signature and pass `critical` to `super`, or Godot won't parse the scene.
 - Luck: `_luck_drop_bonus()` reads `player.luck` and adds `luck × 0.01` to all `drop_chance` values (0 by default, doesn't alter base balance).

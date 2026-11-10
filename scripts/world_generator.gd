@@ -9,6 +9,9 @@ const TILE_SIZE := 16
 ## Extra chunks kept loaded on each side: enemies do not
 ## disappear when crossing a seam (only chunks 2 further back are freed).
 const KEEP_CHUNKS_SIDE := 2
+## The mountain base band darkens the biome's forest color by this factor
+## (the meadow's `#283D43` comes out of `forest_color` darkened 0.35).
+const MOUNTAIN_BASE_DARKENING := 0.35
 
 @export_group("World")
 ## World seed; 0 = random per run.
@@ -75,6 +78,12 @@ const KEEP_CHUNKS_SIDE := 2
 @export var biome_frequency: float = 0.12
 ## Biome noise contrast; higher = extremes more frequent.
 @export var biome_contrast: float = 2.0
+## Lengths of the biome runs are rounded to this many tiles (0 = one chunk).
+@export var biome_sector_tiles: int = 0
+## Shortest a biome can last before it may change (avoids micro-biomes).
+@export var min_biome_tiles: int = 1024
+## Longest a biome can last before it has to change (avoids endless ones).
+@export var max_biome_tiles: int = 4096
 ## Blocks the color transition between biomes lasts (0 = one full chunk).
 @export var biome_transition_tiles: int = 0
 ## Nodes (Sprite2D) of the forests and the mountain's green layer tinted by the biome.
@@ -86,6 +95,11 @@ const KEEP_CHUNKS_SIDE := 2
 ## Nodes (Sprite2D) of the mountain rock, which use the biome's `rock_color`.
 @export var rock_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2D",
+]
+## Nodes (ColorRect) of the band under the mountains: they take a dark
+## shade of the biome's `forest_color`.
+@export var base_tint_paths: Array[NodePath] = [
+	^"../mountains/MountainBase",
 ]
 
 @export_group("Spawns")
@@ -128,7 +142,10 @@ var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
 var _rock_tint_nodes: Array[CanvasItem] = []
+var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
+## Biome runs already decided, in order: {start, index, length} in tiles.
+var _biome_runs: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -141,6 +158,14 @@ func _ready() -> void:
 		grass_tile_set = _template_grass.tile_set
 
 	_seed = world_seed if world_seed != 0 else randi()
+	# New Game: the seed typed in the menu (0 = the random one above).
+	if SaveGame.pending_seed != 0:
+		_seed = SaveGame.pending_seed
+		SaveGame.pending_seed = 0
+	# Continue: same world and spawn state as the saved run.
+	if SaveGame.pending_load:
+		_seed = int(SaveGame.data.get("seed", _seed))
+		_restore_persistent_state()
 	_noise.seed = _seed
 	_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	_noise.frequency = noise_frequency
@@ -166,6 +191,10 @@ func _ready() -> void:
 		var node := get_node_or_null(path) as CanvasItem
 		if node:
 			_rock_tint_nodes.append(node)
+	for path in base_tint_paths:
+		var node := get_node_or_null(path) as ColorRect
+		if node:
+			_base_tint_nodes.append(node)
 
 	_update_chunks(true)
 	_update_biome_tint(true)
@@ -173,6 +202,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if player:
+		_keep_player_inside_world()
 		_update_chunks(false)
 		_update_biome_tint(false)
 
@@ -187,13 +217,22 @@ func _height_at(tile_x: int) -> int:
 
 ## Height with biome modifiers already mixed (passed by the chunk).
 func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
-	if tile_x >= 0 and tile_x < safe_start_tiles:
+	# Nothing exists left of the start: flat ground, so chunk 0's left edge matches.
+	if tile_x < safe_start_tiles:
 		return base_height
 	var h := _noise_height(tile_x, amplitude, frequency)
 	if tile_x >= safe_start_tiles and tile_x < safe_start_tiles + start_blend_tiles:
 		var t := float(tile_x - safe_start_tiles) / float(maxi(1, start_blend_tiles))
 		return roundi(lerpf(base_height, h, t))
 	return h
+
+
+## The world only grows to the right. Walking off the left edge of chunk 0
+## would drop the player into the void, so the edge works as a wall.
+func _keep_player_inside_world() -> void:
+	if player.global_position.x < TILE_SIZE:
+		player.global_position = Vector2(TILE_SIZE, player.global_position.y)
+		player.velocity.x = maxf(player.velocity.x, 0.0)
 
 
 ## Fewer enemies in the first chunks and many more the further away.
@@ -239,6 +278,10 @@ func _update_chunks(force: bool) -> void:
 	# Keep neighboring chunks loaded even if the view no longer touches them.
 	first -= KEEP_CHUNKS_SIDE
 	last += KEEP_CHUNKS_SIDE
+	# No chunk is generated to the left of the start: the world only grows
+	# to the right, so nothing is spent on terrain the player never sees.
+	first = maxi(first, 0)
+	last = maxi(last, 0)
 
 	if not force and first == _last_first and last == _last_last:
 		return
@@ -273,26 +316,95 @@ func is_ready_at(world_x: float) -> bool:
 	return _loaded_chunks.has(Vector2i(coord_x, 0))
 
 
-## Biome index of a block. The whole first chunk (including negative
-## blocks) is the safe zone with the first biome.
+## Loads the chunks around the player right now. The game root calls it after
+## restoring a saved position, so the ground exists on the next frame.
+func refresh_chunks() -> void:
+	_update_chunks(true)
+
+
+## Seed of this run; the save stores it to rebuild the same world.
+func current_seed() -> int:
+	return _seed
+
+
+## Spawn ids that must survive a save/load (killed enemies, taken coins).
+func save_persistent_state() -> Dictionary:
+	return {
+		"defeated": PackedStringArray(_defeated_spawns.keys()),
+		"collected": PackedStringArray(_collected_spawns.keys()),
+	}
+
+
+func _restore_persistent_state() -> void:
+	for id in SaveGame.data.get("defeated", []):
+		_defeated_spawns[String(id)] = true
+	for id in SaveGame.data.get("collected", []):
+		_collected_spawns[String(id)] = true
+
+
+## Biome index of a block. The first run is the safe zone with the first biome.
+## Runs are decided left to right and cached, so any block is cheap to query.
 func _biome_index_at_tile(tile_x: int) -> int:
 	if biomes.is_empty():
 		return -1
-	if tile_x < chunk_width_tiles:
-		return 0
+	if tile_x < 0:
+		tile_x = 0
+	_ensure_biome_runs(tile_x)
+	var index := int(_biome_runs[0]["index"])
+	for run in _biome_runs:
+		if tile_x < int(run["start"]):
+			break
+		index = int(run["index"])
+	return index
+
+
+## Decides new runs until the one containing `tile_x` exists.
+func _ensure_biome_runs(tile_x: int) -> void:
+	if _biome_runs.is_empty():
+		_biome_runs.append(_make_biome_run(0, -1))
+	while tile_x >= int(_biome_runs.back()["start"]) + int(_biome_runs.back()["length"]):
+		var previous: Dictionary = _biome_runs.back()
+		var start := int(previous["start"]) + int(previous["length"])
+		_biome_runs.append(_make_biome_run(start, int(previous["index"])))
+
+
+## A biome run: its biome never repeats the previous one and must already be
+## unlocked at that distance. The length is rolled between `min_biome_tiles`
+## and `max_biome_tiles`, so there are no micro-biomes and no endless stretches.
+func _make_biome_run(start_tile: int, previous_index: int) -> Dictionary:
+	var index := 0 if previous_index < 0 else _roll_biome_at(start_tile, previous_index)
+	var sector := biome_sector_tiles if biome_sector_tiles > 0 else chunk_width_tiles
+	var shortest := maxi(min_biome_tiles, sector)
+	var longest := maxi(max_biome_tiles, shortest)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("%d:biome:%d" % [_seed, start_tile])
+	var length := shortest + rng.randi_range(0, (longest - shortest) / sector) * sector
+	return {"start": start_tile, "index": index, "length": length}
+
+
+## Weighted pick among the biomes unlocked at `tile_x`, never the previous one:
+## the noise decides the order, not how long a biome lasts.
+func _roll_biome_at(tile_x: int, previous_index: int) -> int:
+	var allowed: Array[int] = []
 	var total := 0.0
-	for biome in biomes:
-		total += maxf(biome.spawn_weight, 0.0)
-	if total <= 0.0:
-		return 0
-	# Same noise as before, sampled block by block instead of per chunk.
-	var roll := _biome_noise.get_noise_1d(float(tile_x))
-	roll = clampf(roll * biome_contrast + 0.5, 0.0, 1.0) * total
 	for i in biomes.size():
+		if i == previous_index:
+			continue
+		if biomes[i].min_distance_tiles > tile_x:
+			continue
+		var weight := maxf(biomes[i].spawn_weight, 0.0)
+		if weight <= 0.0:
+			continue
+		allowed.append(i)
+		total += weight
+	if allowed.is_empty():
+		return previous_index if previous_index >= 0 else 0
+	var roll := clampf(_biome_noise.get_noise_1d(float(tile_x)) * biome_contrast + 0.5, 0.0, 1.0) * total
+	for i in allowed:
 		roll -= maxf(biomes[i].spawn_weight, 0.0)
 		if roll <= 0.0:
 			return i
-	return biomes.size() - 1
+	return allowed.back()
 
 
 ## Biome of the block containing `world_x`; used by ambient particles.
@@ -432,10 +544,11 @@ func _chunk_biome_data(chunk_x: int) -> Dictionary:
 	return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
 
 
-## Applies the current biome tint to the background forests. Updated when
-## the block changes, not the chunk, so the change is continuous.
+## Applies the current biome tint to the background forests, the mountain
+## stone and the band under the mountains. Updated when the block changes,
+## not the chunk, so the change is continuous.
 func _update_biome_tint(force: bool) -> void:
-	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty()) or not player:
+	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
 		return
 	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
 	if not force and tile_x == _last_biome_tile:
@@ -447,6 +560,9 @@ func _update_biome_tint(force: bool) -> void:
 		node.modulate = forest
 	for node in _rock_tint_nodes:
 		node.modulate = rock
+	var base := forest.darkened(MOUNTAIN_BASE_DARKENING)
+	for node in _base_tint_nodes:
+		node.color = base
 
 
 func _generate_chunk(coord: Vector2i) -> Dictionary:
