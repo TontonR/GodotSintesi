@@ -59,10 +59,10 @@ var _blink_visible: bool = true
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_phase = randf() * TAU
-	# Salto inicial: el primer tick aún no ha buscado el suelo, así que no se
-	# asienta de golpe y se ve la caída.
+	# Initial hop: the first tick has not searched for the ground yet, so it does
+	# not settle abruptly and the fall is visible.
 	_velocity_y = -drop_hop
-	# Siempre por encima de los tiles: el vaivén nunca queda medio oculto
+	# Always above the tiles: the bob never ends up half hidden.
 	z_index = 1
 	if item and item.icon and sprite:
 		sprite.texture = item.icon
@@ -75,10 +75,10 @@ func _physics_process(delta: float) -> void:
 	if _update_expiry(delta):
 		return
 
-	# El suelo se busca una sola vez en el primer tick (con la posición real ya
-	# asignada) y el aterrizaje se compara contra esa altura fija. Antes se
-	# lanzaba un rayo corto por frame: los impactos lentos no lo detectaban y
-	# min_bounce_speed era inalcanzable, así que el objeto nunca asentaba.
+	# The ground is searched once on the first tick (with the real position already
+	# assigned) and the landing is compared against that fixed height. Before, a
+	# short ray was cast every frame: slow impacts were not detected and
+	# min_bounce_speed was unreachable, so the item never settled.
 	if not _ground_searched:
 		_ground_searched = true
 		_find_ground()
@@ -102,9 +102,9 @@ func _physics_process(delta: float) -> void:
 		return
 	global_position.y = next_y
 
-## Caducidad: `SPAWN_LIFETIME` desde que aparece y `SEEN_LIFETIME` desde que se
-## ve por primera vez (parpadea desde `BLINK_START`). Devuelve true cuando el
-## objeto ya se ha liberado y no debe seguir procesándose.
+## Expiry: `SPAWN_LIFETIME` since it appears and `SEEN_LIFETIME` since it is
+## first seen (blinks from `BLINK_START`). Returns true when the
+## object has already been freed and should not keep processing.
 func _update_expiry(delta: float) -> bool:
 	_spawn_age += delta
 	if _spawn_age >= SPAWN_LIFETIME:
@@ -125,8 +125,8 @@ func _update_expiry(delta: float) -> bool:
 				sprite.visible = _blink_visible
 	return false
 
-## True cuando el pickup cae dentro de la cámara (el reloj de 30 s no corre
-## para lo que todavía no se ha visto; las monedas no usan este script).
+## True when the pickup falls inside the camera (the 30 s clock does not run
+## for what has not been seen yet; coins do not use this script).
 func _is_seen() -> bool:
 	if not is_inside_tree():
 		return false
@@ -143,8 +143,8 @@ func _is_seen() -> bool:
 func _on_body_entered(body: Node2D) -> void:
 	if not body.is_in_group("player") or item == null:
 		return
-	# El objeto decide dónde va (barra o pasivas); si no define on_pickup
-	# (p. ej. las skills), va al inventario
+	# The object decides where it goes (bar or passives); if it does not define
+	# on_pickup, it goes to the inventory
 	if item.has_method("on_pickup"):
 		if item.on_pickup(body):
 			_pickup_fx()
@@ -156,7 +156,7 @@ func _on_body_entered(body: Node2D) -> void:
 		queue_free()
 
 
-## Chispas al recoger el objeto; el FX del juego las dibuja en el mundo.
+## Sparks when picking up the object; the game FX draws them in the world.
 func _pickup_fx() -> void:
 	var fx := get_tree().get_first_node_in_group("fx")
 	if fx:
@@ -190,11 +190,11 @@ func _find_ground() -> void:
 	if surface < 0.0:
 		surface = _cast_ray(global_position + Vector2(0, -64.0))
 	if surface < 0.0:
-		# Sin suelo cerca: se queda flotando donde aparece
+		# No ground nearby: it stays floating where it appears
 		_settle(global_position.y)
 		return
 	_ground_y = surface
-	# Solo se asienta si ya cae: con el salto inicial todavía sube.
+	# It only settles if it is already falling: with the initial hop it is still rising.
 	if _velocity_y >= 0.0 and global_position.y >= _ground_y - HALF_HEIGHT:
 		_settle(_ground_y - HALF_HEIGHT)
 

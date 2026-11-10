@@ -1,49 +1,49 @@
-# GodotSintesi — Reglas del agente
+# GodotSintesi — Agent rules
 
-Roguelike 2D en **Godot 4.7** (`project.godot`), pixel-art. Idioma: comentarios `#`, textos de UI y `.tres` **en español**; identificadores, `@export(_group)` y doc `##` **en inglés** en los sistemas de objetos/inventario/UI/pasivas/loot (ver `docs/ui.md`). `player`/`enemies`/`world_generator` siguen como estaban.
+2D pixel-art roguelike in **Godot 4.7** (`project.godot`). Language: `#` comments, UI text and `.tres` **in English**; identifiers, `@export(_group)` and `##` doc **in English** in the objects/inventory/UI/passives/loot systems (see `docs/ui.md`). `player`/`enemies`/`world_generator` stay as they were.
 
-## Carga perezosa de documentación (CRITICAL)
+## Lazy documentation loading (CRITICAL)
 
-Este es el único fichero siempre en contexto. **No leas nada más "por si acaso"**:
+This is the only file always in context. **Do not read anything else "just in case"**:
 
-- Si la tarea necesita detalles de un sistema, carga SOLO el fichero del índice con Read, bajo demanda.
-- No precargues todos; no re-investigues lo que ya está documentado.
-- Para búsquedas amplias por el código delega en `@explore` y pide un resumen: así no llenas el contexto principal.
+- If the task needs details about a system, load ONLY the file from the index with Read, on demand.
+- Do not preload all of them; do not re-investigate what is already documented.
+- For broad searches across the code, delegate to `@explore` and ask for a summary: that way you don't flood the main context.
 
-### Índice (leer solo si hace falta)
+### Index (read only if needed)
 
-| Fichero | Cuándo |
+| File | When |
 |---|---|
-| `docs/items.md` | Inventario (5 huecos), catálogo de 6 objetos, drops y recogida |
-| `docs/ui.md` | HUD, grid de pasivas (6 col, 10 filas/página), pantalla de inventario (Tab/I), convención EN/ES |
-| `docs/player.md` | Movimiento, combo, guardia, vida, stamina y teclas |
-| `docs/enemies.md` | `EnemyBase`, fantasma (TP) y orco; loot |
-| `docs/world.md` | Generación por zonas, suelo, población y capas |
-| `docs/fx.md` | Partículas de combate, números de daño, sacudida y feedback del HUD |
-| `docs/historial.md` | Bugs ya resueltos (drops, loot); leer solo si algo huele a eso |
-| `documentation.md` | Histórico (396 líneas). Solo arqueología; no usar como fuente |
-| `vault/README.md` | Plan y canal con el opencode del compañero: tickets, estado y bitácora |
+| `docs/items.md` | Inventory (3 consumables), full catalog with stats/passive/state, drops and pickup |
+| `docs/ui.md` | HUD, passive grid (6 cols, 10 rows/page), inventory screen (Tab/I), EN/ES convention |
+| `docs/player.md` | Movement, combo, guard, health, stamina and keys |
+| `docs/enemies.md` | `EnemyBase`, ghost (TP) and orc; loot |
+| `docs/world.md` | Zone generation, ground, population and layers |
+| `docs/fx.md` | Combat particles, damage numbers, shake and HUD feedback |
+| `docs/historial.md` | Bugs already fixed (drops, loot); read only if something smells like that |
+| `documentation.md` | Historical (396 lines). Archaeology only; do not use as a source |
+| `vault/README.md` | Plan and channel with the partner's opencode: tickets, status and log |
 
-## Reglas de trabajo
+## Working rules
 
-- **No tocar nada que no se haya pedido.** Sin tests, validaciones, commits ni comandos de Godot salvo petición explícita.
-- **Antes de tocar código**: lee `vault/estado.md` y trabaja desde un ticket de `vault/tickets/` (contrato en `vault/README.md`). Al cerrar, actualiza ticket, `changelog.md` y `estado.md`.
-- El editor de Godot suele estar **abierto**: tras un `checkout/reset` reserializa las escenas abiertas (añade `unique_id`/`node_paths`). Si `git status` muestra una escena que no tocaste, es el editor.
-- Salidas de terminal: **filtra siempre**. Nunca listes `assets/` sin filtrar (+1000 PNG revientan el contexto).
+- **Do not touch anything that wasn't asked for.** No tests, validation, commits or Godot commands unless explicitly requested.
+- **Before touching code**: read `vault/estado.md` and work from a ticket in `vault/tickets/` (contract in `vault/README.md`). When closing, update the ticket, `changelog.md` and `estado.md`.
+- The Godot editor is usually **open**: after a `checkout/reset` it reserializes open scenes (adds `unique_id`/`node_paths`). If `git status` shows a scene you didn't touch, it's the editor.
+- Terminal output: **always filter**. Never list `assets/` unfiltered (+1000 PNGs blow up the context).
 
-## Convenciones
+## Conventions
 
-- GDScript con tabs; `class_name`; `##` sobre cada `@export`; agrupar en `@export_group`.
-- Escenas en `scenes/`, scripts en `scripts/`; todo el inventario vive en `scenes/inventory/` y sus estilos en `resources/inventory/`. En la raíz hay legacy: `player.tscn`, `item_pickup.gd/.tscn`, `documentation.md`.
-- Enemigos extienden `EnemyBase` (`scripts/enemies/enemy_base.gd`); jugador en grupo `player`.
-- Capas 2D: 1 mundo, 2 jugador, 3 enemigos, 4 ataque jugador. Viewport 384×216.
-- Exports de escena del fantasma: `projectile` (no `projectile_scene`).
+- GDScript with tabs; `class_name`; `##` above every `@export`; group into `@export_group`.
+- Scenes in `scenes/`, scripts in `scripts/`; all inventory lives in `scenes/inventory/` and its styles in `resources/inventory/`. Legacy at the root: `player.tscn`, `item_pickup.gd/.tscn`, `documentation.md`.
+- Enemies extend `EnemyBase` (`scripts/enemies/enemy_base.gd`); player in the `player` group.
+- 2D layers: 1 world, 2 player, 3 enemies, 4 player attack. Viewport 384×216.
+- Ghost scene exports: `projectile` (not `projectile_scene`).
 
-## Guardar conocimiento (siempre)
+## Saving knowledge (always)
 
-Al terminar una tarea que cambie comportamiento o cierre una decisión:
+When finishing a task that changes behavior or closes a decision:
 
-1. Resume el resultado en `docs/<sistema>.md` (créalo si no existe), ~30 líneas máximo, con fecha `AAAA-MM-DD`.
-2. **Este fichero no crece**: si supera ~70 líneas, lo nuevo va a `docs/`.
-3. Si creas un fichero nuevo, añádelo al índice de arriba.
-4. Plantilla y cuándo escribir: skill `docs-vivas` (cárgala antes de investigar y al cerrar la tarea).
+1. Summarize the result in `docs/<system>.md` (create it if it doesn't exist), ~30 lines max, dated `YYYY-MM-DD`.
+2. **This file does not grow**: if it exceeds ~70 lines, the new content goes to `docs/`.
+3. If you create a new file, add it to the index above.
+4. Template and when to write: `docs-vivas` skill (load it before investigating and when closing the task).

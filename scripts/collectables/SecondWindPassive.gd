@@ -1,11 +1,11 @@
 class_name SecondWindPassive
 extends PassiveItems
-## Regenera vida mientras el jugador está por debajo de un umbral.
+## Regenerates health while the player is below a threshold.
 
-@export_group("Segundo aliento")
-## Fracción de vida por debajo de la cual se activa (0.3 = 30%).
+@export_group("Second wind")
+## Health fraction below which it activates (0.3 = 30%).
 @export_range(0.0, 1.0, 0.05) var health_threshold: float = 0.3
-## Vida recuperada por segundo mientras está activo.
+## Health restored per second while active.
 @export var heal_per_second: float = 2.0
 
 var _accum: float = 0.0

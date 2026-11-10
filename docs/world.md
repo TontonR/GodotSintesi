@@ -1,108 +1,108 @@
-# Mundo — generación procedural por chunks
+# World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · rama `feat/world_generation_2`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · branch `feat/world_generation_2`_
 
-## Qué hace y dónde vive
+## What it does and where it lives
 
-- `scripts/world_generator.gd` crea `scenes/world/chunk.tscn` bajo demanda; cada chunk pinta su capa `Solid` y su capa `Grass` con `scripts/world/chunk.gd`.
-- `scenes/game.tscn` conserva `solid_map_layer`/`grass_map_layer` con el parche de ejemplo: sirven de plantilla de tiles y de fuente de `TileSet`; los chunks nuevos no reutilizan su `tile_map_data`.
-- Terreno con `FastNoiseLite` Perlin 1D sobre la X global. `base_height` 60 (escena: 50), amplitud 20, frecuencia 0.007: colinas suaves. Con `world_seed` 12345 el rango medido es 43–59 (16 tiles) y el salto máximo entre tiles contiguos es 1.
-- Inicio plano en los tiles 0–49 y transición de 24 tiles (escena `safe_start_tiles=50`); el jugador aparece en `x=808`, 6 tiles sobre el suelo.
+- `scripts/world_generator.gd` creates `scenes/world/chunk.tscn` on demand; each chunk paints its `Solid` layer and its `Grass` layer with `scripts/world/chunk.gd`.
+- `scenes/game.tscn` keeps `solid_map_layer`/`grass_map_layer` with the example patch: they serve as the tile template and the `TileSet` source; new chunks don't reuse their `tile_map_data`.
+- Terrain with `FastNoiseLite` 1D Perlin over the global X. `base_height` 60 (scene: 50), amplitude 20, frequency 0.007: soft hills. With `world_seed` 12345 the measured range is 43–59 (16 tiles) and the max jump between adjacent tiles is 1.
+- Flat start in tiles 0–49 and a 24-tile transition (scene `safe_start_tiles=50`); the player appears at `x=808`, 6 tiles above the ground.
 
-## Tiles del terreno
+## Terrain tiles
 
-- Atlas de 3 columnas: fila 0 = superficie, fila 1 = relleno. La fila 2 no se usa.
-- La superficie elige tile izquierdo `(0,0)`, centro `(1,0)` o derecho `(2,0)` según si el vecino baja. Se miran las alturas del chunk y las de los chunks vecinos (`edge_left`/`edge_right`).
-- La capa `Grass` repite esa misma columna en la fila de superficie, encima de `Solid`; su `TileSet` se toma de `grass_map_layer`.
-- El relleno llega hasta `chunk_height_tiles` (140): no hay efecto de mapa flotante.
-- Cada chunk pinta una columna extra a la derecha, idéntica a la primera del siguiente: tapa la grieta de 1 px al unir dos `TileMapLayer`.
-- Sin rampas; los escalones son de 1 tile y se suben automáticamente.
+- 3-column atlas: row 0 = surface, row 1 = fill. Row 2 is unused.
+- The surface picks left tile `(0,0)`, center `(1,0)` or right `(2,0)` depending on whether the neighbor goes down. It checks the chunk heights and the neighboring chunks' heights (`edge_left`/`edge_right`).
+- The `Grass` layer repeats that same column on the surface row, above `Solid`; its `TileSet` comes from `grass_map_layer`.
+- The fill goes down to `chunk_height_tiles` (140): there is no floating-map effect.
+- Each chunk paints one extra column on the right, identical to the first one of the next: it covers the 1 px crack when joining two `TileMapLayer`s.
+- No slopes; steps are 1 tile and are climbed automatically.
 
-## Escala de pantalla (2026-10-29)
+## Screen scale (2026-10-29)
 
-- Viewport 768×432 y ventana 1536×864 = exactamente 2×. Con 1280×720 el factor era 1.667 y el pixel-art temblaba al desplazarse (las texturas con filtro nearest cambian de tamaño de texel cada frame). Si se cambia la ventana, usar múltiplos enteros: 768×432, 1536×864.
-- `window/stretch/scale_mode="integer"`: en pantalla completa (1920×1080) el contenido se dibuja a 2× exactos (1536×864) centrado, con bandas negras; sin esto el factor era 2.5 y el temblor volvía. Medido: `screen_scale=(2.0, 2.0)` en ventana y en fullscreen.
-- `snap_2d_transforms_to_pixel` sigue activo; con escala entera no produce temblor.
+- Viewport 768×432 and window 1536×864 = exactly 2×. With 1280×720 the factor was 1.667 and the pixel-art shimmered when scrolling (nearest-filtered textures change texel size every frame). If you change the window, use integer multiples: 768×432, 1536×864.
+- `window/stretch/scale_mode="integer"`: in fullscreen (1920×1080) the content is drawn at exactly 2× (1536×864) centered, with black bands; without this the factor was 2.5 and the shimmering came back. Measured: `screen_scale=(2.0, 2.0)` in windowed and fullscreen.
+- `snap_2d_transforms_to_pixel` is still active; with integer scale it doesn't produce shimmering.
 
-## Chunks y carga
+## Chunks and loading
 
-- Chunks de 256×140 tiles. Carga según cámara + `load_margin_px` 96 y se mantienen `KEEP_CHUNKS_SIDE` = 2 chunks extra a cada lado: los enemigos y monedas solo desaparecen cuando su chunk queda 2 chunks atrás (se liberan con el nodo, no antes).
-- Antes de instanciar se generan los datos del chunk y del siguiente a la derecha. Al alejarse se borran datos y nodos.
-- Semilla: `world_seed` 0 = aleatoria; cualquier otro valor la fija. El RNG de cada chunk usa semilla + coordenada.
+- Chunks of 256×140 tiles. Loading based on camera + `load_margin_px` 96 and `KEEP_CHUNKS_SIDE` = 2 extra chunks on each side are kept: enemies and coins only disappear when their chunk is 2 chunks behind (they are freed with the node, not before).
+- Before instantiating, the data for the chunk and the next one to the right are generated. When moving away, data and nodes are deleted.
+- Seed: `world_seed` 0 = random; any other value fixes it. Each chunk's RNG uses the seed + coordinate.
 
-## Biomas (2026-11-01 · transición por bloques 2026-11-05)
+## Biomes (2026-11-01 · block transition 2026-11-05)
 
-- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (mismo orden que las escenas).
-- Recursos (3): `pradera.tres` (verde, 4 orcos + 1 fantasma, peso 0.55), `bosque_rojo.tres` (rojo, 1 lobo + 1 sapo + 1 demonio + 2 slimes, peso 0.3) y `nieve.tres` (blanco-azul, 2 esqueletos + 2 arqueros + 1 lobo, peso 0.2).
-- **El bioma se decide por bloque** (`_biome_index_at_tile()`): `_biome_noise` (Perlin 1D, semilla + 1000, `biome_frequency` 0.12 en unidades de chunk que se divide por `chunk_width_tiles`, `biome_contrast` 2) devuelve un valor 0..1 que se reparte por los `spawn_weight` acumulados: por debajo del peso de la pradera es pradera y el resto bosque rojo. Todo `tile_x < chunk_width_tiles` (incluidos los negativos) es el primer bioma: la zona segura del spawn.
-- **Enemigos**: siguen siendo por chunk; `_biome_for_chunk()` toma el bioma del bloque central. Con `biome_frequency` 0.12 cada bioma dura ~8 chunks (con 0.04 eran ~25 chunks, por eso casi todo salía pradera). Los pesos son umbrales sobre el ruido, no porcentajes exactos del mapa.
-- **Transición por bloques**: `biome_transition_tiles` (0 = `chunk_width_tiles`, o sea 256). Cada bloque usa la media móvil de los colores de los biomas de su ventana (±128 bloques), así que el cambio es un degradado a lo largo de ~256 bloques, no un escalón en la costura del chunk. La costura puede caer en mitad de un chunk: la lógica y el color ya no dependen de los bordes.
-- **Terreno por bioma**: cada `Biome` tiene `terrain_amplitude_multiplier` y `terrain_frequency_multiplier`: bosque rojo 1.35 y 1.1 (con 1.7/1.25 se notaba demasiado), pradera 0.95 (aplana un poco) y nieve 1.0. `_chunk_biome_data()` mezcla ambos con la misma ventana de 256 bloques que el color, así el relieve se exagera poco a poco al entrar en el bosque rojo. `_height_at_with()` usa los modificadores ya mezclados y los bordes de dos chunks coinciden porque la mezcla se hace en orden fijo y en float64.
+- `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (same order as the scenes).
+- Resources (3): `pradera.tres` (green, 4 orcs + 1 ghost, weight 0.55), `bosque_rojo.tres` (red, 1 wolf + 1 toad + 1 demon + 2 slimes, weight 0.3) and `nieve.tres` (blue-white, 2 skeletons + 2 archers + 1 wolf, weight 0.2).
+- **The biome is decided per block** (`_biome_index_at_tile()`): `_biome_noise` (1D Perlin, seed + 1000, `biome_frequency` 0.12 in chunk units divided by `chunk_width_tiles`, `biome_contrast` 2) returns a 0..1 value that is spread across the accumulated `spawn_weight`s: below the meadow weight it's meadow and the rest is red forest. Every `tile_x < chunk_width_tiles` (including negatives) is the first biome: the spawn safe zone.
+- **Enemies**: they are still per chunk; `_biome_for_chunk()` takes the biome of the central block. With `biome_frequency` 0.12 each biome lasts ~8 chunks (with 0.04 it was ~25 chunks, which is why almost everything came out meadow). The weights are thresholds over the noise, not exact percentages of the map.
+- **Block transition**: `biome_transition_tiles` (0 = `chunk_width_tiles`, i.e. 256). Each block uses the moving average of its window's biome colors (±128 blocks), so the change is a gradient over ~256 blocks, not a step at the chunk seam. The seam can fall in the middle of a chunk: logic and color no longer depend on the edges.
+- **Terrain per biome**: each `Biome` has `terrain_amplitude_multiplier` and `terrain_frequency_multiplier`: red forest 1.35 and 1.1 (with 1.7/1.25 it was too noticeable), meadow 0.95 (flattens a bit) and snow 1.0. `_chunk_biome_data()` blends both with the same 256-block window as the color, so the relief is exaggerated little by little when entering the red forest. `_height_at_with()` uses the already-blended modifiers and the edges of two chunks match because the blend is done in a fixed order and in float64.
 
-## Césped y bosques tintables
+## Grass and tintable forests
 
-- El césped usa `assets/map/tile/grass_tile_gray.png` (gris = máx(R,G,B) del original, alfa intacto). El color lo pone el `modulate` del dibujado con el `grass_color` del bioma, así cualquier color vale (nieve: `Color(0.93, 0.96, 1)`).
-- `WorldChunk.paint()` recibe `grass_tints` (un color por bloque, 257 por chunk) y `GrassPaint` dibuja cada tile de césped con su color; `Solid` (suelo marrón) no se tiñe. `_chunk_biome_data()` calcula colores y modificadores de terreno con una ventana deslizante, y el nodo `Grass` desapareció de `chunk.tscn` porque un `TileMapLayer` solo se puede teñir entero.
-- Los bosques del fondo usan `assets/map/background/pine1_gray.png` / `pine2_gray.png`, con la misma regla de gris. `WorldGenerator.forest_tint_paths` apunta a los `Sprite2D` de `far_forest` y `near_forest`; su `modulate` se actualiza al cambiar de bloque con el `forest_color` del bioma.
-- Para añadir un bioma basta con crear otro `.tres` y meterlo en `biomes` del generador.
+- The grass uses `assets/map/tile/grass_tile_gray.png` (gray = max(R,G,B) of the original, alpha intact). The color is set by the draw's `modulate` with the biome's `grass_color`, so any color works (snow: `Color(0.93, 0.96, 1)`).
+- `WorldChunk.paint()` receives `grass_tints` (one color per block, 257 per chunk) and `GrassPaint` draws each grass tile with its color; `Solid` (brown ground) is not tinted. `_chunk_biome_data()` computes colors and terrain modifiers with a sliding window, and the `Grass` node disappeared from `chunk.tscn` because a `TileMapLayer` can only be tinted as a whole.
+- The background forests use `assets/map/background/pine1_gray.png` / `pine2_gray.png`, with the same gray rule. `WorldGenerator.forest_tint_paths` points to the `Sprite2D`s of `far_forest` and `near_forest`; their `modulate` is updated when changing block with the biome's `forest_color`.
+- To add a biome, just create another `.tres` and add it to the generator's `biomes`.
 
-## Fondos tintables (2026-11-05)
+## Tintable backgrounds (2026-11-05)
 
-- Las capas de pino usan `assets/map/background/pine1_gray.png` y `pine2_gray.png`, generadas con un script de Python: solo los píxeles verdes/teal (hue 100–210°, saturación ≥ 0.12) pasan a gris; el resto no se toca. **Cada capa tiene su gris**: pino lejano 116, pino cercano 92 (más oscuro) y montaña 172/211 (la más clara). Así el tinte no iguala los tres fondos y se mantiene el escalón de profundidad de antes.
-- **`Biome.forest_color`** tiñe solo los fondos, separado de `grass_color`: la pradera usa `(0.233, 0.388, 0.388)`, que sobre esos grises devuelve los tonos originales (lejano `(27, 45, 45)`, cercano `(21, 36, 36)`, montaña `(40, 67, 67)` y `(49, 82, 82)`); el bosque rojo usa `(1, 0.32, 0.28)` y conserva la misma diferencia entre capas. El césped sigue con `grass_color`.
-- La montaña son tres capas bajo `mountains`: `Sprite2D` (piedra, `mountain2.png`), `Sprite2DGreen` (`mountain2_gray.png`, solo los dos tonos del bosque en gris 172/211 y transparencia en el resto) y `Sprite2DSnow` (`mountain2_snow.png`, solo los píxeles de nieve originales, dibujado encima). `forest_tint_paths` tiñe el bosque y `rock_tint_paths` la piedra con `rock_color`; la nieve no se tiñe nunca, así que es la misma en pradera y bosque rojo y sigue blanca en nieve, donde la piedra se pone gris.
-- El césped ya usaba la idea (`grass_tile_gray.png`, gris = máx(R,G,B)); los fondos reutilizan la receta con un gris calibrado por capa para que el tinte recupere el tono original de cada una y el rojo del bosque siga viéndose.
+- The pine layers use `assets/map/background/pine1_gray.png` and `pine2_gray.png`, generated with a Python script: only green/teal pixels (hue 100–210°, saturation ≥ 0.12) become gray; the rest is untouched. **Each layer has its own gray**: far pine 116, near pine 92 (darker) and mountain 172/211 (the lightest). That way the tint doesn't equalize the three backgrounds and the previous depth step is preserved.
+- **`Biome.forest_color`** tints only the backgrounds, separate from `grass_color`: the meadow uses `(0.233, 0.388, 0.388)`, which over those grays returns the original tones (far `(27, 45, 45)`, near `(21, 36, 36)`, mountain `(40, 67, 67)` and `(49, 82, 82)`); the red forest uses `(1, 0.32, 0.28)` and keeps the same difference between layers. The grass keeps using `grass_color`.
+- The mountain is three layers under `mountains`: `Sprite2D` (stone, `mountain2.png`), `Sprite2DGreen` (`mountain2_gray.png`, only the two forest tones in gray 172/211 and transparency elsewhere) and `Sprite2DSnow` (`mountain2_snow.png`, only the original snow pixels, drawn on top). `forest_tint_paths` tints the forest and `rock_tint_paths` the stone with `rock_color`; snow is never tinted, so it's the same in meadow and red forest and stays white in snow, where the stone turns gray.
+- The grass already used the idea (`grass_tile_gray.png`, gray = max(R,G,B)); the backgrounds reuse the recipe with a gray calibrated per layer so the tint recovers each one's original tone and the forest red keeps showing.
 
-## Ambiente por bioma (2026-11-05)
+## Ambient per biome (2026-11-05)
 
-- `Biome.ambient`: `"none"`, `"leaves"` (hojas rojas) o `"snow"` (copos). El bosque rojo lleva hojas, nieve lleva copos y pradera nada.
-- `scripts/world/biome_particles.gd` (nodo `biome_particles`, `CanvasLayer` layer 5 en `game.tscn`) crea dos `CPUParticles2D` a pantalla completa con texturas de píxeles generadas en código. Cada 0,25 s pide `WorldGenerator.biome_at_world_x()` en la X del jugador y enciende el emisor del `ambient` del bioma; al apagarlo, las partículas vivas terminan su vida.
-- Cobertura horizontal (2026-11-05): el rectángulo de emisión mide `view.x × 1.2` a cada lado del centro (antes `0.6`), o sea el doble de ancho, y hay el doble de partículas (56 hojas, 440 copos). Así el viento lateral no descubre zonas vacías en los bordes.
-- Hojas: 28 partículas, caída lenta con giro. Nieve: 220 copos, caída más lenta todavía. Al activarse el emisor la pantalla ya está llena (`preprocess`), y entra/sale con un fundido de 0,4 s y viento lateral.
+- `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
+- `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) creates two full-screen `CPUParticles2D` with pixel textures generated in code. Every 0.25 s it asks `WorldGenerator.biome_at_world_x()` at the player's X and turns on the emitter for the biome's `ambient`; when turning it off, live particles finish their lifetime.
+- Horizontal coverage (2026-11-05): the emission rectangle measures `view.x × 1.2` on each side of the center (before `0.6`), i.e. twice as wide, and there are twice as many particles (56 leaves, 440 flakes). That way the sideways wind doesn't reveal empty areas at the edges.
+- Leaves: 28 particles, slow fall with rotation. Snow: 220 flakes, even slower fall. When the emitter activates the screen is already full (`preprocess`), and it enters/leaves with a 0.4 s fade and sideways wind.
 
-## Spawns y persistencia
+## Spawns and persistence
 
-- Por chunk, según el bioma: 4 orcos + 1 fantasma (pradera) o 1 lobo + 1 sapo + 1 demonio + 2 slimes (bosque rojo). `enemy_counts_per_chunk` (`[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]`) queda como respaldo para biomas sin `enemy_scenes`. 2 monedas por chunk.
-- Las monedas nacen `coin_spawn_height` (40 px) sobre el suelo y caen con su propia gravedad (`scripts/collectables/coin.gd`): buscan el suelo una vez por raycast, rebotan con `bounce` 0,4 mientras el impacto supere `min_bounce_speed` (40 px/s) y al asentarse hacen un vaivén de 1 px. Antes aparecían ya apoyadas (`coin_ground_offset`).
-- Densidad por distancia (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 al 50 % (`enemy_ramp_first_multiplier`), y de ahí +20 % por chunk (`enemy_ramp_per_chunk`) hasta ×1.8 (`enemy_ramp_max_multiplier`).
-- **Reparto uniforme** (2026-11-03): se monta la lista de tipos del chunk y se parte `enemy_min_x..max_x` en un hueco por enemigo; cada uno cae en el centro de su hueco con ruido de ±25 % del hueco. Antes cada enemigo sacaba su X al azar y se apelotonaban.
-- **Voladores**: el merge con `feat/biomas` los devuelve a los biomas (la pradera lleva fantasma y el bosque rojo demonio). `DISABLED_ENEMY_SCENES` sigue como lista de referencia sin uso.
-- Márgenes de 2 tiles; en el chunk 0 los enemigos empiezan en `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~320 px del spawn del jugador).
-- La base del collider del enemigo se apoya en el suelo (`_body_bottom`), no el origen: los enemigos están escalados ×2.
-- Cada spawn tiene un id estable (`e:x:y:índice`, `c:x:y:índice`). `EnemyBase` emite `died` y `coin.gd` emite `collected`; el generador guarda esos ids y no los vuelve a instanciar.
-- Los enemigos vivos que se descargan reaparecen; las bajas y monedas recogidas no.
+- Per chunk, according to the biome: 4 orcs + 1 ghost (meadow) or 1 wolf + 1 toad + 1 demon + 2 slimes (red forest). `enemy_counts_per_chunk` (`[4 orcs, 2 frogs, 1 wolf, 2 slimes, 2 skeletons, 2 archers]`) remains as a fallback for biomes without `enemy_scenes`. 2 coins per chunk.
+- Coins are born `coin_spawn_height` (40 px) above the ground and fall with their own gravity (`scripts/collectables/coin.gd`): they look up the ground once by raycast, bounce with `bounce` 0.4 while the impact exceeds `min_bounce_speed` (40 px/s) and when settling they sway 1 px. Before, they appeared already resting (`coin_ground_offset`).
+- Density by distance (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 at 50 % (`enemy_ramp_first_multiplier`), and from there +20 % per chunk (`enemy_ramp_per_chunk`) up to ×1.8 (`enemy_ramp_max_multiplier`).
+- **Even distribution** (2026-11-03): the list of chunk types is assembled and `enemy_min_x..max_x` is split into one slot per enemy; each one falls in the center of its slot with ±25 % slot noise. Before, each enemy picked its X at random and they clumped.
+- **Flyers**: the merge with `feat/biomas` returns them to the biomes (meadow has ghost and red forest demon). `DISABLED_ENEMY_SCENES` remains as an unused reference list.
+- 2-tile margins; in chunk 0 enemies start at `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~320 px from the player spawn).
+- The enemy collider's bottom rests on the ground (`_body_bottom`), not the origin: enemies are scaled ×2.
+- Each spawn has a stable id (`e:x:y:index`, `c:x:y:index`). `EnemyBase` emits `died` and `coin.gd` emits `collected`; the generator stores those ids and doesn't instantiate them again.
+- Live enemies that are unloaded respawn; kills and collected coins do not.
 
-## Subida automática
+## Auto step-up
 
-- Jugador y enemigos terrestres suben 1 tile (16 px) de golpe al llegar a un escalón, usando `test_move` sobre la forma real del cuerpo. El jugador prueba 1 px por delante; los enemigos prueban lo que avanzan en el frame (`|vx| * delta`, mínimo 2 px) + 1, porque el lobo llega a 300 px/s. Suben 17 px: suben antes de chocar (sin perder la X) y no encadenan dos subidas.
-- 2+ tiles no se suben: hay que saltar. No se aplica a enemigos voladores.
-- Con el aumento de enemigos, un chunk maduro mete 16: si el rendimiento cae, bajar `enemy_ramp_max_multiplier` o `enemy_counts_per_chunk`.
+- Player and ground enemies climb 1 tile (16 px) at once when reaching a step, using `test_move` on the body's real shape. The player tests 1 px ahead; enemies test how far they advance in the frame (`|vx| * delta`, min 2 px) + 1, because the wolf reaches 300 px/s. They go up 17 px: they rise before colliding (without losing X) and don't chain two step-ups.
+- 2+ tiles are not climbed: you have to jump. It doesn't apply to flying enemies.
+- With the enemy increase, a mature chunk puts in 16: if performance drops, lower `enemy_ramp_max_multiplier` or `enemy_counts_per_chunk`.
 
-## Ciclo día/noche (2026-11-03, ampliado)
+## Day/night cycle (2026-11-03, expanded)
 
-- `scripts/world/day_night.gd` (`DayNightCycle`), nodo `day_night` en `scenes/game.tscn`. Día 300 s (5 min) y noche 180 s (3 min); ciclo total 480 s. Empieza de día.
-- El cielo es el `RenderingServer.set_default_clear_color` del viewport; nada de `CanvasModulate`, así que tiles, sprites y HUD conservan su color.
-- Colores por defecto: día `Color(0.5098, 0.7882, 0.9922)` (el `default_clear_color` de `project.godot`) y noche `Color(0.0431, 0.0627, 0.1647)`. Editables en el inspector.
-- `fade_seconds` (12 s) funde el color en cada cambio de fase, recortado a la mitad de la fase más corta; poner 0 para el salto seco. El mismo factor 0→1 (`_night_factor_at`) mueve los otros tres efectos, así que entran y salen con el cielo.
-- Estrellas: `StarField` (clase interna) en un `CanvasLayer` con `layer = -1`, por debajo del mundo; puntos fijos de `star_size` px, semilla fija 20261103, límite superior 90% de la pantalla. `star_count` 110; su alfa es el factor de noche.
-- Montañas: el nodo `../mountains` recibe `modulate` = blanco → `mountain_night_tint` (`Color(0.33, 0.36, 0.52)`), bastante más oscuras de noche. El resto del parallax no cambia.
-- Velo: `ColorRect` negro en un `CanvasLayer` con `layer = 11` (encima del HUD, que está en 10), alfa `night_veil_alpha` = 0.1 (10%) escalado por la noche. `mouse_filter` en `IGNORE` para no bloquear clics.
-- Todos los valores son `@export`: se cambian desde la escena sin tocar código. El reloj es `fmod` sobre `_process`, así que no se guarda entre partidas.
+- `scripts/world/day_night.gd` (`DayNightCycle`), `day_night` node in `scenes/game.tscn`. Day 300 s (5 min) and night 180 s (3 min); total cycle 480 s. It starts at day.
+- The sky is the viewport's `RenderingServer.set_default_clear_color`; no `CanvasModulate`, so tiles, sprites and HUD keep their color.
+- Default colors: day `Color(0.5098, 0.7882, 0.9922)` (the `default_clear_color` in `project.godot`) and night `Color(0.0431, 0.0627, 0.1647)`. Editable in the inspector.
+- `fade_seconds` (12 s) fades the color on each phase change, clamped to half of the shortest phase; set 0 for a hard cut. The same 0→1 factor (`_night_factor_at`) drives the other three effects, so they enter and leave with the sky.
+- Stars: `StarField` (inner class) in a `CanvasLayer` with `layer = -1`, below the world; fixed `star_size` px points, fixed seed 20261103, upper limit 90% of the screen. `star_count` 110; its alpha is the night factor.
+- Mountains: the `../mountains` node receives `modulate` = white → `mountain_night_tint` (`Color(0.33, 0.36, 0.52)`), noticeably darker at night. The rest of the parallax doesn't change.
+- Veil: black `ColorRect` in a `CanvasLayer` with `layer = 11` (above the HUD, which is at 10), alpha `night_veil_alpha` = 0.1 (10%) scaled by the night. `mouse_filter` set to `IGNORE` so it doesn't block clicks.
+- All values are `@export`: they are changed from the scene without touching code. The clock is `fmod` over `_process`, so it isn't saved between runs.
 
-## Caída inicial y pantalla de carga (2026-11-03, reescrita)
+## Initial fall and loading screen (2026-11-03, rewritten)
 
-- `scripts/world/fall_intro.gd` (`FallIntro`), nodo `fall_intro` al final de `scenes/game.tscn`: coloca al jugador `fall_height_px` (520) por encima de su spawn y lo deja caer a `fall_speed` (300 px/s, ~1,7 s) con `player.fall_speed_cap`; el control sigue desactivado hasta aterrizar.
-- La cámara **sigue al jugador desde el primer frame** (`camera_follow_enabled`). El parqueo anterior (`_park_camera`, `follow_after_px`) no podía funcionar: la `Camera2D` es hija del jugador, así que el parqueo viajaba con él y al enganchar la vista pegaba un salto de ~270 px. Fuera parqueo y fuera tirón.
-- Con 2200 px el intro eran 7 s de cielo vacío: ahora son 520 px (~1,7 s) y el suelo entra enseguida en cámara. `max_seconds` (6 s) devuelve el control aunque el aterrizaje se atasque.
-- El intro hace de **pantalla de carga**: si `WorldGenerator.is_ready_at(x)` (nuevo, mira `_loaded_chunks` del chunk que contiene X) dijera que no hay mundo, la caída se queda suspendida a 240 px del suelo en vez de aterrizar en el vacío. En la práctica la generación es síncrona en `_ready`, así que nunca se ve.
-- Sin negro de transición (quitado el 2026-11-03): se entra directo al cielo. Al aterrizar se devuelve el control y se muestra el `UILayer` (oculto durante la caída).
-- Todos los valores son `@export` en el nodo `fall_intro`.
+- `scripts/world/fall_intro.gd` (`FallIntro`), `fall_intro` node at the end of `scenes/game.tscn`: it places the player `fall_height_px` (520) above its spawn and lets it fall at `fall_speed` (300 px/s, ~1.7 s) with `player.fall_speed_cap`; control stays disabled until landing.
+- The camera **follows the player from the first frame** (`camera_follow_enabled`). The previous parking (`_park_camera`, `follow_after_px`) couldn't work: the `Camera2D` is a child of the player, so parking traveled with it and when hooking the view it jumped ~270 px. No parking and no jolt.
+- With 2200 px the intro was 7 s of empty sky: now it's 520 px (~1.7 s) and the ground enters the frame right away. `max_seconds` (6 s) returns control even if the landing gets stuck.
+- The intro acts as a **loading screen**: if `WorldGenerator.is_ready_at(x)` (new, checks `_loaded_chunks` of the chunk containing X) said there's no world, the fall stays suspended at 240 px above the ground instead of landing in the void. In practice generation is synchronous in `_ready`, so it's never seen.
+- No transition black (removed on 2026-11-03): it goes straight to the sky. On landing control is returned and the `UILayer` is shown (hidden during the fall).
+- All values are `@export` in the `fall_intro` node.
 
-## Capas y cámara
+## Layers and camera
 
-- Capas 2D: 1 mundo, 2 jugador, 3 enemigos, 4 ataque jugador. Viewport 768×432 (ventana 1280×720).
+- 2D layers: 1 world, 2 player, 3 enemies, 4 player attack. Viewport 768×432 (window 1280×720).
 
-## Trampas
+## Traps
 
-- Lo colocado a y=0 queda fuera de cámara: el suelo está cerca de y=800 (base 50 en la escena).
-- Si tocas `chunk_width_tiles`, revisa también `safe_start_tiles`, `load_margin_px` y los arrays de spawns.
+- Anything placed at y=0 ends up outside the camera: the ground is near y=800 (base 50 in the scene).
+- If you touch `chunk_width_tiles`, also check `safe_start_tiles`, `load_margin_px` and the spawn arrays.

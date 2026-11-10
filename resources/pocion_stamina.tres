@@ -7,8 +7,8 @@
 script = ExtResource("1_csbl")
 stamina_amount = 40
 id = "pocion_stamina"
-item_name = "Poción de resistencia"
-description = "Restaura 40 puntos de stamina."
+item_name = "Stamina Potion"
+description = "Restores 40 stamina."
 icon = ExtResource("1_poc3")
 value = 20
 metadata/_custom_type_script = "uid://b3y6d7mpmp5aj"

@@ -49,7 +49,7 @@ func _update_page_label() -> void:
 		return
 	var pages := _page_count()
 	_page_label.visible = pages > 1
-	_page_label.text = "Pág. %d/%d" % [_page + 1, pages]
+	_page_label.text = "Page %d/%d" % [_page + 1, pages]
 
 ## Number of pages needed to show every passive
 func _page_count() -> int:
@@ -76,7 +76,7 @@ func _refresh() -> void:
 	_update_page_label()
 	var count := list.size()
 	var start := _page * PER_PAGE
-	# Más recientes primero (arriba a la izquierda) dentro de la página actual
+	# Most recent first (top left) within the current page
 	for j in range(start, mini(start + PER_PAGE, count)):
 		var passive := list[count - 1 - j]
 		var icon := TextureRect.new()

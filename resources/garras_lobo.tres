@@ -7,8 +7,8 @@
 script = ExtResource("1_low")
 passive_id = "garras_lobo"
 id = "garras_lobo"
-item_name = "Garras de lobo"
-description = "Por debajo del 30% de vida, el ataque sube un 20%."
+item_name = "Wolf Claws"
+description = "Below 30% health, attack increases by 20%."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 40

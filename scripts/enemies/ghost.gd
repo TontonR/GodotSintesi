@@ -1,10 +1,10 @@
 extends EnemyBase
-## Fantasma: persigue, carga, dispara y se teletransporta.
-## Al huir intenta TP; si no puede, se queda y sigue atacando (no corre).
-## El TP se sitúa alrededor del jugador: offsets en X e Y entre el radio
-## de flee_area y el de attack_area (no hace falta círculo perfecto).
-## La Y del destino varía al azar, pero nunca queda por debajo del jugador
-## (ni, por tanto, por debajo del suelo).
+## Ghost: chases, charges, shoots and teleports.
+## When fleeing it tries to TP; if it cannot, it stays and keeps attacking (it does not run).
+## The TP is placed around the player: offsets in X and Y between the
+## flee_area radius and the attack_area radius (no perfect circle needed).
+## The destination Y varies at random, but it is never below the player
+## (and therefore never below the floor).
 
 @export_group("Extra Animations")
 ## Animation played when disappearing before a teleport.

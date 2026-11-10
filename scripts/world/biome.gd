@@ -1,25 +1,25 @@
 class_name Biome
 extends Resource
-## Bioma del mundo: tinte del césped y enemigos propios.
-## El tinte se multiplica sobre la textura gris del césped, así cualquier color vale.
+## World biome: grass tint and its own enemies.
+## The tint is multiplied over the gray grass texture, so any color works.
 
-## Nombre que se muestra en el inspector.
+## Name shown in the inspector.
 @export var display_name: String = ""
-## Tinte del césped (la textura es gris); blanco = sin teñir.
+## Grass tint (the texture is gray); white = untinted.
 @export var grass_color: Color = Color.WHITE
-## Tinte de los bosques de fondo y de la vegetación de la montaña; independiente del césped.
+## Tint of the background forests and the mountain vegetation; independent from the grass.
 @export var forest_color: Color = Color.WHITE
-## Tinte de la piedra de la montaña; blanco = sin teñir (la nieve va aparte y no se tiñe).
+## Tint of the mountain stone; white = untinted (snow is separate and not tinted).
 @export var rock_color: Color = Color.WHITE
-## Partículas de ambiente: "none", "leaves" (hojas rojas) o "snow" (copos de nieve).
+## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
-## Peso relativo en el reparto de biomas del mundo.
+## Relative weight in the world's biome distribution.
 @export var spawn_weight: float = 1.0
-## Multiplicador de la amplitud del ruido del terreno (1 = sin cambio); más alto = alturas más marcadas.
+## Terrain noise amplitude multiplier (1 = unchanged); higher = more pronounced heights.
 @export_range(0.1, 3.0, 0.05) var terrain_amplitude_multiplier: float = 1.0
-## Multiplicador de la frecuencia del ruido del terreno (1 = sin cambio); más alto = relieve más quebrado.
+## Terrain noise frequency multiplier (1 = unchanged); higher = more broken relief.
 @export_range(0.1, 3.0, 0.05) var terrain_frequency_multiplier: float = 1.0
-## Escenas de enemigos que aparecen en el bioma.
+## Enemy scenes that spawn in the biome.
 @export var enemy_scenes: Array[PackedScene] = []
-## Cantidad por chunk, en el mismo orden que `enemy_scenes`.
+## Amount per chunk, in the same order as `enemy_scenes`.
 @export var enemy_counts: Array[int] = []

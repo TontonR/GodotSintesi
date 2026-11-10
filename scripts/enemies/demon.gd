@@ -1,43 +1,43 @@
 class_name demon
 extends EnemyBase
-## Demonio volador: ronda al jugador por el aire y, cada pocos segundos, se
-## detiene encima de él para lanzar un chorro de fuego desde la boca hasta el
-## suelo. Si el jugador bloquea el fuego con el escudo, queda aturdido hasta
-## recibir 3 golpes o hasta que pasen 5 segundos.
+## Flying demon: circles the player through the air and, every few seconds,
+## stops above them to launch a jet of fire from its mouth down to the
+## ground. If the player blocks the fire with the shield, it is stunned until
+## it takes 3 hits or until 5 seconds pass.
 
 enum State { FLY, BREATH, STUN }
 
-## Color del demonio mientras está aturdido.
+## Color of the demon while stunned.
 const STUN_TINT: Color = Color(0.65, 0.82, 1.0)
 
-@export_group("Vuelo")
-## Velocidad horizontal mientras ronda al jugador (px/s).
+@export_group("Flight")
+## Horizontal speed while circling the player (px/s).
 @export var fly_speed: float = 70.0
-## Altura sobre el punto donde apareció (px).
+## Height above the point where it spawned (px).
 @export var fly_height: float = 80.0
-## Segundos volando con el idle entre ataque y ataque.
+## Seconds flying with the idle animation between attacks.
 @export var fly_duration: float = 3.0
-## Amplitud del vaivén horizontal alrededor del jugador (px).
+## Horizontal sway amplitude around the player (px).
 @export var hover_sway: float = 22.0
 
-@export_group("Aliento")
-## Escena del chorro de fuego.
+@export_group("Breath")
+## Fire jet scene.
 @export var fire_scene: PackedScene
-## Segundos que permanece el chorro encendido.
+## Seconds the jet stays lit.
 @export var breath_duration: float = 3.0
-## Tiempo de la animación de ataque antes de abrir la boca y encender el fuego.
+## Time of the attack animation before opening the mouth and lighting the fire.
 @export var breath_windup: float = 0.75
 
-@export_group("Aturdimiento")
-## Segundos máximo que dura el aturdimiento.
+@export_group("Stun")
+## Maximum seconds the stun lasts.
 @export var stun_duration: float = 5.0
-## Golpes necesarios para cortar el aturdimiento.
+## Hits needed to cut the stun short.
 @export var stun_hits_required: int = 3
-## Cuánto baja el demonio mientras está aturdido (px).
+## How far the demon drops while stunned (px).
 @export var stun_drop: float = 40.0
 
-@export_group("Nodos")
-## Punto de la boca desde el que sale el fuego.
+@export_group("Nodes")
+## Mouth point from which the fire comes out.
 @export var muzzle: Node2D
 
 var _state: State = State.FLY
@@ -62,7 +62,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados.
+	# Fallbacks in case the scene does not have the exports wired.
 	if not sprite:
 		sprite = get_node_or_null("visual/idle")
 	if not detection_area:
@@ -77,7 +77,7 @@ func _ready() -> void:
 
 	super()
 
-	# El arte mira a la izquierda por defecto.
+	# The art faces left by default.
 	_is_facing_left = true
 	if flip_pivot:
 		flip_pivot.scale.x = 1.0
@@ -93,7 +93,7 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Comportamiento
+# Behavior
 # ---------------------------------------------------------------------------
 
 func _update_behavior(delta: float) -> void:
@@ -130,7 +130,7 @@ func _process_fly(delta: float) -> void:
 func _process_breath(delta: float) -> void:
 	_face_player_if_visible()
 
-	# Fuego encendido: quieto hasta que se apague.
+	# Fire lit: still until it goes out.
 	if is_instance_valid(_fire):
 		_stop()
 		_state_timer -= delta
@@ -138,7 +138,7 @@ func _process_breath(delta: float) -> void:
 			_end_breath()
 		return
 
-	# Aviso: se coloca para que la boca quede sobre el jugador.
+	# Windup: positions itself so the mouth ends up above the player.
 	if is_instance_valid(_player):
 		var target_x := _player.global_position.x - _muzzle_offset_x()
 		_move_horizontal_to(target_x, delta, fly_speed)
@@ -164,7 +164,7 @@ func _process_stun(delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Ataque y aturdimiento
+# Attack and stun
 # ---------------------------------------------------------------------------
 
 func _start_breath() -> void:
@@ -202,7 +202,7 @@ func _end_breath() -> void:
 	_play_animation(idle_animation, true)
 
 
-## Llamado por el chorro de fuego cuando el jugador lo bloquea con el escudo.
+## Called by the fire jet when the player blocks it with the shield.
 func on_fire_parried() -> void:
 	if _is_dead or _state == State.STUN:
 		return
@@ -244,7 +244,7 @@ func take_damage(amount: float, critical: bool = false) -> void:
 	if _is_dead:
 		return
 
-	# Durante el aturdimiento, los golpes lo acortan.
+	# During the stun, hits shorten it.
 	if was_stunned and _state == State.STUN:
 		_stun_hits += 1
 		if _stun_hits >= stun_hits_required:
@@ -272,7 +272,7 @@ func _on_death() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Utilidades
+# Utilities
 # ---------------------------------------------------------------------------
 
 func _clear_fire() -> void:

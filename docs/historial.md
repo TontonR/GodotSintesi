@@ -1,16 +1,16 @@
-# Historial — bugs que ya picaron
+# History — bugs that already bit us
 
-_2026-10-20 · rama `feat/skills-and-complex-passives`_
+_2026-10-20 · branch `feat/skills-and-complex-passives`_
 
-No cargar salvo que algo huela a esto. Lo vigente está en su doc de sistema.
+Do not load unless something smells like this. What's current lives in its system doc.
 
-## Drops e inventario
+## Drops and inventory
 
-- **2026-10-15 · parpadeo infinito**: el rayo de suelo se lanzaba por frame; con `v < 35 px/s` no llegaba al suelo, el rebote mínimo era inalcanzable y entraba en micro-bucle a ~7 Hz. Fix: buscar el suelo una vez (`_ground_y`) y comparar contra altura fija.
-- **2026-10-14 · drops "que no spawnean"**: estaban a y=0 y el suelo está en y=400. La gravedad lo corrige; el `coin` legacy de `game.tscn` sigue mal.
-- **2026-10-14 · pasiva de curación**: eliminada (`heal_potion_passive.tres`, `HealPassive.gd`); git la conserva.
-- **2026-10-14 · `Skills.gd`**: hacía falta `EquipSlot { NONE = 0 }` para que el export compilara.
+- **2026-10-15 · infinite flicker**: the ground ray was cast every frame; with `v < 35 px/s` it didn't reach the ground, the minimum bounce was unreachable and it entered a micro-loop at ~7 Hz. Fix: look up the ground once (`_ground_y`) and compare against a fixed height.
+- **2026-10-14 · drops "that don't spawn"**: they were at y=0 and the ground is at y=400. Gravity corrects it; the legacy `coin` in `game.tscn` is still wrong.
+- **2026-10-14 · healing passive**: removed (`heal_potion_passive.tres`, `HealPassive.gd`); git keeps it.
+- **2026-10-14 · `Skills.gd`**: `EquipSlot { NONE = 0 }` was needed for the export to compile.
 
-## Enemigos
+## Enemies
 
-- **2026-10-14 · fantasma sin loot**: `ghost.tscn` tenía un override de `loot_table` con entrada vacía; eliminado.
+- **2026-10-14 · ghost without loot**: `ghost.tscn` had a `loot_table` override with an empty entry; removed.

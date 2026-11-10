@@ -7,8 +7,8 @@
 script = ExtResource("1_stat")
 passive_id = "una_ogro"
 id = "una_ogro"
-item_name = "Uña de ogro"
-description = "Aumenta 5 la velocidad."
+item_name = "Ogre Nail"
+description = "Increases speed by 5."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 40

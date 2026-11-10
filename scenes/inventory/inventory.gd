@@ -7,8 +7,8 @@ signal slots_changed
 ## Total slots: all 3 for consumables (keys 1-3)
 const MAX_SLOTS: int = 3
 
-# DEBUG temporal: teclas del numpad para generar objetos (0 limpia, 1 consumible,
-# 2 pasiva). Borrar este bloque y `_handle_debug_key` cuando ya no haga falta.
+# DEBUG temporary: numpad keys to spawn items (0 clears, 1 consumable,
+# 2 passive). Remove this block and `_handle_debug_key` when no longer needed.
 const DEBUG_TOOLS: bool = true
 const _DEBUG_CONSUMABLES: Array[String] = [
 	"res://resources/pocion_mocos.tres",
@@ -67,7 +67,7 @@ func _init() -> void:
 	slots.resize(MAX_SLOTS)
 
 func _ready() -> void:
-	# Enlaza la barra de la interfaz (mismo patrón que player.gd con sus barras)
+	# Binds the UI bar (same pattern as player.gd with its bars)
 	var player := get_parent()
 	if player == null or player.get_parent() == null:
 		return

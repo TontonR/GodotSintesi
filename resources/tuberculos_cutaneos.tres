@@ -7,10 +7,10 @@
 script = ExtResource("1_scr")
 passive_id = "tuberculos_cutaneos"
 id = "tuberculos_cutaneos"
-item_name = "Túberculos cutáneos"
-description = "Al recibir daño sueltas una nube de veneno en el suelo que daña a los enemigos."
+item_name = "Skin Tubercles"
+description = "When you take damage, you release a poison cloud on the ground that damages enemies."
 icon = ExtResource("1_tex")
-quality = "Raro"
+quality = "Rare"
 value = 80
 cooldown_seconds = 4.0
 radius = 44.0

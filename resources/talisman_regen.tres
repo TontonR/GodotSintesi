@@ -7,7 +7,7 @@
 script = ExtResource("1_regn")
 passive_id = "talisman_regen"
 id = "talisman_regen"
-item_name = "Talismán de regeneración"
-description = "Recupera 1 de vida por segundo."
+item_name = "Regeneration Talisman"
+description = "Recovers 1 health per second."
 icon = ExtResource("1_tex")
 value = 60

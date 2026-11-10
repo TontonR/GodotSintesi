@@ -33,19 +33,19 @@ func on_update(_player: Node, _delta: float) -> void:
 func _refresh() -> void:
 	var night_now := false
 	if is_instance_valid(_night) and _night.has_method("is_night"):
-		# `call` devuelve Variant: se fuerza a bool para no perder el tipo.
+		# `call` returns Variant: it is forced to bool to keep the type.
 		night_now = bool(_night.call("is_night"))
 	_set_bonus(night_now)
 
 
-## Activa o quita el bonus. Solo actúa cuando el estado cambia, así que se puede
-## llamar cada frame sin acumular multiplicadores.
+## Activates or removes the bonus. It only acts when the state changes, so it can
+## be called every frame without stacking multipliers.
 func _set_bonus(active: bool) -> void:
 	if not is_instance_valid(_player) or not ("hitbox_damage" in _player and "move_speed" in _player):
 		return
 	if active == _is_active:
 		return
-	# Valores sin nuestro bonus: los bonus planos de otras pasivas siguen contando.
+	# Values without our bonus: the flat bonuses of other passives still count.
 	var base_attack := int(_player.hitbox_damage) - _applied_attack
 	var base_speed := float(_player.move_speed) - _applied_speed
 	var attack := roundi(float(base_attack) * (damage_multiplier - 1.0)) if active else 0

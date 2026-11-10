@@ -8,7 +8,7 @@ const COLLECTIBLE_SLOT_SIZE := Vector2(32, 32)
 ## Rows of collectibles shown per page
 const COLLECTIBLE_ROWS: int = 6
 
-## Escena de un hueco (se asigna en el Inspector)
+## Slot scene (assigned in the Inspector)
 @export var slot_scene: PackedScene
 
 ## Flat list of selectable entries: [{ item, button }]
@@ -45,7 +45,7 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var key := _event_key(event)
-	# Tab alterna columnas con la pantalla abierta; si no, sigue abriendo el inventario
+	# Tab switches columns while the screen is open; otherwise it keeps opening the inventory
 	if visible and key == KEY_TAB:
 		_toggle_column()
 		return
@@ -93,7 +93,7 @@ func close() -> void:
 	get_tree().paused = false
 
 func _exit_tree() -> void:
-	# Nunca dejar el árbol pausado si la escena se descarga con la pantalla abierta
+	# Never leave the tree paused if the scene is unloaded with the screen open
 	if get_tree() and get_tree().paused:
 		get_tree().paused = false
 
@@ -124,7 +124,7 @@ func _refresh() -> void:
 		_fill_slots(_consumables_flow, inventory, 0, Inventory.MAX_SLOTS)
 	_collect_start = _entries.size()
 
-	# Solo los coleccionables de la página actual (6 filas de 6)
+	# Only the collectibles on the current page (6 rows of 6)
 	var list: Array[PassiveItems] = []
 	var passives := _passives()
 	if passives:
@@ -139,16 +139,16 @@ func _refresh() -> void:
 		_add_slot(_collectibles_grid, list[i], COLLECTIBLE_SLOT_SIZE)
 	_update_collectibles_header()
 
-## Crea los botones de un tramo del inventario (huecos vacío incluidos)
+## Creates the buttons for a range of the inventory (empty slots included)
 func _fill_slots(container: Container, inventory: Inventory, from: int, to: int) -> void:
 	for i in range(from, to):
 		_add_slot(container, inventory.get_slot(i))
 
-## Añade un hueco al contenedor; registra la entrada solo si lleva objeto
+## Adds a slot to the container; registers the entry only if it has an item
 func _add_slot(container: Container, item: Items, size: Vector2 = SLOT_SIZE) -> void:
 	var slot: InventorySlot = slot_scene.instantiate()
 	slot.custom_minimum_size = size
-	# El icono ocupa el hueco entero; en el HUD el mismo slot sigue a tamaño nativo
+	# The icon fills the whole slot; in the HUD the same slot keeps its native size
 	slot.expand_icon = true
 	slot.set_item(item)
 	if item:
@@ -162,7 +162,7 @@ func _clear_flow(container: Container) -> void:
 		container.remove_child(child)
 		child.queue_free()
 
-## Resalta la entrada indicada y muestra su información en el panel derecho
+## Highlights the given entry and shows its info in the right panel
 func _select(index: int) -> void:
 	if _entries.is_empty():
 		_selected = -1
@@ -217,7 +217,7 @@ func _event_key(event: InputEvent) -> int:
 		return KEY_NONE
 	return key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode
 
-## Cambia de página de coleccionables y selecciona el primero de la nueva
+## Changes the collectibles page and selects the first one on the new page
 func _change_page(step: int) -> void:
 	if _collect_pages <= 1:
 		return
@@ -238,29 +238,29 @@ func _update_collectibles_header() -> void:
 	_prev_page_button.disabled = not multiple
 	_next_page_button.disabled = not multiple
 
-## Línea de estadísticas del objeto (vacía si no expone valores)
+## Item stats line (empty if it exposes no values)
 func _stats_text(item: Items) -> String:
 	var lines := PackedStringArray()
 	if item is Consumable:
 		var consumable := item as Consumable
 		if consumable.heal_amount > 0:
-			lines.append("+%d vida" % consumable.heal_amount)
+			lines.append("+%d health" % consumable.heal_amount)
 		if consumable.stamina_amount > 0:
 			lines.append("+%d stamina" % consumable.stamina_amount)
 	elif item is PassiveItems:
-		# Propiedades de subclases (bonus/reduction/heal_per_tick): acceso dinámico
+		# Subclass properties (bonus/reduction/heal_per_tick): dynamic access
 		if "bonus" in item:
-			lines.append("Daño extra por golpe: +%g" % float(item.get("bonus")))
+			lines.append("Extra damage per hit: +%g" % float(item.get("bonus")))
 		if "reduction" in item:
-			lines.append("Reducción de daño: %d%%" % roundi(float(item.get("reduction")) * 100))
+			lines.append("Damage reduction: %d%%" % roundi(float(item.get("reduction")) * 100))
 		if "heal_per_tick" in item:
-			lines.append("Regenera %d vida / %g s" % [
+			lines.append("Regenerates %d health / %g s" % [
 				int(item.get("heal_per_tick")),
 				float(item.get("interval")),
 			])
 	return "  ·  ".join(lines)
 
-## Copia el retrato del jugador (SpriteFrames + animación) en el panel izquierdo
+## Copies the player's portrait (SpriteFrames + animation) into the left panel
 func _update_portrait() -> void:
 	var player := _player()
 	if player == null:

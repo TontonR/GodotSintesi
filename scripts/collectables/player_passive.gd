@@ -4,11 +4,11 @@ extends Node
 ## Emitted when the list of active passives changes
 signal passives_changed
 
-# El único Array que almacena todos los objetos pasivos activos
+# The only Array storing every active passive object
 var active_passives: Array[PassiveItems] = []
 
 func _ready() -> void:
-	# Enlaza la lista de la interfaz (mismo patrón que Inventory con su barra)
+	# Binds the UI list (same pattern as Inventory with its bar)
 	var player := get_parent()
 	if player == null or player.get_parent() == null:
 		return
@@ -21,7 +21,7 @@ func add_passive(passive: PassiveItems) -> bool:
 	if passive == null or has_passive(passive):
 		return false
 	active_passives.append(passive)
-	passive.on_equip(get_parent()) # 'get_parent()' asume que es el nodo Jugador
+	passive.on_equip(get_parent()) # 'get_parent()' assumes it is the Player node
 	passives_changed.emit()
 	return true
 

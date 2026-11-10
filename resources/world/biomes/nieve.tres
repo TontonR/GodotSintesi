@@ -7,7 +7,7 @@
 
 [resource]
 script = ExtResource("1_biome")
-display_name = "Nieve"
+display_name = "Snow"
 grass_color = Color(0.93, 0.96, 1, 1)
 forest_color = Color(0.82, 0.88, 0.96, 1)
 rock_color = Color(0.75, 0.78, 0.82, 1)

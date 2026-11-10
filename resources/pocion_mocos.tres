@@ -7,8 +7,8 @@
 script = ExtResource("1_scr")
 duration = 60.0
 id = "pocion_mocos"
-item_name = "Poción de mocos"
-description = "Aumenta el salto durante 60 s y deja al jugador soltando partículas de moco."
+item_name = "Mucus Potion"
+description = "Increases jump for 60 s and leaves the player emitting mucus particles."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 30

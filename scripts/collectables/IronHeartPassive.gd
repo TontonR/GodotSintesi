@@ -1,9 +1,9 @@
 class_name IronHeartPassive
 extends PassiveItems
-## Aumenta la vida máxima del jugador al recogerla.
+## Increases the player max health on pickup.
 
-@export_group("Corazón de hierro")
-## Vida máxima extra que otorga.
+@export_group("Iron heart")
+## Extra max health it grants.
 @export var max_health_bonus: int = 25
 
 

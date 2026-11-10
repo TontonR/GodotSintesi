@@ -2,37 +2,37 @@ class_name DayNightCycle
 extends Node
 
 # ==============================================================================
-# CICLO DÍA / NOCHE
+# DAY / NIGHT CYCLE
 # ==============================================================================
-# La noche cambia el color del cielo (fondo del viewport), enciende estrellas,
-# oscurece las montañas y echa un velo negro del 10% sobre toda la pantalla.
-# No hay CanvasModulate: los sprites, los tiles y el HUD no se oscurecen.
+# Night changes the sky color (viewport background), turns on stars,
+# darkens the mountains and lays a 10% black veil over the whole screen.
+# There is no CanvasModulate: sprites, tiles and the HUD are not darkened.
 
-## Duración del día en segundos (5 min).
+## Day duration in seconds (5 min).
 @export var day_duration: float = 300.0
-## Duración de la noche en segundos (3 min).
+## Night duration in seconds (3 min).
 @export var night_duration: float = 180.0
-## Segundos de fundido en cada cambio de fase. 0 = salto seco.
+## Fade seconds on each phase change. 0 = hard cut.
 @export var fade_seconds: float = 12.0
-## Color del cielo de día (el de `project.godot`: `default_clear_color`).
+## Day sky color (the one in `project.godot`: `default_clear_color`).
 @export var day_color: Color = Color(0.50980395, 0.7882353, 0.99215686, 1)
-## Color del cielo de noche.
+## Night sky color.
 @export var night_color: Color = Color(0.043137, 0.062745, 0.164706, 1)
-## Noche: estrellas dibujadas en el cielo (0 = sin estrellas).
+## Night: stars drawn in the sky (0 = no stars).
 @export var star_count: int = 110
-## Noche: lado de cada estrella en píxeles.
+## Night: side of each star in pixels.
 @export var star_size: int = 2
-## Noche: color de las estrellas.
+## Night: star color.
 @export var star_color: Color = Color(0.92, 0.94, 1, 1)
-## Noche: multiplicador de las montañas, para dejarlas bastante más oscuras.
+## Night: mountain multiplier, to leave them quite a bit darker.
 @export var mountain_night_tint: Color = Color(0.33, 0.36, 0.52, 1)
-## Noche: nodo de las montañas que se oscurece.
+## Night: mountains node that gets darkened.
 @export var mountains_path: NodePath = ^"../mountains"
-## Noche: opacidad del velo negro que cubre la pantalla (0.1 = 10%).
+## Night: opacity of the black veil covering the screen (0.1 = 10%).
 @export_range(0.0, 0.5, 0.01) var night_veil_alpha: float = 0.1
 
 var _elapsed: float = 0.0
-## Color aplicado ahora mismo; -1 para forzar el primero en `_ready`.
+## Color applied right now; -1 to force the first one in `_ready`.
 var _applied: Color = Color(-1.0, -1.0, -1.0, -1.0)
 var _stars: StarField
 var _veil: ColorRect
@@ -40,10 +40,10 @@ var _mountains: CanvasItem
 
 
 # ==============================================================================
-# ESTRELLAS
+# STARS
 # ==============================================================================
-## Puntos fijos en coordenadas de pantalla (no se mueven con la cámara). Vive en
-## su propio `CanvasLayer` por debajo del mundo, así que el parallax lo tapa.
+## Fixed points in screen coordinates (they do not move with the camera). It lives in
+## its own `CanvasLayer` below the world, so the parallax covers it.
 class StarField extends Control:
 	var points: Array[Vector2] = []
 	var side: int = 2
@@ -56,7 +56,7 @@ class StarField extends Control:
 
 
 func _ready() -> void:
-	# El ciclo empieza siempre de día.
+	# The cycle always starts in daytime.
 	_elapsed = 0.0
 	_mountains = get_node_or_null(mountains_path) as CanvasItem
 	_build_stars()
@@ -72,25 +72,25 @@ func _process(delta: float) -> void:
 	_apply_state(_night_factor_at(_elapsed))
 
 
-## 0 = pleno día, 1 = noche cerrada. Usa el mismo fundido que el color para que
-## estrellas, montañas y velo aparezcan a la vez que el cielo.
+## 0 = full day, 1 = deep night. Uses the same fade as the color so that
+## stars, mountains and veil appear at the same time as the sky.
 func _night_factor_at(time: float) -> float:
 	var cycle := day_duration + night_duration
 	var fade := clampf(fade_seconds, 0.0, minf(day_duration, night_duration) * 0.5)
 	if time < day_duration:
-		# Final del día: se va fundiendo hacia la noche.
+		# End of the day: fading towards night.
 		var to_night := day_duration - time
 		if fade > 0.0 and to_night < fade:
 			return 1.0 - to_night / fade
 		return 0.0
-	# Final de la noche: se vuelve al día.
+	# End of the night: back to daytime.
 	var to_day := cycle - time
 	if fade > 0.0 and to_day < fade:
 		return to_day / fade
 	return 1.0
 
 
-## True cuando está más cerca de la noche que del día (lo usan las pasivas).
+## True when it is closer to night than to day (used by the passives).
 func is_night() -> bool:
 	return _night_factor_at(_elapsed) >= 0.5
 
@@ -99,9 +99,9 @@ func _apply_state(night: float) -> void:
 	var color := day_color.lerp(night_color, night)
 	if color != _applied:
 		_applied = color
-		# Único sitio del juego donde se toca el fondo: el clear color del viewport.
+		# The only place in the game that touches the background: the viewport clear color.
 		RenderingServer.set_default_clear_color(color)
-	# No se llama `is_night` para no tapar el método público del mismo nombre.
+	# `is_night` is not called here to avoid shadowing the public method of the same name.
 	var show_night := night > 0.01
 	if _stars:
 		_stars.visible = show_night
@@ -116,7 +116,7 @@ func _apply_state(night: float) -> void:
 func _build_stars() -> void:
 	var layer := CanvasLayer.new()
 	layer.name = "StarsLayer"
-	layer.layer = -1  # detrás del mundo (capa 0), como el propio cielo.
+	layer.layer = -1  # behind the world (layer 0), like the sky itself.
 	add_child(layer)
 	_stars = StarField.new()
 	_stars.name = "Stars"
@@ -125,7 +125,7 @@ func _build_stars() -> void:
 	_stars.tint = star_color
 	var bounds := get_viewport().get_visible_rect().size
 	_stars.size = bounds
-	# Semilla fija: el cielo es el mismo en todas las partidas.
+	# Fixed seed: the sky is the same in every run.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20261103
 	for _index in range(maxi(star_count, 0)):
@@ -138,7 +138,7 @@ func _build_stars() -> void:
 func _build_veil() -> void:
 	var layer := CanvasLayer.new()
 	layer.name = "NightVeilLayer"
-	layer.layer = 11  # encima del HUD (`UILayer` = 10).
+	layer.layer = 11  # above the HUD (`UILayer` = 10).
 	add_child(layer)
 	_veil = ColorRect.new()
 	_veil.name = "NightVeil"

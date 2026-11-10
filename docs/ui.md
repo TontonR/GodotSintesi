@@ -1,43 +1,43 @@
-# Interfaz — HUD, grid de pasivas y pantalla de inventario
+# UI — HUD, passive grid and inventory screen
 
-_2026-10-15 · 2026-10-22 · rama `feat/skills-and-complex-passives` · 2026-11-06_
+_2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-11-06_
 
-## Grid de pasivas (`PassiveUI` · `UILayer/PassiveBar`)
+## Passive grid (`PassiveUI` · `UILayer/PassiveBar`)
 
-- `GridContainer` de **6 columnas** anclado arriba-derecha (bajo vida/stamina), `grow_horizontal = 0` (al añadir filas se ensancha hacia la izquierda) y `columns = 6`.
-- **Orden**: lo más nuevo **arriba a la izquierda** (se itera `active_passives` al revés dentro de la página visible); filas creciendo hacia abajo.
-- **Paginación (2026-10-20)**: solo **10 filas por página** (60 iconos); **← / →** (`ui_left`/`ui_right`) pasan de página con vuelta circular. El contador `Pág. X/Y` (`UILayer/PassivePageLabel`) está **encima del grid** y solo se ve si hay más de una página. Las flechas ya no mueven al jugador (solo A/D + Espacio/W).
-- Iconos 12×12 con alpha 0.55, `h/v_separation` 2. Refresco por `PlayerPassives.passives_changed` → `_refresh` (patrón bind existente).
+- **6-column** `GridContainer` anchored top-right (under health/stamina), `grow_horizontal = 0` (adding rows widens it to the left) and `columns = 6`.
+- **Order**: the newest is **top left** (`active_passives` is iterated in reverse within the visible page); rows grow downward.
+- **Paging (2026-10-20)**: only **10 rows per page** (60 icons); **← / →** (`ui_left`/`ui_right`) change page with wraparound. The `Page X/Y` counter (`UILayer/PassivePageLabel`) is **above the grid** and only shows if there is more than one page. The arrows no longer move the player (only A/D + Space/W).
+- 12×12 icons with alpha 0.55, `h/v_separation` 2. Refresh via `PlayerPassives.passives_changed` → `_refresh` (existing bind pattern).
 
-## Panel de estadísticas (2026-11-05)
+## Stats panel (2026-11-05)
 
-- `UILayer/StatsPanel`: `GridContainer` de **2 columnas** anclado arriba-izquierda en `position (5, 82)`, por debajo de la línea de monedas (y≈63) para no taparla. Lo crea `player.gd::_ensure_stats_ui()` si no existe, igual que las barras de vida/stamina.
-- **Siempre visible**, fuente 9 con sombra y `modulate` alpha **0,6** para que no tape el juego. Seis filas: `Daño`, `Vel. ataque`, `Daño crítico`, `Prob. crítico`, `Velocidad`, `Suerte`; valores en dorado claro alineados a la derecha.
-- Solo se refresca cuando cambia algo (`_stats_dirty`): no reescribe etiquetas cada frame. Los valores salen de `attack_speed`, `crit_damage`, `crit_chance`, `move_speed` y `luck` del jugador.
+- `UILayer/StatsPanel`: **2-column** `GridContainer` anchored top-left at `position (5, 82)`, below the coin line (y≈63) so it doesn't cover it. `player.gd::_ensure_stats_ui()` creates it if missing, just like the health/stamina bars.
+- **Always visible**, 9 px font with shadow and `modulate` alpha **0.6** so it doesn't cover the game. Six rows: `Damage`, `Atk. speed`, `Crit. damage`, `Crit. chance`, `Speed`, `Luck`; values in light gold, right-aligned.
+- It only refreshes when something changes (`_stats_dirty`): it doesn't rewrite labels every frame. The values come from the player's `attack_speed`, `crit_damage`, `crit_chance`, `move_speed` and `luck`.
 
-## Pantalla de inventario (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)
+## Inventory screen (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)
 
-- **Apertura**: acción `inventory` = **Tab** o **I** (nueva en `project.godot`); **Esc** o **I** cierra. Con la pantalla abierta, **Tab alterna entre la columna 1 y la 2** (no cierra). **Pausa el juego** (`get_tree().paused = true`; la pantalla vive con `process_mode = ALWAYS` y `_exit_tree` se asegura de no dejar pausado el árbol).
-- **Layout de 3 columnas (2026-10-20)**: izquierda = retrato del jugador (copia de `SpritePivot/AnimatedSprite2D`, animación `idle`) + **Habilidades** (slots 1-2) + **Consumibles** (slots 3-5); centro = **Coleccionables**; derecha = detalle/preview. Cada columna es un `PanelContainer` con **ancho fijo** (168/272/232 px) y contorno propio, así que no se redimensiona con el contenido. Ventana 744×380 centrada + fondo atenuado.
-- **Al doble (2026-11-06)**: el viewport pasó a 768×432 (T-0010) y el inventario se quedó con las medidas del de 384×216. Se duplicó todo en `inventory_screen.tscn`: ventana, márgenes (16/8), radios (12/8), bordes (2), separaciones (20 y 8), fuentes (18/16 y 20 para el nombre), retrato (144×104), preview (icono 128) y sliders de página (32×32). En `inventory_screen.gd`: `SLOT_SIZE` 40×40, `COLLECTIBLE_SLOT_SIZE` 32×32 y `slot.expand_icon = true` para que el icono llene el hueco; el HUD sigue con su slot de 18×18 sin expandir.
-- **Coleccionables = las pasivas activas** (`PlayerPassives.active_passives`, simples o complejas, las mismas del HUD). **Paginados**: `GridContainer` de 6 columnas × **6 filas por página** (36/página, botones 16×16); la cabecera muestra **"Coleccionables"**, el contador **X/Y** y las flechas **← / →** justo al lado.
-- **Derecha** (panel derecho): icono 64 px, **nombre**, línea de **estadísticas** y **descripción** del elemento seleccionado. Estadísticas: vida/stamina de consumibles; bonus de `Skills`; de las pasivas se leen propiedades dinámicas (`bonus`, `reduction`, `heal_per_tick`+`interval`) con `"prop" in item` + `item.get()`.
-- **GUI**: la estructura (paneles, labels y grids) vive en el `.tscn`; el código solo instancia/rellena los huecos dinámicos (`InventorySlot`) y enlaza los datos del `Inventory`/`PlayerPassives`.
-- **Slots**: `InventorySlot` (`scenes/inventory/inventory_slot.tscn`) es un `Button` reutilizable con estilos en `resources/inventory/`; `InventoryScreen` lo instancia vía `@export var slot_scene` y `_refresh()` solo rellena icono/selección. **HUD**: `InventoryUI` instancia el mismo slot con `preload` (18×18) para skills/consumibles, sin crear botones a mano en `game.tscn`.
-- **Selección (2026-10-20)**: ratón (clic en el hueco), **A/D** anterior/siguiente dentro de la columna activa y **W/S** suben/bajan dentro de la columna activa (izquierda: skills ↔ consumibles; centro: filas del grid). **Tab** alterna entre columna 1 y 2; la columna 3 (preview) nunca se selecciona. Resaltado = borde azul 1 px, mismo ancho que el normal (el hueco no cambia de tamaño) y **conserva el azul al pasar el ratón**. **Páginas**: **← / →** y **Q** (anterior/izquierda) / **E** (siguiente/derecha) cambian de página y seleccionan el primer coleccionable; los botones **← / →** están en la cabecera, al lado de "Coleccionables". Huecos vacíos = botones deshabilitados con el mismo fondo; `focus_mode = NONE` (Tab se gestiona a mano para alternar columnas).
-- **Sin** botones de usar/equipar (no pedidos). Teclas 1-5 no responden mientras está abierta (la pausa lo bloquea). Se re-monta con `slots_changed`/`passives_changed` solo si está visible.
+- **Opening**: `inventory` action = **Tab** or **I** (new in `project.godot`); **Esc** or **I** closes. With the screen open, **Tab toggles between column 1 and 2** (it doesn't close). **Pauses the game** (`get_tree().paused = true`; the screen lives with `process_mode = ALWAYS` and `_exit_tree` makes sure not to leave the tree paused).
+- **3-column layout (2026-10-20, adjusted 2026-11-10)**: left = player portrait (copy of `SpritePivot/AnimatedSprite2D`, `idle` animation) + **Consumables** (3 slots, keys 1-3); center = **Collectables**; right = detail/preview. Each column is a `PanelContainer` with a **fixed width** (168/272/232 px) and its own outline, so it doesn't resize with content. Centered 744×380 window + dimmed background.
+- **Doubled (2026-11-06)**: the viewport became 768×432 (T-0010) and the inventory kept the measurements from the 384×216 one. Everything was doubled in `inventory_screen.tscn`: window, margins (16/8), radii (12/8), borders (2), separations (20 and 8), fonts (18/16 and 20 for the name), portrait (144×104), preview (128 icon) and page sliders (32×32). In `inventory_screen.gd`: `SLOT_SIZE` 40×40, `COLLECTIBLE_SLOT_SIZE` 32×32 and `slot.expand_icon = true` so the icon fills the slot; the HUD keeps its 18×18 slot without expanding.
+- **Collectables = the active passives** (`PlayerPassives.active_passives`, simple or complex, the same as in the HUD). **Paged**: 6-column `GridContainer` × **6 rows per page** (36/page, 16×16 buttons); the header shows **"Collectables"**, the **X/Y** counter and the **← / →** arrows right next to it.
+- **Right** (right panel): 64 px icon, **name**, **stats** line and **description** of the selected item. Stats: health/stamina for consumables; for passives, dynamic properties are read (`bonus`, `reduction`, `heal_per_tick`+`interval`) with `"prop" in item` + `item.get()`.
+- **GUI**: the structure (panels, labels and grids) lives in the `.tscn`; the code only instantiates/fills the dynamic slots (`InventorySlot`) and binds the `Inventory`/`PlayerPassives` data.
+- **Slots**: `InventorySlot` (`scenes/inventory/inventory_slot.tscn`) is a reusable `Button` with styles in `resources/inventory/`; `InventoryScreen` instantiates it via `@export var slot_scene` and `_refresh()` only fills the icon/selection. **HUD**: `InventoryUI` instantiates the same slot with `preload` (18×18) for the 3 consumables, without creating buttons by hand in `game.tscn`.
+- **Selection (2026-10-20, adjusted 2026-11-10)**: mouse (click on the slot), **A/D** previous/next within the active column and **W/S** up/down within the active column (left: a single row of consumables; center: grid rows). **Tab** toggles between column 1 and 2; column 3 (preview) can never be selected. Highlight = 1 px blue border, same width as the normal one (the slot doesn't change size) and **keeps the blue on mouse hover**. **Pages**: **← / →** and **Q** (previous/left) / **E** (next/right) change page and select the first collectable; the **← / →** buttons are in the header, next to "Collectables". Empty slots = disabled buttons with the same background; `focus_mode = NONE` (Tab is handled by hand to toggle columns).
+- **No** use/equip buttons (not requested). Keys 1-3 do not respond while it's open (the pause blocks them). It remounts with `slots_changed`/`passives_changed` only if it is visible.
 
-## Menú principal (2026-11-03)
+## Main menu (2026-11-03)
 
-- `scenes/main_menu.tscn` + `scripts/ui/main_menu.gd`, ahora `run/main_scene` de `project.godot`. El juego se llama **OffBeaten Path** (`config/name`).
-- Fondo: el mismo parallax de la partida (nubes, montañas y dos capas de pinos, `z_index` -100) sobre el cielo, que es el `default_clear_color` del proyecto. `Camera2D` con el mismo `offset (60,-70)` que la del jugador para que las capas caigan en el mismo sitio que en juego.
-- UI en `CanvasLayer` 10: `VBoxContainer` centrado con el título (Label 44 px, sombra) y el botón `Jugar` (con foco al arrancar, así que Enter/Espacio también sirven).
-- Sin fundidos: Jugar llama directo a `change_scene_to_file("res://scenes/game.tscn")` (el negro de transición se quitó el 2026-11-03).
-- `MountainBase`: `ColorRect` hijo de `mountains` (local y 62 → 400, 2064 px de ancho) con `#283D43` (`Color(0.157, 0.239, 0.263)`), para que no se vea cielo por debajo de la cordillera. Desde el 2026-11-03 está **también** en `game.tscn` con el mismo color: la banda plana se ve siempre, en el menú y en partida, y el ciclo día/noche la oscurece junto al resto del nodo `mountains`.
-- La partida empieza con la caída desde el cielo (`FallIntro`, ver `docs/world.md`).
+- `scenes/main_menu.tscn` + `scripts/ui/main_menu.gd`, now `run/main_scene` in `project.godot`. The game is called **OffBeaten Path** (`config/name`).
+- Background: the same parallax as the game (clouds, mountains and two layers of pines, `z_index` -100) over the sky, which is the project's `default_clear_color`. `Camera2D` with the same `offset (60,-70)` as the player's so the layers fall in the same place as in-game.
+- UI in `CanvasLayer` 10: centered `VBoxContainer` with the title (44 px Label, shadow) and the `Play` button (focused on start, so Enter/Space also work).
+- No fades: Play calls `change_scene_to_file("res://scenes/game.tscn")` directly (the transition black was removed on 2026-11-03).
+- `MountainBase`: `ColorRect` child of `mountains` (local and 62 → 400, 2064 px wide) with `#283D43` (`Color(0.157, 0.239, 0.263)`), so no sky shows below the range. Since 2026-11-03 it is **also** in `game.tscn` with the same color: the flat band is always visible, in the menu and in-game, and the day/night cycle darkens it along with the rest of the `mountains` node.
+- The game starts with the fall from the sky (`FallIntro`, see `docs/world.md`).
 
-## Convención de idioma (2026-10-15)
+## Language convention (2026-10-15)
 
-- **En inglés**: identificadores (funciones/vars/constantes/enum), `@export`, títulos de `@export_group` y doc `##` (lo que muestra el inspector).
-- **En español**: comentarios `#` normales, textos de UI (labels, `.tres`) y `docs/`.
-- Alcance del refactor: sistemas de objetos/inventario/UI/pasivas/loot — `item_pickup.gd`, `scenes/inventory/inventory.gd`, `scenes/inventory/inventory_ui.gd`, `passive_ui.gd`, `scenes/inventory/inventory_screen.gd`, `player_passive.gd`, `collectables/*`, `loot_drop_item.gd`. **Sin tocar**: `player.gd`, `enemy_base.gd`, `world_generator.gd`, `ghost*.gd`.
+- **In English**: identifiers (functions/vars/constants/enums), `@export`, `@export_group` titles and `##` doc (what the inspector shows).
+- **In English**: regular `#` comments, UI text (labels, `.tres`) and `docs/`.
+- Refactor scope: objects/inventory/UI/passives/loot systems — `item_pickup.gd`, `scenes/inventory/inventory.gd`, `scenes/inventory/inventory_ui.gd`, `passive_ui.gd`, `scenes/inventory/inventory_screen.gd`, `player_passive.gd`, `collectables/*`, `loot_drop_item.gd`. **Untouched**: `player.gd`, `enemy_base.gd`, `world_generator.gd`, `ghost*.gd`.

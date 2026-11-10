@@ -7,7 +7,7 @@
 script = ExtResource("1_atkb")
 passive_id = "amuleto_ataque"
 id = "amuleto_ataque"
-item_name = "Amuleto de ataque"
-description = "Añade 6 de daño a cada golpe."
+item_name = "Attack Amulet"
+description = "Adds 6 damage to each hit."
 icon = ExtResource("1_tex")
 value = 60

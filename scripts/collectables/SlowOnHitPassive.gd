@@ -1,18 +1,18 @@
 class_name SlowOnHitPassive
 extends PassiveItems
-## Lengua de rana: al golpear a un enemigo le baja la velocidad un tiempo.
+## Frog tongue: hitting an enemy lowers its speed for a while.
 
-@export_group("Ralentización")
-## Multiplicador de velocidad que se le deja al enemigo (0.5 = la mitad).
+@export_group("Slowdown")
+## Speed multiplier left on the enemy (0.5 = half).
 @export_range(0.1, 1.0, 0.05) var slow_multiplier: float = 0.5
-## Segundos que dura la ralentización.
+## Seconds the slowdown lasts.
 @export var slow_seconds: float = 3.0
 
 
 func on_player_attack(target: Node, damage: float) -> float:
 	if target == null:
 		return damage
-	# El golpe puede llegar al cuerpo del enemigo o a un Area2D hijo.
+	# The hit may land on the enemy body or on a child Area2D.
 	var enemy: Node = target
 	if not enemy.has_method("apply_slow"):
 		enemy = enemy.get_parent()

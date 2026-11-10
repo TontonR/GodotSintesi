@@ -1,11 +1,11 @@
 extends Node2D
 
 # ==============================================================================
-# MENÚ PRINCIPAL
+# MAIN MENU
 # ==============================================================================
-# De fondo, el mismo parallax que la partida: cielo (clear color), nubes y
-# montañas, con un relleno del color de la montaña por debajo. Al pulsar Jugar se
-# carga `scenes/game.tscn`, que arranca con la caída desde el cielo (`FallIntro`).
+# Background uses the same parallax as the game: sky (clear color), clouds and
+# mountains, with a fill of the mountain color below. Pressing Play
+# loads `scenes/game.tscn`, which starts with the fall from the sky (`FallIntro`).
 
 const GAME_SCENE := "res://scenes/game.tscn"
 

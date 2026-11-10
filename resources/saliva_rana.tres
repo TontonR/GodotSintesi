@@ -8,8 +8,8 @@
 script = ExtResource("1_scr")
 passive_id = "saliva_rana"
 id = "saliva_rana"
-item_name = "Saliva de rana"
-description = "Al acabar el combo lanza un proyectil de saliva (25% del daño base) que atraviesa a todos los enemigos."
+item_name = "Frog Saliva"
+description = "At the end of the combo, launches a saliva projectile (25% of base damage) that pierces all enemies."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 40

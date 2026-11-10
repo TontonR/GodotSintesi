@@ -24,7 +24,7 @@ func on_unequip(_player: Node) -> void:
 	_player = null
 
 
-## `sign` 1 equips, -1 unequips: siempre se aplica lo mismo, en un sentido u otro.
+## `sign` 1 equips, -1 unequips: the same value is always applied, one way or the other.
 func _apply(sign: int) -> void:
 	if not is_instance_valid(_player):
 		return

@@ -6,8 +6,8 @@ const ROW_FILL := 1
 const ROW_BOTTOM := 2
 
 
-## Pinta el césped bloque a bloque: un `TileMapLayer` solo se puede teñir entero
-## con `modulate`, y el bioma cambia de color dentro del propio chunk.
+## Paints the grass block by block: a `TileMapLayer` can only be tinted as a whole
+## with `modulate`, and the biome changes color inside the chunk itself.
 class GrassPaint extends Node2D:
 	var textures: Array[Texture2D] = []
 	var rects: Array[Rect2] = []
@@ -37,7 +37,7 @@ var _grass_paint: GrassPaint
 
 
 func _ready() -> void:
-	# Buscar el nodo Entities existente.
+	# Find the existing Entities node.
 	for child in get_children():
 		if child is Node2D and child.name.to_lower() == "entities":
 			entities = child
@@ -48,10 +48,10 @@ func _ready() -> void:
 		entities.name = "Entities"
 		add_child(entities)
 
-	# Buscar una capa Solid existente.
+	# Find an existing Solid layer.
 	_solid = get_node_or_null("Solid") as TileMapLayer
 
-	# Si no existe, crearla.
+	# If it does not exist, create it.
 	if _solid == null:
 		_solid = TileMapLayer.new()
 		_solid.name = "Solid"
@@ -59,7 +59,7 @@ func _ready() -> void:
 
 	move_child(_solid, 0)
 
-	# El césped va encima del suelo y por debajo de las entidades.
+	# Grass goes above the ground and below the entities.
 	_grass_paint = GrassPaint.new()
 	_grass_paint.name = "GrassPaint"
 	add_child(_grass_paint)
@@ -82,7 +82,7 @@ func paint(
 	_solid.clear()
 	_solid.tile_set = tile_set
 
-	# Atlas del césped: un color de `grass_tints` por columna.
+	# Grass atlas: one color from `grass_tints` per column.
 	var grass_source: TileSetAtlasSource = null
 	var grass_texture: Texture2D = null
 	var grass_size := Vector2.ZERO
@@ -122,9 +122,9 @@ func paint(
 					regions.append(Rect2(grass_source.get_tile_texture_region(coords)))
 					colors.append(_grass_tint(grass_tints, x))
 
-	# Columna extra a la derecha: cada chunk es una capa distinta y, con
-	# escalado fraccionario, el redondeo a píxel deja una grieta de 1 px en la
-	# unión. Se pinta la primera columna del chunk siguiente, idéntica, para taparla.
+	# Extra column on the right: each chunk is a different layer and, with
+	# fractional scaling, pixel rounding leaves a 1 px crack at the
+	# join. The first column of the next chunk is painted, identical, to cover it.
 	var next_surface := edge_right
 	var next_left := heights[width - 1]
 	for y in range(next_surface, floor_row):
@@ -143,14 +143,14 @@ func paint(
 	_grass_paint.set_tiles(textures, rects, regions, colors)
 
 
-## Color del césped de una columna; blanco cuando no llega la lista (sin biomas).
+## Grass color of a column; white when the list does not reach it (no biomes).
 func _grass_tint(grass_tints: PackedColorArray, index: int) -> Color:
 	if index < 0 or index >= grass_tints.size():
 		return Color.WHITE
 	return grass_tints[index]
 
 
-## Columna del atlas segun los bordes libres a izquierda/derecha del tile.
+## Atlas column based on the free edges to the left/right of the tile.
 func _edge_col(y: int, left_surface: int, right_surface: int, swap: bool) -> int:
 	var col := 1
 	var has_left := y >= left_surface

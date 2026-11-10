@@ -7,8 +7,8 @@
 [resource]
 script = ExtResource("1_cmbp")
 id = "rafaga"
-item_name = "Ráfaga"
-description = "Cada tercer ataque lanza tres proyectiles en abanico. Cada uno hace un 15% de tu daño."
+item_name = "Burst"
+description = "Every third attack launches three projectiles in a fan. Each one deals 15% of your damage."
 icon = ExtResource("3_icon")
 value = 90
 passive_id = "rafaga"

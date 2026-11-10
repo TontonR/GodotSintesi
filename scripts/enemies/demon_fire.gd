@@ -1,24 +1,24 @@
 class_name demon_fire
 extends Area2D
-## Chorro de fuego del demonio. Nace en su boca y cae hasta el suelo con una
-## ligera inclinación hacia delante (como en el arte del ataque). Daña al
-## jugador por intervalos. Si el jugador lo bloquea con el escudo, avisa al
-## demonio para que quede aturdido.
+## Demon's fire jet. It is born at its mouth and falls to the ground with a
+## slight forward lean (as in the attack art). It damages the
+## player at intervals. If the player blocks it with the shield, it notifies the
+## demon so that it is stunned.
 
-## Daño por cada golpe del chorro.
+## Damage per fire jet tick.
 @export var damage_per_tick: int = 5
-## Segundos entre dos golpes mientras el jugador está dentro.
+## Seconds between two hits while the player is inside.
 @export var tick_interval: float = 0.5
-## Longitud máxima si no se encuentra suelo.
+## Maximum length if no ground is found.
 @export var max_length: float = 220.0
-## Anchura del área de daño (px). Con inclinación, debe cubrir al jugador
-## que está justo bajo la boca.
+## Width of the damage area (px). With the lean, it must cover the player
+## standing right under the mouth.
 @export var beam_width: float = 48.0
-## Inclinación del chorro hacia delante respecto a la vertical (grados).
+## Forward lean of the jet relative to vertical (degrees).
 @export var lean_degrees: float = 12.0
-## Duración (s) del crecimiento visual al encenderse.
+## Duration (s) of the visual growth when lit.
 @export var grow_time: float = 0.12
-## Longitud del contenido visible del arte del chorro (px de textura).
+## Length of the visible content of the jet art (texture px).
 @export var visual_content_length: float = 129.0
 
 var _demon: Node2D = null
@@ -28,7 +28,7 @@ var _closing: bool = false
 var _player_inside: bool = false
 var _player: Node2D = null
 var _tick_timer: float = 0.0
-## Dirección del chorro (hacia abajo y ligeramente hacia delante).
+## Direction of the jet (downwards and slightly forwards).
 var _direction: Vector2 = Vector2.DOWN
 
 @onready var beam: Node2D = $beam
@@ -44,7 +44,7 @@ func _ready() -> void:
 		sprite.animation_finished.connect(_on_animation_finished)
 
 
-## Lo llama el demonio justo después de colocarlo en la boca.
+## Called by the demon right after placing it at the mouth.
 func setup(demon: Node2D, duration: float, facing_left: bool) -> void:
 	_demon = demon
 	_lifetime = duration
@@ -74,7 +74,7 @@ func _physics_process(delta: float) -> void:
 		_damage_player()
 
 
-## Apaga el chorro con su animación final y lo elimina.
+## Turns the jet off with its final animation and removes it.
 func stop_breath() -> void:
 	if _closing:
 		return
@@ -89,17 +89,17 @@ func stop_breath() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Geometría del chorro
+# Jet geometry
 # ---------------------------------------------------------------------------
 
-## Vertical ligeramente inclinada hacia delante (el sentido en el que mira).
+## Vertical slightly leaned forward (the direction it faces).
 func _get_direction(facing_left: bool) -> Vector2:
 	var lean := deg_to_rad(lean_degrees)
 	var sign_x := -1.0 if facing_left else 1.0
 	return Vector2(sign_x * sin(lean), cos(lean)).normalized()
 
 
-## Orienta el rayo, escala el arte y ajusta el área de daño al suelo.
+## Orients the ray, scales the art and adjusts the damage area to the ground.
 func _configure_beam() -> void:
 	if ray:
 		ray.rotation = _direction.angle()
@@ -108,7 +108,7 @@ func _configure_beam() -> void:
 
 	var length := _get_beam_length()
 	if beam:
-		# El arte crece hacia su -x, así que el nodo mira en sentido contrario.
+		# The art grows toward its -x, so the node faces the opposite way.
 		beam.rotation = _direction.angle() + PI
 		beam.scale = Vector2(length / maxf(visual_content_length, 1.0), beam.scale.y)
 
@@ -116,12 +116,12 @@ func _configure_beam() -> void:
 		var rect := RectangleShape2D.new()
 		rect.size = Vector2(beam_width, length)
 		shape_node.shape = rect
-		# El rectángulo es ancho × alto: se rota para que su alto siga el chorro.
+		# The rectangle is width × height: it is rotated so its height follows the jet.
 		shape_node.rotation = _direction.angle() - PI * 0.5
 		shape_node.position = _direction * (length * 0.5)
 
 
-## Distancia hasta el suelo (o hasta max_length si no lo encuentra).
+## Distance to the ground (or to max_length if none is found).
 func _get_beam_length() -> float:
 	if ray and ray.is_colliding():
 		var distance := global_position.distance_to(ray.get_collision_point()) - 2.0
@@ -129,7 +129,7 @@ func _get_beam_length() -> float:
 	return minf(150.0, max_length)
 
 
-## El arte sale del punto de la boca creciendo rápido, en vez de aparecer entero.
+## The art comes out of the mouth point growing fast, instead of appearing whole.
 func _start_grow() -> void:
 	if not beam:
 		return
@@ -140,7 +140,7 @@ func _start_grow() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Daño y bloqueo
+# Damage and blocking
 # ---------------------------------------------------------------------------
 
 func _on_body_entered(body: Node2D) -> void:
@@ -164,7 +164,7 @@ func _damage_player() -> void:
 	if is_instance_valid(_demon):
 		origin = _demon.global_position
 
-	# Bloqueo frontal con el escudo: el demonio queda aturdido.
+	# Frontal block with the shield: the demon is stunned.
 	if _player.has_method("is_guarding") and _player.is_guarding():
 		if not _player.has_method("is_attack_from_front") or _player.is_attack_from_front(origin):
 			_parried()

@@ -7,7 +7,7 @@
 script = ExtResource("1_csbl")
 heal_amount = 15
 id = "pocion_cura_menor"
-item_name = "Poción de curación menor"
-description = "Restaura 15 puntos de vida."
+item_name = "Minor Healing Potion"
+description = "Restores 15 health."
 icon = ExtResource("1_tex")
 value = 10

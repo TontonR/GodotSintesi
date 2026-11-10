@@ -1,18 +1,18 @@
 extends Node2D
 
 # ==============================================================================
-# EFECTOS DE COMBATE, PICKUPS Y UI
+# COMBAT EFFECTS, PICKUPS AND UI
 # ==============================================================================
-# Partículas y textos viven en el mundo; el flash rojo, en una capa de pantalla.
-# Todo se crea en código: este nodo no necesita escenas ni texturas externas.
-# Los demás sistemas lo buscan en el grupo "fx".
+# Particles and texts live in the world; the red flash, in a screen layer.
+# Everything is created in code: this node needs no scenes or external textures.
+# Other systems find it in the "fx" group.
 
 var _camera: Camera2D
 var _shake_time := 0.0
 var _shake_duration := 0.01
 var _shake_strength := 0.0
-## Encuadre propio de la cámara (la del jugador trae (60, -70)); la sacudida
-## se suma encima y al acabar se restaura este valor, no cero.
+## Camera's own framing (the player's brings (60, -70)); shake
+## is added on top and this value is restored at the end, not zero.
 var _camera_base_offset := Vector2.ZERO
 var _flash: ColorRect
 var _flash_tween: Tween
@@ -44,11 +44,11 @@ func _process(delta: float) -> void:
 
 
 # ==============================================================================
-# API PARA EL RESTO DEL JUEGO
+# API FOR THE REST OF THE GAME
 # ==============================================================================
 
-## Golpe a un enemigo: chispas y número de daño. Si es crítico, más chispas
-## doradas, número más grande y sacudida corta.
+## Hit on an enemy: sparks and damage number. If critical, more golden
+## sparks, bigger number and short shake.
 func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -> void:
 	if critical:
 		_burst(world_position, Color(1.0, 0.8, 0.32), 14, 140.0, 0.45, 1.2, 280.0, 4.0)
@@ -62,8 +62,8 @@ func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
 
 
-## Muerte de un enemigo: reventón de sangre en capas (chorro oscuro con
-## estela, salpicadura roja, niebla y chispas blancas) y golpe de cámara.
+## Enemy death: layered blood burst (dark jet with
+## trail, red splatter, mist and white sparks) and camera hit.
 func enemy_death(world_position: Vector2) -> void:
 	_burst(world_position, Color(0.52, 0.04, 0.06), 32, 300.0, 0.95, 1.7, 680.0, 7.0, 180.0, true)
 	_burst(world_position, Color(0.85, 0.12, 0.1), 26, 190.0, 0.7, 1.4, 380.0, 10.0)
@@ -72,7 +72,7 @@ func enemy_death(world_position: Vector2) -> void:
 	shake(1.4, 0.12)
 
 
-## Daño al jugador: número rojo, chispas, sacudida de cámara y flash.
+## Player damage: red number, sparks, camera shake and flash.
 func player_hit(world_position: Vector2, damage: float) -> void:
 	_burst(world_position, Color(1.0, 0.3, 0.28), 10, 110.0, 0.4, 1.0)
 	_number(world_position, str(-roundi(damage)), Color(1.0, 0.42, 0.38))
@@ -80,27 +80,27 @@ func player_hit(world_position: Vector2, damage: float) -> void:
 	damage_flash()
 
 
-## Moneda recogida: chispas doradas y "+1".
+## Coin picked up: golden sparks and "+1".
 func coin_pickup(world_position: Vector2) -> void:
 	_burst(world_position, Color(1.0, 0.85, 0.3), 10, 80.0, 0.45, 0.9)
 	_number(world_position + Vector2(0.0, -8.0), "+1", Color(1.0, 0.88, 0.35))
 
 
-## Objeto recogido: chispas verdes.
+## Item picked up: green sparks.
 func item_pickup(world_position: Vector2) -> void:
 	_burst(world_position, Color(0.55, 1.0, 0.65), 14, 70.0, 0.6, 1.0)
 
 
-## Curación: chispas verdes y "+N".
+## Healing: green sparks and "+N".
 func heal(world_position: Vector2, amount: int) -> void:
 	_burst(world_position, Color(0.45, 1.0, 0.55), 12, 60.0, 0.5, 1.0)
 	if amount > 0:
 		_number(world_position, "+%d" % amount, Color(0.55, 1.0, 0.6))
 
 
-## Polvo (saltar, aterrizar, correr). `strength` escala tamaño y velocidad.
-## El llamador pasa el punto de los pies: la nube se abre pegada al suelo.
-## El color sale del césped del bioma (aclarado) para que se lea como tierra local.
+## Dust (jumping, landing, running). `strength` scales size and speed.
+## The caller passes the feet point: the cloud opens hugging the ground.
+## The color comes from the biome's grass (lightened) so it reads as local soil.
 func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> void:
 	var color := Color(0.84, 0.8, 0.72, 0.75)
 	var biome := _biome_at(world_position.x)
@@ -110,27 +110,27 @@ func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> vo
 	_burst(world_position, color, amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
 
 
-## Parry: chispas blancas y doradas, aviso flotante, sacudida corta y destello.
+## Parry: white and golden sparks, floating notice, short shake and flash.
 func parry(world_position: Vector2) -> void:
 	_burst(world_position, Color(1.0, 1.0, 0.92), 16, 180.0, 0.35, 1.2, 60.0, 5.0)
 	_burst(world_position, Color(1.0, 0.86, 0.42), 10, 120.0, 0.5, 0.9, 240.0, 4.0)
-	_number(world_position + Vector2(0.0, -12.0), "¡PARRY!", Color(1.0, 0.95, 0.65))
+	_number(world_position + Vector2(0.0, -12.0), "PARRY!", Color(1.0, 0.95, 0.65))
 	shake(1.2, 0.1)
 	damage_flash(Color(1.0, 0.95, 0.72), 0.16)
 
 
-## Ventana de parry abierta: chispas pequeñas doradas, sin texto ni sacudida.
+## Parry window open: small golden sparks, no text or shake.
 func parry_ready(world_position: Vector2) -> void:
 	_burst(world_position, Color(1.0, 0.9, 0.55, 0.9), 4, 45.0, 0.22, 0.6, 0.0, 2.0, 70.0)
 
 
-## Sacude la cámara sin tocar su posición: solo el offset, con caída gradual.
+## Shakes the camera without touching its position: only the offset, with gradual falloff.
 func shake(strength: float, duration: float) -> void:
 	var camera := _get_camera()
 	if camera == null:
 		return
-	# Solo se captura al empezar: si se encadenan sacudidas, el offset actual
-	# ya lleva el temblor y no debe convertirse en el nuevo encuadre.
+	# Only captured at the start: if shakes chain, the current offset
+	# already carries the tremor and must not become the new framing.
 	if _shake_time <= 0.0:
 		_camera_base_offset = camera.offset
 	_shake_strength = maxf(_shake_strength, strength)
@@ -138,7 +138,7 @@ func shake(strength: float, duration: float) -> void:
 	_shake_time = _shake_duration
 
 
-## Flash a pantalla completa (por debajo del HUD). Por defecto, rojo de daño.
+## Full-screen flash (below the HUD). Red damage color by default.
 func damage_flash(color: Color = Color(1.0, 0.12, 0.12), alpha: float = 0.3) -> void:
 	if _flash == null:
 		return
@@ -152,10 +152,10 @@ func damage_flash(color: Color = Color(1.0, 0.12, 0.12), alpha: float = 0.3) -> 
 
 
 # ==============================================================================
-# CONSTRUCCIÓN
+# CONSTRUCTION
 # ==============================================================================
 
-## Capa de números (8, bajo el HUD) y capa del flash (9, también bajo el HUD).
+## Number layer (8, below the HUD) and flash layer (9, also below the HUD).
 func _build_layers() -> void:
 	_text_layer = CanvasLayer.new()
 	_text_layer.name = "DamageNumbers"
@@ -179,8 +179,8 @@ func _build_layers() -> void:
 	_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
-## Número flotante: sube y se desvanece. Se coloca en coordenadas de pantalla
-## para que el zoom de la cámara no cambie su tamaño.
+## Floating number: rises and fades. Placed in screen coordinates
+## so camera zoom does not change its size.
 func _number(world_position: Vector2, text: String, color: Color, font_size: int = 9) -> void:
 	if _text_layer == null:
 		return
@@ -201,7 +201,7 @@ func _number(world_position: Vector2, text: String, color: Color, font_size: int
 	tween.finished.connect(label.queue_free)
 
 
-## Estallido de partículas de un solo uso.
+## One-shot particle burst.
 func _burst(
 	world_position: Vector2,
 	color: Color,
@@ -239,22 +239,22 @@ func _burst(
 	get_tree().create_timer(lifetime + 0.3).timeout.connect(particles.queue_free)
 
 
-## Píxel blanco reutilizado por todas las partículas (se tiñen con `color`).
+## White pixel reused by all particles (tinted with `color`).
 func _solid_texture(size: int) -> ImageTexture:
 	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
 
 
-## Gota alargada (2×5) para la sangre: con `particle_flag_align_y` se estira en
-## la dirección del chorro y se lee como salpicadura, no como chispa cuadrada.
+## Elongated drop (2×5) for blood: with `particle_flag_align_y` it stretches in
+## the jet's direction and reads as splatter, not as a square spark.
 func _make_streak_texture() -> ImageTexture:
 	var image := Image.create(2, 5, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
 
 
-## Bioma bajo una X del mundo; null si el generador aún no existe.
+## Biome under a world X; null if the generator does not exist yet.
 func _biome_at(world_x: float) -> Biome:
 	var world := get_tree().get_first_node_in_group("world_generator")
 	if world == null or not world.has_method("biome_at_world_x"):

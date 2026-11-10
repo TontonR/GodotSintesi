@@ -7,8 +7,8 @@
 [resource]
 script = ExtResource("1_cmbp")
 id = "proyectil_tercer_golpe"
-item_name = "Proyectil del tercer golpe"
-description = "Cada tercer ataque de la rotación lanza un proyectil que hace un 25% de tu daño."
+item_name = "Third-Hit Projectile"
+description = "Every third attack in the rotation launches a projectile that deals 25% of your damage."
 icon = ExtResource("3_icon")
 value = 80
 passive_id = "proyectil_tercer_golpe"

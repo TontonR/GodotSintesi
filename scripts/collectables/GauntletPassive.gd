@@ -1,11 +1,11 @@
 class_name GauntletPassive
 extends PassiveItems
-## Potencia el impacto que sigue a cada N ataques de la rotación.
+## Boosts the impact that follows every N attacks of the rotation.
 
-@export_group("Guantelete")
-## Cada cuántos ataques se potencia el siguiente impacto.
+@export_group("Gauntlet")
+## Every how many attacks the next impact is boosted.
 @export var every_n_attacks: int = 5
-## Multiplicador aplicado al golpe potenciado.
+## Multiplier applied to the boosted hit.
 @export var damage_multiplier: float = 2.0
 
 var _attacks: int = 0
@@ -19,7 +19,7 @@ func on_equip(player: Node) -> void:
 
 
 func on_player_attack_started(_player: Node, _step: int, _direction: Vector2) -> void:
-	# Si el ataque potenciado anterior no llegó a impactar, se pierde.
+	# If the previous boosted attack never landed, it is lost.
 	_empowered = false
 	_attacks += 1
 	if every_n_attacks > 0 and _attacks % every_n_attacks == 0:

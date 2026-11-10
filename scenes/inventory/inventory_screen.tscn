@@ -92,7 +92,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 18
-text = "Consumibles"
+text = "Consumables"
 
 [node name="ConsumablesFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=622045477]
 layout_mode = 2
@@ -119,7 +119,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 18
-text = "Coleccionables"
+text = "Collectibles"
 
 [node name="CollectiblesPage" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=1216784936]
 layout_mode = 2

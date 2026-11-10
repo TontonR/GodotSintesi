@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-10 · `main` — fuera skills, 3 consumibles
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Inventario de 3 consumibles con teclas 1-3; `Skills` eliminado y `docs/items.md` convertido en catálogo completo | `scenes/inventory/inventory.gd`, `inventory_ui.gd`, `inventory_screen.gd`, `inventory_screen.tscn`, `scripts/collectables/Skills.gd`, `project.godot`, `docs/items.md` | [T-0038](tickets/T-0038-quitar-skills-3-consumibles.md) |
+
 ## 2026-11-09 · `main` — loot por enemigo, sin presets
 
 | Qué | Dónde | Ticket |

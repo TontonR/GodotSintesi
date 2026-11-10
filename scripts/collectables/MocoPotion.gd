@@ -1,12 +1,12 @@
 class_name MocoPotion
 extends Consumable
-## Poción de mocos: sube el salto 60 s y deja al jugador soltando partículas de
-## moco permanentemente (el moco se queda al terminar el efecto).
+## Slime potion: raises the jump for 60 s and leaves the player shedding slime
+## particles permanently (the slime stays after the effect ends).
 
-@export_group("Poción de mocos")
-## Multiplicador de salto mientras dura el efecto.
+@export_group("Slime potion")
+## Jump multiplier while the effect lasts.
 @export var jump_multiplier: float = 1.3
-## Niveles de moco que añade (permanentes).
+## Slime levels it adds (permanent).
 @export var moco_levels: int = 1
 
 

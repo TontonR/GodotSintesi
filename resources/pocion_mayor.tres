@@ -7,7 +7,7 @@
 script = ExtResource("1_csbl")
 heal_amount = 60
 id = "pocion_mayor"
-item_name = "Elixir de vigor"
-description = "Restaura 60 puntos de vida."
+item_name = "Vigor Elixir"
+description = "Restores 60 health."
 icon = ExtResource("1_tex")
 value = 50

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_grwr")
 id = "ira_guardian"
-item_name = "Ira del guardián"
-description = "Al bloquear un ataque, haces un 30% más de daño durante 10 segundos."
+item_name = "Guardian's Wrath"
+description = "When you block an attack, you deal 30% more damage for 10 seconds."
 icon = ExtResource("2_icon")
 value = 80
 passive_id = "ira_guardian"

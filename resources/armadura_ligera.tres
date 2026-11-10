@@ -7,7 +7,7 @@
 script = ExtResource("1_defn")
 passive_id = "armadura_ligera"
 id = "armadura_ligera"
-item_name = "Armadura ligera"
-description = "Reduce un 25% el daño recibido."
+item_name = "Light Armor"
+description = "Reduces damage taken by 25%."
 icon = ExtResource("1_tex")
 value = 60

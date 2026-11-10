@@ -1,13 +1,13 @@
 extends CanvasLayer
 
 # ==============================================================================
-# PARTÍCULAS DE AMBIENTE POR BIOMA
+# AMBIENT PARTICLES PER BIOME
 # ==============================================================================
-# Dos emisores en pantalla: hojas rojas (bosque rojo) y copos de nieve (nieve).
-# El bioma se consulta al generador cada POLL_SECONDS en la X del jugador y se
-# activa el emisor que toca. Al apagarlo, las partículas vivas terminan su vida.
+# Two on-screen emitters: red leaves (red forest) and snowflakes (snow).
+# The generator is polled for the biome every POLL_SECONDS at the player's X and
+# the matching emitter is turned on. When it is turned off, live particles finish their life.
 
-## Cada cuánto se revisa el bioma bajo el jugador (s).
+## How often the biome under the player is checked (s).
 const POLL_SECONDS := 0.25
 
 var _player: Node2D
@@ -22,9 +22,9 @@ var _tweens: Dictionary = {}
 func _ready() -> void:
 	_player = get_parent().get_node_or_null("player") as Node2D
 	var view := get_viewport().get_visible_rect().size
-	# El doble de partículas que antes, repartidas en el doble de ancho (ver
-	# `_make_emitter`): la nube cubre también fuera de pantalla y no se ven
-	# huecos cuando las partículas derivan de lado.
+	# Twice the particles as before, spread over twice the width (see
+	# `_make_emitter`): the cloud also covers off-screen so no gaps are seen
+	# when particles drift sideways.
 	_leaves = _make_emitter("leaves", _leaf_texture(), 56, 7.0, 30.0, Vector2(14.0, 25.0), view)
 	_snow = _make_emitter("snow", _snow_texture(), 440, 12.0, 18.0, Vector2(10.0, 5.0), view)
 
@@ -48,7 +48,7 @@ func _process(delta: float) -> void:
 	_set_emitter(_snow, ambient == "snow")
 
 
-## Enciende o apaga un emisor con un fundido corto para que no entre de golpe.
+## Turns an emitter on or off with a short fade so it does not pop in.
 func _set_emitter(particles: CPUParticles2D, enabled: bool) -> void:
 	if particles == null:
 		return
@@ -64,7 +64,7 @@ func _set_emitter(particles: CPUParticles2D, enabled: bool) -> void:
 		tween.tween_callback(func(): particles.emitting = false)
 
 
-## Emisor a pantalla completa: nace por encima del borde superior y cae.
+## Full-screen emitter: spawns above the top edge and falls.
 func _make_emitter(
 	node_name: String,
 	texture: Texture2D,
@@ -82,14 +82,14 @@ func _make_emitter(
 	particles.lifetime = lifetime
 	particles.one_shot = false
 	particles.emitting = false
-	# Empieza invisible: el fundido de `_set_emitter()` lo enciende.
+	# Starts invisible: the fade in `_set_emitter()` turns it on.
 	particles.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	# Entra con la pantalla ya llena de partículas, no a gotas.
+	# Comes in with the screen already full of particles, not in drops.
 	particles.preprocess = lifetime
 	particles.position = Vector2(view.x * 0.5, -6.0)
 	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	# ±120 % del ancho de pantalla desde el centro (antes 60 %): el doble de
-	# ancho, para que el viento lateral no descubra zonas vacías.
+	# ±120 % of the screen width from the center (previously 60 %): twice the
+	# width, so sideways wind does not expose empty areas.
 	particles.emission_rect_extents = Vector2(view.x * 1.2, 2.0)
 	particles.direction = Vector2(0.0, 1.0)
 	particles.spread = 20.0
@@ -105,7 +105,7 @@ func _make_emitter(
 	return particles
 
 
-## Hoja de 5×5 en rombo: relleno rojo con borde más oscuro.
+## 5×5 diamond leaf: red fill with a darker border.
 func _leaf_texture() -> ImageTexture:
 	var image := Image.create(5, 5, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
@@ -119,7 +119,7 @@ func _leaf_texture() -> ImageTexture:
 	return ImageTexture.create_from_image(image)
 
 
-## Copo de 3×3 en cruz.
+## 3×3 cross-shaped snowflake.
 func _snow_texture() -> ImageTexture:
 	var image := Image.create(3, 3, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))

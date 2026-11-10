@@ -1,87 +1,87 @@
-# Enemigos — `EnemyBase`, fantasma, orco, lobo, sapo y demonio
+# Enemies — `EnemyBase`, ghost, orc, wolf, toad and demon
 
-_2026-10-20 · 2026-10-25 · rama `feat/skills-and-complex-passives`_
+_2026-10-20 · 2026-10-25 · branch `feat/skills-and-complex-passives`_
 
-## Qué hace y dónde vive
+## What it does and where it lives
 
-- `scripts/enemies/enemy_base.gd` (`CharacterBody2D`) + hijos `ghost.gd` (volador, ranged, TP) y `orc.gd` (melee). Escenas en `scenes/enemies/`.
-- `orc.tscn` y `ghost.tscn` tienen `scale = (2, 2)` en la raíz: sprite, collider y áreas al doble. El generador apoya la base del collider en el suelo (`_body_bottom`), no el origen, más `spawn_y_offset` (el fantasma sube 6 px porque su cola dibuja por debajo del collider).
-- Detectan al jugador por el grupo `player`.
-- IA por prioridad: huir > atacar > perseguir. Los hijos sobrescriben `_update_behavior`, `_start_attack`, `_perform_attack`, `_on_death`.
+- `scripts/enemies/enemy_base.gd` (`CharacterBody2D`) + children `ghost.gd` (flyer, ranged, TP) and `orc.gd` (melee). Scenes in `scenes/enemies/`.
+- `orc.tscn` and `ghost.tscn` have `scale = (2, 2)` at the root: sprite, collider and areas doubled. The generator rests the bottom of the collider on the ground (`_body_bottom`), not the origin, plus `spawn_y_offset` (the ghost goes up 6 px because its tail draws below the collider).
+- They detect the player through the `player` group.
+- Priority-based AI: flee > attack > chase. Children override `_update_behavior`, `_start_attack`, `_perform_attack`, `_on_death`.
 
-## Exports de la base
+## Base exports
 
 - Basic: `max_health` 10, `base_attack` 5, `base_defense`, `knockback_defense`, `speed_movement` 50, `attack_cooldown` 2.
-- Config: `flying_enemy`; `step_height` 16 (auto-subida de 1 tile, mismo criterio que el jugador: mira por delante y sube 17 px); `spawn_y_offset` (px que se sube al aparecer); `ranged_enemy` + `projectile` (¡no `projectile_scene`!) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
-- Ataque: `attack_impact_delay` 0.5, `attack_duration` 1.0.
-- Loot: `_drop_loot()` hace **dos tiradas**: monedas (`coin_drop_chance` 45 %, `coin_drop_amount` 1 o más) y objetos. En objetos, `item_drops` suma sus `drop_chance` en una sola tirada (30 % + 10 % = 40 %) y, si sale, elige uno ponderado por su probabilidad. Asignar el item antes de `add_child`, parentar y luego fijar `global_position` para respetar el transform del chunk.
-- `take_damage(amount, critical = false)` reenvía el aviso de crítico a `fx.enemy_hit()` (T-0031). **Cualquier override** (fantasma, esqueleto, demonio) debe repetir esa firma y pasar `critical` al `super`, o Godot no parsea la escena.
-- Suerte: `_luck_drop_bonus()` lee `player.luck` y suma `luck × 0,01` a todas las `drop_chance` (0 por defecto, no altera el balance base).
+- Config: `flying_enemy`; `step_height` 16 (auto step-up of 1 tile, same criterion as the player: looks ahead and goes up 17 px); `spawn_y_offset` (px it rises when appearing); `ranged_enemy` + `projectile` (**not `projectile_scene`!**) + `projectile_speed` / `projectile_damage` / `projectile_spawn`; `flee_enemy` + `flee_area`.
+- Attack: `attack_impact_delay` 0.5, `attack_duration` 1.0.
+- Loot: `_drop_loot()` makes **two rolls**: coins (`coin_drop_chance` 45 %, `coin_drop_amount` 1 or more) and items. For items, `item_drops` adds its `drop_chance` values into a single roll (30 % + 10 % = 40 %) and, if it succeeds, picks one weighted by its probability. Assign the item before `add_child`, parent it and then set `global_position` to respect the chunk transform.
+- `take_damage(amount, critical = false)` forwards the critical notice to `fx.enemy_hit()` (T-0031). **Any override** (ghost, skeleton, demon) must repeat that signature and pass `critical` to `super`, or Godot won't parse the scene.
+- Luck: `_luck_drop_bonus()` reads `player.luck` and adds `luck × 0.01` to all `drop_chance` values (0 by default, doesn't alter base balance).
 
-## Fantasma
+## Ghost
 
-- `charge_time` 0.4, `tp_cooldown` 8.0, `tp_zone_margin` 10, `tp_min_travel` 80, `tp_attempts` 12, invulnerable durante el TP.
-- TP al anillo elíptico entre `flee_range` y `attack_range`, nunca por encima del jugador (`offset.y = minf(offset.y, 0.0)`); sin `post_attack_tp_delay`.
+- `charge_time` 0.4, `tp_cooldown` 8.0, `tp_zone_margin` 10, `tp_min_travel` 80, `tp_attempts` 12, invulnerable during the TP.
+- TP to the elliptical ring between `flee_range` and `attack_range`, never above the player (`offset.y = minf(offset.y, 0.0)`); no `post_attack_tp_delay`.
 
-## Lobo, sapo y demonio (2026-11-01, rama `feat/biomas`)
+## Wolf, toad and demon (2026-11-01, branch `feat/biomas`)
 
-- Traídos de `origin/feat/enemigos-demon-toad-werewolf` sin su generador ni su `player.gd`.
-- **Lobo** (`werewolf`): 60 de vida, merodea su chunk (`chunk_width_tiles`), embiste un 40 % del diámetro de detección a 150 px/s; cada 2 embestidas la siguiente vuelta es un salto con daño doble. El primer golpe de cada embestida lanza al jugador (`knockup`).
-- **Sapo** (`mutant_toad`): salta en arcos altos; cada 3 aterrizajes lanza una ráfaga de 3 proyectiles destructibles (`toad_projectile`, un golpe basta).
-- **Demonio** (`demon`): vuela 80 px sobre el spawn y cada 3 s se para sobre el jugador para escupir fuego (`demon_fire`, área que se alarga hasta el suelo). Si el jugador lo bloquea, queda aturdido 5 s o hasta 3 golpes.
-- Estos tres piden al jugador `take_damage_from(..., knockback, knockup)` e `is_guarding()`; ver `docs/player.md`.
+- Brought from `origin/feat/enemigos-demon-toad-werewolf` without its generator or its `player.gd`.
+- **Wolf** (`werewolf`): 60 health, roams its chunk (`chunk_width_tiles`), charges 40 % of the detection diameter at 150 px/s; every 2 charges the next lap is a jump with double damage. The first hit of each charge launches the player (`knockup`).
+- **Toad** (`mutant_toad`): jumps in high arcs; every 3 landings fires a burst of 3 destructible projectiles (`toad_projectile`, one hit is enough).
+- **Demon** (`demon`): flies 80 px above the spawn and every 3 s stops above the player to spit fire (`demon_fire`, an area that stretches down to the ground). If the player blocks it, it is stunned for 5 s or until 3 hits.
+- These three ask the player for `take_damage_from(..., knockback, knockup)` and `is_guarding()`; see `docs/player.md`.
 
-## Colisiones (pass-through)
+## Collisions (pass-through)
 
-- El jugador (`collision_mask` 1) y los terrestres orco/lobo/sapo (`collision_mask` 1) solo chocan con el mundo: se atraviesan entre ellos, no se puede subir encima ni empujar. El daño va por `Area2D`, no por cuerpo.
-- El fantasma y el demonio ya tenían máscara 0.
+- The player (`collision_mask` 1) and ground enemies orc/wolf/toad (`collision_mask` 1) only collide with the world: they pass through each other, can't be climbed on or pushed. Damage goes through `Area2D`, not through bodies.
+- The ghost and the demon already had mask 0.
 
-## Trampas
+## Traps
 
-- Un override vacío de `loot_table` en la escena dejaba al fantasma sin drops (ya eliminado).
+- An empty `loot_table` override in the scene left the ghost without drops (already removed).
 
-## Dificultad y densidad (2026-11-03, T-0020)
+## Difficulty and density (2026-11-03, T-0020)
 
-- `EnemyBase.health_multiplier` 1.35 y `attack_multiplier` 1.25 se aplican en `_ready()`
-  sobre `max_health` / `base_attack` (los hijos fijan sus stats en `_init()` y las escenas
-  pueden sobrescribirlos, así que el ajuste va al final). Una sola palanca para todos.
-- Slime a `scale = Vector2(1.2, 1.2)`; el resto de los traídos siguen a ×2.
-- Densidad: la base son 13 enemigos por chunk y `_enemy_count_multiplier()` reparte
-  (6 en los chunks 0–1, 16 a partir del 8.º).
-- Los enemigos se colocan en huecos iguales a lo ancho del chunk con un ruido de ±25 %
-  del hueco (`_generate_chunk`), no con una X al azar por enemigo: así no se apelotonan.
+- `EnemyBase.health_multiplier` 1.35 and `attack_multiplier` 1.25 are applied in `_ready()`
+  to `max_health` / `base_attack` (children set their stats in `_init()` and scenes
+  can override them, so the adjustment happens last). A single lever for everyone.
+- Slime at `scale = Vector2(1.2, 1.2)`; the rest of the imported ones stay at ×2.
+- Density: the base is 13 enemies per chunk and `_enemy_count_multiplier()` spreads them
+  (6 in chunks 0–1, 16 from the 8th onward).
+- Enemies are placed in equal slots across the chunk width with ±25 % slot noise
+  (`_generate_chunk`), not with a random X per enemy: that way they don't clump.
 
-## Enemigos del compañero (2026-11-03, T-0019)
+## Partner's enemies (2026-11-03, T-0019)
 
-Traídos de `origin/feat/enemigos-demon-toad-werewolf` con `git checkout`, sin merge
-(el mundo por chunks y la cámara de `main` son posteriores a la rama).
+Brought from `origin/feat/enemigos-demon-toad-werewolf` with `git checkout`, without a merge
+(the chunked world and camera from `main` are newer than the branch).
 
-- **Demonio** (`demon.gd`, `demon_fire.gd`): vuela ~80 px sobre el spawn, ciclo FLY 3 s →
-  aviso → chorro 3 s con `RayCast2D` al suelo; 5 de daño cada 0.5 s. Si le paran el chorro
-  con la guardia (`player.is_guarding()`) queda aturdido.
-- **Sapo mutante / rana** (`mutant_toad.gd`): máquina `IDLE/JUMP/ATTACK` propia; salta y
-  cada 3 aterrizajes lanza una ráfaga de 3 proyectiles destructibles.
-- **Lobo** (`werewolf.gd`): merodea por la zona que le da el generador (grupo
-  `world_generator`), 2 embestidas + 1 salto; usa
-  `player.take_damage_from(..., knockup, knockup_lock, ...)`. Ajustado (T-0035):
-  `charge_speed` 150 (menos que el sprint del jugador), `charge_distance_scale` 0.4
-  y `attack_recovery` 1.5 s parado en el destino antes de repetir.
-- **Slime** (`slime.gd`), **esqueleto** (`skeleton.gd`, primer golpe gratis) y
-  **arquero** (`archer.gd`, `archer_projectile.gd`) son `EnemyBase` con stats en `_init()`.
-- Registro: `WorldGenerator.enemy_scenes` / `enemy_counts_per_chunk` en el mismo orden,
-  hoy base `[4 orcos, 2 ranas, 1 lobo, 2 slimes, 2 esqueletos, 2 arqueros]` y escalada
-  por chunk (menos en los dos primeros, más cuanto más lejos).
-- **Fantasma y demonio desactivados** (2026-11-03): fuera de `enemy_scenes`; quedan
-  anotados en `WorldGenerator.DISABLED_ENEMY_SCENES` con su escena y su script intactos.
-- `scale = Vector2(2, 2)` en la raíz de los seis (2026-11-03): se ven al doble y
-  `_body_bottom()` ya multiplica por la escala, así que siguen apoyados en el suelo.
-- Spawn: el chunk 0 **sí** genera enemigos, a partir de
-  `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~300 px del spawn); antes el
-  chunk 0 estaba vacío y el enemigo más cercano quedaba a media pantalla y pico.
-- API nueva en `EnemyBase`: `apply_slow(multiplier, seconds)`, aviso `on_enemy_killed` a
-  las pasivas del jugador y `item_drops` (`Array[LootEntry]`).
-- **Loot por enemigo (2026-11-09)**: cada escena define su propio `item_drops`, con un
-  `LootEntry` por objeto (`item`, `drop_chance`, `min_amount`, `max_amount`). Probabilidades
-  sumadas en una única tirada y elección ponderada. Sin presets compartidos; una variante
-  nueva rehace su tabla. Referencia: `vault/pasivas/`.
-- El arquero no tiene pasivas todavía (la tabla venía vacía): no tiene `item_drops`.
+- **Demon** (`demon.gd`, `demon_fire.gd`): flies ~80 px above the spawn, FLY cycle 3 s →
+  warning → 3 s jet with a `RayCast2D` to the ground; 5 damage every 0.5 s. If the jet is stopped
+  with the guard (`player.is_guarding()`) it is stunned.
+- **Mutant toad / frog** (`mutant_toad.gd`): its own `IDLE/JUMP/ATTACK` state machine; it jumps and
+  every 3 landings fires a burst of 3 destructible projectiles.
+- **Wolf** (`werewolf.gd`): roams the area given by the generator (`world_generator` group),
+  2 charges + 1 jump; uses
+  `player.take_damage_from(..., knockup, knockup_lock, ...)`. Adjusted (T-0035):
+  `charge_speed` 150 (less than the player's sprint), `charge_distance_scale` 0.4
+  and `attack_recovery` 1.5 s standing at the destination before repeating.
+- **Slime** (`slime.gd`), **skeleton** (`skeleton.gd`, first hit free) and
+  **archer** (`archer.gd`, `archer_projectile.gd`) are `EnemyBase` with stats in `_init()`.
+- Registry: `WorldGenerator.enemy_scenes` / `enemy_counts_per_chunk` in the same order,
+  today base `[4 orcs, 2 frogs, 1 wolf, 2 slimes, 2 skeletons, 2 archers]` and scaling
+  per chunk (fewer in the first two, more the farther you go).
+- **Ghost and demon disabled** (2026-11-03): removed from `enemy_scenes`; they remain
+  noted in `WorldGenerator.DISABLED_ENEMY_SCENES` with their scene and script intact.
+- `scale = Vector2(2, 2)` at the root of all six (2026-11-03): they appear doubled and
+  `_body_bottom()` already multiplies by the scale, so they stay on the ground.
+- Spawn: chunk 0 **does** generate enemies, starting at
+  `safe_start_tiles + enemy_safe_gap_tiles` (50 + 20 tiles, ~300 px from the spawn); before,
+  chunk 0 was empty and the nearest enemy was more than half a screen away.
+- New API in `EnemyBase`: `apply_slow(multiplier, seconds)`, `on_enemy_killed` notice to
+  the player's passives and `item_drops` (`Array[LootEntry]`).
+- **Per-enemy loot (2026-11-09)**: each scene defines its own `item_drops`, with one
+  `LootEntry` per item (`item`, `drop_chance`, `min_amount`, `max_amount`). Probabilities
+  added in a single roll and weighted choice. No shared presets; a new
+  variant rebuilds its table. Reference: `vault/pasivas/`.
+- The archer has no passives yet (the table was empty): it has no `item_drops`.

@@ -1,11 +1,11 @@
 class_name HunterPassive
 extends PassiveItems
-## Aumenta el daño contra enemigos que están por debajo de un umbral de vida.
+## Increases the damage against enemies below a health threshold.
 
-@export_group("Cazador")
-## Daño extra contra el objetivo debilitado (0.2 = +20%).
+@export_group("Hunter")
+## Extra damage against the weakened target (0.2 = +20%).
 @export_range(0.0, 2.0, 0.05) var damage_bonus: float = 0.2
-## Fracción de vida del enemigo por debajo de la cual se aplica.
+## Enemy health fraction below which it applies.
 @export_range(0.0, 1.0, 0.05) var health_threshold: float = 0.3
 
 

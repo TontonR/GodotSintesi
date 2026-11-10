@@ -1,132 +1,127 @@
-# Objetos e inventario — estado
+# Items and inventory — catalog
 
-_2026-10-14 · rama `feat/items-demo` · 2026-10-20 · rama `feat/skills-and-complex-passives`_
+_2026-10-14 · `feat/items-demo` · 2026-11-10 · 3 consumables, no skills_
 
-## Jerarquía
+## Hierarchy
 
-`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → `AttackBonusPassive`, `DamageReductionPassive`, `RegenPassive`, `CritPassive`, `LifestealPassive`. `Skills` sigue en `Items` (equipamiento sin cablear). Pickup genérico: `item_pickup.gd/.tscn` con `@export var item: Items`.
+`Items` → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` / `PassiveItems` → concrete passives. Generic pickup: `item_pickup.gd/.tscn` with `@export var item: Items`. `Skills` is removed: there are no skill slots anymore.
 
-## Huecos (5) y teclas
+## Slots (3) and keys
 
-| Huecos | Tipo                    | Teclas (`use_slot_1..5`) |
-| ------ | ----------------------- | ------------------------ |
-| 1-2    | Skills (no se gastan)   | 1, 2                     |
-| 3-5    | Consumibles (se gastan) | 3, 4, 5                  |
+| Slots | Type | Keys (`use_slot_1..3`) |
+| --- | --- | --- |
+| 1-3 | Consumables (used up) | 1, 2, 3 |
 
-- `Inventory.add_item` enruta por tipo; si la barra del tipo está llena, el objeto se queda en el suelo.
-- Pasivas → `PlayerPassives`. Recogida automática al tocar (`body_entered`); F (`interact`) ya no recoge.
+- `Inventory.MAX_SLOTS = 3`; `add_item` puts the item in the first free slot. If all 3 are full, the item stays on the ground.
+- Passives do not take a slot: they go to `PlayerPassives` when touched (`body_entered`).
+- The HUD bar (`InventoryUI`) shows the 3 consumables, with no separator.
 
-## Catálogo (6 + 9 + 8 + 11 + 16)
+## Item state
 
-- **Los 6 originales siguen sin drop (2026-11-03)**: `pocion_cura`, `pocion_stamina`,
-  `pocion_mayor`, `amuleto_ataque`, `armadura_ligera` y `talisman_regen` no salen de
-  ningún enemigo ni hay pickups de prueba en `game.tscn`. Tras el merge con
-  `feat/biomas` sí están en las teclas de debug del inventario, junto a los objetos
-  nuevos de abajo.
-- `pocion_mocos` es el consumible propio del catálogo principal.
+All items are **implemented in code**, but none has final art yet. That is why every table row is marked **`missing texture`**. When the art is added it will change to `done`; an item without logic would be `not done`.
 
-## Pasivas de ogro y lobo (9, T-0017 · 2026-11-03)
+## Consumables (9)
 
-- Los 9 `.tres` viven en `resources/` y usan cuatro scripts: `StatBonusPassive` (planos), `CoinDropBonusPassive`, `LowHealthAttackPassive`, `NightBonusPassive`.
-- Planos: `tapoarrabos` +10 estamina, `maza` +1 ataque, `una_ogro` +5 velocidad, `colgante_hierro` +25 vida máx (no cura), `piel_lobo` +15 vida y +5 estamina, `colmillo_lobo` +2 ataque.
-- `piedra_oro` (+5% moneda al matar): `EnemyBase._drop_loot()` suma `_coin_drop_bonus()` a la entrada de moneda del `loot_table`.
-- `garras_lobo` (vida <30% → ataque ×1.2) y `adn_hombre_lobo` (noche → ataque y velocidad ×1.15) aplican un delta sobre el valor sin su bonus, así que no pisan otros bonus ni se acumulan por frame. `DayNightCycle.is_night()` (factor ≥ 0.5) es la fuente del estado noche.
-- `Items.quality` (`Normal` / `Raro`) es nuevo en la clase base; los `.tres` viejos quedan en `Normal`.
-- Iconos provisionales del pack `assets/19+ icons` (`boostW`, `strenghtenW`, `lightningW`, `healthW`, `shieldW`, `swingW`, `fireW`, `neuronW`) y `assets/items/moneda_oro.png` (primer frame de 16×16 recortado de `assets/coins/MonedaD.png`, que es una tira de animación).
-- Todos están en `_DEBUG_PASSIVES` (KP2) para probarlos y en el `item_drops` de su enemigo (T-0037).
+They are used up when used with 1/2/3.
 
-## Objetos del merge con `feat/biomas` (2026-11-03)
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Healing Potion | `pocion_cura` | +30 health | Heals when used | missing texture |
+| Minor Healing Potion | `pocion_cura_menor` | +15 health | Heals when used | missing texture |
+| Vigor Elixir | `pocion_mayor` | +60 health | Heals when used | missing texture |
+| Life Elixir | `elixir_vida` | +100 health | Heals when used | missing texture |
+| Stamina Potion | `pocion_stamina` | +40 stamina | Restores stamina | missing texture |
+| Greater Stamina Potion | `pocion_stamina_mayor` | +70 stamina | Restores stamina | missing texture |
+| Tonic Drink | `bebida_tonificante` | +20 health, +20 stamina | Heals and restores stamina | missing texture |
+| Vital Essence | `esencia_vital` | +40 health, +40 stamina | Heals and restores stamina | missing texture |
+| Mucus Potion | `pocion_mocos` | jump ×1.3 (60 s) | +1 permanent mucus level | missing texture |
 
-- Consumibles (8): `pocion_cura` +30 vida, `pocion_cura_menor` +15, `pocion_mayor` +60, `elixir_vida` +100, `pocion_stamina` +40, `pocion_stamina_mayor` +70, `bebida_tonificante` +20/+20, `esencia_vital` +40/+40.
-- Pasivas (8): `amuleto_ataque` +6 daño, `amuleto_furia` +12, `amuleto_critico` 20% ×1.8, `pulso_vampirico` +2 vida por golpe, `armadura_ligera` −25% daño, `armadura_pesada` −40%, `talisman_regen` +1 vida/s, `anillo_vigor` +2 stamina/s.
-- Están en `_DEBUG_CONSUMABLES` / `_DEBUG_PASSIVES`, pero solo caen si están añadidos a mano en el `item_drops` de un enemigo.
-- `CritPassive` (probabilidad × multiplicador) y `LifestealPassive` (cura al golpear, guarda al jugador en `on_equip`) son las dos clases nuevas. `RegenPassive` tiene `stamina_per_tick`, así el anillo de vigor usa el mismo script con `heal_per_tick = 0`.
+## Passives dropped by enemies (17)
 
-## Drops
+Each enemy has its own `item_drops` table; see “Drops”.
 
-- `enemy_base.gd` (2026-11-09): cada enemigo tiene su propia tabla `item_drops`
-  (`Array[LootEntry]`, editable en su escena). Cada entrada es un objeto (`.tres`) con
-  `drop_chance`, `min_amount` y `max_amount`.
-- **Una sola tirada de objetos**: las probabilidades se suman (30 % + 10 % = 40 % de que
-  caiga algo) y, si sale, se elige **un** objeto ponderado por su probabilidad. No pueden
-  caer dos objetos distintos del mismo enemigo.
-- **Monedas siempre aparte**: `coin_drop_chance` (45 %) + `coin_drop_amount` (1, admite más
-  de una) van en su propia tirada, independiente de los objetos.
-- No hay pools ni presets compartidos: una variante nueva copia o rehace su tabla. Las 2
-  monedas por chunk del generador son pickups independientes.
-- El arquero, el esqueleto y los voladores no tienen entradas hasta que se les añadan.
-- El drop se parenta primero y luego recibe `global_position`; asignarla antes hacía que el offset del chunk se sumara dos veces. No añadir pickups de prueba en `game.tscn`.
-- Física (`item_pickup.gd`): gravedad 900, rebote 0.45 hasta <35 px/s, vaivén 1,5 px, `z_index` 1; suelo fijado en el primer tick.
-- Recogida al doble: icono 32 px (`Sprite2D` ×2), `HALF_HEIGHT` 16 y radio de recogida 16; el tooltip sube 8 px.
-- Tooltip de proximidad a 40 px (nombre + descripción); el HUD está en `docs/ui.md`.
+### Ogre (5)
 
-## Balance y limpieza (2026-11-03)
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Root Grabbers | `tapoarrabos` | +10 max stamina | Flat stamina bonus | missing texture |
+| Mace | `maza` | +2 attack | Flat attack bonus | missing texture |
+| Ogre Nail | `una_ogro` | +5 speed | Flat speed bonus | missing texture |
+| Iron Pendant | `colgante_hierro` | +25 max health (no heal) | Flat health bonus | missing texture |
+| Gold Stone | `piedra_oro` | +10 % coin on kill | Raises `coin_drop_chance` | missing texture |
 
-- Suben los planos de ataque, que se quedaban cortos frente a 20 de daño base: `maza`
-  +1 → +2 y `colmillo_lobo` +2 → +3.
-- `pies_ligeros` 15 % → 10 % de velocidad (la velocidad era la estadística más rentable).
-- `piedra_oro` 5 % → 10 % de moneda extra: con la moneda al 45 %, un +5 % no se notaba.
-- Prueba de humo del balance: 12 objetos del pool por enemigo, moneda 45 %, objeto 30 %
-  y `Raro` 0.25 → una pasiva cada ~3,3 enemigos y una moneda cada ~2,2.
+### Wolf (4)
 
-## Debug (temporal, `scenes/inventory/inventory.gd`)
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Wolf Pelt | `piel_lobo` | +15 max health, +5 max stamina (no heal) | Flat bonus | missing texture |
+| Wolf Fang | `colmillo_lobo` | +3 attack | Flat attack bonus | missing texture |
+| Wolf Claws | `garras_lobo` | +20 % attack below 30 % health | Conditional attack | missing texture |
+| Werewolf DNA | `adn_hombre_lobo` | +15 % attack and +15 % speed at night | Night bonus | missing texture |
 
-- Numpad `0` vacía inventario y pasivas; `1` añade un consumible aleatorio; `2` una pasiva aleatoria; `3` reservado para skills (aún sin objetos).
-- Se añaden directamente (consumibles a los huecos 3-5, pasivas a `PlayerPassives`); si el inventario está lleno, el objeto se descarta.
-- Para quitarlo: `DEBUG_TOOLS = false` (o borrar `_handle_debug_key`, `_clear_debug_items` y `_give_debug_item`).
+### Frog (4)
 
-## Pendiente
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Frog Saliva | `saliva_rana` | 25 % of base damage | Every 3rd attack fires a piercing projectile | missing texture |
+| Frog Tongue | `lengua_rana` | speed ×0.5 for 3 s | Slows the hit enemy | missing texture |
+| Frog Bubble | `burbuja_rana` | 15 % of base damage ×3 | 3 piercing projectiles in a fan | missing texture |
+| Skin Tubercles | `tuberculos_cutaneos` | 2 damage / 0.5 s, 4 s | Poison cloud when taking damage | missing texture |
 
-- `Skills`: `use()` llama a `equip()` pero el jugador no lo tiene; sin objetos skill.
-- Intercambio con barra llena (hoy queda en el suelo).
-- `player.tscn` legacy de la raíz sin `Inventory`/`PlayerPassives` (no se usa).
+### Slime (4)
 
-## Pasivas de rana y slime (8, T-0019 · 2026-11-03)
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Mucus | `moco` | +1 mucus level | Emits mucus particles | missing texture |
+| Compact Mucus | `moco_compacto` | +3 mucus levels | Each level gives +0.5 defense | missing texture |
+| Mucus Heart | `corazon_mucosil` | doubles the mucus level | More particles and defense | missing texture |
+| Mucus Potion | `pocion_mocos` | jump ×1.3 (60 s) | +1 permanent mucus level | missing texture |
 
-Tabla completa por enemigo en `vault/pasivas/`. Aquí va lo técnico:
+## Other passives (18)
 
-- **Saliva de rana** (`saliva_rana.tres`, `ComboProjectilePassive`): cada 3er ataque lanza
-  un `player_projectile` al 25 % del daño base con `piercing = true`. **Burbuja de rana**
-  usa el mismo script con 3 proyectiles, 40° de abanico y 15 % de daño.
-- Combo: `player._try_attack()` avisa a `PlayerPassives.trigger_attack_started_passives()`
-  con el paso 1-3 antes de arrancar la animación.
-- **Lengua de rana** (`SlowOnHitPassive`): `on_player_attack` llama a
-  `EnemyBase.apply_slow(0.5, 3 s)` (`speed_movement * _slow_factor`).
-- **Túberculos cutáneos** (`PoisonCloudPassive` + `poison_cloud.gd`): al recibir daño,
-  `Area2D` de 44 px durante 4 s que pega 2 cada 0.5 s a lo que esté dentro (capa 4);
-  se instancia diferido.
-- **Moco / Moco compacto / Corazón mucosil** (`MocoLevelPassive`): suben el nivel del
-  `MocoEmitter` del jugador (partículas `CPUParticles2D` generadas por código que emiten en
-  una caja de 14×48 px, por toda la hitbox, no desde un punto). Cada nivel
-  da +0.5 de defensa plana que resta `player._apply_damage()`; el corazón dobla el nivel.
-- **Poción de mocos** (`MocoPotion`, consumible): `jump_velocity × 1.3` durante 60 s y
-  +1 nivel de moco permanente.
-- Los 8 están en `_DEBUG_PASSIVES` (KP2), junto con los 11 objetos del compañero.
-- Iconos provisionales: `assets/items/iconos/*.png`, versiones de **16×16**
-  (`convert -filter point -resize 16x16`) de `magicW`, `weakenW`, `swirlW`, `poisonW`,
-  `starsW`, `bombPotionW`, `iceW` y `healthW` del pack `assets/19+ icons`. Los originales
-  del pack miden 380×380 y a tamaño real no cabían en pantalla (los 9 de T-0017 también
-  pasaron a estos recortes).
+No drop assigned yet; they are in debug and can be added to any `item_drops`.
 
-## No acumulación y caducidad de pickups (2026-11-05)
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Attack Amulet | `amuleto_ataque` | +6 damage | Flat attack bonus | missing texture |
+| Fury Amulet | `amuleto_furia` | +12 damage | Flat attack bonus | missing texture |
+| Critical Amulet | `amuleto_critico` | 20 % ×1.8 | Critical chance | missing texture |
+| Vampiric Pulse | `pulso_vampirico` | +2 health per hit | Life steal | missing texture |
+| Light Armor | `armadura_ligera` | −25 % damage taken | Damage reduction | missing texture |
+| Heavy Armor | `armadura_pesada` | −40 % damage taken | Damage reduction | missing texture |
+| Regeneration Talisman | `talisman_regen` | +1 health/s | Regeneration | missing texture |
+| Vigor Ring | `anillo_vigor` | +2 stamina/s | Stamina regeneration | missing texture |
+| Iron Heart | `corazon_hierro` | +25 max health and heals 25 | Health increase | missing texture |
+| Second Wind | `segundo_aliento` | +2 health/s below 30 % health | Conditional regeneration | missing texture |
+| Thorns | `espinas` | 20 % of damage taken, max 15, cd 2 s | Returns damage to the attacker | missing texture |
+| Gauntlet | `guantelete` | ×2 damage | Every 5th attack | missing texture |
+| Guardian's Wrath | `ira_guardian` | +30 % damage for 10 s | On block | missing texture |
+| Hunter | `cazador` | +20 % damage | Against enemies below 30 % health | missing texture |
+| Greed | `codicia` | +1 coin per death | Extra coins | missing texture |
+| Light Feet | `pies_ligeros` | +10 % speed | Movement bonus | missing texture |
+| Vampirism | `vampirismo` | +2 health per death | Heals on kill | missing texture |
+| Third-Hit Projectile | `proyectil_tercer_golpe` | 25 % of damage | Projectile every 3rd attack | missing texture |
+| Burst | `rafaga` | 15 % of damage ×3 | 3 projectiles every 3rd attack | missing texture |
 
-- **Pasivas sin stack**: `PlayerPassives.has_passive()` compara instancia,
-  `resource_path` o `passive_id`; `add_passive()` devuelve `false` si ya está equipada,
-  así que `PassiveItems.on_pickup()` la rechaza y el pickup se queda en el suelo hasta
-  caducar. Con la pasiva equipada no se puede volver a obtener.
-- **Drop filtrado**: `EnemyBase._available_loot()` quita del pool del enemigo las pasivas
-  que el jugador ya lleva; si el pool queda vacío no se tira nada. La moneda no pasa por
-  ese filtro.
-- **Caducidad** (`item_pickup.gd`): 60 s desde que aparece (aunque nadie lo vea) y se
-  borra solo. Además, contando desde que se ve por primera vez: parpadea a los 25 s
-  (sprite on/off cada `BLINK_INTERVAL` = 0,2 s) y desaparece a los 30 s. "Ver" = dentro
-  de la cámara del jugador; estar fuera de pantalla no consume ese reloj.
-- Las **monedas** (`scripts/collectables/coin.gd`) no caducan ni parpadean: son otra
-  escena y no heredan de `ItemPickup`. Tienen física propia: `fall_gravity` 900,
-  rebote 0,4 (mínimo de impacto 40 px/s) y vaivén de 1 px al asentarse; el generador
-  las hace nacer 40 px sobre el suelo para que se vea la caída.
-- Los **objetos** (`item_pickup.gd`) ya caían y rebotaban; ahora el drop da un salto
-  inicial de `drop_hop` (150 px/s) al aparecer, así se ve el arco y el aterrizaje en
-  vez de materializarse quieto en el suelo.
-- Constantes en `item_pickup.gd`: `SPAWN_LIFETIME`, `BLINK_START`, `SEEN_LIFETIME`
-  y `BLINK_INTERVAL`.
+## Drops (2026-11-09)
+
+- Each enemy defines its own `item_drops` table (`Array[LootEntry]`, editable in its scene). Each entry is an item (`.tres`) with `drop_chance`, `min_amount` and `max_amount`.
+- **Single item roll**: probabilities are added together (30 % + 10 % = 40 % chance that something drops) and, if it does, **one** item is chosen weighted by its probability. Two different items from the same enemy cannot drop.
+- **Coins always separate**: `coin_drop_chance` (45 %) + `coin_drop_amount` (1, more than one allowed) go in their own roll, independent of items.
+- There are no shared pools or presets: a new variant copies or rebuilds its table. The 2 coins per chunk from the generator are independent pickups.
+- The archer, the skeleton and the flyers have no entries until they are added.
+- The drop is parented first and then receives `global_position`; assigning it before made the chunk offset add up twice.
+- Physics (`item_pickup.gd`): gravity 900, bounce 0.45 until <35 px/s, sway 1.5 px, `z_index` 1. Pickup with a 32 px icon, `HALF_HEIGHT` 16 and radius 16. Tooltip at 40 px.
+
+## Debug (temporary, `scenes/inventory/inventory.gd`)
+
+- Numpad `0` empties inventory and passives; `1` adds a random consumable; `2` a random passive. There is no `3` key anymore.
+- They are added directly (consumables to the 3 slots, passives to `PlayerPassives`); if the inventory is full, the item is discarded.
+- To remove it: `DEBUG_TOOLS = false` (or delete `_handle_debug_key`, `_clear_debug_items` and `_give_debug_item`).
+
+## Pending
+
+- Final textures for all items.
+- Assign the 18 passives without a drop to the appropriate enemies.
+- Swapping with a full bar (today it stays on the ground).
+- Legacy root `player.tscn` without `Inventory`/`PlayerPassives` (unused).

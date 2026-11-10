@@ -1,10 +1,10 @@
 extends CharacterBody2D
 
 # ==============================================================================
-# CONFIGURACIÓN Y VARIABLES
+# CONFIGURATION AND VARIABLES
 # ==============================================================================
-# region Movimiento
-@export_group("Movimiento")
+# region Movement
+@export_group("Movement")
 @export var move_speed: float = 130.0
 @export var acceleration: float = 750.0
 @export var friction: float = 1000.0
@@ -13,38 +13,38 @@ extends CharacterBody2D
 @export var fall_gravity_multiplier: float = 1.6
 @export var coyote_time: float = 0.1
 @export var jump_buffer_time: float = 0.12
-## Altura máxima de escalón para auto-subida (1 tile = 16px).
+## Maximum step height for auto step-up (1 tile = 16px).
 @export var step_height: float = 16.0
-## Duración del suavizado visual de la subida (s).
+## Duration of the visual step-up smoothing (s).
 @export var step_duration: float = 0.08
 
-# Desfase del sprite al subir un escalón: el cuerpo sube de golpe, el dibujo no.
+# Sprite offset when stepping up: the body jumps up, the drawing does not.
 var _visual_step_offset: float = 0.0
-# Y entera de la cámara; los escalones se reparten en varios frames.
+# Integer camera Y; steps are spread over several frames.
 var _cam_y: float = NAN
-## Control del jugador; la intro de caída lo desactiva hasta aterrizar.
+## Player control; the fall intro disables it until landing.
 var control_enabled: bool = true
-## Si es false la cámara no sigue al jugador (lo usa la intro de caída).
+## If false the camera does not follow the player (used by the fall intro).
 var camera_follow_enabled: bool = true
-## Tope de velocidad de caída con el control desactivado (0 = sin tope, px/s).
+## Fall speed cap with control disabled (0 = no cap, px/s).
 var fall_speed_cap: float = 0.0
-## Inmortalidad de depuración (KP5): mientras esté activa no recibe daño.
+## Debug immortality (KP5): while active, takes no damage.
 var immortal: bool = false
-# Segundos de bloqueo de control tras un knockup (lobo).
+# Seconds of control lock after a knockup (wolf).
 var _control_lock_timer: float = 0.0
-# Multiplicador temporal de salto (poción de mocos).
+# Temporary jump multiplier (mucus potion).
 var _jump_bonus_factor: float = 1.0
 var _jump_bonus_timer: float = 0.0
-# Emisor de partículas de moco; lo crean las pasivas y la poción de slime.
+# Mucus particle emitter; created by passives and the slime potion.
 var _moco_emitter: Node2D
-# Cadencia del polvo al correr y pulso del HUD con poca vida.
+# Run dust cadence and HUD pulse at low health.
 var _run_dust_timer: float = 0.0
 var _hud_pulse: float = 0.0
 var _coins_tween: Tween
 # endregion
 
-# region Estadísticas y Economía
-@export_group("Estadísticas y Economía")
+# region Stats and Economy
+@export_group("Stats and Economy")
 @export var max_health: int = 100
 @export var max_stamina: float = 100.0
 @export var current_coins: int = 0
@@ -54,20 +54,20 @@ var health: int
 var stamina: float
 # endregion
 
-# region Estadísticas de combate
-@export_group("Estadísticas de combate")
-## Multiplicador de velocidad de ataque (1 = normal; 1.25 = 25 % más rápido).
+# region Combat stats
+@export_group("Combat stats")
+## Attack speed multiplier (1 = normal; 1.25 = 25% faster).
 @export var attack_speed: float = 1.0
-## Probabilidad base de crítico (0-1). Las pasivas de crítico tiran aparte.
+## Base crit chance (0-1). Crit passives roll separately.
 @export_range(0.0, 1.0, 0.01) var crit_chance: float = 0.05
-## Multiplicador de daño de los golpes críticos.
+## Damage multiplier for critical hits.
 @export var crit_damage: float = 2.0
-## Suerte en puntos porcentuales: sube la probabilidad de drop de los enemigos.
+## Luck in percentage points: raises enemy drop chance.
 @export var luck: float = 0.0
 # endregion
 
-# region Mecánicas de Stamina
-@export_group("Costes de Stamina")
+# region Stamina mechanics
+@export_group("Stamina costs")
 @export var run_speed_multiplier: float = 1.7
 @export var run_acceleration_multiplier: float = 1.3
 @export var run_initial_cost: float = 10.0
@@ -77,23 +77,23 @@ var stamina: float
 @export var stamina_regen_per_second: float = 10.0
 # endregion
 
-# region Combate
-@export_group("Combate")
+# region Combat
+@export_group("Combat")
 @export var hitbox_damage: int = 20
 @export var combo_window: float = 0.35
-## Ventana de parry al levantar la guardia (s): un golpe frontal dentro de
-## esta ventana se para con chispas y no hace daño.
+## Parry window when raising guard (s): a frontal hit inside
+## this window is stopped with sparks and deals no damage.
 @export var parry_window: float = 0.2
-## Enfriamiento entre ventanas de parry (s): no se puede rearmar antes.
+## Cooldown between parry windows (s): cannot re-arm before.
 @export var parry_cooldown: float = 0.3
-## Stamina que devuelve un parry (compensa el coste de haber levantado la guardia).
+## Stamina returned by a parry (compensates the cost of raising guard).
 @export var parry_stamina_refund: float = 30.0
 
 const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
 const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 # endregion
 
-# region Nodos OnReady
+# region OnReady nodes
 @onready var sprite_pivot: Node2D = $SpritePivot
 @onready var body_collision: CollisionShape2D = $CollisionShape2D
 @onready var animated_sprite: AnimatedSprite2D = $SpritePivot/AnimatedSprite2D
@@ -107,7 +107,7 @@ const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 @onready var passives: PlayerPassives = get_node_or_null("PlayerPassives")
 # endregion
 
-# Variables de estado interno
+# Internal state variables
 var health_bar: ProgressBar
 var health_label: Label
 var stamina_bar: ProgressBar
@@ -129,17 +129,17 @@ var _is_running: bool = false
 var _is_dead: bool = false
 var _combo_index: int = 0
 var _combo_timer: float = 0.0
-# Tiempo restante de parry desde que se levantó la guardia.
+# Remaining parry time since the guard was raised.
 var _parry_timer: float = 0.0
-# Enfriamiento que impide rearmar la ventana de parry spameando la guardia.
+# Cooldown that prevents re-arming the parry window by spamming guard.
 var _parry_cooldown_timer: float = 0.0
-# Panel de estadísticas: se refresca solo cuando cambia algún valor.
+# Stats panel: only refreshes when a value changes.
 var _stats_dirty: bool = true
 var _stats_values: Array[Label] = []
 
 
 # ==============================================================================
-# MÉTODOS PRINCIPALES
+# MAIN METHODS
 # ==============================================================================
 func _ready() -> void:
 	health = max_health
@@ -168,7 +168,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _stats_dirty:
 		_update_stats_ui()
-	# Poca vida: la barra late en rojo para que se note sin mirar el número.
+	# Low health: the bar pulses red so it's noticeable without looking at the number.
 	if health_bar == null:
 		return
 	var ratio := float(health) / float(maxi(max_health, 1))
@@ -182,21 +182,21 @@ func _process(delta: float) -> void:
 
 
 func _try_step_up(direction: float) -> void:
-	# Se comprueba con la forma real del cuerpo: los rayos a media altura no
-	# veían los escalones de 1 tile (el origen está ~27 px sobre los pies).
+	# Checked with the body's real shape: rays at mid height did not
+	# see 1-tile steps (the origin is ~27 px above the feet).
 	if not is_on_floor() or direction == 0.0:
 		return
 	var forward := Vector2(direction, 0.0)
 	if not test_move(global_transform, forward):
 		return
-	# 1 px de más: con los pies justo al nivel del escalón la pared sigue
-	# contando como choque y se encadenaban dos subidas (2 tiles de golpe).
+	# 1 px extra: with the feet right at step level the wall still
+	# counts as a collision and two step-ups chained (2 tiles at once).
 	var up := Vector2(0.0, - (step_height + 1.0))
 	if test_move(global_transform, up):
 		return
 	var raised := global_transform
 	raised.origin += up
-	# safe_margin 0: apoyado justo encima del escalón no cuenta como choque.
+	# safe_margin 0: resting right on the step does not count as a collision.
 	if test_move(raised, forward, null, 0.0):
 		return
 	global_position += up
@@ -213,14 +213,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_attack()
 
 
-## Debug: alterna la inmortalidad y devuelve el estado nuevo (KP5).
+## Debug: toggles immortality and returns the new state (KP5).
 func toggle_immortal() -> bool:
 	immortal = not immortal
 	return immortal
 
 
-## Debug: salto seco para probar zonas lejanas. Corta la inercia y reinicia
-## cámara y subida visual para que el viaje no deje desfases.
+## Debug: dry jump to test far zones. Cuts inertia and resets
+## camera and visual step-up so the trip leaves no offsets.
 func debug_teleport(offset: Vector2) -> void:
 	global_position += offset
 	velocity = Vector2.ZERO
@@ -237,8 +237,8 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Sin control (intro de caída): nada de input, salto, ataque ni guardia; la
-	# velocidad de caída se limita con `fall_speed_cap` para que sea predecible.
+	# No control (fall intro): no input, jump, attack or guard; the
+	# fall speed is capped with `fall_speed_cap` so it's predictable.
 	if not control_enabled:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 		velocity.y += gravity * delta * fall_gravity_multiplier
@@ -259,22 +259,22 @@ func _physics_process(delta: float) -> void:
 
 	_update_stamina(delta)
 
-	# Para el polvo al aterrizar: se mira si venía del aire antes de moverse.
+	# For dust on landing: check if it came from the air before moving.
 	var was_on_floor := is_on_floor()
 
-	# Reloj del combo
+	# Combo clock
 	if not _is_attacking and _combo_timer > 0.0:
 		_combo_timer -= delta
 		if _combo_timer <= 0.0:
 			_combo_index = 0
 
-	# Gravedad
+	# Gravity
 	var current_gravity: float = gravity
 	if velocity.y > 0.0:
 		current_gravity *= fall_gravity_multiplier
 	velocity.y += current_gravity * delta
 
-	# Movimiento Horizontal (A/D; las flechas quedan para la UI)
+	# Horizontal movement (A/D; arrows are left for the UI)
 	var raw_direction: float = 0.0
 	if Input.is_key_pressed(KEY_D):
 		raw_direction += 1.0
@@ -290,11 +290,11 @@ func _physics_process(delta: float) -> void:
 		if (_facing_right and raw_direction < 0.0) or (not _facing_right and raw_direction > 0.0):
 			direction = 0.0
 
-	# Auto-subida de escalones de 1 tile (antes de aplicar velocidad)
+	# Auto step-up of 1-tile steps (before applying velocity)
 	if is_on_floor() and direction != 0.0:
 		_try_step_up(direction)
 
-	# Suavizado del sprite tras la subida: el cuerpo ya está arriba.
+	# Sprite smoothing after step-up: the body is already up.
 	if _visual_step_offset > 0.0:
 		_visual_step_offset = move_toward(_visual_step_offset, 0.0, step_height / step_duration * delta)
 		sprite_pivot.position.y = _visual_step_offset
@@ -311,7 +311,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
 
-	# Orientación del Sprite e Hitboxes
+	# Sprite and hitbox orientation
 	if not _is_attacking:
 		if direction > 0.0:
 			_facing_right = true
@@ -328,7 +328,7 @@ func _physics_process(delta: float) -> void:
 			_hitbox_offsets[i].y - _hitbox_shape_offsets[i].y
 		)
 
-	# Salto
+	# Jump
 	if _is_attacking or _is_guarding:
 		_jump_buffer_timer = 0.0
 		_jump_was_pressed = Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_W)
@@ -361,7 +361,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if not was_on_floor and is_on_floor() and landing_speed > 140.0:
 		_dust_at(_feet_offset(), clampf(landing_speed / 70.0, 3.0, 9.0), 1.0)
-	# Polvo de carrera: pequeño y espaciado para no tapar el suelo.
+	# Run dust: small and spaced so it doesn't cover the ground.
 	if _is_running and is_on_floor() and absf(velocity.x) > 40.0:
 		_run_dust_timer = maxf(_run_dust_timer - delta, 0.0)
 		if _run_dust_timer <= 0.0:
@@ -372,12 +372,12 @@ func _physics_process(delta: float) -> void:
 
 
 # ==============================================================================
-# COMBATE Y DAÑO
+# COMBAT AND DAMAGE
 # ==============================================================================
 func _try_attack() -> void:
 	if _is_dead or _is_attacking:
 		return
-	# Hook de pasivas de combo (proyectiles, golpes potenciados...).
+	# Combo passive hook (projectiles, empowered hits...).
 	if passives:
 		passives.trigger_attack_started_passives(
 			self, _combo_index + 1, Vector2(1.0 if _facing_right else -1.0, 0.0)
@@ -386,7 +386,7 @@ func _try_attack() -> void:
 	_is_attacking = true
 	_active_hitbox = _combo_index
 	set_hitbox_active(true)
-	# Velocidad de ataque: acelera la animación (y con ella la cadencia del combo).
+	# Attack speed: accelerates the animation (and with it the combo cadence).
 	animated_sprite.speed_scale = attack_speed
 	animated_sprite.play(anim)
 
@@ -424,11 +424,11 @@ func _register_hit(target: Node) -> void:
 
 
 func _deal_damage(target: Node) -> void:
-	# Las pasivas activas pueden modificar el daño del golpe.
+	# Active passives can modify the hit damage.
 	var damage := float(hitbox_damage)
 	if passives:
 		damage = passives.trigger_attack_passives(target, damage)
-	# Crítico base del jugador: tirada propia, aparte de las pasivas de crítico.
+	# Player base crit: own roll, separate from crit passives.
 	var critical := randf() < crit_chance
 	if critical:
 		damage *= crit_damage
@@ -451,8 +451,8 @@ func take_damage(amount: int) -> void:
 	_apply_damage(amount, true)
 
 
-## Los enemigos nuevos (lobo, sapo, demonio) mandan también empuje, knockup y
-## bloqueo de control; los que no los pasan se comportan como antes.
+## New enemies (wolf, toad, demon) also send knockback, knockup and
+## control lock; those that don't pass them behave as before.
 func take_damage_from(
 	amount: int,
 	attacker_position: Vector2,
@@ -462,8 +462,8 @@ func take_damage_from(
 	attacker: Node = null
 ) -> void:
 	var from_front := is_attack_from_front(attacker_position)
-	# Si la guardia (o el parry) para el golpe, no hay empuje ni bloqueo de control.
-	# La inmortalidad de depuración no cambia el empuje: sigue aplicándose.
+	# If guard (or parry) stops the hit, there is no knockback or control lock.
+	# Debug immortality does not change knockback: it still applies.
 	if not _apply_damage(amount, from_front, attacker) and from_front and _is_guarding:
 		return
 	var away := signf(global_position.x - attacker_position.x)
@@ -477,7 +477,7 @@ func take_damage_from(
 		_control_lock_timer = maxf(_control_lock_timer, knockup_lock)
 
 
-## La usa el chorro del demonio para saber si el golpe lo para la guardia.
+## Used by the demon's jet to know if guard stops the hit.
 func is_guarding() -> bool:
 	return _is_guarding
 
@@ -488,30 +488,30 @@ func is_attack_from_front(attacker_position: Vector2) -> bool:
 	return (attacker_position.x > global_position.x) == _facing_right
 
 
-## Aplica daño y devuelve true solo si el golpe llegó a quitar vida (guardia y
-## parry devuelven false para que el atacante no empuje al jugador).
+## Applies damage and returns true only if the hit actually removed health (guard
+## and parry return false so the attacker does not push the player).
 func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool:
 	if _is_dead or immortal:
 		return false
 	if _is_guarding and from_front:
-		# Parry: el golpe entra dentro de la ventana de guardia perfecta.
+		# Parry: the hit lands inside the perfect guard window.
 		if _parry_timer > 0.0:
 			_parry_timer = 0.0
 			_parry_cooldown_timer = parry_cooldown
-			# Parrear devuelve stamina: mantiene viva la guardia y premia el timing.
+			# Parrying returns stamina: keeps guard alive and rewards timing.
 			restore_stamina(parry_stamina_refund)
 			var fx := _fx()
 			if fx:
 				fx.call("parry", global_position + Vector2(0.0, -26.0))
-		# La guardia para el golpe frontal (aviso para las pasivas de bloqueo).
+		# Guard stops the frontal hit (notice for block passives).
 		if passives:
 			passives.trigger_blocked_passives(self)
 		return false
-	# Las pasivas activas pueden reducir (o aumentar) el daño recibido
+	# Active passives can reduce (or increase) incoming damage
 	var final_amount := amount
 	if passives:
 		final_amount = maxi(roundi(passives.trigger_take_damage_passives(float(amount), attacker)), 0)
-	# El moco compacto come daño plano (cuantas más partículas, más defensa).
+	# Compact mucus eats flat damage (more particles, more defense).
 	final_amount = maxi(final_amount - moco_defense(), 0)
 	health = maxi(health - final_amount, 0)
 	_update_health_ui()
@@ -534,71 +534,71 @@ func heal(amount: int) -> void:
 
 
 # ==============================================================================
-# ESTADÍSTICAS (pasivas)
+# STATS (passives)
 # ==============================================================================
-## Sube la vida máxima sin curar: el hueco nuevo queda vacío.
+## Raises max health without healing: the new gap stays empty.
 func add_max_health(amount: int) -> void:
 	max_health = maxi(max_health + amount, 1)
 	health = mini(health, max_health)
 	_update_health_ui()
 
 
-## Sube la stamina máxima; la barra actual se recorta si hiciera falta.
+## Raises max stamina; the current bar is clipped if needed.
 func add_max_stamina(amount: float) -> void:
 	max_stamina = maxf(max_stamina + amount, 1.0)
 	stamina = minf(stamina, max_stamina)
 	_update_stamina_ui()
 
 
-## Daño plano extra por golpe (pasivas tipo maza o colmillo).
+## Flat extra damage per hit (mace or fang type passives).
 func add_attack_bonus(amount: int) -> void:
 	hitbox_damage = maxi(hitbox_damage + amount, 0)
 	_stats_dirty = true
 
 
-## Velocidad plana extra en px/s (pasivas tipo uña de ogro).
+## Flat extra speed in px/s (ogre nail type passives).
 func add_speed_bonus(amount: float) -> void:
 	move_speed = maxf(move_speed + amount, 0.0)
 	_stats_dirty = true
 
 
-## Multiplicador de velocidad (pasivas tipo pies ligeros).
+## Speed multiplier (light feet type passives).
 func multiply_move_speed(factor: float) -> void:
 	move_speed = maxf(move_speed * factor, 0.0)
 	_stats_dirty = true
 
 
-## Multiplicador extra de velocidad de ataque (1.25 = +25 %).
+## Extra attack speed multiplier (1.25 = +25%).
 func add_attack_speed(amount: float) -> void:
 	attack_speed = maxf(attack_speed + amount, 0.1)
 	_stats_dirty = true
 
 
-## Probabilidad extra de crítico (0-1).
+## Extra crit chance (0-1).
 func add_crit_chance(amount: float) -> void:
 	crit_chance = clampf(crit_chance + amount, 0.0, 1.0)
 	_stats_dirty = true
 
 
-## Multiplicador extra de daño crítico.
+## Extra crit damage multiplier.
 func add_crit_damage(amount: float) -> void:
 	crit_damage = maxf(crit_damage + amount, 0.0)
 	_stats_dirty = true
 
 
-## Puntos porcentuales extra de suerte.
+## Extra luck percentage points.
 func add_luck(amount: float) -> void:
 	luck = maxf(luck + amount, 0.0)
 	_stats_dirty = true
 
 
-## Salto multiplicado durante `seconds` (poción de mocos).
+## Jump multiplied for `seconds` (mucus potion).
 func apply_jump_bonus(factor: float, seconds: float) -> void:
 	_jump_bonus_factor = maxf(factor, 0.1)
 	_jump_bonus_timer = maxf(seconds, 0.0)
 
 
-## Crea (si hace falta) el emisor de moco y devuelve el nivel actual.
+## Creates (if needed) the mucus emitter and returns the current level.
 func moco_emitter() -> Node2D:
 	if _moco_emitter != null and is_instance_valid(_moco_emitter):
 		return _moco_emitter
@@ -609,7 +609,7 @@ func moco_emitter() -> Node2D:
 	return _moco_emitter
 
 
-## Defensa plana que dan las partículas de moco (moco compacto).
+## Flat defense given by mucus particles (compact mucus).
 func moco_defense() -> float:
 	if _moco_emitter == null or not is_instance_valid(_moco_emitter):
 		return 0.0
@@ -620,8 +620,8 @@ func _fx() -> Node:
 	return get_tree().get_first_node_in_group("fx")
 
 
-## Altura de los pies sobre el origen del cuerpo (la hitbox mide 16×54 px y
-## está centrada): el polvo debe nacer a ras de suelo, no a media altura.
+## Feet height above the body origin (the hitbox is 16×54 px and
+## centered): dust must spawn at ground level, not mid height.
 func _feet_offset() -> Vector2:
 	var feet_y := 25.0
 	if body_collision and body_collision.shape is RectangleShape2D:
@@ -651,7 +651,7 @@ func _die() -> void:
 
 
 # ==============================================================================
-# STAMINA Y MONEDAS
+# STAMINA AND COINS
 # ==============================================================================
 func add_coin(amount: int = 1) -> void:
 	current_coins += amount
@@ -659,7 +659,7 @@ func add_coin(amount: int = 1) -> void:
 	_pop_coins_ui()
 
 
-## Pop del contador de monedas: se agranda y vuelve a su tamaño.
+## Coin counter pop: grows and returns to its size.
 func _pop_coins_ui() -> void:
 	if coins_label == null:
 		return
@@ -717,8 +717,8 @@ func _update_stamina(delta: float) -> void:
 	elif guard_input and can_guard():
 		_is_guarding = true
 		spend_stamina(guard_initial_cost)
-		# Solo abre ventana si no está en enfriamiento: mantener pulsado o
-		# spamear la guardia no encadena parries, y cada intento cuesta stamina.
+		# Only opens the window if not on cooldown: holding or
+		# spamming guard doesn't chain parries, and each attempt costs stamina.
 		if _parry_cooldown_timer <= 0.0:
 			_parry_timer = parry_window
 			_parry_cooldown_timer = parry_window + parry_cooldown
@@ -742,15 +742,15 @@ func _update_stamina(delta: float) -> void:
 
 
 # ==============================================================================
-# ANIMACIONES Y UI
+# ANIMATIONS AND UI
 # ==============================================================================
 func _update_camera() -> void:
-	# X en píxeles enteros: el fondo deja de temblar. La Y también, pero un
-	# escalón de 1 tile (16 px) se sube en varios frames para no sacudir la vista.
+	# X in whole pixels: the background stops shaking. Y too, but a
+	# 1-tile step (16 px) is climbed over several frames so the view doesn't jolt.
 	if is_nan(_cam_y):
 		_cam_y = global_position.y
-	# El objetivo es el jugador, no la cámara: si se usara la cámara, el
-	# desfase acumulado sería permanente y el jugador acabaría fuera por arriba.
+	# The target is the player, not the camera: using the camera, the
+	# accumulated offset would be permanent and the player would end up off the top.
 	var dy := global_position.y - _cam_y
 	if is_on_floor() and absf(dy) <= step_height + 2.0:
 		dy = clampf(dy, -6.0, 6.0)
@@ -958,14 +958,14 @@ func _update_coins_ui() -> void:
 		coins_label.text = str(current_coins)
 
 
-## Aviso discreto de que la ventana de parry está abierta (chispas doradas).
+## Subtle notice that the parry window is open (golden sparks).
 func _parry_ready_cue() -> void:
 	var fx := _fx()
 	if fx:
 		fx.call("parry_ready", global_position + Vector2(0.0, -26.0))
 
 
-## Panel de estadísticas a la izquierda, siempre visible y translúcido.
+## Stats panel on the left, always visible and translucent.
 func _ensure_stats_ui() -> void:
 	var root = get_parent()
 	if root == null:
@@ -981,17 +981,17 @@ func _ensure_stats_ui() -> void:
 		grid.name = "StatsPanel"
 		grid.columns = 2
 		grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		# Bajo la línea de monedas (y≈63): el panel empieza en 82 para no taparla.
+		# Below the coin line (y≈63): the panel starts at 82 so it doesn't cover it.
 		grid.position = Vector2(5.0, 82.0)
 		grid.add_theme_constant_override("h_separation", 8)
 		grid.add_theme_constant_override("v_separation", 0)
-		# Translúcido para que no tape el juego.
+		# Translucent so it doesn't cover the game.
 		grid.modulate = Color(1.0, 1.0, 1.0, 0.6)
 		ui_layer.add_child(grid)
 	if not _stats_values.is_empty():
 		return
 	var stat_names: Array[String] = [
-		"Daño", "Vel. ataque", "Daño crítico", "Prob. crítico", "Velocidad", "Suerte"
+		"Damage", "Atk. speed", "Crit. damage", "Crit. chance", "Speed", "Luck"
 	]
 	for stat_name in stat_names:
 		var key := Label.new()

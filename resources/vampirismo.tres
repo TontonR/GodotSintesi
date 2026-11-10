@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_vmpr")
 id = "vampirismo"
-item_name = "Vampirismo"
-description = "Recuperas 2 de vida cada vez que matas a un enemigo."
+item_name = "Vampirism"
+description = "You recover 2 health each time you kill an enemy."
 icon = ExtResource("2_icon")
 value = 85
 passive_id = "vampirismo"

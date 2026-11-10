@@ -1,13 +1,13 @@
 class_name ThornsPassive
 extends PassiveItems
-## Devuelve parte del daño recibido al atacante, con cooldown y tope.
+## Returns part of the damage taken to the attacker, with cooldown and cap.
 
-@export_group("Espinas")
-## Fracción del daño recibido que se devuelve (0.2 = 20%).
+@export_group("Thorns")
+## Fraction of the damage taken that is returned (0.2 = 20%).
 @export_range(0.0, 1.0, 0.05) var damage_ratio: float = 0.2
-## Daño máximo devuelto por activación.
+## Maximum damage returned per activation.
 @export var max_reflect: int = 15
-## Segundos de espera entre devoluciones.
+## Seconds of wait between reflections.
 @export var cooldown: float = 2.0
 
 var _cooldown_left: float = 0.0

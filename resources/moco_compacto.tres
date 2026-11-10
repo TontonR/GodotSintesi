@@ -7,8 +7,8 @@
 script = ExtResource("1_scr")
 passive_id = "moco_compacto"
 id = "moco_compacto"
-item_name = "Moco compacto"
-description = "Más partículas de moco: cada partícula te da defensa."
+item_name = "Compact Mucus"
+description = "More mucus particles: each particle gives you defense."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 50

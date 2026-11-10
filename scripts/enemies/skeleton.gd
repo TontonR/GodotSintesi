@@ -1,7 +1,7 @@
 class_name skeleton
 extends EnemyBase
-## Esqueleto básico: se mueve y ataca como el slime, pero el primer golpe que
-## recibe hace 0 de daño (solo muestra el flash de impacto).
+## Basic skeleton: moves and attacks like the slime, but the first hit it
+## takes deals 0 damage (only shows the impact flash).
 
 var _first_hit_blocked: bool = false
 
@@ -21,7 +21,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados.
+	# Fallbacks in case the scene does not have the exports wired.
 	if not sprite:
 		sprite = get_node_or_null("Pivot/Skeleton")
 	if not detection_area:
@@ -34,8 +34,8 @@ func _ready() -> void:
 	super()
 
 
-## El primer golpe recibido no resta vida; a partir del segundo se usa el daño
-## normal de EnemyBase.
+## The first hit received does not remove health; from the second on, the
+## normal EnemyBase damage is used.
 func take_damage(amount: float, critical: bool = false) -> void:
 	if _is_dead:
 		return

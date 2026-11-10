@@ -1,58 +1,58 @@
 class_name werewolf
 extends EnemyBase
-## Lobo: merodea su zona y, al ver al jugador, embiste de punta a punta
-## su área de detección. Cada dos embestidas, la siguiente vuelta es un
-## salto que al aterrizar golpea con el doble del ataque base.
-## El daño por contacto usa el hitbox real y se comprueba cada frame físico;
-## la embestida siempre recorre su línea recta antes de decidir si gira.
+## Wolf: wanders its zone and, when it sees the player, charges from end to end
+## of its detection area. Every two charges, the next pass is a
+## jump that hits for double the base attack on landing.
+## Contact damage uses the real hitbox and is checked every physics frame;
+## the charge always travels its straight line before deciding whether to turn.
 
 enum State { WANDER, WINDUP, CHARGE, JUMP, RECOVER }
 
-## Embestidas normales antes de que la siguiente vuelta sea un salto.
+## Normal charges before the next pass is a jump.
 const CHARGES_BEFORE_JUMP := 2
 
-@export_group("Merodeo")
-## Velocidad de paseo por la zona (px/s).
+@export_group("Wander")
+## Walking speed around the zone (px/s).
 @export var wander_speed: float = 70.0
-## Margen (px) respecto a los bordes de la zona para no salirse.
+## Margin (px) from the zone edges to avoid leaving it.
 @export var wander_edge_margin: float = 64.0
-## Distancia mínima (px) al elegir el siguiente punto de paseo.
+## Minimum distance (px) when picking the next walking point.
 @export var wander_min_step: float = 80.0
-## Pausa mínima entre puntos de paseo (s).
+## Minimum pause between walking points (s).
 @export var wander_pause_min: float = 1.0
-## Pausa máxima entre puntos de paseo (s).
+## Maximum pause between walking points (s).
 @export var wander_pause_max: float = 2.5
-## Radio de merodeo (px) si no encuentra el WorldGenerator (para probarlo suelto).
+## Wander radius (px) if the WorldGenerator is not found (to test it standalone).
 @export var wander_radius: float = 400.0
 
-@export_group("Embestida")
-## Velocidad de la embestida (px/s). Menor que el sprint del jugador (221).
+@export_group("Charge")
+## Charge speed (px/s). Slower than the player's sprint (221).
 @export var charge_speed: float = 150.0
-## Tiempo de aviso quieto antes de embestir (s).
+## Still windup time before charging (s).
 @export var charge_windup: float = 0.25
-## Pausa quieto tras cada embestida o salto, antes de volver a embestir (s).
+## Still pause after each charge or jump, before charging again (s).
 @export var attack_recovery: float = 1.5
-## Fracción del diámetro de detección que recorre cada embestida.
+## Fraction of the detection diameter covered by each charge.
 @export var charge_distance_scale: float = 0.4
-## Daño por contacto: segundos mínimos entre dos golpes al mismo objetivo.
+## Contact damage: minimum seconds between two hits on the same target.
 @export var hit_cooldown: float = 0.5
-## Fuerza del lanzamiento vertical al primer golpe de cada embestida (px/s).
+## Vertical launch force on the first hit of each charge (px/s).
 @export var knockup_force: float = 280.0
-## Tiempo (s) que el jugador pierde el control tras el lanzamiento.
+## Time (s) the player loses control after the launch.
 @export var knockup_lock: float = 0.12
 
-@export_group("Ataque de Salto")
-## Fuerza del salto hacia arriba.
+@export_group("Jump Attack")
+## Upward jump force.
 @export var jump_force: float = -350.0
-## Multiplicador de daño al caer.
+## Damage multiplier on landing.
 @export var jump_damage_multiplier: float = 2.0
-## Radio de impacto al tocar suelo (px).
+## Impact radius when touching the ground (px).
 @export var impact_radius: float = 40.0
-## Velocidad horizontal máxima durante el salto (px/s).
+## Maximum horizontal speed during the jump (px/s).
 @export var jump_speed_max: float = 320.0
 
 # ---------------------------------------------------------------------------
-# Estado interno
+# Internal state
 # ---------------------------------------------------------------------------
 var _state: State = State.WANDER
 var _state_timer: float = 0.0
@@ -63,16 +63,16 @@ var _wander_pause: float = 0.0
 var _charge_dir: float = 1.0
 var _charge_remaining: float = 0.0
 var _charge_distance: float = 500.0
-## El giro de vuelta solo se permite una vez por embestida.
+## The turn-around is only allowed once per charge.
 var _charge_turned: bool = false
-## El primer golpe de una embestida lanza al jugador por los aires (knockup).
+## The first hit of a charge launches the player into the air (knockup).
 var _charge_hit_done: bool = false
 var _charges_done: int = 0
-## Jugador con el que ya se ha excluido la colisión física.
+## Player whose physical collision has already been excluded.
 var _collision_excluded_player: CharacterBody2D = null
 var _jump_vx: float = 0.0
 var _jump_taken_off: bool = false
-## Segundos que faltan para poder volver a golpear por contacto.
+## Seconds left before it can hit by contact again.
 var _hit_cooldown_left: float = 0.0
 
 
@@ -85,7 +85,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados (como orc.gd).
+	# Fallbacks in case the scene does not have the exports wired (like orc.gd).
 	if not sprite:
 		sprite = get_node_or_null("pivot/werewolf")
 	if not detection_area:
@@ -105,7 +105,7 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Comportamiento: máquina de estados propia (se ignora la de EnemyBase)
+# Behavior: its own state machine (EnemyBase's is ignored)
 # ---------------------------------------------------------------------------
 
 func _update_behavior(delta: float) -> void:
@@ -129,10 +129,10 @@ func _update_behavior(delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Merodeo por la zona
+# Wandering around the zone
 # ---------------------------------------------------------------------------
 
-## Limita el paseo a la zona del mundo donde apareció el lobo.
+## Limits walking to the world zone where the wolf spawned.
 func _setup_wander_bounds() -> void:
 	var gen := get_tree().get_first_node_in_group("world_generator")
 	var chunk_tiles := 0
@@ -148,20 +148,20 @@ func _setup_wander_bounds() -> void:
 		var chunk_index := floori(global_position.x / chunk_width_px)
 		_zone_min_x = chunk_index * chunk_width_px + wander_edge_margin
 		_zone_max_x = (chunk_index + 1) * chunk_width_px - wander_edge_margin
-		# En el chunk inicial, no invade el tramo seguro del jugador.
+		# In the starting chunk, do not invade the player's safe stretch.
 		if chunk_index == 0 and safe_tiles > 0:
 			_zone_min_x = maxf(_zone_min_x, float(safe_tiles) * 16.0 + wander_edge_margin)
 	else:
 		_zone_min_x = global_position.x - wander_radius
 		_zone_max_x = global_position.x + wander_radius
 
-	# Zona demasiado estrecha: mejor un radio fijo alrededor del spawn.
+	# Zone too narrow: better a fixed radius around the spawn.
 	if _zone_max_x - _zone_min_x < wander_edge_margin * 2.0:
 		_zone_min_x = global_position.x - wander_radius
 		_zone_max_x = global_position.x + wander_radius
 
 
-## Elige un punto de paseo aleatorio dentro de la zona.
+## Picks a random walking point inside the zone.
 func _pick_wander_target() -> void:
 	var x := randf_range(_zone_min_x, _zone_max_x)
 	for _i in 4:
@@ -172,7 +172,7 @@ func _pick_wander_target() -> void:
 
 
 func _process_wander(delta: float) -> void:
-	# Pausa entre puntos: quieto en idle.
+	# Pause between points: standing still in idle.
 	if _wander_pause > 0.0:
 		_wander_pause -= delta
 		_stop()
@@ -181,7 +181,7 @@ func _process_wander(delta: float) -> void:
 			_pick_wander_target()
 		return
 
-	# ¿Llegó al punto? Entonces descansa y luego busca otro.
+	# Reached the point? Then rest and look for another one.
 	if absf(_wander_target_x - global_position.x) <= 4.0:
 		_wander_pause = randf_range(wander_pause_min, wander_pause_max)
 		return
@@ -193,7 +193,7 @@ func _process_wander(delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Ataque: ciclo de 2 embestidas + 1 salto
+# Attack: cycle of 2 charges + 1 jump
 # ---------------------------------------------------------------------------
 
 func _start_windup() -> void:
@@ -211,7 +211,7 @@ func _process_windup(delta: float) -> void:
 		_return_to_wander()
 		return
 
-	# Quieto y mirando al jugador: aviso antes de embestir.
+	# Still and facing the player: warning before charging.
 	_set_facing_direction(_dir_to_player() < 0.0)
 	_stop()
 	_state_timer -= delta
@@ -219,7 +219,7 @@ func _process_windup(delta: float) -> void:
 		_launch_attack()
 
 
-## Decide la vuelta: cada dos embestidas, la tercera es un salto.
+## Decides the pass: every two charges, the third is a jump.
 func _launch_attack() -> void:
 	if _charges_done >= CHARGES_BEFORE_JUMP:
 		_start_jump()
@@ -244,19 +244,19 @@ func _start_charge() -> void:
 
 
 func _process_charge(delta: float) -> void:
-	# Solo el terreno corta la embestida; al jugador se lo atraviesa.
+	# Only terrain stops the charge; the player is passed through.
 	if _is_blocked_by_world():
 		_begin_recovery()
 		return
 
-	# Línea recta: no se gira a media carga, aunque el jugador cambie de lado.
+	# Straight line: no turning mid-charge, even if the player switches sides.
 	velocity.x = _charge_dir * charge_speed
 	_charge_remaining -= charge_speed * delta
 	if _charge_remaining <= 0.0:
 		_finish_charge_pass()
 
 
-## Se llama al terminar la línea actual: solo entonces se decide girar o no.
+## Called at the end of the current line: only then is it decided whether to turn.
 func _finish_charge_pass() -> void:
 	var player_in_sight := (
 		is_instance_valid(_player)
@@ -265,7 +265,7 @@ func _finish_charge_pass() -> void:
 	)
 
 	if _charge_hit_done and not _charge_turned and player_in_sight:
-		# Golpeó: una única pasada de vuelta en sentido contrario.
+		# Hit: a single pass back in the opposite direction.
 		_charge_turned = true
 		_charge_dir = -_charge_dir
 		_set_facing_direction(_charge_dir < 0.0)
@@ -273,7 +273,7 @@ func _finish_charge_pass() -> void:
 		_play_animation(move_animation, true)
 		return
 
-	# Al llegar al destino se para y espera el enfriamiento antes de repetir.
+	# On reaching the destination it stops and waits for the cooldown before repeating.
 	_begin_recovery()
 
 
@@ -285,7 +285,7 @@ func _start_jump() -> void:
 	var dx := _player.global_position.x - global_position.x
 	_set_facing_direction(_dir_to_player() < 0.0)
 
-	# Velocidad horizontal para caer sobre el jugador dentro de la duración del arco.
+	# Horizontal speed to land on the player within the arc duration.
 	var airtime := 2.0 * absf(jump_force) / maxf(gravity, 1.0)
 	_jump_vx = clampf(dx / airtime, -jump_speed_max, jump_speed_max)
 	velocity.x = _jump_vx
@@ -299,25 +299,25 @@ func _process_jump(_delta: float) -> void:
 	velocity.x = _jump_vx
 
 	if not _jump_taken_off:
-		# Se considera despegado en cuanto la física lo saca del suelo.
+		# Considered airborne as soon as physics lifts it off the ground.
 		if not is_on_floor():
 			_jump_taken_off = true
 		return
 
-	# Subiendo: "jump"; bajando: "fall".
+	# Going up: "jump"; going down: "fall".
 	if velocity.y < 0.0:
 		_play_animation(&"jump")
 	else:
 		_play_animation(&"fall")
 
-	# Aterrizaje: golpe en área con el doble del ataque base.
+	# Landing: area hit for double the base attack.
 	if is_on_floor():
 		_deal_impact_damage()
 		_charges_done = 0
 		_begin_recovery()
 
 
-## Daño en área al aterrizar (radio impact_radius), el doble del ataque base.
+## Area damage on landing (impact_radius), double the base attack.
 func _deal_impact_damage() -> void:
 	var damage := base_attack * jump_damage_multiplier
 	for target in get_tree().get_nodes_in_group("player"):
@@ -336,7 +336,7 @@ func _begin_recovery() -> void:
 
 
 func _process_recovery(delta: float) -> void:
-	# Quieto en el destino hasta que pase el enfriamiento.
+	# Still at the destination until the cooldown passes.
 	_stop()
 	_play_animation(idle_animation)
 
@@ -349,7 +349,7 @@ func _process_recovery(delta: float) -> void:
 		_return_to_wander()
 
 
-## Vuelve al merodeo (el contador del ciclo 2 + 1 se conserva).
+## Returns to wandering (the 2 + 1 cycle counter is kept).
 func _return_to_wander() -> void:
 	_state = State.WANDER
 	_wander_pause = 0.0
@@ -358,15 +358,15 @@ func _return_to_wander() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Daño por contacto (hitbox real, cada frame físico)
+# Contact damage (real hitbox, every physics frame)
 # ---------------------------------------------------------------------------
 
-## Golpea al jugador si el hitbox real lo solapa y el enfriamiento lo permite.
-## Se comprueba cada frame físico (no depende de los frames del sprite).
+## Hits the player if the real hitbox overlaps them and the cooldown allows it.
+## Checked every physics frame (does not depend on the sprite's frames).
 func _try_contact_damage() -> void:
 	if _is_dead or _hit_cooldown_left > 0.0 or not attack_range:
 		return
-	# Daña durante la embestida y al correr merodeando (no quieto en idle).
+	# Deals damage during the charge and while running around (not standing in idle).
 	var can_damage := _state == State.CHARGE
 	if not can_damage and _state == State.WANDER:
 		can_damage = sprite != null and sprite.animation == move_animation
@@ -379,7 +379,7 @@ func _try_contact_damage() -> void:
 			continue
 
 		_hit_cooldown_left = hit_cooldown
-		# Solo el primer golpe de cada embestida lanza al jugador por los aires.
+		# Only the first hit of each charge launches the player into the air.
 		if _state == State.CHARGE and not _charge_hit_done:
 			_charge_hit_done = true
 			_hit_target(target, base_attack, knockup_force)
@@ -388,7 +388,7 @@ func _try_contact_damage() -> void:
 		return
 
 
-## Aplica daño pasando nuestra posición (guardia frontal del jugador).
+## Applies damage passing our position (player's frontal guard).
 func _hit_target(body: Node2D, amount: float, knockup: float = 0.0) -> void:
 	var damage := roundi(amount)
 	if body.has_method("take_damage_from"):
@@ -398,10 +398,10 @@ func _hit_target(body: Node2D, amount: float, knockup: float = 0.0) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Utilidades
+# Utilities
 # ---------------------------------------------------------------------------
 
-## True si el choque de pared actual no es con el jugador (el lobo lo atraviesa).
+## True if the current wall collision is not with the player (the wolf passes through).
 func _is_blocked_by_world() -> bool:
 	if not is_on_wall():
 		return false
@@ -412,13 +412,13 @@ func _is_blocked_by_world() -> bool:
 	return false
 
 
-## Excluye la colisión con el jugador en cuanto lo detecta (pass-through).
+## Excludes collision with the player as soon as it detects them (pass-through).
 func _on_detection_area_body_entered(body: Node2D) -> void:
 	super(body)
 	_ensure_player_collision_exception()
 
 
-## Dirección horizontal (-1/1) hacia el jugador; sin jugador, hacia donde mira.
+## Horizontal direction (-1/1) toward the player; with no player, where it faces.
 func _dir_to_player() -> float:
 	if is_instance_valid(_player):
 		var dx := _player.global_position.x - global_position.x
@@ -427,7 +427,7 @@ func _dir_to_player() -> float:
 	return -1.0 if _is_facing_left else 1.0
 
 
-## Diámetro efectivo del área de detección (radio mayor × 2).
+## Effective diameter of the detection area (larger radius × 2).
 func _get_detection_diameter() -> float:
 	var radius := 0.0
 	if detection_area:
@@ -445,8 +445,8 @@ func _get_detection_diameter() -> float:
 	return maxf(radius, 1.0) * 2.0
 
 
-## Excluye la colisión física con el jugador en ambos sentidos, para no
-## arrastrarlo. Las Area2D (detección y ataque) no se ven afectadas.
+## Excludes physical collision with the player in both directions, so as not to
+## drag them. Area2Ds (detection and attack) are not affected.
 func _ensure_player_collision_exception() -> void:
 	if not is_instance_valid(_player) or _player == _collision_excluded_player:
 		return

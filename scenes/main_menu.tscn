@@ -93,4 +93,4 @@ layout_mode = 2
 size_flags_horizontal = 4
 custom_minimum_size = Vector2(190, 44)
 theme_override_font_sizes/font_size = 20
-text = "Jugar"
+text = "Play"

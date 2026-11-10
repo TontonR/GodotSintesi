@@ -7,10 +7,10 @@
 script = ExtResource("1_scr")
 passive_id = "corazon_mucosil"
 id = "corazon_mucosil"
-item_name = "Corazón mucosil"
-description = "Duplica las partículas de moco que tengas."
+item_name = "Mucus Heart"
+description = "Doubles the mucus particles you have."
 icon = ExtResource("1_tex")
-quality = "Raro"
+quality = "Rare"
 value = 80
 level_bonus = 0
 doubles_level = true

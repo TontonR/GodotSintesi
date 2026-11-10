@@ -1,58 +1,58 @@
 extends Node
 
 # ==============================================================================
-# MUNDO PROCEDURAL POR CHUNKS
+# PROCEDURAL WORLD BY CHUNKS
 # ==============================================================================
 
-## Tamaño de un tile en píxeles. Único sitio donde se define.
+## Tile size in pixels. The only place where it is defined.
 const TILE_SIZE := 16
-## Chunks extra a cada lado que se mantienen cargados: los enemigos no
-## desaparecen al cruzar una costura (solo se liberan 2 chunks más atrás).
+## Extra chunks kept loaded on each side: enemies do not
+## disappear when crossing a seam (only chunks 2 further back are freed).
 const KEEP_CHUNKS_SIDE := 2
 
 @export_group("World")
-## Semilla del mundo; 0 = aleatoria por partida.
+## World seed; 0 = random per run.
 @export var world_seed: int = 0
-## Ancho de cada chunk en tiles.
+## Width of each chunk in tiles.
 @export var chunk_width_tiles: int = 256
-## Fila del fondo del mundo. El terreno se rellena hasta aquí. Debe ser mayor que max_height.
+## World bottom row. Terrain fills up to here. Must be greater than max_height.
 @export var chunk_height_tiles: int = 140
-## Tiles planos al inicio para que el jugador aparezca seguro.
+## Flat tiles at the start so the player spawns safely.
 @export var safe_start_tiles: int = 15
-## Tiles de transición entre el inicio plano y el ruido.
+## Transition tiles between the flat start and the noise.
 @export var start_blend_tiles: int = 24
-## Margen extra en píxeles para cargar el chunk vecino antes de verlo.
+## Extra margin in pixels to load the neighboring chunk before seeing it.
 @export var load_margin_px: float = 96.0
-## Altura sobre el suelo a la que aparece el jugador, en tiles.
+## Height above the ground where the player spawns, in tiles.
 @export var player_spawn_height_tiles: int = 6
 
 @export_group("Terrain")
-## Altura media del suelo en tiles (la fila crece hacia abajo).
+## Average ground height in tiles (the row grows downward).
 @export var base_height: int = 60
-## Variación máxima de altura; más alto = montañas más grandes.
+## Maximum height variation; higher = bigger mountains.
 @export var height_amplitude: float = 20.0
-## Frecuencia del ruido; más baja = montañas más anchas.
+## Noise frequency; lower = wider mountains.
 @export var noise_frequency: float = 0.007
 @export var noise_octaves: int = 4
 @export var noise_gain: float = 0.45
-## Fila mínima del suelo (cumbre más alta). No bajar de 0.
+## Minimum ground row (highest peak). Do not go below 0.
 @export var min_height: int = 5
-## Fila máxima del suelo (valle más profundo).
+## Maximum ground row (deepest valley).
 @export var max_height: int = 110
 
 @export_group("Tiles")
-## TileSet con el atlas 3x3 (superficie, relleno y reservados).
+## TileSet with the 3x3 atlas (surface, fill and reserved).
 @export var solid_tile_set: TileSet
-## TileSet del césped que se pinta sobre la superficie.
+## Grass TileSet painted over the surface.
 @export var grass_tile_set: TileSet
 @export var tile_source_id: int = 0
-## Coordenada de atlas del tile 1 (esquina superior izquierda del bloque 3x3).
+## Atlas coordinate of tile 1 (top-left corner of the 3x3 block).
 @export var tile_atlas_origin: Vector2i = Vector2i(0, 0)
-## Activar si los bordes izquierdo/derecho salen intercambiados.
+## Enable if the left/right edges come out swapped.
 @export var swap_left_right: bool = false
 
-@export_group("Enemigos")
-## Lista de escenas de enemigos (respaldo si un bioma no define las suyas).
+@export_group("Enemies")
+## Enemy scene list (fallback if a biome does not define its own).
 @export var enemy_scenes: Array[PackedScene] = [
 	preload("res://scenes/enemies/orc.tscn"),
 	preload("res://scenes/enemies/mutant_toad.tscn"),
@@ -61,52 +61,52 @@ const KEEP_CHUNKS_SIDE := 2
 	preload("res://scenes/enemies/skeleton.tscn"),
 	preload("res://scenes/enemies/archer.tscn")
 ]
-## Cantidades base por chunk, en el mismo orden que las escenas.
+## Base counts per chunk, in the same order as the scenes.
 @export var enemy_counts_per_chunk: Array[int] = [4, 2, 1, 2, 2, 2]
 
-@export_group("Biomas")
-## Biomas del mundo; el primero es el de la zona segura.
+@export_group("Biomes")
+## World biomes; the first one is the safe zone.
 @export var biomes: Array[Biome] = [
 	preload("res://resources/world/biomes/pradera.tres"),
 	preload("res://resources/world/biomes/bosque_rojo.tres"),
 	preload("res://resources/world/biomes/nieve.tres")
 ]
-## Frecuencia del ruido que reparte los biomas (por chunk); más bajo = biomas más grandes.
+## Frequency of the noise that distributes biomes (per chunk); lower = bigger biomes.
 @export var biome_frequency: float = 0.12
-## Contraste del ruido de biomas; más alto = extremos más frecuentes.
+## Biome noise contrast; higher = extremes more frequent.
 @export var biome_contrast: float = 2.0
-## Bloques que dura la transición de color entre biomas (0 = un chunk completo).
+## Blocks the color transition between biomes lasts (0 = one full chunk).
 @export var biome_transition_tiles: int = 0
-## Nodos (Sprite2D) de los bosques y de la capa verde de la montaña que se tiñen con el bioma.
+## Nodes (Sprite2D) of the forests and the mountain's green layer tinted by the biome.
 @export var forest_tint_paths: Array[NodePath] = [
 	^"../far_forest/Sprite2D",
 	^"../near_forest/Sprite2D",
 	^"../mountains/Sprite2DGreen",
 ]
-## Nodos (Sprite2D) de la piedra de la montaña, que usan el `rock_color` del bioma.
+## Nodes (Sprite2D) of the mountain rock, which use the biome's `rock_color`.
 @export var rock_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2D",
 ]
 
 @export_group("Spawns")
-## Margen en tiles para no aparecer pegado al borde del chunk.
+## Margin in tiles to avoid spawning glued to the chunk edge.
 @export var enemy_spawn_margin_tiles: int = 2
-## Tiles de margen seguro tras el spawn del jugador antes del primer enemigo.
+## Safe margin tiles after the player spawn before the first enemy.
 @export var enemy_safe_gap_tiles: int = 20
-## Chunks iniciales con menos enemigos (cuenta base × multiplicador).
+## Initial chunks with fewer enemies (base count × multiplier).
 @export var enemy_ramp_first_chunks: int = 2
-## Multiplicador de enemigos en esos primeros chunks.
+## Enemy multiplier in those first chunks.
 @export var enemy_ramp_first_multiplier: float = 0.5
-## Subida del multiplicador por cada chunk más allá del tramo inicial.
+## Multiplier increase per chunk beyond the initial stretch.
 @export var enemy_ramp_per_chunk: float = 0.2
-## Tope del multiplicador de enemigos por chunk.
+## Cap on the per-chunk enemy multiplier.
 @export var enemy_ramp_max_multiplier: float = 1.8
 
-@export_group("Monedas")
+@export_group("Coins")
 @export var coin_scene: PackedScene = preload("res://scenes/collectables/coin.tscn")
 @export var coins_per_chunk: int = 2
-## Altura sobre el suelo a la que aparecen las monedas: después caen, rebotan y
-## se asientan con su propia gravedad (`scripts/collectables/coin.gd`).
+## Height above the ground where coins spawn: they then fall, bounce and
+## settle with their own gravity (`scripts/collectables/coin.gd`).
 @export var coin_spawn_height: float = 40.0
 
 @export_group("Chunks")
@@ -132,9 +132,9 @@ var _last_biome_tile: int = -999999
 
 
 func _ready() -> void:
-	# Los enemigos lo buscan por grupo para leer la configuración del mundo.
+	# Enemies find it by group to read the world configuration.
 	add_to_group("world_generator")
-	# La capa antigua sigue en game.tscn como plantilla de TileSet.
+	# The old layer stays in game.tscn as a TileSet template.
 	if solid_tile_set == null and _template_solid:
 		solid_tile_set = _template_solid.tile_set
 	if grass_tile_set == null and _template_grass:
@@ -149,7 +149,7 @@ func _ready() -> void:
 
 	_biome_noise.seed = _seed + 1000
 	_biome_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	# El bioma se decide por bloque: la frecuencia exportada sigue siendo por chunk.
+	# Biome is decided per block: the exported frequency is still per chunk.
 	_biome_noise.frequency = biome_frequency / float(maxi(chunk_width_tiles, 1))
 
 	if player:
@@ -178,14 +178,14 @@ func _process(_delta: float) -> void:
 
 
 # ==============================================================================
-# ALTURA DEL TERRENO
+# TERRAIN HEIGHT
 # ==============================================================================
 func _height_at(tile_x: int) -> int:
 	var terrain := _terrain_at_tile(tile_x)
 	return _height_at_with(tile_x, float(terrain["amplitude"]), float(terrain["frequency"]))
 
 
-## Altura con los modificadores de bioma ya mezclados (los pasa el chunk).
+## Height with biome modifiers already mixed (passed by the chunk).
 func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
 	if tile_x >= 0 and tile_x < safe_start_tiles:
 		return base_height
@@ -196,7 +196,7 @@ func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
 	return h
 
 
-## Menos enemigos en los primeros chunks y bastantes más cuanto más lejos.
+## Fewer enemies in the first chunks and many more the further away.
 func _enemy_count_multiplier(chunk_x: int) -> float:
 	if chunk_x < enemy_ramp_first_chunks:
 		return enemy_ramp_first_multiplier
@@ -205,7 +205,7 @@ func _enemy_count_multiplier(chunk_x: int) -> float:
 
 
 func _noise_height(tile_x: int, amplitude: float = 1.0, frequency: float = 1.0) -> int:
-	# 3 samples para algo de suavizado sin aplanar demasiado.
+	# 3 samples for some smoothing without flattening too much.
 	var value := 0.0
 	for offset in range(-1, 2):
 		value += _noise.get_noise_1d(float(tile_x + offset) * frequency)
@@ -214,14 +214,14 @@ func _noise_height(tile_x: int, amplitude: float = 1.0, frequency: float = 1.0) 
 
 
 # ==============================================================================
-# CARGA / DESCARGA DE CHUNKS
+# CHUNK LOAD / UNLOAD
 # ==============================================================================
 func _update_chunks(force: bool) -> void:
 	if not player:
 		return
 
-	# Centro real de la vista (respeta suavizado, drag y límites) y ancho
-	# visible en coordenadas de mundo (viewport / zoom).
+	# Real view center (respects smoothing, drag and limits) and visible
+	# width in world coordinates (viewport / zoom).
 	var center_x := player.global_position.x
 	var zoom_x := 1.0
 	if _camera:
@@ -232,11 +232,11 @@ func _update_chunks(force: bool) -> void:
 	var first := floori((center_x - half_width - load_margin_px) / chunk_width_px)
 	var last := floori((center_x + half_width + load_margin_px) / chunk_width_px)
 
-	# El chunk del jugador no se descarga nunca.
+	# The player's chunk is never unloaded.
 	var current := floori(player.global_position.x / chunk_width_px)
 	first = mini(first, current)
 	last = maxi(last, current)
-	# Mantener cargados los chunks vecinos aunque la vista ya no los toque.
+	# Keep neighboring chunks loaded even if the view no longer touches them.
 	first -= KEEP_CHUNKS_SIDE
 	last += KEEP_CHUNKS_SIDE
 
@@ -245,7 +245,7 @@ func _update_chunks(force: bool) -> void:
 	_last_first = first
 	_last_last = last
 
-	# Primero los datos (solo los visibles + 1 a la derecha para anticipar).
+	# Data first (only the visible ones + 1 to the right to anticipate).
 	for x in range(first, last + 2):
 		var coord := Vector2i(x, 0)
 		if not _chunk_data.has(coord):
@@ -260,21 +260,21 @@ func _update_chunks(force: bool) -> void:
 		if coord.x < first or coord.x > last:
 			_unload_chunk(coord)
 
-	# Liberar datos de chunks que quedan lejos (fuera de first..last+1).
+	# Free data of chunks that are far away (outside first..last+1).
 	for coord in _chunk_data.keys():
 		if coord.x < first or coord.x > last + 1:
 			_chunk_data.erase(coord)
 
 
-## True cuando el chunk que contiene `world_x` ya está instanciado. Lo usa la
-## caída inicial: sin mundo debajo, la caída no puede terminar.
+## True when the chunk containing `world_x` is already instantiated. Used by the
+## initial fall: without world below, the fall cannot end.
 func is_ready_at(world_x: float) -> bool:
 	var coord_x := floori(world_x / float(chunk_width_tiles * TILE_SIZE))
 	return _loaded_chunks.has(Vector2i(coord_x, 0))
 
 
-## Índice del bioma de un bloque. Todo el primer chunk (incluidos los bloques
-## negativos) es la zona segura con el primer bioma.
+## Biome index of a block. The whole first chunk (including negative
+## blocks) is the safe zone with the first biome.
 func _biome_index_at_tile(tile_x: int) -> int:
 	if biomes.is_empty():
 		return -1
@@ -285,7 +285,7 @@ func _biome_index_at_tile(tile_x: int) -> int:
 		total += maxf(biome.spawn_weight, 0.0)
 	if total <= 0.0:
 		return 0
-	# Mismo ruido de antes, muestreado bloque a bloque en vez de por chunk.
+	# Same noise as before, sampled block by block instead of per chunk.
 	var roll := _biome_noise.get_noise_1d(float(tile_x))
 	roll = clampf(roll * biome_contrast + 0.5, 0.0, 1.0) * total
 	for i in biomes.size():
@@ -295,7 +295,7 @@ func _biome_index_at_tile(tile_x: int) -> int:
 	return biomes.size() - 1
 
 
-## Bioma del bloque que contiene `world_x`; lo usan las partículas de ambiente.
+## Biome of the block containing `world_x`; used by ambient particles.
 func biome_at_world_x(world_x: float) -> Biome:
 	var index := _biome_index_at_tile(floori(world_x / float(TILE_SIZE)))
 	if index < 0:
@@ -303,7 +303,7 @@ func biome_at_world_x(world_x: float) -> Biome:
 	return biomes[index]
 
 
-## Bioma del chunk para enemigos y recuentos: el del bloque central.
+## Chunk biome for enemies and counts: the one at the central block.
 func _biome_for_chunk(chunk_x: int) -> Biome:
 	var index := _biome_index_at_tile(chunk_x * chunk_width_tiles + chunk_width_tiles / 2)
 	if index < 0:
@@ -311,7 +311,7 @@ func _biome_for_chunk(chunk_x: int) -> Biome:
 	return biomes[index]
 
 
-## Bloques que dura la transición entre dos biomas (0 = un chunk completo).
+## Blocks the transition between two biomes lasts (0 = one full chunk).
 func _transition_tiles() -> int:
 	return biome_transition_tiles if biome_transition_tiles > 0 else chunk_width_tiles
 
@@ -320,7 +320,7 @@ func _transition_half_tiles() -> int:
 	return maxi(_transition_tiles() / 2, 0)
 
 
-## Recuento de biomas en la ventana de transición de un bloque.
+## Biome counts in the transition window of a block.
 func _biome_counts_at_tile(tile_x: int) -> Dictionary:
 	var half := _transition_half_tiles()
 	var counts: Dictionary = {}
@@ -346,15 +346,15 @@ func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
 		counts[index] = remaining
 
 
-## Tinte de un canal del bioma en un bloque ("grass", "forest" o "rock").
+## Biome channel tint at a block ("grass", "forest" or "rock").
 func _biome_color_at_tile(tile_x: int, channel: String) -> Color:
 	if biomes.is_empty():
 		return Color.WHITE
 	return _mixed_biome_color(_biome_counts_at_tile(tile_x), channel)
 
 
-## Media de los colores de los biomas contados en la ventana. Cada bioma puede
-## dar un color distinto para el césped, los bosques y la piedra de la montaña.
+## Average of the biome colors counted in the window. Each biome can
+## give a different color for grass, forests and mountain rock.
 func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
 	var samples := 0
 	for index in range(biomes.size()):
@@ -374,8 +374,8 @@ func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
 	return total / float(samples)
 
 
-## Media de los modificadores de terreno de la ventana. Orden fijo por índice
-## para que dos chunks calculen exactamente el mismo float en su costura.
+## Average of the window's terrain modifiers. Fixed order by index
+## so two chunks compute exactly the same float at their seam.
 func _mixed_terrain(counts: Dictionary) -> Dictionary:
 	var samples := 0
 	var amplitude := 0.0
@@ -395,15 +395,15 @@ func _mixed_terrain(counts: Dictionary) -> Dictionary:
 	}
 
 
-## Modificadores del terreno ya mezclados para un bloque.
+## Terrain modifiers already mixed for a block.
 func _terrain_at_tile(tile_x: int) -> Dictionary:
 	if biomes.is_empty():
 		return {"amplitude": 1.0, "frequency": 1.0}
 	return _mixed_terrain(_biome_counts_at_tile(tile_x))
 
 
-## Datos de bioma del chunk (más la columna extra): colores del césped y
-## modificadores del terreno en una sola pasada de ventana deslizante.
+## Chunk biome data (plus the extra column): grass colors and
+## terrain modifiers in a single sliding-window pass.
 func _chunk_biome_data(chunk_x: int) -> Dictionary:
 	var width := chunk_width_tiles
 	var tints := PackedColorArray()
@@ -432,8 +432,8 @@ func _chunk_biome_data(chunk_x: int) -> Dictionary:
 	return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
 
 
-## Aplica el tinte del bioma actual a los bosques de fondo. Se actualiza al
-## cambiar de bloque, no de chunk, para que el cambio sea continuo.
+## Applies the current biome tint to the background forests. Updated when
+## the block changes, not the chunk, so the change is continuous.
 func _update_biome_tint(force: bool) -> void:
 	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty()) or not player:
 		return
@@ -453,32 +453,32 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
 	var start_x := coord.x * chunk_width_tiles
-	# Colores del césped y modificadores del terreno del chunk en una sola pasada.
+	# Grass colors and chunk terrain modifiers in a single pass.
 	var biome_data := _chunk_biome_data(coord.x)
 	var amplitudes: PackedFloat64Array = biome_data["amplitude"]
 	var frequencies: PackedFloat64Array = biome_data["frequency"]
 	for i in range(chunk_width_tiles):
 		heights[i] = _height_at_with(start_x + i, amplitudes[i], frequencies[i])
-	# Alturas vecinas para elegir los tiles de borde izquierdo/derecho.
+	# Neighbor heights to choose the left/right edge tiles.
 	var edge_left := _height_at(start_x - 1)
 	var edge_right := _height_at(start_x + chunk_width_tiles)
-	# Altura de la columna siguiente: el chunk pinta una columna extra para
-	# tapar la grieta de 1 px entre las capas de dos chunks.
+	# Height of the next column: the chunk paints an extra column to
+	# cover the 1 px gap between two chunks' layers.
 	var edge_right_next := _height_at(start_x + chunk_width_tiles + 1)
 
-	# Misma semilla + mismo chunk = mismos spawns.
+	# Same seed + same chunk = same spawns.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash("%d:%d:%d" % [_seed, coord.x, coord.y])
 
 	var min_x := enemy_spawn_margin_tiles
 	var max_x := chunk_width_tiles - enemy_spawn_margin_tiles - 1
-	# En el chunk del spawn los enemigos empiezan un poco más allá del jugador,
-	# no en el chunk siguiente (antes había que andar media pantalla y pico).
+	# In the spawn chunk enemies start a bit beyond the player,
+	# not in the next chunk (before you had to walk over half a screen).
 	var enemy_min_x := min_x
 	if coord.x == 0:
 		enemy_min_x = maxi(enemy_min_x, safe_start_tiles + enemy_safe_gap_tiles)
 
-	# Enemigos del bioma; si no define, los de la lista general.
+	# Biome enemies; if it does not define any, those from the general list.
 	var biome := _biome_for_chunk(coord.x)
 	var scenes: Array[PackedScene] = enemy_scenes
 	var counts: Array[int] = enemy_counts_per_chunk
@@ -486,9 +486,9 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 		scenes = biome.enemy_scenes
 		counts = biome.enemy_counts
 
-	# Tipos del chunk antes de repartir las X (uno por enemigo).
+	# Chunk types before distributing X positions (one per enemy).
 	var spawn_scenes: Array[PackedScene] = []
-	# Los primeros chunks van al 50 % y a partir de ahí cada chunk suma más.
+	# The first chunks go at 50% and from there each chunk adds more.
 	var count_multiplier := _enemy_count_multiplier(coord.x)
 	for idx in range(scenes.size()):
 		var count := 0
@@ -497,16 +497,16 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 		for i in range(count):
 			spawn_scenes.append(scenes[idx])
 
-	# Reparto uniforme: un hueco por enemigo a lo ancho del chunk, con algo de
-	# ruido para que no queden en fila. Antes cada enemigo tiraba su X al azar y
-	# se apelotonaban todos en la misma zona del chunk.
+	# Uniform distribution: one slot per enemy across the chunk, with some
+	# noise so they don't line up. Before, each enemy rolled its X at random and
+	# they all bunched up in the same chunk area.
 	var enemies: Array[Dictionary] = []
 	var total := spawn_scenes.size()
 	var slot_width := float(maxi(max_x - enemy_min_x + 1, 1)) / float(maxi(total, 1))
 	var jitter := maxi(floori(slot_width * 0.25), 0)
 	for k in range(total):
 		var spawn_id := "e:%d:%d:%d" % [coord.x, coord.y, k]
-		# Consumir el RNG siempre para que las posiciones no cambien al persistir bajas.
+		# Always consume the RNG so positions don't change when kills persist.
 		var offset_px := rng.randi_range(-jitter, jitter) if jitter > 0 else 0
 		var local_x := clampi(
 			enemy_min_x + floori((float(k) + 0.5) * slot_width) + offset_px,
@@ -524,7 +524,7 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	var coins: Array[Dictionary] = []
 	for i in range(coins_per_chunk):
 		var spawn_id := "c:%d:%d:%d" % [coord.x, coord.y, i]
-		# Mismo motivo que con los enemigos: no alterar el orden del RNG.
+		# Same reason as with enemies: do not alter the RNG order.
 		var local_x := rng.randi_range(min_x, max_x)
 		if _collected_spawns.has(spawn_id):
 			continue
@@ -579,8 +579,8 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		var enemy := scene.instantiate() as Node2D
 		if enemy == null:
 			continue
-		# La base del collider queda sobre el suelo (el origen suele estar más arriba).
-		# `spawn_y_offset` corrige los que tienen el dibujo más bajo que el collider.
+		# The collider base rests on the ground (the origin is usually higher).
+		# `spawn_y_offset` corrects those whose drawing is lower than the collider.
 		var spawn_pos: Vector2 = entry["position"]
 		var offset: float = enemy.get("spawn_y_offset")
 		enemy.position = spawn_pos - Vector2(0.0, _body_bottom(enemy) + offset)
@@ -601,9 +601,9 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 			coin.connect("collected", _on_coin_collected.bind(spawn_id))
 
 
-## Distancia del origen a la base del collider del cuerpo (para apoyarlo en el suelo).
+## Distance from the origin to the body collider base (to rest it on the ground).
 func _body_bottom(enemy: Node2D) -> float:
-	# shortcut: solo colliders directos RectangleShape2D; ampliar si cambia la forma.
+	# shortcut: only direct RectangleShape2D colliders; extend if the shape changes.
 	var bottom := 0.0
 	for child in enemy.get_children():
 		var shape_node := child as CollisionShape2D

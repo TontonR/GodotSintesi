@@ -1,11 +1,11 @@
 class_name CritPassive
 extends PassiveItems
-## Pasiva: algunos golpes del jugador se vuelven críticos y pegan más.
+## Passive: some of the player hits become critical and deal more damage.
 
 @export_group("Critical Hit")
-## Probabilidad (0-1) de que un golpe sea crítico.
+## Chance (0-1) of a hit being critical.
 @export_range(0.0, 1.0, 0.05) var crit_chance: float = 0.2
-## Multiplicador de daño del golpe crítico.
+## Damage multiplier of the critical hit.
 @export var crit_multiplier: float = 1.8
 
 

@@ -1,29 +1,29 @@
 extends Area2D
 
-## Se emite al recogerla; el generador del mundo lo usa para no reaparecerla.
+## Emitted on pickup; the world generator uses it so it does not respawn.
 signal collected
 
-# Capa 2D del mundo (suelo y plataformas).
+# World 2D layer (floor and platforms).
 const WORLD_LAYER: int = 1
-## Distancia máxima (px) que se busca el suelo al aparecer.
+## Maximum distance (px) searched downwards for the ground on spawn.
 const GROUND_SEARCH_DISTANCE: float = 1024.0
-## Intentos de búsqueda antes de rendirse (el TileMap puede tardar un frame en
-## registrar la colisión del chunk recién pintado).
+## Search attempts before giving up (the TileMap may take a frame to
+## register the collision of the freshly painted chunk).
 const GROUND_SEARCH_TRIES: int = 30
 
-# Valor que suma esta moneda al contador del jugador
+# Value this coin adds to the player counter
 @export var coin_value: int = 1
 
-@export_group("Física")
-## Aceleración de caída (px/s²).
+@export_group("Physics")
+## Fall acceleration (px/s²).
 @export var fall_gravity: float = 900.0
-## Rebote al tocar el suelo (0 = sin rebote).
+## Bounce when touching the ground (0 = no bounce).
 @export var bounce: float = 0.4
-## Velocidad mínima de impacto (px/s) para rebotar; por debajo se asienta.
+## Minimum impact speed (px/s) to bounce; below it the coin settles.
 @export var min_bounce_speed: float = 40.0
-## Altura del vaivén una vez apoyada (px).
+## Bob height once resting (px).
 @export var float_height: float = 1.0
-## Velocidad del vaivén (rad/s).
+## Bob speed (rad/s).
 @export var float_speed: float = 2.5
 
 var _velocity_y: float = 0.0
@@ -37,7 +37,7 @@ var _time: float = 0.0
 @onready var _shape: CollisionShape2D = $CollisionShape2D
 
 func _ready() -> void:
-	# El grupo permite al generador de zonas localizarlas para borrarlas al descargar
+	# The group lets the zone generator locate them to delete them on unload
 	add_to_group("coins")
 	body_entered.connect(_on_body_entered)
 	_phase = randf() * TAU
@@ -48,8 +48,8 @@ func _physics_process(delta: float) -> void:
 		global_position.y = _rest_y + sin(_time * float_speed + _phase) * float_height
 		return
 
-	# El suelo se busca con la posición real ya asignada; si el chunk aún no
-	# tiene colisión, se reintenta en los siguientes frames.
+	# The ground is searched with the real position already assigned; if the chunk
+	# has no collision yet, it retries on the following frames.
 	if _ground_y < 0.0:
 		_find_ground()
 		if _ground_y < 0.0:
@@ -67,7 +67,7 @@ func _physics_process(delta: float) -> void:
 	global_position.y = next_y
 
 func _on_body_entered(body: Node2D) -> void:
-	# El cuerpo detectado puede ser el jugador o un nodo hijo suyo
+	# The detected body may be the player or one of its child nodes
 	var target: Node = body if body.has_method("add_coin") else body.get_parent()
 	if target == null or not target.has_method("add_coin"):
 		return
@@ -78,14 +78,14 @@ func _on_body_entered(body: Node2D) -> void:
 	collected.emit()
 	queue_free()
 
-## Media altura real del sprite (escala del nodo incluida): la base queda en el suelo.
+## Real half height of the sprite (node scale included): the base stays on the ground.
 func _half_height() -> float:
 	if _shape and _shape.shape is RectangleShape2D:
 		var rect := _shape.shape as RectangleShape2D
 		return rect.size.y * 0.5 * _shape.scale.y * scale.y
 	return 7.0
 
-## Busca el suelo por debajo; tras varios intentos fallidos se queda flotando.
+## Searches the ground below; after several failed attempts it stays floating.
 func _find_ground() -> void:
 	var space := get_world_2d().direct_space_state
 	var query := PhysicsRayQueryParameters2D.create(

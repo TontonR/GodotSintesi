@@ -7,8 +7,8 @@
 script = ExtResource("1_stat")
 passive_id = "piel_lobo"
 id = "piel_lobo"
-item_name = "Piel de lobo"
-description = "Aumenta 15 la vida máxima y 5 la estamina máxima. No cura."
+item_name = "Wolf Pelt"
+description = "Increases max health by 15 and max stamina by 5. Does not heal."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 40

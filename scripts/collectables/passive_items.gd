@@ -6,19 +6,19 @@ extends Collectable
 
 ## Called automatically when the passive is equipped
 func on_equip(_player: Node) -> void:
-	print("Pasiva equipada: ", item_name)
+	print("Passive equipped: ", item_name)
 
 ## Called automatically when the passive is unequipped
 func on_unequip(_player: Node) -> void:
-	print("Pasiva desequipada: ", item_name)
+	print("Passive unequipped: ", item_name)
 
 ## Event: the player attacks
 func on_player_attack(_target: Node, damage: float) -> float:
-	return damage # Devuelve el daño modificado
+	return damage # Returns the modified damage
 
 ## Event: the player takes damage (attacker may be null)
 func on_player_take_damage(amount: float, _attacker: Node = null) -> float:
-	return amount # Devuelve el daño recibido modificado
+	return amount # Returns the modified incoming damage
 
 ## Event: the player starts an attack (step = 1, 2, 3... of the combo)
 func on_player_attack_started(_player: Node, _step: int, _direction: Vector2) -> void:
@@ -38,7 +38,7 @@ func on_update(_player: Node, _delta: float) -> void:
 
 ## On pickup it is equipped as an active player passive; only once per run.
 func on_pickup(player: Node) -> bool:
-	# Acceso por nombre para no crear referencia cíclica con PlayerPassives
+	# Access by name to avoid a cyclic reference with PlayerPassives
 	var passives := player.get_node_or_null("PlayerPassives") as PlayerPassives
 	if passives == null:
 		return false

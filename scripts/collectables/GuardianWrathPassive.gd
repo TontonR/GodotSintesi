@@ -1,11 +1,11 @@
 class_name GuardianWrathPassive
 extends PassiveItems
-## Al bloquear un ataque, aumenta temporalmente el daño infligido.
+## Blocking an attack temporarily increases the damage dealt.
 
-@export_group("Ira del guardián")
-## Daño extra mientras dura el enfado (0.3 = +30%).
+@export_group("Guardian's wrath")
+## Extra damage while the rage lasts (0.3 = +30%).
 @export_range(0.0, 2.0, 0.05) var damage_bonus: float = 0.3
-## Duración del aumento de daño en segundos.
+## Duration of the damage increase in seconds.
 @export var duration: float = 10.0
 
 var _time_left: float = 0.0

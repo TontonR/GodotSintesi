@@ -7,8 +7,8 @@
 script = ExtResource("1_scr")
 passive_id = "lengua_rana"
 id = "lengua_rana"
-item_name = "Lengua de rana"
-description = "Al golpear a un enemigo le bajas la velocidad durante 3 s."
+item_name = "Frog Tongue"
+description = "Hitting an enemy slows it down for 3 s."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 40

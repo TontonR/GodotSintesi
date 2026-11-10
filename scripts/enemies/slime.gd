@@ -1,7 +1,7 @@
 class_name slime
 extends EnemyBase
-## Slime básico: persigue al jugador y ataca cuerpo a cuerpo.
-## Toda la IA (detección, persecución, ataque, daño, loot y muerte) vive en EnemyBase.
+## Basic slime: chases the player and attacks in melee.
+## All the AI (detection, chase, attack, damage, loot and death) lives in EnemyBase.
 
 
 func _init() -> void:
@@ -19,7 +19,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados.
+	# Fallbacks in case the scene does not have the exports wired.
 	if not sprite:
 		sprite = get_node_or_null("Pivot/Slime")
 	if not detection_area:

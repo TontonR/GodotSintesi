@@ -1,34 +1,34 @@
 class_name mutant_toad
 extends EnemyBase
-## Sapo mutante: se desplaza a saltos altos. Cada tercer aterrizaje lanza una
-## ráfaga de proyectiles hacia el jugador. Si el jugador no está cerca, salta en
-## direcciones aleatorias alrededor del punto donde apareció.
+## Mutant toad: moves in high hops. Every third landing it launches a
+## burst of projectiles at the player. If the player is not nearby, it hops in
+## random directions around the point where it spawned.
 
 enum State { IDLE, JUMP, ATTACK }
 
-## Aterrizajes necesarios entre una ráfaga y la siguiente.
+## Landings needed between one burst and the next.
 const JUMPS_PER_VOLLEY := 3
 
-@export_group("Salto")
-## Fuerza vertical del salto (negativo = hacia arriba).
+@export_group("Jump")
+## Vertical jump force (negative = upwards).
 @export var jump_force: float = -420.0
-## Velocidad horizontal durante el salto (px/s).
+## Horizontal speed during the jump (px/s).
 @export var hop_speed: float = 150.0
-## Pausa mínima en el suelo entre saltos (s).
+## Minimum pause on the ground between jumps (s).
 @export var jump_wait_min: float = 0.8
-## Pausa máxima en el suelo entre saltos (s).
+## Maximum pause on the ground between jumps (s).
 @export var jump_wait_max: float = 1.4
-## Radio (px) alrededor del spawn para los saltos aleatorios sin jugador.
+## Radius (px) around the spawn for random jumps with no player.
 @export var wander_radius: float = 350.0
 
-@export_group("Ataque")
-## Proyectiles lanzados en cada ráfaga.
+@export_group("Attack")
+## Projectiles launched in each burst.
 @export var projectiles_per_volley: int = 3
-## Desviación aleatoria máxima de cada proyectil respecto al jugador (grados).
+## Maximum random deviation of each projectile from the player (degrees).
 @export var projectile_spread_degrees: float = 12.0
-## Tiempo de aviso antes de disparar la ráfaga (s).
+## Warning time before firing the burst (s).
 @export var shoot_delay: float = 0.7
-## Color al que parpadea el sapo durante el aviso previo al disparo.
+## Color the toad flashes during the windup before shooting.
 @export var windup_tint: Color = Color(1.8, 1.7, 0.8)
 
 var _state: State = State.IDLE
@@ -49,7 +49,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados.
+	# Fallbacks in case the scene does not have the exports wired.
 	if not sprite:
 		sprite = get_node_or_null("pivot/mutant_toad")
 	if not detection_area:
@@ -67,7 +67,7 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Comportamiento: máquina de estados propia (se ignora la de EnemyBase)
+# Behavior: its own state machine (EnemyBase's is ignored)
 # ---------------------------------------------------------------------------
 
 func _update_behavior(delta: float) -> void:
@@ -82,7 +82,7 @@ func _update_behavior(delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Saltos y merodeo
+# Jumps and wandering
 # ---------------------------------------------------------------------------
 
 func _process_idle(delta: float) -> void:
@@ -101,7 +101,7 @@ func _start_jump() -> void:
 		if is_zero_approx(dir):
 			dir = -1.0 if _is_facing_left else 1.0
 	else:
-		# Sin jugador: salto aleatorio, volviendo hacia el spawn si se aleja.
+		# No player: random jump, turning back toward spawn if it drifts away.
 		dir = -1.0 if randf() < 0.5 else 1.0
 		var dx: float = global_position.x - _spawn_position.x
 		if absf(dx) > wander_radius:
@@ -117,7 +117,7 @@ func _start_jump() -> void:
 
 
 func _process_jump(_delta: float) -> void:
-	# El salto cuenta como iniciado cuando la física lo saca del suelo.
+	# The jump counts as started once physics lifts it off the ground.
 	if not _jump_taken_off:
 		if not is_on_floor():
 			_jump_taken_off = true
@@ -141,7 +141,7 @@ func _on_land() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Ataque: ráfaga de proyectiles
+# Attack: projectile burst
 # ---------------------------------------------------------------------------
 
 func _start_attack() -> void:
@@ -166,7 +166,7 @@ func _process_attack(delta: float) -> void:
 	_play_animation(idle_animation, true)
 
 
-## Lanza varios proyectiles hacia el jugador con una desviación aleatoria.
+## Launches several projectiles at the player with a random deviation.
 func _fire_volley() -> void:
 	if not projectile or not is_instance_valid(_player):
 		return
@@ -191,7 +191,7 @@ func _fire_volley() -> void:
 			proj.setup(base_dir.rotated(angle), projectile_speed, base_attack, self)
 
 
-## Hace parpadear el sapo para avisar de la ráfaga inminente.
+## Makes the toad flash to warn about the imminent burst.
 func _start_windup_tween() -> void:
 	if not sprite:
 		return
@@ -203,7 +203,7 @@ func _start_windup_tween() -> void:
 		_windup_tween.tween_property(sprite, "modulate", Color.WHITE, pulse_time)
 
 
-## Cancela el aviso y devuelve el sprite a su color normal.
+## Cancels the warning and returns the sprite to its normal color.
 func _stop_windup_tween() -> void:
 	if _windup_tween and _windup_tween.is_valid():
 		_windup_tween.kill()
@@ -213,7 +213,7 @@ func _stop_windup_tween() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Utilidades
+# Utilities
 # ---------------------------------------------------------------------------
 
 func _face_player_if_visible() -> void:
@@ -235,8 +235,8 @@ func _pick_wait() -> float:
 	return randf_range(jump_wait_min, jump_wait_max)
 
 
-## Excluye la colisión física con el jugador en ambos sentidos, para no
-## empujarlo. Las Area2D (detección y proyectiles) no se ven afectadas.
+## Excludes physical collision with the player in both directions, so as not to
+## push them. Area2Ds (detection and projectiles) are not affected.
 func _ensure_player_collision_exception() -> void:
 	if not is_instance_valid(_player) or _player == _collision_excluded_player:
 		return

@@ -1,24 +1,24 @@
 class_name ComboProjectilePassive
 extends PassiveItems
-## Lanza uno o varios proyectiles al alcanzar cierto ataque de la rotación.
-## El daño se calcula como una fracción del daño base del jugador.
+## Launches one or several projectiles when reaching a certain attack of the rotation.
+## Damage is computed as a fraction of the player base damage.
 
-@export_group("Disparo por combo")
-## Escena del proyectil que se lanza.
+@export_group("Combo shot")
+## Projectile scene that is launched.
 @export var projectile_scene: PackedScene
-## Cada cuántos ataques de la rotación se dispara (3 = tercer ataque).
+## Every how many rotation attacks it shoots (3 = third attack).
 @export var every_n_attacks: int = 3
-## Fracción del daño base del jugador que hace cada proyectil.
+## Fraction of the player base damage dealt by each projectile.
 @export_range(0.0, 2.0, 0.01) var damage_ratio: float = 0.25
-## Número de proyectiles por disparo.
+## Number of projectiles per shot.
 @export var projectile_count: int = 1
-## Apertura total del abanico en grados (0 = todos en la misma dirección).
+## Total fan opening in degrees (0 = all in the same direction).
 @export var spread_degrees: float = 0.0
-## Velocidad de los proyectiles (px/s).
+## Projectile speed (px/s).
 @export var projectile_speed: float = 300.0
-## Desplazamiento desde el centro del jugador al aparecer.
+## Offset from the player center on spawn.
 @export var spawn_offset: Vector2 = Vector2(24, -10)
-## Atraviesa a todos los enemigos en vez de desaparecer al primer impacto.
+## Goes through every enemy instead of disappearing on the first impact.
 @export var piercing: bool = false
 
 

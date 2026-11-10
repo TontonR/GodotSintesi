@@ -2,30 +2,30 @@ class_name DebugTools
 extends Node
 
 # ==============================================================================
-# HERRAMIENTAS DE PRUEBA (temporal)
+# TEST TOOLS (temporary)
 # ==============================================================================
-# Numpad: 7/8/9 cambian la velocidad del juego (x1/x5/x20), 4/6 hacen un viaje
-# rápido a izquierda/derecha + algo hacia arriba, para no quedarse encerrado
-# dentro de una montaña al probar, y 5 alterna la inmortalidad del jugador.
-# Los ítems de prueba (KP0-KP3) siguen en `scenes/inventory/inventory.gd`, que
-# es del inventario.
+# Numpad: 7/8/9 change game speed (x1/x5/x20), 4/6 make a quick
+# trip left/right + a bit upward, to avoid getting stuck
+# inside a mountain while testing, and 5 toggles player immortality.
+# Test items (KP0-KP3) remain in `scenes/inventory/inventory.gd`, which
+# belongs to the inventory.
 
 const TILE_SIZE := 16
-## Factores de `Engine.time_scale` para KP7, KP8 y KP9.
+## `Engine.time_scale` factors for KP7, KP8 and KP9.
 const SPEEDS: Array[float] = [1.0, 5.0, 20.0]
 const SPEED_LABELS: Array[String] = ["x1", "x5", "x20"]
-const HINT := "velocidad %s · inmortal %s · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 viaje rápido · KP5 inmortal"
-const IMMORTAL_LABELS: Array[String] = ["no", "sí"]
+const HINT := "speed %s · immortal %s · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 quick travel · KP5 immortal"
+const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 
-## Velocidad del juego al arrancar (también se cambia en caliente con el numpad).
+## Game speed at startup (also changed live with the numpad).
 @export_enum("x1", "x5", "x20") var game_speed: int = 0
-## Tiles que avanza el viaje rápido de KP4/KP6.
+## Tiles the KP4/KP6 quick travel advances.
 @export var teleport_distance_tiles: int = 64
-## Tiles que sube el viaje rápido: deja al jugador por encima del terreno.
+## Tiles the quick travel rises: leaves the player above the terrain.
 @export var teleport_lift_tiles: int = 10
 
 var _label: Label
-## Estado de la inmortalidad de depuración (lo alterna KP5).
+## Debug immortality state (toggled by KP5).
 var _immortal: bool = false
 
 
@@ -35,7 +35,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	# Nunca dejar el juego acelerado al salir de la escena.
+	# Never leave the game sped up when leaving the scene.
 	Engine.time_scale = 1.0
 
 
@@ -62,14 +62,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Aplica el factor de velocidad `index` (0 = x1, 1 = x5, 2 = x20).
+## Applies speed factor `index` (0 = x1, 1 = x5, 2 = x20).
 func _apply_speed(index: int) -> void:
 	game_speed = clampi(index, 0, SPEEDS.size() - 1)
 	Engine.time_scale = SPEEDS[game_speed]
 	_update_label()
 
 
-## Alterna la inmortalidad del jugador con KP5 (no recibe daño al estar activa).
+## Toggles player immortality with KP5 (takes no damage while active).
 func _toggle_immortal() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	if player == null:
@@ -80,7 +80,7 @@ func _toggle_immortal() -> void:
 	_update_label()
 
 
-## Salto seco del jugador: `direction` -1 va a la izquierda y 1 a la derecha.
+## Player dry jump: `direction` -1 goes left and 1 goes right.
 func _teleport(direction: float) -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:

@@ -317,3 +317,9 @@ Formato de entrada:
 - Ruben aclara: una sola tirada para todos los coleccionables (probabilidades sumadas) y monedas siempre aparte, pudiendo soltar varias.
 - `_drop_loot` separado en `_drop_coins` y `_drop_item`; elección del objeto ponderada por `drop_chance`.
 - Docs y ticket actualizados. F5 pendiente.
+
+## 2026-11-10 · `opencode-jorge` · Fuera skills (T-0038)
+- Ruben quita las skills: el inventario queda con 3 consumibles y teclas 1/2/3.
+- `Skills.gd` borrado; `SKILL_SLOTS`, `SkillsFlow` y `use_slot_4/5` fuera.
+- `docs/items.md` pasa a catálogo completo (9 consumibles + 35 pasivas), todas en `falta textura`.
+- F5 pendiente; ticket en `revision`.

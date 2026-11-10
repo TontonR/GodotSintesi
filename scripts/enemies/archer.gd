@@ -1,7 +1,7 @@
 class_name archer
 extends EnemyBase
-## Arquero: se queda a distancia y dispara flechas al jugador.
-## La comprobación de rango y el disparo los resuelve EnemyBase.
+## Archer: stays at range and shoots arrows at the player.
+## Range checking and shooting are handled by EnemyBase.
 
 
 func _init() -> void:
@@ -22,7 +22,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Fallbacks por si la escena no trae los exports cableados.
+	# Fallbacks in case the scene does not have the exports wired.
 	if not sprite:
 		sprite = get_node_or_null("Pivot/Archer")
 	if not detection_area:

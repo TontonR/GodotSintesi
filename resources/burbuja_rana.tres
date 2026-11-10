@@ -8,8 +8,8 @@
 script = ExtResource("1_scr")
 passive_id = "burbuja_rana"
 id = "burbuja_rana"
-item_name = "Burbuja de rana"
-description = "Al acabar el combo lanza 3 proyectiles de saliva en abanico (15% del daño base cada uno) que atraviesan a todos los enemigos."
+item_name = "Frog Bubble"
+description = "At the end of the combo, launches 3 saliva projectiles in a fan (15% of base damage each) that pierce all enemies."
 icon = ExtResource("1_tex")
 quality = "Normal"
 value = 45

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_grdp")
 id = "codicia"
-item_name = "Codicia"
-description = "Ganas 1 moneda extra cada vez que matas a un enemigo."
+item_name = "Greed"
+description = "Gain 1 extra coin each time you kill an enemy."
 icon = ExtResource("2_icon")
 value = 60
 passive_id = "codicia"

@@ -25,6 +25,7 @@ _Actualizado 2026-11-09 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-10 | T-0038 | Skills fuera: 3 consumibles con teclas 1-3 y catálogo completo en `docs/items.md`; F5 pendiente |
 | 2026-11-09 | T-0037 | Loot por enemigo con `LootEntry` y probabilidad por objeto; fuera presets y pesos por calidad; F5 pendiente |
 | 2026-11-09 | T-0036 | Bosque rojo: +2 slimes por chunk y lobos de 2 a 1; F5 pendiente |
 | 2026-11-09 | T-0035 | Lobo: embestida a 150 px/s, 40 % del diámetro de detección y 1,5 s parado en el destino; F5 pendiente |

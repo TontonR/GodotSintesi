@@ -1,10 +1,10 @@
 class_name EnemyBase
 extends CharacterBody2D
-## Se emite al morir; el generador del mundo lo usa para no reaparecerlo.
+## Emitted on death; the world generator uses it to avoid respawning the enemy.
 signal died
-## Enemigo base: persigue al jugador, ataca (cuerpo a cuerpo o a distancia),
-## puede huir si el jugador se acerca demasiado y suelta loot al morir.
-## Los enemigos voladores (flying_enemy) se mueven libremente en 2D y sin gravedad.
+## Base enemy: chases the player, attacks (melee or ranged),
+## can flee when the player gets too close, and drops loot on death.
+## Flying enemies (flying_enemy) move freely in 2D with no gravity.
 
 @export_group("Basic Stats")
 ## Maximum hit points.
@@ -19,15 +19,15 @@ signal died
 @export var speed_movement: float = 50.0
 ## Seconds between two consecutive attacks.
 @export var attack_cooldown: float = 2.0
-## Auto-subida de escalones de 1 tile (16px) para enemigos terrestres.
+## Automatic step-up of 1 tile (16px) for ground enemies.
 @export var step_height: float = 16.0
-## Desplazamiento vertical (px) al aparecer en el mundo; positivo lo sube.
+## Vertical offset (px) when spawning into the world; positive moves it up.
 @export var spawn_y_offset: float = 0.0
 
 @export_group("Difficulty")
-## Multiplicador de vida aplicado al aparecer (1 = stats de la escena).
+## Health multiplier applied on spawn (1 = scene stats).
 @export var health_multiplier: float = 1.35
-## Multiplicador de daño aplicado al aparecer (1 = stats de la escena).
+## Damage multiplier applied on spawn (1 = scene stats).
 @export var attack_multiplier: float = 1.25
 
 @export_group("Enemy Config")
@@ -61,12 +61,12 @@ const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
 
 
 @export_group("Loot")
-## Probabilidad de soltar moneda al morir (baja a propósito: las monedas escasean).
+## Chance to drop a coin on death (deliberately low: coins are scarce).
 @export_range(0.0, 1.0, 0.05) var coin_drop_chance: float = 0.45
-## Monedas que suelta cuando cae la moneda.
+## Coins dropped when the coin roll succeeds.
 @export var coin_drop_amount: int = 1
-## Tabla de objetos propia de este enemigo. Las probabilidades se suman en una
-## única tirada y, si sale, se elige un objeto ponderado por ellas.
+## Item table specific to this enemy. Chances are added up into a single
+## roll and, if it succeeds, one item is picked weighted by them.
 @export var item_drops: Array[LootEntry] = []
 ## Horizontal spread (px) when dropping loot.
 @export var loot_drop_spread: float = 15.0
@@ -109,25 +109,25 @@ var _attack_range_offset_x: float = 0.0
 var _projectile_spawn_offset_x: float = 0.0
 var _is_dead: bool = false
 var _is_facing_left: bool = false
-## Ralentización activa (lengua de rana): factor y segundos restantes.
+## Active slow (frog tongue): factor and remaining seconds.
 var _slow_factor: float = 1.0
 var _slow_timer: float = 0.0
 var _hit_tween: Tween
 
 
 func _ready() -> void:
-	# Ajuste global de dificultad: los hijos fijan sus stats en `_init()` y las
-	# escenas pueden sobrescribirlos, así que se aplica aquí, al final.
+	# Global difficulty adjustment: children set their stats in `_init()` and
+	# scenes may override them, so it is applied here, at the end.
 	max_health = maxf(max_health * health_multiplier, 1.0)
 	base_attack = maxf(base_attack * attack_multiplier, 0.0)
 	health = max_health
 	defence = base_defense
 
-	# Modo flotante: sin suelo ni "arriba/abajo", ideal para voladores.
+	# Floating mode: no floor and no "up/down", ideal for flying enemies.
 	if flying_enemy:
 		motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 
-	# Timer de cooldown: cuando termina, el enemigo puede volver a atacar.
+	# Cooldown timer: when it finishes, the enemy can attack again.
 	_attack_timer = Timer.new()
 	_attack_timer.one_shot = true
 	_attack_timer.wait_time = attack_cooldown
@@ -139,7 +139,7 @@ func _ready() -> void:
 		detection_area.body_exited.connect(_on_detection_area_body_exited)
 
 	if attack_range:
-		# Guardamos el offset original para poder espejarlo al girar.
+		# Store the original offset so it can be mirrored when turning.
 		_attack_range_offset_x = absf(attack_range.position.x)
 		attack_range.body_entered.connect(_on_attack_range_body_entered)
 		attack_range.body_exited.connect(_on_attack_range_body_exited)
@@ -161,17 +161,17 @@ func _physics_process(delta: float) -> void:
 		if _slow_timer <= 0.0:
 			_slow_factor = 1.0
 
-	# Los voladores no sufren gravedad.
+	# Flying enemies are not affected by gravity.
 	if not flying_enemy and not is_on_floor():
 		velocity.y += gravity * delta
 
-	# Mientras ataca se frena; si no, decide qué hacer.
+	# While attacking it brakes; otherwise it decides what to do.
 	if _is_attacking:
 		_decelerate()
 	else:
 		_update_behavior(delta)
 
-	# Auto-subida de escalones para enemigos terrestres.
+	# Automatic step-up for ground enemies.
 	if not flying_enemy and is_on_floor() and velocity.x != 0.0:
 		_try_step_up(signf(velocity.x))
 
@@ -179,16 +179,16 @@ func _physics_process(delta: float) -> void:
 
 
 func _try_step_up(direction: float) -> void:
-	# Misma comprobación que el jugador: forma real del cuerpo, no rayos a
-	# media altura (el origen está por encima de los pies).
+	# Same check as the player: real body shape, not rays at mid-height
+	# (the origin is above the feet).
 	if flying_enemy or not is_on_floor() or direction == 0.0:
 		return
-	# Mirar por delante lo que se va a avanzar este frame (+1 px) para no chocar.
+	# Look ahead at what will be advanced this frame (+1 px) to avoid hitting it.
 	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
 	var forward := Vector2(lookahead * direction, 0.0)
 	if not test_move(global_transform, forward):
 		return
-	# 1 px de más para no quedar pegado a la cara del escalón y encadenar otra subida.
+	# 1 extra px so it does not stay glued to the step face and can chain another climb.
 	var up := Vector2(0.0, - (step_height + 1.0))
 	if test_move(global_transform, up):
 		return
@@ -200,10 +200,10 @@ func _try_step_up(direction: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Movimiento (separado por tipo: suelo = solo X, volador = X e Y)
+# Movement (split by type: ground = X only, flying = X and Y)
 # ---------------------------------------------------------------------------
 
-## Frena poco a poco.
+## Brakes gradually.
 func _decelerate() -> void:
 	if flying_enemy:
 		velocity = velocity.move_toward(Vector2.ZERO, speed_movement)
@@ -211,7 +211,7 @@ func _decelerate() -> void:
 		velocity.x = move_toward(velocity.x, 0.0, speed_movement)
 
 
-## Se detiene en seco (usado al atacar o al estar en rango).
+## Stops abruptly (used when attacking or while in range).
 func _stop() -> void:
 	if flying_enemy:
 		velocity = Vector2.ZERO
@@ -219,7 +219,7 @@ func _stop() -> void:
 		velocity.x = 0.0
 
 
-## to_player: vector desde el enemigo hasta el jugador.
+## to_player: vector from the enemy to the player.
 func _chase(to_player: Vector2) -> void:
 	if flying_enemy:
 		velocity = to_player.normalized() * _current_speed()
@@ -228,7 +228,7 @@ func _chase(to_player: Vector2) -> void:
 	_play_animation(move_animation)
 
 
-## Se aleja del jugador (dirección contraria a to_player).
+## Moves away from the player (opposite direction to to_player).
 func _flee(to_player: Vector2) -> void:
 	if flying_enemy:
 		velocity = - to_player.normalized() * _current_speed()
@@ -238,12 +238,12 @@ func _flee(to_player: Vector2) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Comportamiento
+# Behavior
 # ---------------------------------------------------------------------------
 
-## Vuelve a comprobar las áreas respecto al jugador.
-## Útil tras teletransportes u otros cambios bruscos de posición,
-## porque las señales body_entered/exited quedan obsoletas.
+## Re-checks the areas against the player.
+## Useful after teleports or other sudden position changes,
+## because body_entered/exited signals become stale.
 func _refresh_area_flags() -> void:
 	if not is_instance_valid(_player):
 		return
@@ -253,7 +253,7 @@ func _refresh_area_flags() -> void:
 		_player_in_flee_range = flee_area.overlaps_body(_player)
 
 
-## Prioridad: huir > atacar > perseguir.
+## Priority: flee > attack > chase.
 func _update_behavior(_delta: float) -> void:
 	if not is_instance_valid(_player):
 		_decelerate()
@@ -261,7 +261,7 @@ func _update_behavior(_delta: float) -> void:
 		return
 
 	var to_player := _player.global_position - global_position
-	# El enemigo siempre mira al jugador (el margen evita parpadeos al estar encima).
+	# The enemy always looks at the player (the margin avoids flicker when overlapping).
 	if absf(to_player.x) > 5.0:
 		_set_facing_direction(to_player.x < 0.0)
 
@@ -278,7 +278,7 @@ func _update_behavior(_delta: float) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Ataque
+# Attack
 # ---------------------------------------------------------------------------
 
 func _start_attack() -> void:
@@ -287,13 +287,13 @@ func _start_attack() -> void:
 	_attack_timer.start(attack_cooldown)
 	_play_animation(attack_animation, true)
 
-	# Espera al momento del impacto (sincronizado con la animación).
+	# Wait for the impact moment (synced with the animation).
 	await get_tree().create_timer(attack_impact_delay).timeout
 	if _is_dead:
 		return
 	_perform_attack()
 
-	# Espera a que termine la animación antes de liberar al enemigo.
+	# Wait for the animation to finish before releasing the enemy.
 	var remaining := attack_duration - attack_impact_delay
 	if remaining > 0.0:
 		await get_tree().create_timer(remaining).timeout
@@ -303,7 +303,7 @@ func _start_attack() -> void:
 	_is_attacking = false
 
 
-## Punto de decisión: proyectil si es a distancia, golpe directo si no.
+## Decision point: projectile if ranged, direct hit if not.
 func _perform_attack() -> void:
 	if ranged_enemy:
 		_shoot_projectile()
@@ -319,11 +319,11 @@ func _perform_melee_hit() -> void:
 			_deal_damage_to(body)
 
 
-## Instancia el proyectil y le pasa dirección, velocidad y daño.
-## El proyectil es quien debe encargarse de colisionar y dañar.
+## Instantiates the projectile and passes it direction, speed and damage.
+## The projectile is responsible for colliding and dealing damage.
 func _shoot_projectile() -> void:
 	if not projectile:
-		push_warning("%s es ranged_enemy pero no tiene 'projectile' asignado." % name)
+		push_warning("%s is a ranged_enemy but has no 'projectile' assigned." % name)
 		return
 
 	var parent := get_parent()
@@ -332,24 +332,24 @@ func _shoot_projectile() -> void:
 
 	var proj := projectile.instantiate() as Node2D
 	if not proj:
-		push_warning("La raíz de la escena 'projectile' debe ser un Node2D.")
+		push_warning("The root of the 'projectile' scene must be a Node2D.")
 		return
 
-	# Primero se añade al árbol y luego se posiciona, para que global_position sea fiable.
+	# Add to the tree first, then position it, so global_position is reliable.
 	parent.add_child(proj)
 	var spawn_pos := _get_projectile_spawn_position()
 	proj.global_position = spawn_pos
 	var dir := _get_projectile_direction(spawn_pos)
 
-	# Contrato esperado: setup(direction: Vector2, speed: float, damage: float, shooter: Node2D)
+	# Expected contract: setup(direction: Vector2, speed: float, damage: float, shooter: Node2D)
 	if proj.has_method("setup"):
 		proj.setup(dir, projectile_speed, _get_projectile_damage(), self)
 	elif "direction" in proj:
-		# Compatibilidad con proyectiles antiguos que solo exponen la propiedad 'direction'.
+		# Compatibility with old projectiles that only expose the 'direction' property.
 		proj.set("direction", dir)
 		proj.rotation = dir.angle()
 	else:
-		push_warning("La escena del proyectil no tiene setup(direction, speed, damage, shooter) ni 'direction'.")
+		push_warning("The projectile scene has neither setup(direction, speed, damage, shooter) nor 'direction'.")
 
 
 func _get_projectile_spawn_position() -> Vector2:
@@ -358,7 +358,7 @@ func _get_projectile_spawn_position() -> Vector2:
 	return global_position
 
 
-## Apunta al jugador si sigue detectado; si no, dispara hacia donde mira el enemigo.
+## Aims at the player if still detected; otherwise shoots where the enemy faces.
 func _get_projectile_direction(from: Vector2) -> Vector2:
 	if is_instance_valid(_player):
 		return (_player.global_position - from).normalized()
@@ -370,7 +370,7 @@ func _get_projectile_damage() -> float:
 
 
 func _deal_damage_to(body: Node2D) -> void:
-	# Si el objetivo soporta knockback le pasamos nuestra posición.
+	# If the target supports knockback we pass our position.
 	if body.has_method("take_damage_from"):
 		body.take_damage_from(base_attack, global_position)
 	else:
@@ -378,7 +378,7 @@ func _deal_damage_to(body: Node2D) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Orientación y animación
+# Facing and animation
 # ---------------------------------------------------------------------------
 
 func _set_facing_direction(look_left: bool) -> void:
@@ -386,15 +386,15 @@ func _set_facing_direction(look_left: bool) -> void:
 		return
 	_is_facing_left = look_left
 
-	# Si el sprite original mira a la izquierda, la lógica de flip se invierte.
+	# If the original sprite faces left, the flip logic is reversed.
 	var flipped := look_left if sprite_faces_right else not look_left
 
-	# Con flip_pivot se voltea todo de una vez.
+	# With flip_pivot everything is flipped at once.
 	if flip_pivot:
 		flip_pivot.scale.x = -1.0 if flipped else 1.0
 		return
 
-	# Sin pivot: volteamos el sprite y espejamos a mano hitbox y punto de disparo.
+	# No pivot: flip the sprite and mirror the hitbox and spawn point by hand.
 	if sprite:
 		sprite.flip_h = flipped
 	if attack_range:
@@ -403,7 +403,7 @@ func _set_facing_direction(look_left: bool) -> void:
 		projectile_spawn.position.x = - _projectile_spawn_offset_x if look_left else _projectile_spawn_offset_x
 
 
-## Con force = true reinicia la animación aunque ya sea la actual (útil al atacar).
+## With force = true it restarts the animation even if it is already the current one (useful when attacking).
 func _play_animation(anim_name: StringName, force: bool = false) -> void:
 	if _is_attacking and not force:
 		return
@@ -417,10 +417,10 @@ func _play_animation(anim_name: StringName, force: bool = false) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Detección
+# Detection
 # ---------------------------------------------------------------------------
 
-## Comprueba si el cuerpo es un objetivo válido (principalmente el jugador).
+## Checks whether the body is a valid target (mainly the player).
 func _is_valid_target(body: Node2D) -> bool:
 	return body.is_in_group("player")
 
@@ -458,7 +458,7 @@ func _on_flee_area_body_exited(body: Node2D) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Vida y muerte
+# Health and death
 # ---------------------------------------------------------------------------
 
 func take_damage(amount: float, critical: bool = false) -> void:
@@ -489,7 +489,7 @@ func _die() -> void:
 	velocity = Vector2.ZERO
 	if sprite:
 		sprite.stop()
-	# set_deferred porque no se puede cambiar 'monitoring' durante un callback de física.
+	# set_deferred because 'monitoring' cannot be changed during a physics callback.
 	if detection_area:
 		detection_area.set_deferred("monitoring", false)
 	if attack_range:
@@ -501,12 +501,12 @@ func _die() -> void:
 	_on_death()
 
 
-## Los hijos pueden sobrescribirlo para animaciones de muerte.
+## Children can override it for death animations.
 func _on_death() -> void:
 	queue_free()
 
 
-## Ralentiza al enemigo (lengua de rana): 0.5 = mitad de velocidad.
+## Slows the enemy (frog tongue): 0.5 = half speed.
 func apply_slow(multiplier: float, seconds: float) -> void:
 	if _is_dead:
 		return
@@ -518,8 +518,8 @@ func _current_speed() -> float:
 	return speed_movement * _slow_factor
 
 
-## Objetos que aún puede soltar: fuera los inválidos, los de prob. 0 y las
-## pasivas que el jugador ya lleva (los coleccionables no se repiten).
+## Items it can still drop: invalid ones, zero-chance ones and passives the
+## player already has are excluded (collectables do not repeat).
 func _available_drops() -> Array[LootEntry]:
 	var available: Array[LootEntry] = []
 	for entry in item_drops:
@@ -531,7 +531,7 @@ func _available_drops() -> Array[LootEntry]:
 	return available
 
 
-## True si el jugador ya lleva equipada esa pasiva.
+## True if the player already has that passive equipped.
 func _player_has_passive(item: PassiveItems) -> bool:
 	var player := get_tree().get_first_node_in_group("player")
 	if player == null:
@@ -542,7 +542,7 @@ func _player_has_passive(item: PassiveItems) -> bool:
 	return bool(passives.call("has_passive", item))
 
 
-## Avisa a las pasivas del jugador (vampirismo, codicia...).
+## Notifies the player's passives (vampirism, greed...).
 func _notify_player_kill() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	if player == null:
@@ -560,7 +560,7 @@ func _drop_loot() -> void:
 	_drop_item(parent)
 
 
-## Las monedas van siempre en su propia tirada y pueden ser varias.
+## Coins always use their own roll and can be several.
 func _drop_coins(parent: Node) -> void:
 	var chance := minf(coin_drop_chance + _luck_drop_bonus() + _coin_drop_bonus(), 1.0)
 	if randf() > chance:
@@ -569,8 +569,8 @@ func _drop_coins(parent: Node) -> void:
 		_spawn_pickup(DEFAULT_COIN, parent, null)
 
 
-## Una única tirada para todos los objetos: la probabilidad total es la suma de
-## las entradas. Si sale, se elige uno ponderado por su probabilidad.
+## A single roll for all items: the total chance is the sum of the
+## entries. If it succeeds, one is picked weighted by its chance.
 func _drop_item(parent: Node) -> void:
 	var available := _available_drops()
 	var total := 0.0
@@ -592,7 +592,7 @@ func _drop_item(parent: Node) -> void:
 		_spawn_pickup(ITEM_PICKUP_SCENE, parent, chosen.item)
 
 
-## Instancia un pickup y le asigna el objeto antes de entrar en escena.
+## Instantiates a pickup and assigns the item before it enters the scene.
 func _spawn_pickup(scene: PackedScene, parent: Node, item: Items) -> void:
 	var pickup := scene.instantiate()
 	if pickup == null:
@@ -603,12 +603,12 @@ func _spawn_pickup(scene: PackedScene, parent: Node, item: Items) -> void:
 	var offset_y := randf_range(-loot_drop_y, loot_drop_y)
 	var drop_position := global_position + Vector2(offset_x, offset_y)
 	parent.add_child(pickup)
-	# Asignar global_position después de parentarlo evita sumar dos veces el
-	# offset del chunk; la física del pickup empieza en el siguiente tick.
+	# Assigning global_position after parenting avoids adding the chunk
+	# offset twice; the pickup's physics starts on the next tick.
 	pickup.global_position = drop_position
 
 
-## Puntos porcentuales extra de drop que da la suerte del jugador (luck = 5 → +5 %).
+## Extra drop percentage points given by the player's luck (luck = 5 → +5 %).
 func _luck_drop_bonus() -> float:
 	var player := get_tree().get_first_node_in_group("player")
 	if player == null or not ("luck" in player):
@@ -616,7 +616,7 @@ func _luck_drop_bonus() -> float:
 	return maxf(float(player.luck) * 0.01, 0.0)
 
 
-## Extra de probabilidad de moneda que aportan las pasivas del jugador actual.
+## Extra coin chance contributed by the current player's passives.
 func _coin_drop_bonus() -> float:
 	var player := get_tree().get_first_node_in_group("player")
 	if player == null:
@@ -638,7 +638,7 @@ func _fx() -> Node:
 	return get_tree().get_first_node_in_group("fx")
 
 
-## Parpadeo rojo al recibir daño.
+## Red flash when taking damage.
 func _flash_hit() -> void:
 	if not sprite:
 		return

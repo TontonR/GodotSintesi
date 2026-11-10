@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_irhn")
 id = "corazon_hierro"
-item_name = "Corazón de hierro"
-description = "Aumenta tu vida máxima en 25 y te cura esa misma cantidad."
+item_name = "Iron Heart"
+description = "Increases your max health by 25 and heals you for the same amount."
 icon = ExtResource("2_icon")
 value = 85
 passive_id = "corazon_hierro"

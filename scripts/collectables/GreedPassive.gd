@@ -1,9 +1,9 @@
 class_name GreedPassive
 extends PassiveItems
-## Otorga monedas extra cada vez que el jugador mata a un enemigo.
+## Grants extra coins every time the player kills an enemy.
 
-@export_group("Codicia")
-## Monedas extra por enemigo muerto.
+@export_group("Greed")
+## Extra coins per killed enemy.
 @export var coins_on_kill: int = 1
 
 

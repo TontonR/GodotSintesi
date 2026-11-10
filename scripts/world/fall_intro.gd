@@ -2,26 +2,26 @@ class_name FallIntro
 extends Node
 
 # ==============================================================================
-# CAÍDA INICIAL (PANTALLA DE CARGA SIMULADA)
+# INITIAL FALL (SIMULATED LOADING SCREEN)
 # ==============================================================================
-# Al entrar en la partida el jugador aparece por encima del mundo y cae hasta el
-# suelo generado, con el control desactivado. La cámara es hija del jugador y le
-# sigue desde el primer frame: no se aparca ni se engancha a mitad de caída, así
-# que no hay tirones. Mientras el chunk bajo el jugador no exista, la caída no
-# termina: el propio intro hace de pantalla de carga. Sin fundidos.
+# On entering the game the player appears above the world and falls to the
+# generated ground, with control disabled. The camera is a child of the player and
+# follows from the first frame: it is neither parked nor attached mid-fall, so
+# there is no jitter. While the chunk under the player does not exist, the fall does not
+# end: the intro itself acts as a loading screen. No fades.
 
-@export_group("Caída")
-## Altura sobre el punto de aparición desde la que empieza a caer (px).
+@export_group("Fall")
+## Height above the spawn point from which the fall starts (px).
 @export var fall_height_px: float = 520.0
-## Velocidad de caída (px/s). A 300 px/s el intro dura ~1,7 s.
+## Fall speed (px/s). At 300 px/s the intro lasts ~1.7 s.
 @export var fall_speed: float = 300.0
-## Tope de seguridad (s): al llegar se aterriza igual y se devuelve el control.
+## Safety cap (s): when reached, the player lands anyway and control is returned.
 @export var max_seconds: float = 6.0
 
 var _player: CharacterBody2D
 var _world: Node
 var _ui_layer: CanvasLayer
-## Y del punto de aparición normal del jugador (donde estará el suelo).
+## Y of the player's normal spawn point (where the ground will be).
 var _target_y: float = 0.0
 var _elapsed: float = 0.0
 var _finished: bool = false
@@ -35,13 +35,13 @@ func _ready() -> void:
 	_world = get_parent().get_node_or_null("map")
 	_ui_layer = get_parent().get_node_or_null("UILayer") as CanvasLayer
 
-	# El generador ya ha colocado al jugador sobre el spawn: esa Y es el suelo.
+	# The generator has already placed the player on the spawn: that Y is the ground.
 	_target_y = _player.global_position.y
 	_player.global_position = Vector2(_player.global_position.x, _target_y - fall_height_px)
 	_player.velocity = Vector2.ZERO
 	_player.set("control_enabled", false)
-	# La cámara sigue desde el primer frame: como es hija del jugador, cualquier
-	# "parqueo" se mueve con él y al enganchar daba un salto de media pantalla.
+	# The camera follows from the first frame: since it is a child of the player, any
+	# "parking" moves with him and attaching it mid-fall caused a half-screen jump.
 	_player.set("camera_follow_enabled", true)
 	_player.set("fall_speed_cap", fall_speed)
 	if _ui_layer:
@@ -51,7 +51,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _finished or not is_instance_valid(_player):
 		return
-	# Sin mundo debajo todavía no se puede aterrizar: la caída sigue (carga).
+	# With no world underneath the player cannot land yet: the fall continues (loading).
 	if not _chunk_ready():
 		_player.global_position.y = minf(_player.global_position.y, _target_y - 240.0)
 		_player.velocity.y = 0.0

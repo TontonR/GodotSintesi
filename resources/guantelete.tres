@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_gntl")
 id = "guantelete"
-item_name = "Guantelete"
-description = "Cada quinto ataque de la rotación, el siguiente impacto hace el doble de daño."
+item_name = "Gauntlet"
+description = "Every fifth attack in the rotation, the next hit deals double damage."
 icon = ExtResource("2_icon")
 value = 75
 passive_id = "guantelete"

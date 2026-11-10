@@ -1,12 +1,12 @@
 class_name MocoLevelPassive
 extends PassiveItems
-## Moco y moco compacto: suben el nivel del emisor de moco del jugador.
-## El corazón mucosil dobla el moco que ya hubiera.
+## Slime and compact slime: they raise the player slime emitter level.
+## The mucosil heart doubles the slime already present.
 
-@export_group("Moco")
-## Niveles de moco que añade (más partículas y más defensa).
+@export_group("Slime")
+## Slime levels it adds (more particles and more defense).
 @export var level_bonus: int = 1
-## Si es true, duplica el moco que ya tuviera el jugador.
+## When true, it doubles the slime the player already had.
 @export var doubles_level: bool = false
 
 var _applied: int = 0

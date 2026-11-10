@@ -7,8 +7,8 @@
 script = ExtResource("1_csbl")
 heal_amount = 30
 id = "pocion_cura"
-item_name = "Poción de curación"
-description = "Restaura 30 puntos de vida."
+item_name = "Healing Potion"
+description = "Restores 30 health."
 icon = ExtResource("1_poc2")
 value = 25
 metadata/_custom_type_script = "uid://b3y6d7mpmp5aj"

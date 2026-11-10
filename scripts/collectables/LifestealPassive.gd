@@ -1,12 +1,12 @@
 class_name LifestealPassive
 extends PassiveItems
-## Pasiva: el jugador recupera vida cada vez que acierta un golpe.
+## Passive: the player restores health every time they land a hit.
 
 @export_group("Lifesteal")
-## Vida recuperada por cada golpe acertado.
+## Health restored per landed hit.
 @export var heal_per_hit: int = 2
 
-## Se guarda el jugador porque `on_player_attack` no lo recibe.
+## The player is stored because `on_player_attack` does not receive it.
 var _player: Node = null
 
 

@@ -7,18 +7,18 @@ extends Collectable
 @export var duration: float = 0.0
 
 func use(target: Node = null) -> void:
-	super.use(target) # Llama al método base
+	super.use(target) # Calls the base method
 
 	if target == null:
 		return
 
 	if heal_amount > 0 and target.has_method("heal"):
 		target.heal(heal_amount)
-		print("Restaurados ", heal_amount, " de vida a ", target.name)
+		print("Restored ", heal_amount, " health to ", target.name)
 
 	if stamina_amount > 0 and target.has_method("restore_stamina"):
 		target.restore_stamina(stamina_amount)
-		print("Restaurada ", stamina_amount, " de stamina a ", target.name)
+		print("Restored ", stamina_amount, " stamina to ", target.name)
 
 ## Takes the first free slot in the bar; nothing happens when it is full
 func on_pickup(player: Node) -> bool:

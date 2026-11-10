@@ -1,9 +1,9 @@
 class_name LightFeetPassive
 extends PassiveItems
-## Aumenta la velocidad de movimiento del jugador al recogerla.
+## Increases the player movement speed on pickup.
 
-@export_group("Pies ligeros")
-## Multiplicador de velocidad (1.15 = +15%).
+@export_group("Light feet")
+## Speed multiplier (1.15 = +15%).
 @export var speed_multiplier: float = 1.15
 
 

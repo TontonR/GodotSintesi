@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_thrn")
 id = "espinas"
-item_name = "Espinas"
-description = "Devuelve un 20% del daño recibido al atacante. Máximo 15 de daño y 2 segundos de espera."
+item_name = "Thorns"
+description = "Returns 20% of damage taken to the attacker. Maximum 15 damage and 2 second cooldown."
 icon = ExtResource("2_icon")
 value = 75
 passive_id = "espinas"

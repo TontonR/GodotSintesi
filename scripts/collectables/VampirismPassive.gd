@@ -1,9 +1,9 @@
 class_name VampirismPassive
 extends PassiveItems
-## Recupera vida cada vez que el jugador mata a un enemigo.
+## Restores health every time the player kills an enemy.
 
-@export_group("Vampirismo")
-## Vida recuperada por enemigo muerto.
+@export_group("Vampirism")
+## Health restored per killed enemy.
 @export var heal_on_kill: int = 2
 
 

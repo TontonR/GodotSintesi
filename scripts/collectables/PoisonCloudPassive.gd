@@ -1,18 +1,18 @@
 class_name PoisonCloudPassive
 extends PassiveItems
-## Túberculos cutáneos: al recibir daño el jugador suelta una nube de veneno
-## en sus pies. Tiene cooldown para que no se llene la pantalla de nubes.
+## Cutaneous tubers: when taking damage the player drops a poison cloud
+## at their feet. It has a cooldown so the screen does not fill with clouds.
 
 const CLOUD_SCRIPT := preload("res://scripts/collectables/poison_cloud.gd")
 
-@export_group("Nube de veneno")
-## Segundos de espera entre dos nubes.
+@export_group("Poison cloud")
+## Seconds of wait between two clouds.
 @export var cooldown_seconds: float = 4.0
-## Radio de la nube (px).
+## Cloud radius (px).
 @export var radius: float = 44.0
-## Daño por tick a cada enemigo dentro.
+## Damage per tick to each enemy inside.
 @export var damage_per_tick: float = 2.0
-## Segundos que dura cada nube.
+## Seconds each cloud lasts.
 @export var cloud_lifetime: float = 4.0
 
 var _player: Node = null
@@ -32,7 +32,7 @@ func on_update(_player: Node, delta: float) -> void:
 func on_player_take_damage(amount: float, _attacker: Node = null) -> float:
 	if _cooldown <= 0.0 and is_instance_valid(_player):
 		_cooldown = cooldown_seconds
-		# Diferido: no se puede añadir un Area2D mientras se procesan señales.
+		# Deferred: an Area2D cannot be added while signals are being processed.
 		_spawn_cloud.call_deferred()
 	return amount
 

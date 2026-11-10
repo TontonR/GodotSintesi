@@ -32,7 +32,7 @@ func _refresh() -> void:
 	_set_bonus(_bonus_for(_base_attack()) if ratio < health_threshold else 0)
 
 
-## Daño sin nuestro bonus, para no pisar los bonus planos de otras pasivas.
+## Damage without our bonus, so the flat bonuses of other passives are not overwritten.
 func _base_attack() -> int:
 	return int(_player.hitbox_damage) - _applied
 

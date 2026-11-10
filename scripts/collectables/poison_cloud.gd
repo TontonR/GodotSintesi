@@ -1,15 +1,15 @@
 class_name PoisonCloud
 extends Area2D
-## Nube de veneno de los túberculos cutáneos: se queda quieta, daña a los
-## enemigos que están dentro cada `tick_seconds` y se desvanece.
+## Poison cloud of the cutaneous tubers: it stays still, damaging the
+## enemies inside every `tick_seconds` and then fades away.
 
-## Radio de la nube en píxeles.
+## Cloud radius in pixels.
 @export var radius: float = 44.0
-## Daño por tick a cada enemigo dentro.
+## Damage per tick to each enemy inside.
 @export var damage_per_tick: float = 2.0
-## Segundos entre dos ticks de daño.
+## Seconds between two damage ticks.
 @export var tick_seconds: float = 0.5
-## Segundos que dura la nube.
+## Seconds the cloud lasts.
 @export var lifetime: float = 4.0
 
 var _age: float = 0.0
@@ -18,7 +18,7 @@ var _tick: float = 0.0
 
 func _ready() -> void:
 	collision_layer = 0
-	# Los enemigos viven en la capa 4 en las escenas actuales.
+	# Enemies live on layer 4 in the current scenes.
 	collision_mask = 4
 	monitoring = true
 	var shape := CollisionShape2D.new()

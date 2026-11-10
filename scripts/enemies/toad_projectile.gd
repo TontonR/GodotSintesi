@@ -1,12 +1,12 @@
 class_name toad_projectile
 extends Area2D
-## Proyectil del sapo mutante. Se mueve en línea recta, daña al jugador al
-## impactar y puede ser destruido por los ataques del jugador (un golpe basta).
-## Animaciones: inicial -> active (loop) -> disappear (al impactar o expirar).
+## Mutant toad projectile. It moves in a straight line, damages the player on
+## impact and can be destroyed by the player's attacks (one hit is enough).
+## Animations: inicial -> active (loop) -> disappear (on impact or expiry).
 
 @export var speed: float = 200.0
 @export var damage: int = 8
-## Tiempo máximo de vida antes de desvanecerse (s).
+## Maximum lifetime before fading out (s).
 @export var lifetime: float = 4.0
 
 var direction: Vector2 = Vector2.RIGHT
@@ -24,7 +24,7 @@ func _ready() -> void:
 	get_tree().create_timer(lifetime).timeout.connect(_on_lifetime_timeout)
 
 
-## Llamado por el sapo justo después de instanciarlo.
+## Called by the toad right after instantiating it.
 func setup(dir: Vector2, projectile_speed: float, projectile_damage: float, shooter: Node2D) -> void:
 	direction = dir.normalized()
 	speed = projectile_speed
@@ -51,7 +51,7 @@ func _on_body_entered(body: Node2D) -> void:
 	_begin_disappear()
 
 
-## Interfaz esperada por los hitboxes del jugador.
+## Interface expected by the player's hitboxes.
 func take_damage(_amount: float) -> void:
 	_begin_disappear()
 

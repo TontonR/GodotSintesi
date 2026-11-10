@@ -7,10 +7,10 @@
 script = ExtResource("1_night")
 passive_id = "adn_hombre_lobo"
 id = "adn_hombre_lobo"
-item_name = "ADN de hombre lobo"
-description = "De noche: +15% de ataque y +15% de velocidad."
+item_name = "Werewolf DNA"
+description = "At night: +15% attack and +15% speed."
 icon = ExtResource("1_tex")
-quality = "Raro"
+quality = "Rare"
 value = 80
 damage_multiplier = 1.15
 speed_multiplier = 1.15

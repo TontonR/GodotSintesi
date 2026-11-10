@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_hntr")
 id = "cazador"
-item_name = "Cazador"
-description = "Haces un 20% más de daño a enemigos que estén por debajo del 30% de su vida."
+item_name = "Hunter"
+description = "Deal 20% more damage to enemies below 30% health."
 icon = ExtResource("2_icon")
 value = 70
 passive_id = "cazador"
