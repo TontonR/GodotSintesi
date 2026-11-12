@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `revision` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
-| Dueño | `buffy` |
+| Dueño | `opencode-jorge` |
 | Sistema | mundo |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-12 |
 | Relacionado | T-0044, T-0027 |
 
 ## Problema
@@ -54,8 +54,22 @@ problema es la pendiente máxima del campo de altura.
 
 ## Criterios de aceptación
 
-- [ ] Ningún escalón entre tiles vecinos supera `max_step_tiles` (≤ 2, saltable).
-- [ ] La seed 775344231 en el tile 28227 ya no tiene la barrera de 4 bloques.
-- [ ] Las costuras de chunk siguen casando (sin 1 px de suelo desplazado) y el spawn
+- [x] Ningún escalón entre tiles vecinos supera `max_step_tiles` (≤ 2, saltable).
+- [x] La seed 775344231 en el tile 28227 ya no tiene la barrera de 4 bloques.
+- [x] Las costuras de chunk siguen casando (sin 1 px de suelo desplazado) y el spawn
       (tile 50, fila 50) sigue plano.
-- [ ] `docs/world.md` actualizado con el tope de pendiente y por qué existe.
+- [x] `docs/world.md` actualizado con el tope de pendiente y por qué existe.
+
+## Resultado
+
+`WorldGenerator.max_step_tiles` (export, por defecto 1) acota cada columna a ±1 fila
+respecto de la anterior en `_build_clamped_heights()`; `_height_at()` y `_generate_chunk()`
+leen esas alturas ya filtradas. Cadena por chunks cacheada (`_clamped_heights` se poda como
+`_chunk_data`, `_clamped_last` guarda la última columna para poder reconstruir). La columna
+compartida y la extra de la derecha se heredan del vecino en vez de recalcularse: con otro
+modificador de bioma la costura se desviaba 1 fila. Muere `_terrain_at_tile()` (sin usos).
+
+Comprobado con un script headless desechable (seed 775344231, tiles 0–28229): escalón
+máximo 1, sin barreras en 28227; `edge_left`/`edge_right`/`edge_right_next` coinciden con
+`_height_at()` en las costuras; `scenes/game.tscn` arranca 180 frames sin errores. F5 en
+editor pendiente.

@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `main` — tope de pendiente en el terreno
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `max_step_tiles` (1) acota cada columna a ±1 fila de la anterior, con cadena cacheada por chunk y costuras exactas; fuera `_terrain_at_tile()` | `scripts/world_generator.gd`, `docs/world.md` | [T-0049](tickets/T-0049-barreras-verticales-en-el-terreno.md) |
+
 ## 2026-11-10 · `main` — coords y seed en el debug, semilla al crear mundo
 
 | Qué | Dónde | Ticket |

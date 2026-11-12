@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · branch `feat/world_generation_2`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `main`_
 
 ## What it does and where it lives
 
@@ -17,6 +17,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · branch `feat/world_gene
 - The fill goes down to `chunk_height_tiles` (140): there is no floating-map effect.
 - Each chunk paints one extra column on the right, identical to the first one of the next: it covers the 1 px crack when joining two `TileMapLayer`s.
 - No slopes; steps are 1 tile and are climbed automatically.
+- **Slope limit** (2026-11-12, T-0049): `max_step_tiles` (default 1) caps each column at ±N rows from the previous one while `_build_clamped_heights()` builds the chunk. The noise (×1.35 in the red forest) used to chain 3–4 tile walls that needed the jump potion. The chain starts at `base_height` on the left and is cached per chunk: `_clamped_heights` (index 0 = previous column, 1..width = own, width+1 = next chunk's first) is pruned like `_chunk_data`, while `_clamped_last` (one int per chunk) keeps the seed so a chunk can be rebuilt. Chunk 0 and the extra right column reuse the neighbor's height instead of recomputing it, or a different biome modifier would break the seam by 1 px.
 
 ## Screen scale (2026-10-29)
 

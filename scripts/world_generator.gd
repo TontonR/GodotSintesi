@@ -42,6 +42,9 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 @export var min_height: int = 5
 ## Maximum ground row (deepest valley).
 @export var max_height: int = 110
+## Maximum rise/drop between two neighboring columns, in tiles. Without it the
+## noise (and the red forest's x1.35) chains 3-4 tile walls that need a jump potion.
+@export var max_step_tiles: int = 1
 
 @export_group("Tiles")
 ## TileSet with the 3x3 atlas (surface, fill and reserved).
@@ -136,6 +139,11 @@ var _seed: int = 0
 var _camera: Camera2D
 var _loaded_chunks: Dictionary = {}
 var _chunk_data: Dictionary = {}
+## Slope-limited heights per chunk: index 0 is the column before the chunk,
+## 1..width its own and width+1 the first of the next.
+var _clamped_heights: Dictionary = {}
+## Clamped height of each chunk's last column, to chain the next chunk.
+var _clamped_last: Dictionary = {}
 var _defeated_spawns: Dictionary = {}
 var _collected_spawns: Dictionary = {}
 var _last_first: int = 999999
@@ -211,8 +219,54 @@ func _process(_delta: float) -> void:
 # TERRAIN HEIGHT
 # ==============================================================================
 func _height_at(tile_x: int) -> int:
-	var terrain := _terrain_at_tile(tile_x)
-	return _height_at_with(tile_x, float(terrain["amplitude"]), float(terrain["frequency"]))
+	if tile_x < 0:
+		return base_height
+	var chunk_x := floori(float(tile_x) / float(chunk_width_tiles))
+	var local := tile_x - chunk_x * chunk_width_tiles
+	return _clamped_heights_for(chunk_x)[local + 1]
+
+
+## Clamped heights of a chunk. A chunk needs the previous column, so the missing
+## chunks to its left are built first (normally none: chunks load left to right).
+func _clamped_heights_for(chunk_x: int) -> PackedInt32Array:
+	if _clamped_heights.has(chunk_x):
+		return _clamped_heights[chunk_x]
+	var chain: Array[int] = []
+	var x := chunk_x
+	while x > 0 and not _clamped_last.has(x - 1):
+		chain.push_front(x)
+		x -= 1
+	chain.push_front(x)
+	for cx in chain:
+		if not _clamped_heights.has(cx):
+			_build_clamped_heights(cx)
+	return _clamped_heights[chunk_x]
+
+
+## Builds a chunk's heights limiting each column to `max_step_tiles` from the
+## previous one. Same seed = same chain, so chunk seams keep matching.
+func _build_clamped_heights(chunk_x: int) -> void:
+	var start_x := chunk_x * chunk_width_tiles
+	var biome_data := _chunk_biome_data(chunk_x)
+	var amplitudes: PackedFloat64Array = biome_data["amplitude"]
+	var frequencies: PackedFloat64Array = biome_data["frequency"]
+	var heights := PackedInt32Array()
+	heights.resize(chunk_width_tiles + 2)
+	# Index 0 is the column before the chunk: take it from the previous chunk
+	# instead of recomputing it, or a different biome modifier would break the seam.
+	var prev := base_height
+	if chunk_x > 0:
+		prev = int(_clamped_last[chunk_x - 1])
+	heights[0] = prev
+	for i in range(1, chunk_width_tiles + 2):
+		# Biome modifiers are per column; the last one is the next chunk's first.
+		var j := mini(i - 1, chunk_width_tiles)
+		var h := _height_at_with(start_x + i - 1, amplitudes[j], frequencies[j])
+		h = clampi(h, prev - max_step_tiles, prev + max_step_tiles)
+		heights[i] = h
+		prev = h
+	_clamped_heights[chunk_x] = heights
+	_clamped_last[chunk_x] = heights[chunk_width_tiles]
 
 
 ## Height with biome modifiers already mixed (passed by the chunk).
@@ -307,6 +361,11 @@ func _update_chunks(force: bool) -> void:
 	for coord in _chunk_data.keys():
 		if coord.x < first or coord.x > last + 1:
 			_chunk_data.erase(coord)
+	# Idem for the clamped heights; `_clamped_last` (one int per chunk) stays
+	# so the slope chain can be rebuilt without walking from the start.
+	for chunk_x in _clamped_heights.keys():
+		if chunk_x < first or chunk_x > last + 1:
+			_clamped_heights.erase(chunk_x)
 
 
 ## True when the chunk containing `world_x` is already instantiated. Used by the
@@ -507,13 +566,6 @@ func _mixed_terrain(counts: Dictionary) -> Dictionary:
 	}
 
 
-## Terrain modifiers already mixed for a block.
-func _terrain_at_tile(tile_x: int) -> Dictionary:
-	if biomes.is_empty():
-		return {"amplitude": 1.0, "frequency": 1.0}
-	return _mixed_terrain(_biome_counts_at_tile(tile_x))
-
-
 ## Chunk biome data (plus the extra column): grass colors and
 ## terrain modifiers in a single sliding-window pass.
 func _chunk_biome_data(chunk_x: int) -> Dictionary:
@@ -566,21 +618,20 @@ func _update_biome_tint(force: bool) -> void:
 
 
 func _generate_chunk(coord: Vector2i) -> Dictionary:
+	var clamped := _clamped_heights_for(coord.x)
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles)
-	var start_x := coord.x * chunk_width_tiles
-	# Grass colors and chunk terrain modifiers in a single pass.
-	var biome_data := _chunk_biome_data(coord.x)
-	var amplitudes: PackedFloat64Array = biome_data["amplitude"]
-	var frequencies: PackedFloat64Array = biome_data["frequency"]
 	for i in range(chunk_width_tiles):
-		heights[i] = _height_at_with(start_x + i, amplitudes[i], frequencies[i])
+		heights[i] = clamped[i + 1]
+	# Grass colors for the tint pass (the terrain modifiers are already
+	# baked into the clamped heights).
+	var biome_data := _chunk_biome_data(coord.x)
 	# Neighbor heights to choose the left/right edge tiles.
-	var edge_left := _height_at(start_x - 1)
-	var edge_right := _height_at(start_x + chunk_width_tiles)
+	var edge_left := clamped[0]
+	var edge_right := clamped[chunk_width_tiles + 1]
 	# Height of the next column: the chunk paints an extra column to
 	# cover the 1 px gap between two chunks' layers.
-	var edge_right_next := _height_at(start_x + chunk_width_tiles + 1)
+	var edge_right_next := _height_at(coord.x * chunk_width_tiles + chunk_width_tiles + 1)
 
 	# Same seed + same chunk = same spawns.
 	var rng := RandomNumberGenerator.new()

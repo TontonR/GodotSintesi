@@ -323,3 +323,9 @@ Formato de entrada:
 - `Skills.gd` borrado; `SKILL_SLOTS`, `SkillsFlow` y `use_slot_4/5` fuera.
 - `docs/items.md` pasa a catálogo completo (9 consumibles + 35 pasivas), todas en `falta textura`.
 - F5 pendiente; ticket en `revision`.
+
+## 2026-11-12 · `opencode-jorge` · Tope de pendiente en el terreno (T-0049)
+- Reclamo T-0049 (petición de Ruben): paredes de 4 tiles en la seed 775344231 (tile 28227).
+- `max_step_tiles` (1) en `world_generator.gd`: cada columna a ±1 fila de la anterior, cadena cacheada por chunk; la columna compartida se hereda del vecino para no romper la costura. Fuera `_terrain_at_tile()`.
+- Verificado con script headless desechable (seed 775344231, 28k tiles): escalón máximo 1 y costuras exactas; `game.tscn` arranca sin errores.
+- `docs/world.md` y `changelog.md` actualizados. F5 pendiente; ticket en `revision`.
