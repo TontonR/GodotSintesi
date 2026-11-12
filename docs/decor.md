@@ -72,7 +72,8 @@ random weight, so a sparse biome cannot come out too alive or too dead.
   orange (3) and yellow (1), so trees and bushes are mostly red with a few
   orange/yellow ones. Meadow greens 4/4/3, snow cold greens 3/3/2. Empty weights
   = flat pick; empty colors = `Color.WHITE`.
-- The tint is `modulate` over the gray copy, so shading survives.
+- The tint keeps each leaf pixel's own brightness (`tint * max(R,G,B)`), so the
+  original shading of the crown survives instead of flattening.
 
 ## Bushes: bend and leaves
 
