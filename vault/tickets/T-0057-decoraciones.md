@@ -42,6 +42,22 @@ para la vegetación ni voz sobre qué decoración aparecía.
 5. Bamboleo de arbustos al pasar (`DecorProp`, 0.1 rad, radio 48 px) y estallido
    de 7 hojas del color del arbusto vía `fx.leaves()`.
 
+## Plan (tercera pasada)
+
+1. Arreglar el tronco teñido: generar la copia tintada por píxel en runtime y
+   recolorear solo las hojas verdes, dejando el `modulate` en blanco.
+2. Repartir el decorado en slots estratificados con separación mínima de 3
+   tiles, para quitar tanto los huecos como las acumulaciones.
+3. Bajar la densidad general (pradera 20, bosque rojo 26, nieve 10) y dejar la
+   nieve con el 40% de sus árboles muertos de forma exacta por chunk.
+
+## Criterios de aceptación (tercera pasada)
+
+- [x] El tronco de los árboles conserva su marrón original en los tres biomas.
+- [x] Dos decorados del mismo chunk nunca quedan a menos de 3 tiles.
+- [x] El reparto es uniforme: ni zonas vacías largas ni acumulaciones.
+- [x] Nieve con poca generación y 40% de árboles muertos.
+
 ## Criterios de aceptación
 
 - [x] Salen arbustos, árboles y rocas en el mundo, detrás del suelo.
@@ -73,4 +89,16 @@ para la vegetación ni voz sobre qué decoración aparecía.
   alineada con la superficie, offsets correctos, 0 colisiones, rocas a `z_index`
   −1, arbusto con rotación 0.042 rad y un estallido de hojas al acercarse, y
   vuelta a 0 al alejarse.
-- Queda el F5 visual (densidad, escala y tonos). Rama publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1) abierta, sin mergear.
+- Tercera pasada: `WorldGenerator._decor_texture`/`_tint_foliage` generan y
+  cachean una copia por textura + color donde solo cambian los píxeles verdes
+  (tronco, contorno y marrones intactos), con `modulate` en blanco y
+  `DecorProp.tint_color` para las hojas.
+- Reparto en slots estratificados con `decor_min_gap_tiles` = 3; densidades
+  20/26/10 por chunk y `Biome.decor_dead_tree_ratio` (nieve 0.4) que convierte
+  el 40% exacto de los árboles del chunk en muertos.
+- Comprobado headless: tronco `(0.247, 0.188, 0.176)` idéntico al original con
+  tinte rojo, hojas teñidas, rocas y árbol muerto sin tocar, caché reutilizada;
+  separaciones mínimas 8/5/23 tiles; 20/26/10 props por chunk; nieve 40% de
+  muertos. F5 pendiente.
+- Rama publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1)
+  abierta, sin mergear.

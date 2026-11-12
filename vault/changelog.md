@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `feat/decor` — tercera pasada de decoraciones
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Troncos ya no se tiñen: la copia tintada se genera por píxel en runtime y solo recolorea las hojas verdes, con `modulate` en blanco; separación mínima de 3 tiles mediante slots estratificados; densidad baja a 20/26/10 por chunk (pradera/bosque rojo/nieve); la nieve deja el 40% de sus árboles muertos con `decor_dead_tree_ratio` | `scripts/world_generator.gd`, `scripts/world/decor_prop.gd`, `scripts/world/biome.gd`, `resources/world/biomes/*.tres`, `docs/decor.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
 ## 2026-11-12 · `feat/decor` — segunda pasada de decoraciones
 
 | Qué | Dónde | Ticket |

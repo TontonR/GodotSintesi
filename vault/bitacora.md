@@ -451,3 +451,11 @@ Formato de entrada:
 - Comprobado headless: pradera 32 decorados (13 árboles), bosque rojo 52 (35 árboles; tintes 29/15/5), nieve 24, bases alineadas, 0 colisiones, rocas al fondo y bamboleo con 1 estallido de hojas. F5 pendiente.
 - `feat/decor` publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1) abierta contra `main`, sin mergear. La PR incluye además los 3 commits locales de `main` que aún no están en `origin`.
 - Afectados: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `scripts/fx.gd`, `resources/world/biomes/*.tres`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `docs/fx.md`, ticket T-0057, `changelog.md`, `estado.md`, `roadmap.md`.
+
+## 2026-11-12 · `buffy` · Decoraciones, tercera pasada (T-0057)
+
+- Ruben: los troncos salían teñidos aunque el gris estaba bien; zonas vacías y zonas sobrecargadas; nieve con poca generación y 40% de árboles muertos; subir todo a git.
+- Causa: `tree_gray.png` conserva el tronco marrón, pero el `modulate` del bioma multiplica el sprite entero. Ahora `_decor_texture()` genera y cachea una copia por textura + color y `_tint_foliage()` solo recolorea los píxeles verdes (hojas), dejando tronco, contorno y marrones intactos; `modulate` queda en blanco y `DecorProp.tint_color` da color a las hojas.
+- Reparto: slots estratificados (un prop por slot, ±30% de jitter) y `decor_min_gap_tiles` = 3; densidades 20/26/10 por chunk y `Biome.decor_dead_tree_ratio` (nieve 0.4) convierte el 40% exacto de los árboles del chunk en muertos.
+- Verificado headless: tronco idéntico al original con tinte rojo, hojas teñidas, rocas y árbol muerto sin tocar, caché reutilizada; separaciones mínimas 9/5/21 tiles; 20/26/10 props por chunk; nieve 15 vivos / 10 muertos = 0.40. F5 pendiente.
+- Afectados: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `resources/world/biomes/{pradera,bosque_rojo,nieve}.tres`, `docs/decor.md`, ticket T-0057, `changelog.md`, `estado.md`.

@@ -25,9 +25,13 @@ are only the fallback for biomes that do not configure it.
 
 | Biome | Per chunk | Kinds (weights) | Result |
 |---|---|---|---|
-| Meadow | 32 | bush 4/4, tree 12, dead 1, rocks 2/2 | ~13 living trees |
-| Red Forest | 52 | bush 4/4, tree 26, dead 4, rocks 1/1 | ~35 trees, dense canopy |
-| Snow | 24 | bush 3/3, tree 8, dead 4, rocks 3/3 | ~8 trees, many rocks |
+| Meadow | 20 | bush 3/3, tree 9, dead 1, rocks 1/1 | ~10 living trees, open |
+| Red Forest | 26 | bush 3/3, tree 12, dead 3, rocks 1/1 | ~14 trees, dense canopy |
+| Snow | 10 | bush 2/2, tree 5, rocks 2/2 | ~4 trees, 40% dead, sparse |
+
+`Biome.decor_dead_tree_ratio` turns exactly that share of the chunk's living
+trees into dead ones (Snow 0.4). The count is exact per chunk instead of a
+random weight, so a sparse biome cannot come out too alive or too dead.
 
 ## Scale, depth and draw order
 
@@ -42,7 +46,13 @@ are only the fallback for biomes that do not configure it.
 
 ## Placement
 
-- Random tile X with `decor_margin_tiles` (2) on both chunk edges.
+- Stratified slots: the usable span is split into `decor_per_chunk` equal
+  slots and each prop rolls its X inside its own slot (±30% of the slot), so
+  the chunk stays evenly covered instead of clumping in a few spots.
+- `decor_min_gap_tiles` (3) is enforced between neighbors: if the jitter brings
+  two props closer, the second snaps to its slot center or is skipped.
+- `decor_margin_tiles` (2) keeps props away from the chunk edges, so props of
+  two chunks never land on top of each other at a seam.
 - `centered = false` with `offset = (−w/2, −h)` and the node at the bottom
   center of the column: scaling keeps the base on the surface row and the sway
   rotates around the ground. On slopes the terrain occludes the base.
@@ -51,11 +61,13 @@ are only the fallback for biomes that do not configure it.
 
 ## Tints (weighted per biome)
 
-- Bushes and the living tree use **gray** copies (`bush_1_gray.png`,
-  `bush_2_gray.png`, `tree_gray.png`): only green-dominant pixels become
-  `max(R,G,B)` gray; trunks and browns keep their color.
+- Bushes and the living tree are tinted **per pixel at runtime**
+  (`WorldGenerator._decor_texture`): a copy of the original texture is cached
+  per texture + tint, and only the green-dominant pixels (the leaves) become
+  `tint * max(R,G,B)`. The trunk, outlines and browns keep their own colors, so
+  `modulate` stays white and the trunk is never tinted.
 - `decor_tinted` marks which textures take a tint (bushes and tree `true`, dead
-  tree and rocks `false`).
+  tree and rocks `false`). The old `*_gray.png` copies are no longer used.
 - `Biome.decor_colors` plus `decor_color_weights`: the red forest mixes red (6),
   orange (3) and yellow (1), so trees and bushes are mostly red with a few
   orange/yellow ones. Meadow greens 4/4/3, snow cold greens 3/3/2. Empty weights
@@ -75,8 +87,9 @@ are only the fallback for biomes that do not configure it.
 ## Adding or changing decor
 
 1. Drop the sprite in `assets/map/decor/<Kind>/`.
-2. If it is green and should take the biome color, generate its gray copy and
-   add name, texture and `decor_tinted = true` at the same index.
+2. If its leaves are green and should take the biome color, add the **original**
+   texture and `decor_tinted = true` at the same index; the runtime tint only
+   hits the green-dominant pixels, so the trunk can stay brown.
 3. Tune `decor_scales`, `decor_z_index` and `decor_sways` for that index.
 4. Reference the name from each biome's `decor_kinds`/`decor_weights`.
 
@@ -87,6 +100,7 @@ are only the fallback for biomes that do not configure it.
   back to a sane default; an unknown biome kind is skipped, never fatal.
 - Do not sort the decor after spawning: the index-0 push is what keeps it behind
   the tiles. Sorting is done on the chunk data before spawning.
-- Tinting a non-gray texture flattens it: generate the gray copy first.
+- `decor_tinted` needs textures with green-dominant leaves: the runtime tint
+  only recolors green pixels, so a fully gray texture would come out flat.
 - The sway must not move `position`: `offset` is what centers the texture, so
   rotating does not make the bush slide or sink.

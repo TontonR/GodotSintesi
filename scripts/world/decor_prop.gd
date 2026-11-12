@@ -12,6 +12,8 @@ extends Sprite2D
 @export var sway_angle: float = 0.1
 ## Leaves per burst.
 @export var leaves_per_burst: int = 7
+## Biome tint of the foliage; the leaf burst uses it so the particles match.
+@export var tint_color: Color = Color.WHITE
 
 ## The sprite origin is the bottom center, so rotation pivots on the ground.
 var _player: Node2D
@@ -68,4 +70,4 @@ func _emit_leaves() -> void:
 	if fx == null or texture == null:
 		return
 	var crown := global_position + Vector2(0.0, -texture.get_height() * scale.y * 0.55)
-	fx.call("leaves", crown, modulate.lightened(0.25), leaves_per_burst)
+	fx.call("leaves", crown, tint_color.lightened(0.25), leaves_per_burst)

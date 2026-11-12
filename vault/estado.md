@@ -25,7 +25,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
-| 2026-11-12 | T-0057 | Decoraciones de bioma, segunda pasada: escala grande, densidad y tipos por bioma (pradera 32/~13 árboles, bosque rojo 52/~35), tintes ponderados, rocas al fondo y arbustos con bamboleo y hojas; F5 y push/PR pendientes |
+| 2026-11-12 | T-0057 | Decoraciones de bioma, tercera pasada: troncos sin teñir (tinte por píxel solo en hojas), separación mínima de 3 tiles, densidad 20/26/10 y nieve con 40% de árboles muertos; F5 pendiente |
 | 2026-11-12 | T-0056 | Auditoría de documentación: `enemies`/`items` reescritos, `biomes`/`loot`/`passives` nuevos, mundo/UI/jugador/README al día y mapa en `vault/documentacion.md` |
 | 2026-11-12 | T-0055 | Monedas arriba a la izquierda con icono: fuera los anchors de pantalla completa, rect fijo (26, 26) y `coin_icon` 16×16; F5 pendiente |
 | 2026-11-12 | T-0054 | KP4/KP6 aterrizan 4 tiles sobre el suelo del destino (`ground_y_at()` + `refresh_chunks()`); F5 pendiente |
@@ -56,4 +56,5 @@ _Actualizado 2026-11-12 por `buffy`_
 - El tope de pendiente hace que las alturas encadenen desde la columna 0: no recalcular una columna suelta sin su predecesora (rompe la costura). `_clamped_last` es la semilla de la cadena.
 - La montaña de la izquierda (T-0052) no pasa por `_build_clamped_heights()`: es barrera, no terreno generado. Si alguien la mete en la cadena, el tope de ±1 la convierte en rampa escalable y deja de tapar el vacío.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y quitarlos de `DISABLED_ENEMY_SCENES`.
-- El bosque rojo pone 52 sprites de decorado por chunk y algunos se solapan a propósito: si el rendimiento cae, `decor_per_chunk` del bioma es la palanca antes que tocar el código.
+- El bosque rojo pone 26 sprites de decorado por chunk y algunos se tocan a propósito (copa densa): si el rendimiento cae, `decor_per_chunk` del bioma es la palanca antes que tocar el código.
+- El tinte de la vegetación se genera por píxel en runtime y se cachea por textura + color; añadir muchos colores nuevos sube un poco la memoria, pero no el coste por frame.
