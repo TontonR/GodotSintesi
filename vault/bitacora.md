@@ -449,5 +449,5 @@ Formato de entrada:
 - `Biome` gana `decor_per_chunk`, `decor_kinds`, `decor_weights` y `decor_color_weights`; el generador conserva sus arrays como fallback y resuelve los nombres (`decor_lookup`).
 - Escalas 1.7–1.9 con `offset` en la base; rocas `z_index` −1 y orden de dibujo rocas → árboles → arbustos; nuevo `scripts/world/decor_prop.gd` para el bamboleo y las hojas, con `fx.leaves()` reutilizando el nodo `fx`.
 - Comprobado headless: pradera 32 decorados (13 árboles), bosque rojo 52 (35 árboles; tintes 29/15/5), nieve 24, bases alineadas, 0 colisiones, rocas al fondo y bamboleo con 1 estallido de hojas. F5 pendiente.
-- Push/PR pendiente: no hay `gh` ni `GITHUB_TOKEN`/credenciales en el remoto; `feat/decor` aún no existe en `origin`.
+- `feat/decor` publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1) abierta contra `main`, sin mergear. La PR incluye además los 3 commits locales de `main` que aún no están en `origin`.
 - Afectados: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `scripts/fx.gd`, `resources/world/biomes/*.tres`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `docs/fx.md`, ticket T-0057, `changelog.md`, `estado.md`, `roadmap.md`.

@@ -73,5 +73,4 @@ para la vegetación ni voz sobre qué decoración aparecía.
   alineada con la superficie, offsets correctos, 0 colisiones, rocas a `z_index`
   −1, arbusto con rotación 0.042 rad y un estallido de hojas al acercarse, y
   vuelta a 0 al alejarse.
-- Queda el F5 visual (densidad, escala y tonos) y el push/PR: no hay `gh` ni
-  credenciales de escritura en el remoto.
+- Queda el F5 visual (densidad, escala y tonos). Rama publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1) abierta, sin mergear.

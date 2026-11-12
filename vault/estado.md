@@ -6,7 +6,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/decor` (T-0057, segunda pasada), pendiente de push/PR; `main` local con 3 commits sobre `origin/main` |
+| Rama | `feat/decor` (T-0057, segunda pasada) con [PR #1](https://github.com/TontonR/GodotSintesi/pull/1); `main` local con 3 commits sobre `origin/main` |
 | Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen), T-0049 (tope de ±1), T-0051 (sin elevaciones exageradas por bioma), T-0052 (montaña en la barrera izquierda) y T-0053 (debug de velocidad mitad/doble/reset); T-0050 revertido; T-0057 (decoraciones de bioma). Ver `changelog.md` |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile y ningún bioma que exagere el relieve; 6 enemigos terrestres activos. |
 | Siguiente paso | F5 de T-0039..T-0049 y T-0051 (menús/guardado, biomas, sangre, fullscreen y relieve). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
