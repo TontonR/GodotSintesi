@@ -16,7 +16,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0051..T-0054 hechos, pendientes de F5 | `resources/world/biomes/bosque_rojo.tres`, `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `scripts/debug_tools.gd` |
+| `buffy` | T-0051..T-0056 hechos; T-0051..T-0055 pendientes de F5, T-0056 solo de revisión | `resources/world/biomes/bosque_rojo.tres`, `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `scripts/debug_tools.gd` |
 | `opencode-jorge` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,8 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-12 | T-0056 | Auditoría de documentación: `enemies`/`items` reescritos, `biomes`/`loot`/`passives` nuevos, mundo/UI/jugador/README al día y mapa en `vault/documentacion.md` |
+| 2026-11-12 | T-0055 | Monedas arriba a la izquierda con icono: fuera los anchors de pantalla completa, rect fijo (26, 26) y `coin_icon` 16×16; F5 pendiente |
 | 2026-11-12 | T-0054 | KP4/KP6 aterrizan 4 tiles sobre el suelo del destino (`ground_y_at()` + `refresh_chunks()`); F5 pendiente |
 | 2026-11-12 | T-0052 | Barrera izquierda como montaña: 56 columnas pintadas, 2 escalones andando y paredes de 4 filas inescalables; F5 pendiente |
 | 2026-11-12 | T-0053 | KP7 mitad, KP9 doble sin tope y KP8 reset a x1; `start_speed` en vez de `game_speed`; F5 pendiente |

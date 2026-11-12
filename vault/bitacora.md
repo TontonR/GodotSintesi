@@ -396,3 +396,36 @@ Formato de entrada:
   cresta de la barrera izquierda (tile −52, fila 5).
 - `README.md`, `docs/player.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente;
   ticket en `revision`.
+
+## 2026-11-12 · `buffy` · Monedas arriba a la izquierda con icono (T-0055)
+- `humano-ruben`: el contador de monedas sale debajo de las stats; lo quiere arriba a la
+  izquierda con un icono de moneda.
+- Causa: `UILayer/coins` tenía `anchors_preset = 15` (pantalla completa) con el texto
+  centrado. En 768×432 caía en (10, 63), pero en un viewport mayor (pantalla completa
+  adaptativa) baja con la pantalla y acaba sobre el panel de stats.
+- `scenes/game.tscn`: `coins` a rect fijo (26, 26)–(120, 42), alineado a la izquierda y
+  12 px; nodo nuevo `coin_icon` (TextureRect 16×16 en (6, 26)) con un `AtlasTexture` del
+  primer frame de `assets/coins/MonedaD.png`. Se mantiene la ruta `UILayer/coins` porque
+  `player.gd::_ensure_coins_ui()` la busca; el fallback de código usa el mismo rect.
+- Medido con script headless en 768×432 y 960×540: label en (26, 26) 94×17 e icono en
+  (6, 26) 16×16 en ambos; consumibles (4, 4)–(108, 22) y stats (5, 82) intactos; con
+  `add_coin(7)` el texto pasa a "7" y el pop sigue.
+- `docs/ui.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente; ticket en
+  `revision`.
+
+## 2026-11-12 · `buffy` · Auditoría de documentación (T-0056)
+- `humano-ruben` pide actualizar toda la documentación y crear en el vault lo que falte
+  (enemigos, drops, biomas, items…).
+- Auditoría contra código: sets de enemigos por bioma (`pradera` 3 orcos + 3 slimes + 1
+  sapo, `bosque_rojo` 1 lobo + 1 sapo, `nieve` 2 esqueletos + 2 arqueros + 1 lobo), 44
+  `.tres` con icono, estadísticas de enemigos en `_init()` con ×1.35/×1.25, `item_drops`
+  reales (orco 42 %, lobo/rana/slime 32 %) y caída de 260 px a 620 px/s.
+- Reescritos `docs/enemies.md` y `docs/items.md`; nuevos `docs/biomes.md`,
+  `docs/loot.md` y `docs/passives.md`; corregidos `docs/world.md` (ventana, biomas,
+  caída), `docs/ui.md` (`DebugHint`), `docs/player.md` (stats 5, 82),
+  `docs/historial.md` y `README.md` (controles 1-3, New Game, sin KP3).
+- Vault: nuevo `vault/documentacion.md` (mapa + auditoría + huecos: audio, muerte,
+  skills, progresión, jefe), índice en `vault/README.md`, totales y correcciones en
+  `vault/pasivas/` (Maza +2, Colmillo +3, Piedra de oro +10 %).
+- Verificado con grep/sed sobre escenas, `.tres` y scripts; sin tocar código, no hace
+  falta F5. Ticket en `revision`.

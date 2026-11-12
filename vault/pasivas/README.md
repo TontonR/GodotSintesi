@@ -9,15 +9,18 @@ objeto, su `drop_chance` y su cantidad. Las probabilidades se suman en **una sol
 (`coin_drop_chance` / `coin_drop_amount`, puede ser más de una). Sin presets compartidos:
 una variante nueva rehace su tabla.
 
-| Enemigo | Objetos | `.md` |
-|---|---|---|
-| Ogro | 5: 4 Normal + 1 Raro | [ogro.md](ogro.md) |
-| Lobo | 4: 3 Normal + 1 Raro | [lobo.md](lobo.md) |
-| Rana (sapo mutante) | 4: 3 Normal + 1 Raro | [rana.md](rana.md) |
-| Arquero | sin pasivas todavía | [arquero.md](arquero.md) |
-| Slime | 4: 3 Normal + 1 Raro | [slime.md](slime.md) |
+| Enemigo | Objetos | Suelta algo | `.md` |
+|---|---|---|---|
+| Ogro | 5: 4 Normal + 1 Raro | 42 % | [ogro.md](ogro.md) |
+| Lobo | 4: 3 Normal + 1 Raro | 32 % | [lobo.md](lobo.md) |
+| Rana (sapo mutante) | 4: 3 Normal + 1 Raro | 32 % | [rana.md](rana.md) |
+| Arquero | sin pasivas todavía | 0 % | [arquero.md](arquero.md) |
+| Slime | 4: 3 Normal + 1 Raro | 32 % | [slime.md](slime.md) |
 
-Fantasmas, demonios y esqueletos no sueltan objetos hasta que se les añada `item_drops`.
+La columna «Suelta algo» es la **suma** de los `drop_chance` de ese enemigo (la tirada es
+única; si sale, se elige un objeto ponderado). Fantasmas, demonios, esqueletos y arqueros
+no sueltan objetos hasta que se les añada `item_drops`. El catálogo completo, con efectos y
+calidad, está en [`docs/passives.md`](../../docs/passives.md).
 
 ## Prelación de las imágenes
 

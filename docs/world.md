@@ -39,7 +39,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 ## Biomes (2026-11-01 · block transition 2026-11-05 · runs 2026-11-10)
 
 - `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `min_distance_tiles`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (same order as the scenes).
-- Resources (3): `pradera.tres` (green, 4 orcs + 1 ghost, weight 0.55), `bosque_rojo.tres` (red, 1 wolf + 1 toad + 1 demon + 2 slimes, weight 0.3) and `nieve.tres` (blue-white, 2 skeletons + 2 archers + 1 wolf, weight 0.2).
+- Resources (3): `pradera.tres` (green, 3 orcs + 3 slimes + 1 toad, weight 0.55), `bosque_rojo.tres` (red, 1 wolf + 1 toad, weight 0.3) and `nieve.tres` (blue-white, 2 skeletons + 2 archers + 1 wolf, weight 0.2, unlocked at 4096 tiles). Full reference: [`docs/biomes.md`](biomes.md).
 - **Biomes are decided per run, not per block** (2026-11-10, `_biome_index_at_tile()` / `_ensure_biome_runs()`): `_biome_runs` is a cached list of `{start, index, length}` built left to right, and any block resolves to the run containing it. The first run (tile 0) is the safe zone with the first biome; the whole window still blends, so the tint is smooth inside a run.
 - **Run length**: rolled between `min_biome_tiles` (1024 = 4 chunks) and `max_biome_tiles` (4096 = 16 chunks), rounded to `biome_sector_tiles` (0 = one chunk). This is what kills the micro-biomes (a red forest squeezed inside one transition) and the giga-biomes: no biome lasts under 4 or over 16 chunks. The 256-tile color/terrain blend is narrower than the shortest run, so two transitions can never overlap.
 - **Order** (2026-11-10): `_roll_biome_at()` picks among the biomes unlocked at that distance (`Biome.min_distance_tiles`, 0 by default; snow is set to 4096 tiles) and never repeats the previous one. `spawn_weight` only biases the pick, and the noise (`biome_frequency` 0.12 per chunk, sampled at the run start, `biome_contrast` 2) only decides the order: the weights no longer let the meadow swallow the map.
@@ -67,11 +67,11 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
 - `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) creates two full-screen `CPUParticles2D` with pixel textures generated in code. Every 0.25 s it asks `WorldGenerator.biome_at_world_x()` at the player's X and turns on the emitter for the biome's `ambient`; when turning it off, live particles finish their lifetime.
 - Horizontal coverage (2026-11-05): the emission rectangle measures `view.x × 1.2` on each side of the center (before `0.6`), i.e. twice as wide, and there are twice as many particles (56 leaves, 440 flakes). That way the sideways wind doesn't reveal empty areas at the edges.
-- Leaves: 28 particles, slow fall with rotation. Snow: 220 flakes, even slower fall. When the emitter activates the screen is already full (`preprocess`), and it enters/leaves with a 0.4 s fade and sideways wind.
+- Leaves: 56 particles, slow fall with rotation. Snow: 440 flakes, even slower fall. When the emitter activates the screen is already full (`preprocess`), and it enters/leaves with a 0.4 s fade and sideways wind.
 
 ## Spawns and persistence
 
-- Per chunk, according to the biome: 4 orcs + 1 ghost (meadow) or 1 wolf + 1 toad + 1 demon + 2 slimes (red forest). `enemy_counts_per_chunk` (`[4 orcs, 2 frogs, 1 wolf, 2 slimes, 2 skeletons, 2 archers]`) remains as a fallback for biomes without `enemy_scenes`. 2 coins per chunk.
+- Per chunk, according to the biome: meadow 3 orcs + 3 slimes + 1 toad, red forest 1 wolf + 1 toad, snow 2 skeletons + 2 archers + 1 wolf (see [`docs/biomes.md`](biomes.md)). `enemy_counts_per_chunk` (`[4 orcs, 2 frogs, 1 wolf, 2 slimes, 2 skeletons, 2 archers]`) remains as a fallback for biomes without `enemy_scenes`. 2 coins per chunk.
 - Coins are born `coin_spawn_height` (40 px) above the ground and fall with their own gravity (`scripts/collectables/coin.gd`): they look up the ground once by raycast, bounce with `bounce` 0.4 while the impact exceeds `min_bounce_speed` (40 px/s) and when settling they sway 1 px. Before, they appeared already resting (`coin_ground_offset`).
 - Density by distance (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 at 50 % (`enemy_ramp_first_multiplier`), and from there +20 % per chunk (`enemy_ramp_per_chunk`) up to ×1.8 (`enemy_ramp_max_multiplier`).
 - **Even distribution** (2026-11-03): the list of chunk types is assembled and `enemy_min_x..max_x` is split into one slot per enemy; each one falls in the center of its slot with ±25 % slot noise. Before, each enemy picked its X at random and they clumped.
@@ -100,16 +100,16 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 
 ## Initial fall and loading screen (2026-11-03, rewritten)
 
-- `scripts/world/fall_intro.gd` (`FallIntro`), `fall_intro` node at the end of `scenes/game.tscn`: it places the player `fall_height_px` (520) above its spawn and lets it fall at `fall_speed` (300 px/s, ~1.7 s) with `player.fall_speed_cap`; control stays disabled until landing.
+- `scripts/world/fall_intro.gd` (`FallIntro`), `fall_intro` node at the end of `scenes/game.tscn`: it places the player `fall_height_px` (260) above its spawn and lets it fall at `fall_speed` (620 px/s, ~0.4 s) with `player.fall_speed_cap`; control stays disabled until landing (on top of the 6 tiles the generator leaves above the ground).
 - The camera **follows the player from the first frame** (`camera_follow_enabled`). The previous parking (`_park_camera`, `follow_after_px`) couldn't work: the `Camera2D` is a child of the player, so parking traveled with it and when hooking the view it jumped ~270 px. No parking and no jolt.
-- With 2200 px the intro was 7 s of empty sky: now it's 520 px (~1.7 s) and the ground enters the frame right away. `max_seconds` (6 s) returns control even if the landing gets stuck.
+- With 2200 px the intro was 7 s of empty sky: now it's 260 px (~0.4 s) and the ground enters the frame right away. `max_seconds` (3 s) returns control even if the landing gets stuck.
 - The intro acts as a **loading screen**: if `WorldGenerator.is_ready_at(x)` (new, checks `_loaded_chunks` of the chunk containing X) said there's no world, the fall stays suspended at 240 px above the ground instead of landing in the void. In practice generation is synchronous in `_ready`, so it's never seen.
 - No transition black (removed on 2026-11-03): it goes straight to the sky. On landing control is returned and the `UILayer` is shown (hidden during the fall).
 - All values are `@export` in the `fall_intro` node.
 
 ## Layers and camera
 
-- 2D layers: 1 world, 2 player, 3 enemies, 4 player attack. Viewport 768×432 (window 1280×720).
+- 2D layers: 1 world, 2 player, 3 enemies, 4 player attack. Viewport 768×432 (window 1536×864, integer scale).
 
 ## Traps
 

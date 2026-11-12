@@ -11,9 +11,16 @@ _2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-1
 
 ## Stats panel (2026-11-05)
 
-- `UILayer/StatsPanel`: **2-column** `GridContainer` anchored top-left at `position (5, 82)`, below the coin line (y≈63) so it doesn't cover it. `player.gd::_ensure_stats_ui()` creates it if missing, just like the health/stamina bars.
+- `UILayer/StatsPanel`: **2-column** `GridContainer` anchored top-left at `position (5, 82)`, below the coin line so it doesn't cover it. `player.gd::_ensure_stats_ui()` creates it if missing, just like the health/stamina bars.
 - **Always visible**, 9 px font with shadow and `modulate` alpha **0.6** so it doesn't cover the game. Six rows: `Damage`, `Atk. speed`, `Crit. damage`, `Crit. chance`, `Speed`, `Luck`; values in light gold, right-aligned.
 - It only refreshes when something changes (`_stats_dirty`): it doesn't rewrite labels every frame. The values come from the player's `attack_speed`, `crit_damage`, `crit_chance`, `move_speed` and `luck`.
+
+## Coins (`UILayer/coins` + `UILayer/coin_icon`, 2026-11-12, T-0055)
+
+- **Top-left with an icon**, not full-screen anchors: the label used `anchors_preset = 15` with centered text, so at 768×432 it sat at (10, 63) but on a bigger viewport (adaptive fullscreen) it slid down over the stats panel.
+- `coin_icon` is a 16×16 `TextureRect` at (6, 26) with the first frame of `assets/coins/MonedaD.png` (an `AtlasTexture`, no animation).
+- `coins` is a fixed-rect `Label` at (26, 26)–(120, 42), left-aligned, 12 px, white with shadow. It keeps the name and path `UILayer/coins` because `player.gd::_ensure_coins_ui()` looks it up by that path; the code-created fallback uses the same rect.
+- Both are plain offsets from the corner, so the counter stays put at any viewport size and never covers the consumable bar (y 4..22) or the stats panel (y 82…). `add_coin()` rewrites the text and pops the label (1.28× scale, 0.18 s).
 
 ## Inventory screen (`scenes/inventory/inventory_screen.tscn` · `scenes/inventory/inventory_screen.gd`)
 
@@ -47,7 +54,7 @@ _2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-1
 ## Debug overlay (2026-11-10, T-0048)
 
 - `scripts/debug_tools.gd` (`debug_tools` node in `game.tscn`) creates `UILayer/DebugHint`, an 11 px label anchored to the **bottom left** (alpha 0.75 + shadow) with two lines:
-  - `speed x1 · immortal no · KP7/KP8/KP9 x1/x5/x20 · KP4/KP6 quick travel · KP5 immortal` (the keys), and
+  - `speed x1 · immortal no · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal` (the keys), and
   - `pos 808, 773 · tile 50, 48 · seed 12345`: the player position in pixels (rounded), the same in tiles (`floori(px / 16)`) and the seed of the run (`WorldGenerator.current_seed()`, random when the menu field was left empty).
 - The second line is rebuilt in `_process` and only written to the label when it changes, so standing still costs nothing and the seed is readable without stopping.
 

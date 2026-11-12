@@ -17,4 +17,5 @@ _2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/slime.tsc
   el corazón dobla el nivel actual.
 - La poción multiplica el salto (`jump_velocity * 1.3` durante 60 s) y deja 1 nivel de
   moco permanente.
+- Probabilidades: 10 % por cada objeto Normal y 2 % el Corazón mucosil; en total 32 %.
 - Iconos provisionales: `starsW`, `bombPotionW`, `iceW` y `healthW`.

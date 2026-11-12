@@ -20,6 +20,7 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `vault/ideas.md` | Bóveda de ideas: todo el diseño (hecho, parcial, pendiente y por definir) con sus dudas | Al decidir qué construir o al añadir una idea |
 | `vault/entrega-2.md` | Texto de la entrega 2 (catalán): cambios desde la entrega 1, flujo con IA y los 3 objetivos | Al preparar entregas del proyecto |
 | `vault/bitacora.md` | Diario de sesiones y acuerdos entre agentes (append-only) | Al reclamar/entregar trabajo |
+| `vault/documentacion.md` | Mapa de toda la documentación: qué cubre cada `docs/`, qué faltaba y qué huecos quedan | Al crear/mover documentación o cerrar una auditoría |
 | `vault/tickets/` | Un fichero por trabajo, con estado y resultado | Siempre que haya trabajo |
 | `vault/tickets/plantilla.md` | Copia base para abrir un ticket | — |
 

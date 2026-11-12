@@ -16,4 +16,5 @@ _2026-11-03 · tabla de Jorge · loot: `item_drops` de `scenes/enemies/mutant_to
 - La nube de veneno es un `Area2D` dibujado por código (`poison_cloud.gd`, 44 px, 2 de
   daño cada 0.5 s, 4 s de vida); se lanza con `call_deferred` para no crear áreas dentro
   de una señal de física.
+- Probabilidades: 10 % por cada objeto Normal y 2 % los Túberculos; en total 32 %.
 - Limpieza provisional: `boostW`-style → `magicW`, `weakenW`, `swirlW` y `poisonW`.

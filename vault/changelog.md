@@ -2,6 +2,18 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `main` — auditoría de documentación
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Docs de enemigos e items reescritos con datos verificados; nuevos `biomes`, `loot` y `passives`; corregidos mundo (ventana, biomas, caída), UI (debug), jugador (stats), historial y README; el vault estrena mapa de documentación con los huecos reales | `docs/`, `README.md`, `AGENTS.md`, `vault/documentacion.md`, `vault/pasivas/` | [T-0056](tickets/T-0056-auditoria-documentacion.md) |
+
+## 2026-11-12 · `main` — monedas arriba a la izquierda con icono
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `UILayer/coins` deja de ser un label de pantalla completa (en viewports grandes caía sobre el panel de stats) y pasa a rect fijo (26, 26)–(120, 42) con un `coin_icon` de 16×16 (primer frame de `MonedaD.png`) al lado | `scenes/game.tscn`, `scripts/player.gd`, `docs/ui.md` | [T-0055](tickets/T-0055-monedas-arriba-a-la-izquierda-con-icono.md) |
+
 ## 2026-11-12 · `main` — viaje rápido sobre el terreno
 
 | Qué | Dónde | Ticket |

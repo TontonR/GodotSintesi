@@ -14,3 +14,9 @@ Do not load unless something smells like this. What's current lives in its syste
 ## Enemies
 
 - **2026-10-14 · ghost without loot**: `ghost.tscn` had a `loot_table` override with an empty entry; removed.
+
+## HUD and world
+
+- **2026-11-12 · coins over the stats**: `UILayer/coins` used full-screen anchors with centered text. At 768×432 it looked right, but the adaptive fullscreen viewport moved it down over `StatsPanel`. Fix: fixed rect (26, 26)–(120, 42) plus a 16×16 `coin_icon` (T-0055).
+- **2026-11-12 · 30–40 tile mountains and 123-step ramps**: the red forest ran terrain noise ×1.35 amplitude / ×1.1 frequency while the ±1 column cap tried to follow it, so the ground lagged behind the noise. Fix: no biome above ×1.0 (T-0051).
+- **2026-11-09 · drops at twice the distance**: a pickup positioned before being parented inherited the chunk transform twice. Fix: parent first, then `global_position` (`EnemyBase._spawn_pickup`).

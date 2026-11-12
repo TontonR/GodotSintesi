@@ -25,6 +25,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 |---|---|---|---|
 | [T-0004](tickets/T-0004-legado-raiz-y-docs-obsoletos.md) | repo | Borrar legado real (`player.tscn`, `orc.tscn`, `coin` de `game.tscn`) y corregir docs falsos | `abierto` |
 | [T-0005](tickets/T-0005-quitar-debug-numpad.md) | inventario | Retirar el debug del numpad cuando acabe la fase de pruebas | `abierto` |
+| [T-0056](tickets/T-0056-auditoria-documentacion.md) | docs | Auditoría completa: `docs/` al día, biomas/loot/pasivas nuevos y mapa en `vault/documentacion.md` | `revision` |
 
 ## P3 — Contenido
 

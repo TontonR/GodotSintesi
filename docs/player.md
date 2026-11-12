@@ -30,7 +30,7 @@ _2026-10-20 · branch `feat/skills-and-complex-passives`_
 - Base critical: `_deal_damage()` makes its own roll after the passives and multiplies by `crit_damage`; passives like `amuleto_critico` still roll separately. A critical is announced in `fx.enemy_hit(..., critical)` with more gold sparks, a 12 px number and a short shake.
 - Luck: `EnemyBase._luck_drop_bonus()` adds `luck × 0.01` to any loot `drop_chance` (with 0 nothing changes).
 - API for passives: `add_attack_speed()`, `add_crit_chance()`, `add_crit_damage()`, `add_luck()`.
-- `UILayer/StatsPanel` panel: 2-column `GridContainer` created by `_ensure_stats_ui()` on the left (5 px, 26 px, under the consumables), always visible, `modulate` alpha 0.6 and 9 px font with shadow. It refreshes with `_stats_dirty` (`_update_stats_ui()`) when `attack_speed`, `crit_*`, `luck` or `move_speed` change.
+- `UILayer/StatsPanel` panel: 2-column `GridContainer` created by `_ensure_stats_ui()` on the left (5, 82, under the coin line), always visible, `modulate` alpha 0.6 and 9 px font with shadow. It refreshes with `_stats_dirty` (`_update_stats_ui()`) when `attack_speed`, `crit_*`, `luck` or `move_speed` change.
 - Health `max_health` 100: `take_damage()`, `heal()`; `_die()` is a placeholder (full respawn).
 - Enemy push: `take_damage_from(amount, attacker_pos, knockback, lock, knockup)` applies damage and, if the guard doesn't block it, `apply_knockback()` / `apply_knockup()`. While `lock` lasts (0.12–0.15 s) horizontal input is ignored.
 - `is_guarding()` for enemy areas that distinguish blocking (demon fire).
