@@ -32,7 +32,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
 | [T-0008](tickets/T-0008-mundo-biomas-y-densidad.md) | mundo | Biomas/zonas, densidad y variedad de spawns con 5 tipos de enemigo | `abierto` |
-| [T-0057](tickets/T-0057-decoraciones.md) | world | Decoraciones de bioma: arbustos, árboles y rocas detrás del suelo, tintados por bioma | `revision` |
+| [T-0057](tickets/T-0057-decoraciones.md) | world | Decoraciones de bioma: escala grande, densidad y tipos por bioma, rocas al fondo y arbustos con bamboleo y hojas | `revision` |
 
 ## Ideas sin ticket
 

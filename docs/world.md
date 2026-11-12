@@ -64,13 +64,19 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 
 ## Decor (2026-11-12, T-0057)
 
-- `assets/map/decor/` (2 bushes, 2 trees, 2 rocks) is spawned per chunk by `WorldGenerator`:
-  `decor_per_chunk` 16, weighted kinds, 2-tile margin, deterministic with the chunk RNG.
-- Each sprite is the chunk's **first child**, so it is painted behind `Solid`/`GrassPaint`;
-  its bottom edge rests on the surface row, it has no collision and it is never scaled or
-  parallaxed (it moves and dies with the chunk).
-- Bushes and the living tree use gray copies and take a random `Biome.decor_colors` tint;
-  rocks and the dead tree are not tinted. Full reference: [`docs/decor.md`](decor.md).
+- `assets/map/decor/` (2 bushes, 2 trees, 2 rocks) is spawned per chunk by `WorldGenerator`,
+  deterministic with the chunk RNG and 2 tiles away from the chunk edges.
+- The **biome** decides the amount and the kinds: `decor_per_chunk`, `decor_kinds` and
+  `decor_weights` (meadow 32 with ~13 trees, red forest 52 with ~35 trees, snow 24). The
+  generator's own arrays are only the fallback.
+- Each sprite (`DecorProp`) is the chunk's **first child**, so it is painted behind
+  `Solid`/`GrassPaint`; its base rests on the surface row, it has no collision and it is
+  not parallaxed. Fixed scale (bushes 1.9, trees 1.8, rocks 1.7), no depth scaling.
+- Rocks use `z_index` −1 and draw behind trees and bushes, so they read as background.
+- Bushes and the living tree use gray copies and take a weighted `Biome.decor_colors` tint
+  (the red forest is mostly red, with some orange and yellow); rocks and the dead tree are
+  not tinted. Bushes bend and drop a few leaves when the player walks through them.
+  Full reference: [`docs/decor.md`](decor.md).
 
 ## Ambient per biome (2026-11-05)
 

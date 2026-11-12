@@ -14,6 +14,14 @@ extends Resource
 ## Decoration tints for the bushes and the living tree (their textures are gray).
 ## Every decor sprite picks one of these at random; rocks and dead trees are never tinted.
 @export var decor_colors: Array[Color] = []
+## Weight of each `decor_colors` tint; same order (empty = all equal).
+@export var decor_color_weights: Array[float] = []
+## Decor sprites this biome spawns per chunk (0 = generator fallback).
+@export var decor_per_chunk: int = 0
+## Decor kinds by name, from the generator's `decor_names` (`bush_1`, `tree`…).
+@export var decor_kinds: Array[String] = []
+## Relative weight of each kind; same order as `decor_kinds` (empty = all 1).
+@export var decor_weights: Array[int] = []
 ## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Relative weight in the world's biome distribution.

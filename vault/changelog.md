@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `feat/decor` — segunda pasada de decoraciones
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Decoración más grande (×1.7–1.9) y decidida por bioma: 32 por chunk en pradera (~13 árboles), 52 en bosque rojo (~35 árboles) y 24 en nieve, con tipos y pesos propios; tintes ponderados (rojo 6 / naranja 3 / amarillo 1 en bosque rojo); rocas a `z_index` −1 detrás de árboles y arbustos; arbustos se inclinan al pasar y sueltan 7 hojas vía `fx.leaves()` | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `scripts/fx.gd`, `resources/world/biomes/`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `docs/fx.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
 ## 2026-11-12 · `feat/decor` — decoraciones de bioma
 
 | Qué | Dónde | Ticket |

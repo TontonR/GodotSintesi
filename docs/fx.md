@@ -4,6 +4,9 @@ _2026-11-05 · 2026-11-10_
 
 - `scripts/fx.gd` (`fx` node in `game.tscn`, `fx` group): creates particles, damage numbers and screen layers in code. No new scenes or textures: the particles' white pixel is generated with `Image`.
 - World particles (single-use `CPUParticles2D`): sparks when hitting an enemy, burst on death, dust when jumping/landing/running and sparks when picking up coins, items or healing.
+- Bushes: `fx.leaves(world_position, color, amount)` (called by `DecorProp` when the
+  player walks through) throws 7 slow leaves in the bush's own tint. It uses the shared
+  `fx` node, so there is no particle node per bush and nothing inherits the sprite scale.
 - Floating numbers: `Label` in `CanvasLayer` 8, placed with `get_canvas_transform()` (fixed size even if the camera has zoom), rising 18 px and fading in 0.65 s. Enemy in warm white, player in red, coin `+1` gold, healing `+N` green.
 - Player damage: `shake()` moves `Camera2D.offset` with falloff for 0.18 s and `damage_flash()` places a red `ColorRect` (CanvasLayer 9, under the HUD) with alpha 0.3 → 0 in 0.32 s.
 - The shake respects the camera framing: `shake()` saves the base `offset` at the start (60, −70 in the player's) and restores it at the end. Before, it wrote `Vector2.ZERO` at the end, so the first hit recentered the view forever (T-0033).

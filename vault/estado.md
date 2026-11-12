@@ -6,7 +6,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/decor` (T-0057), pendiente de push/PR; `main` con la base documental commiteada |
+| Rama | `feat/decor` (T-0057, segunda pasada), pendiente de push/PR; `main` local con 3 commits sobre `origin/main` |
 | Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen), T-0049 (tope de ±1), T-0051 (sin elevaciones exageradas por bioma), T-0052 (montaña en la barrera izquierda) y T-0053 (debug de velocidad mitad/doble/reset); T-0050 revertido; T-0057 (decoraciones de bioma). Ver `changelog.md` |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile y ningún bioma que exagere el relieve; 6 enemigos terrestres activos. |
 | Siguiente paso | F5 de T-0039..T-0049 y T-0051 (menús/guardado, biomas, sangre, fullscreen y relieve). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
@@ -16,7 +16,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0057 en revisión (decoraciones); T-0051..T-0055 pendientes de F5, T-0056 solo de revisión | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/biomes/*.tres`, `assets/map/decor/` |
+| `buffy` | T-0057 en revisión (decoraciones, segunda pasada); T-0051..T-0055 pendientes de F5, T-0056 solo de revisión | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `scripts/fx.gd`, `resources/world/biomes/*.tres`, `assets/map/decor/` |
 | `opencode-jorge` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,7 +25,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
-| 2026-11-12 | T-0057 | Decoraciones de bioma: arbustos, árboles y rocas por chunk detrás del suelo, grises tintados y `decor_colors` en los tres biomas; F5 pendiente |
+| 2026-11-12 | T-0057 | Decoraciones de bioma, segunda pasada: escala grande, densidad y tipos por bioma (pradera 32/~13 árboles, bosque rojo 52/~35), tintes ponderados, rocas al fondo y arbustos con bamboleo y hojas; F5 y push/PR pendientes |
 | 2026-11-12 | T-0056 | Auditoría de documentación: `enemies`/`items` reescritos, `biomes`/`loot`/`passives` nuevos, mundo/UI/jugador/README al día y mapa en `vault/documentacion.md` |
 | 2026-11-12 | T-0055 | Monedas arriba a la izquierda con icono: fuera los anchors de pantalla completa, rect fijo (26, 26) y `coin_icon` 16×16; F5 pendiente |
 | 2026-11-12 | T-0054 | KP4/KP6 aterrizan 4 tiles sobre el suelo del destino (`ground_y_at()` + `refresh_chunks()`); F5 pendiente |
@@ -56,3 +56,4 @@ _Actualizado 2026-11-12 por `buffy`_
 - El tope de pendiente hace que las alturas encadenen desde la columna 0: no recalcular una columna suelta sin su predecesora (rompe la costura). `_clamped_last` es la semilla de la cadena.
 - La montaña de la izquierda (T-0052) no pasa por `_build_clamped_heights()`: es barrera, no terreno generado. Si alguien la mete en la cadena, el tope de ±1 la convierte en rampa escalable y deja de tapar el vacío.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y quitarlos de `DISABLED_ENEMY_SCENES`.
+- El bosque rojo pone 52 sprites de decorado por chunk y algunos se solapan a propósito: si el rendimiento cae, `decor_per_chunk` del bioma es la palanca antes que tocar el código.

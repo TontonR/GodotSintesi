@@ -116,6 +116,12 @@ func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> vo
 	_burst(world_position, color, amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
 
 
+## Leaves shaken off a bush the player walks through: short, slow burst that
+## falls with its own gravity.
+func leaves(world_position: Vector2, color: Color, amount: int = 7) -> void:
+	_burst(world_position, color, amount, 45.0, 0.65, 0.9, 150.0, 2.5, 70.0)
+
+
 ## Parry: white and golden sparks, floating notice, short shake and flash.
 func parry(world_position: Vector2) -> void:
 	_burst(world_position, Color(1.0, 1.0, 0.92), 16, 180.0, 0.35, 1.2, 60.0, 5.0)
