@@ -57,6 +57,16 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Enable if the left/right edges come out swapped.
 @export var swap_left_right: bool = false
 
+@export_group("Left wall")
+## Columns painted left of tile 0 as a mountain. It hides the world's left edge
+## (there is no chunk to the left) instead of showing a flat cut into the void.
+@export var left_wall_tiles: int = 56
+## First columns of the wall you can climb (1 tile each) before it turns steep.
+@export var left_wall_climb_tiles: int = 2
+## Rows each wall column rises after that stretch. Above 2 it cannot be jumped
+## (the jump is ~2.6 tiles), which is what makes the wall a barrier.
+@export var left_wall_step_rows: int = 4
+
 @export_group("Enemies")
 ## Enemy scene list (fallback if a biome does not define its own).
 @export var enemy_scenes: Array[PackedScene] = [
@@ -154,6 +164,8 @@ var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
 ## Biome runs already decided, in order: {start, index, length} in tiles.
 var _biome_runs: Array[Dictionary] = []
+## Mountain painted left of tile 0, left to right; chunk 0 only.
+var _left_wall: PackedInt32Array = PackedInt32Array()
 
 
 func _ready() -> void:
@@ -220,7 +232,11 @@ func _process(_delta: float) -> void:
 # ==============================================================================
 func _height_at(tile_x: int) -> int:
 	if tile_x < 0:
-		return base_height
+		# Left of tile 0 there is only the mountain painted by chunk 0; without it
+		# the ground the player came from stays flat.
+		if left_wall_tiles <= 0:
+			return base_height
+		return _left_wall_height_at(clampi(tile_x, -left_wall_tiles, -1))
 	var chunk_x := floori(float(tile_x) / float(chunk_width_tiles))
 	var local := tile_x - chunk_x * chunk_width_tiles
 	return _clamped_heights_for(chunk_x)[local + 1]
@@ -281,12 +297,51 @@ func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
 	return h
 
 
-## The world only grows to the right. Walking off the left edge of chunk 0
-## would drop the player into the void, so the edge works as a wall.
+## The world only grows to the right. Left of tile 0 there is no chunk, only the
+## painted mountain, so the last column of the wall is the hard stop: the player
+## can climb its foot but never walks off the painted terrain.
 func _keep_player_inside_world() -> void:
-	if player.global_position.x < TILE_SIZE:
-		player.global_position = Vector2(TILE_SIZE, player.global_position.y)
+	var min_x := TILE_SIZE
+	if left_wall_tiles > 0:
+		min_x = -maxi(left_wall_tiles - 1, 0) * TILE_SIZE
+	if player.global_position.x < min_x:
+		player.global_position = Vector2(min_x, player.global_position.y)
 		player.velocity.x = maxf(player.velocity.x, 0.0)
+
+
+## Ground Y in pixels at `world_x`, i.e. the top row of that column. Used by the
+## debug quick travel to leave the player a bit above the terrain.
+func ground_y_at(world_x: float) -> float:
+	return float(_height_at(floori(world_x / float(TILE_SIZE))) * TILE_SIZE)
+
+
+## Wall height at a negative tile (clamped to the painted range).
+func _left_wall_height_at(tile_x: int) -> int:
+	var count := maxi(left_wall_tiles, 0)
+	if count <= 0:
+		return base_height
+	if _left_wall.is_empty():
+		_left_wall = _left_wall_heights()
+	return _left_wall[clampi(tile_x + count, 0, count - 1)]
+
+
+## Heights of the mountain left of tile 0, left to right. It starts at the
+## ground the player reaches (one 1-tile step per column, climbable) and then
+## rises `left_wall_step_rows` per column up to `min_height`, where it stays: a
+## massif too tall to climb, so the barrier is hidden as terrain. Not part of
+## the clamped chain, because it is a barrier, not generated ground.
+func _left_wall_heights() -> PackedInt32Array:
+	var count := maxi(left_wall_tiles, 0)
+	var heights := PackedInt32Array()
+	heights.resize(count)
+	var row := base_height
+	for i in count:
+		if i < left_wall_climb_tiles:
+			row = maxi(row - 1, min_height)
+		else:
+			row = maxi(row - left_wall_step_rows, min_height)
+		heights[count - 1 - i] = row
+	return heights
 
 
 ## Fewer enemies in the first chunks and many more the further away.
@@ -713,6 +768,11 @@ func _load_chunk(coord: Vector2i) -> void:
 	chunk.name = "Chunk_%d" % coord.x
 	chunk.position = Vector2(coord.x * chunk_width_tiles * TILE_SIZE, 0)
 	add_child(chunk)
+	var wall := PackedInt32Array()
+	if coord.x == 0 and left_wall_tiles > 0:
+		if _left_wall.is_empty():
+			_left_wall = _left_wall_heights()
+		wall = _left_wall
 	chunk.paint(
 		data["heights"],
 		data["edge_left"],
@@ -724,7 +784,8 @@ func _load_chunk(coord: Vector2i) -> void:
 		grass_tile_set,
 		chunk_height_tiles,
 		swap_left_right,
-		tints
+		tints,
+		wall
 	)
 	_spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk

@@ -9,7 +9,7 @@
 | Sistema | mundo |
 | Creado | 2026-11-10 |
 | Actualizado | 2026-11-12 |
-| Relacionado | T-0044, T-0027 |
+| Relacionado | T-0044, T-0027, T-0050, T-0051 |
 
 ## Problema
 
@@ -73,3 +73,8 @@ Comprobado con un script headless desechable (seed 775344231, tiles 0–28229): 
 máximo 1, sin barreras en 28227; `edge_left`/`edge_right`/`edge_right_next` coinciden con
 `_height_at()` en las costuras; `scenes/game.tscn` arranca 180 frames sin errores. F5 en
 editor pendiente.
+
+**T-0050 lo sustituyó y se revirtió el mismo día** (2026-11-12, `buffy`): Ruben prefiere
+este tope de ±1 antes que las losas y los suelos de 2 tiles, así que este recorte sigue
+vigente. Las laderas exageradas que se veían eran el multiplicador de terreno del bosque
+rojo, arreglado en [T-0051](T-0051-elevaciones-exageradas-del-bosque-rojo.md).

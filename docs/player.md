@@ -46,7 +46,7 @@ _2026-10-20 · branch `feat/skills-and-complex-passives`_
 
 ## Debug (temporary, 2026-11-03)
 
-- `scripts/debug_tools.gd` (`DebugTools`, `debug_tools` node in `game.tscn`): KP7/KP8/KP9 set `Engine.time_scale` to x1/x5/x20 and KP4/KP6 do a fast travel of 64 tiles left/right going up 10 tiles (to get out of mountains). Distances in `teleport_distance_tiles` and `teleport_lift_tiles`.
+- `scripts/debug_tools.gd` (`DebugTools`, `debug_tools` node in `game.tscn`): KP7 halves `Engine.time_scale`, KP9 doubles it (no cap) and KP8 resets it to x1 (2026-11-12, T-0053); KP4/KP6 do a fast travel of 64 tiles left/right (`teleport_distance_tiles`) landing `teleport_above_ground_tiles` (4) above the ground at the destination, not 10 tiles above the current position: `WorldGenerator.ground_y_at()` gives the top row there and the destination chunks are refreshed in the same frame, so it never ends inside a slope. `start_speed` (default x1) is the speed at startup and `MIN_SPEED` (0.001) the floor, so halving never reaches x0 and freezes the game. The notice shows the current factor (`x0.5`, `x2`…).
 - **KP5** toggles immortality (`player.toggle_immortal()` → `immortal`): with it active `_apply_damage()` exits without touching health; the push/knockback from `take_damage_from()` still applies. The debug notice shows `immortal yes/no`. It's an independent numpad key; it doesn't use slots 1-3.
 - Travel calls `player.debug_teleport(offset)`: it moves, cuts velocity, clears the visual step offset and resets `_cam_y` so the camera doesn't drag the jump.
 - `_exit_tree` returns `time_scale` to 1.0: leaving the scene doesn't leave the game sped up.

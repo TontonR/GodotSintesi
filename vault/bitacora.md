@@ -329,3 +329,70 @@ Formato de entrada:
 - `max_step_tiles` (1) en `world_generator.gd`: cada columna a ±1 fila de la anterior, cadena cacheada por chunk; la columna compartida se hereda del vecino para no romper la costura. Fuera `_terrain_at_tile()`.
 - Verificado con script headless desechable (seed 775344231, 28k tiles): escalón máximo 1 y costuras exactas; `game.tscn` arranca sin errores.
 - `docs/world.md` y `changelog.md` actualizados. F5 pendiente; ticket en `revision`.
+
+## 2026-11-12 · `buffy` · Terreno redondeado en vez de escalera (T-0050)
+- Petición de `humano-ruben`: el tope de ±1 de T-0049 convirtió las laderas en una escalera
+  antinatural (diagonales de un escalón por columna, tramos de hasta 51 columnas). Que se
+  vean redondeadas, con paredes de 2 tiles y de 3 muy de vez en cuando.
+- `scripts/world_generator.gd`: fuera `clampi(h, prev ± max_step_tiles)`.
+  `_build_shaped_heights()` + `_shaped_step()` sostienen la losa con
+  `tread_hold_chance` (0.65, mitad a 2 tiles de desvío) y pegan pared de
+  `max_step_tiles` (ahora 2), con 3 cuando sale `rare_step_chance` (0.06). La tirada es
+  `_terrain_roll()` (hash de seed + columna), sin RNG que arrastrar entre chunks.
+  `_clamped_*` renombrados a `_shaped_*`.
+- Verificado con script headless desechable (seeds 12345 y 775344231, 28 200 tiles):
+  máximo 3, 74–76 % de columnas planas, 14 % de 1 tile, 10–11 % de 2 y 0.2 % de 3;
+  costuras exactas en 110 chunks y spawn plano. `game.tscn` arranca sin errores.
+- `docs/world.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente; ticket en `revision`.
+
+## 2026-11-12 · `buffy` · Elevaciones exageradas del bosque rojo (T-0051)
+- `humano-ruben`: prefiere la generación anterior a la de T-0050 (demasiados suelos de 2
+  tiles) y siguen saliendo elevaciones exageradas en algunos sitios.
+- `scripts/world_generator.gd` revertido a T-0049 (`git checkout`): vuelve el tope de ±1,
+  sin `_shaped_step()`. T-0050 queda `cerrado` como revertido.
+- Causa de las zonas raras: no era el ruido ni las costuras, sino los modificadores del
+  bosque rojo (`terrain_amplitude_multiplier` 1.35 y `terrain_frequency_multiplier` 1.1).
+  Con el tope de ±1 el suelo no puede seguir al ruido y fabrica rampas de un escalón por
+  columna: 30–40 tiles de montaña y hasta 123 escalones seguidos.
+- Medido en el generador real (40 000 tiles, seeds 12345/775344231/777): la frecuencia era
+  la de las rampas (123 → 21–22 al bajarla) y la amplitud la de las montañas (relieve
+  37–39 → 28–29). Con el bosque rojo en 0.95/1.0: peor ventana de 300 tiles 26 y tramos
+  de 11–14 escalones.
+- `bosque_rojo.tres` a 0.95/1.0 y `docs/world.md` actualizado con la regla "un bioma solo
+  aplana". F5 pendiente; ticket en `revision`.
+
+## 2026-11-12 · `buffy` · Barrera izquierda como montaña y debug de velocidad (T-0052, T-0053)
+- `humano-ruben`: a la izquierda se veía el vacío; quería una gran montaña, escalable un
+  poco al principio pero imposible de subir, para camuflar la barrera. Y el numpad
+  cambia: KP7 mitad, KP9 doble sin límite y KP8 reset.
+- `scripts/world/chunk.gd`: `paint()` acepta `left_heights` y pinta columnas en X local
+  negativo (el `TileMapLayer` no tiene límites), con el tono de hierba de la columna 0.
+- `scripts/world_generator.gd`: grupo `Left wall` (`left_wall_tiles` 56,
+  `left_wall_climb_tiles` 2, `left_wall_step_rows` 4), `_left_wall_heights()` cacheado y
+  solo en chunk 0. Empieza en `base_height`, sube 1 tile por columna dos veces y después
+  4 filas por columna hasta `min_height`, donde se queda. Fuera de la cadena con tope.
+- `_keep_player_inside_world()` pasa de parar en `TILE_SIZE` a parar en la última columna
+  pintada (`-880 px`).
+- Medido con script headless sobre `game.tscn`: 56 columnas de -56 a -1, la de -1 en fila
+  49, subida máxima 4 filas, 10 tramos de 4, cresta plana en fila 5 desde -37; jugador
+  forzado a -5000 px acaba en -880. 4 filas = 64 px > 41 px de salto.
+- `scripts/debug_tools.gd`: fuera `SPEEDS`; `_speed` float con KP9 ×2, KP7 ×0.5 y KP8 a
+  1.0, suelo `MIN_SPEED` 0.001; `game_speed` pasa a `start_speed`. Verificado enviando
+  teclas al nodo: x1 → x2 → x4 → x2 → x1 → x0.5 → x0.25 y etiqueta `x0.25`.
+- `docs/world.md`, `docs/player.md`, `README.md`, `changelog.md` y `estado.md`
+  actualizados. F5 pendiente; ambos tickets en `revision`.
+
+## 2026-11-12 · `buffy` · Viaje rápido sobre el terreno (T-0054)
+- `humano-ruben`: KP4/KP6 no deben subir un número fijo de tiles respecto a la posición
+  actual, sino dejar al jugador un poco por encima del terreno del destino.
+- `scripts/world_generator.gd`: `ground_y_at(world_x)` devuelve la fila superior de la
+  columna en píxeles; `_height_at()` ya resuelve los tiles negativos con
+  `_left_wall_height_at()` (la cresta de T-0052 en la fila 5).
+- `scripts/debug_tools.gd`: `teleport_lift_tiles` (10) fuera, entra
+  `teleport_above_ground_tiles` (4); `_teleport()` calcula X destino, pone Y en
+  suelo − 4 tiles y llama a `refresh_chunks()` para que el terreno exista en el frame.
+- Medido en `game.tscn` enviando teclas: hueco de 4.00 tiles tras KP6 desde el spawn
+  (tile 50 → 114.5) y otra vez (→ 178.5), 3.96 al volver con KP4 y 3.92 al caer sobre la
+  cresta de la barrera izquierda (tile −52, fila 5).
+- `README.md`, `docs/player.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente;
+  ticket en `revision`.

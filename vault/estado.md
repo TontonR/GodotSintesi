@@ -1,23 +1,23 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-12 por `opencode-jorge`_
+_Actualizado 2026-11-12 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `main`, commits locales de la sesión (T-0039..T-0049); sin push |
-| Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen) y T-0049 (tope de pendiente); ver `changelog.md` |
-| Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile; 6 enemigos terrestres activos. |
-| Siguiente paso | F5 de T-0039..T-0049 (menús/guardado, biomas, sangre, fullscreen y pendiente del terreno). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Rama | `main`, commits locales de la sesión (T-0039..T-0049 y T-0051); sin push |
+| Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen), T-0049 (tope de ±1), T-0051 (sin elevaciones exageradas por bioma), T-0052 (montaña en la barrera izquierda) y T-0053 (debug de velocidad mitad/doble/reset); T-0050 revertido. Ver `changelog.md` |
+| Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile y ningún bioma que exagere el relieve; 6 enemigos terrestres activos. |
+| Siguiente paso | F5 de T-0039..T-0049 y T-0051 (menús/guardado, biomas, sangre, fullscreen y relieve). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | Sin confirmar desde `28050dd` | — |
-| `opencode-jorge` | T-0049 tope de pendiente (hecho, pendiente de F5) | `scripts/world_generator.gd`, `docs/world.md` |
+| `buffy` | T-0051..T-0054 hechos, pendientes de F5 | `resources/world/biomes/bosque_rojo.tres`, `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `scripts/debug_tools.gd` |
+| `opencode-jorge` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 
@@ -25,6 +25,11 @@ _Actualizado 2026-11-12 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-12 | T-0054 | KP4/KP6 aterrizan 4 tiles sobre el suelo del destino (`ground_y_at()` + `refresh_chunks()`); F5 pendiente |
+| 2026-11-12 | T-0052 | Barrera izquierda como montaña: 56 columnas pintadas, 2 escalones andando y paredes de 4 filas inescalables; F5 pendiente |
+| 2026-11-12 | T-0053 | KP7 mitad, KP9 doble sin tope y KP8 reset a x1; `start_speed` en vez de `game_speed`; F5 pendiente |
+| 2026-11-12 | T-0051 | Bosque rojo a 0.95/1.0: fuera las montañas de 30–40 tiles y las rampas de 123 escalones; F5 pendiente |
+| 2026-11-12 | T-0050 | Revertido: los suelos de 2 tiles eran demasiado frecuentes; vuelve el tope de ±1 de T-0049 |
 | 2026-11-12 | T-0049 | `max_step_tiles` (1) en el generador: fuera paredes de 4 tiles, costuras exactas; F5 pendiente |
 | 2026-11-10 | T-0048 | Overlay de debug con `pos`/`tile`/seed y Nueva partida pide semilla; F5 pendiente |
 | 2026-11-10 | T-0047 | Cámara del menú en la posición del spawn; F5 pendiente |
@@ -44,5 +49,7 @@ _Actualizado 2026-11-12 por `opencode-jorge`_
 - `AGENTS.md` llama legacy a `item_pickup.gd/.tscn`, pero es el pickup **vivo** (`scripts/enemies/enemy_base.gd:54`). No borrar (T-0004).
 - El proyecto no tiene tests: toda verificación es en editor (F5) o con un script headless desechable.
 - 16 enemigos por chunk maduro y el doble de densidad en general: si baja el rendimiento, `enemy_ramp_max_multiplier` es la palanca.
+- **Ningún bioma puede subir `terrain_amplitude_multiplier` ni `terrain_frequency_multiplier` por encima de 1.0**: con el tope de ±1 el suelo no puede seguir a un ruido más rápido o más alto y salen rampas de un escalón por columna (30–40 tiles de montaña, 123 escalones seguidos; T-0051). Un bioma solo aplana.
 - El tope de pendiente hace que las alturas encadenen desde la columna 0: no recalcular una columna suelta sin su predecesora (rompe la costura). `_clamped_last` es la semilla de la cadena.
+- La montaña de la izquierda (T-0052) no pasa por `_build_clamped_heights()`: es barrera, no terreno generado. Si alguien la mete en la cadena, el tope de ±1 la convierte en rampa escalable y deja de tapar el vacío.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y quitarlos de `DISABLED_ENEMY_SCENES`.

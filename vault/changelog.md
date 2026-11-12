@@ -2,6 +2,32 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `main` — viaje rápido sobre el terreno
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| KP4/KP6 aterrizan `teleport_above_ground_tiles` (4) por encima del suelo del destino en vez de 10 tiles sobre la posición actual, y refrescan los chunks en el mismo frame | `scripts/debug_tools.gd`, `scripts/world_generator.gd`, `README.md`, `docs/player.md` | [T-0054](tickets/T-0054-viaje-rapido-sobre-el-terreno.md) |
+
+## 2026-11-12 · `main` — montaña en la barrera izquierda y debug de velocidad nuevo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El borde izquierdo deja de ser un corte al vacío: 56 columnas pintadas como montaña, 2 escalones de 1 tile escalables andando y luego paredes de 4 filas (64 px, más que el salto) hasta `min_height`, con cresta plana; el tope del jugador pasa a la última columna pintada | `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `docs/world.md` | [T-0052](tickets/T-0052-montana-en-la-barrera-izquierda.md) |
+| Debug de velocidad: KP7 parte a la mitad, KP9 duplica sin tope y KP8 resetea a x1 (antes x1/x5/x20); `game_speed` pasa a `start_speed` y la etiqueta muestra el factor | `scripts/debug_tools.gd`, `README.md`, `docs/player.md` | [T-0053](tickets/T-0053-debug-velocidad-mitad-doble.md) |
+
+## 2026-11-12 · `main` — fuera las elevaciones exageradas del bosque rojo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Bosque rojo a 0.95/1.0 (como la pradera): su ×1.35 de amplitud y ×1.1 de frecuencia creaban montañas de 30–40 tiles con tramos de hasta 123 escalones; el peor relieve baja de 36 a 26 tiles y los tramos a 11–14 | `resources/world/biomes/bosque_rojo.tres`, `docs/world.md` | [T-0051](tickets/T-0051-elevaciones-exageradas-del-bosque-rojo.md) |
+| Revertido el terreno con losas de T-0050 (suelos de 2 tiles demasiado frecuentes): vuelve el tope de ±1 de T-0049 | `scripts/world_generator.gd` | [T-0050](tickets/T-0050-terreno-redondeado-en-vez-de-escalera.md) |
+
+## 2026-11-12 · `main` — terreno redondeado en vez de escalera
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Fuera el tope de ±1: `_shaped_step()` mantiene losas y pega paredes de 2 tiles (3 muy rara) para que las laderas no sean diagonales de un escalón por columna | `scripts/world_generator.gd`, `docs/world.md` | [T-0050](tickets/T-0050-terreno-redondeado-en-vez-de-escalera.md) |
+
 ## 2026-11-12 · `main` — tope de pendiente en el terreno
 
 | Qué | Dónde | Ticket |

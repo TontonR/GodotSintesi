@@ -37,8 +37,8 @@ With the numpad, while the game is not paused:
 | `KP 1` | Spawns a random consumable |
 | `KP 2` | Spawns a random passive/collectable |
 | `KP 3` | Reserved for skills (no items yet) |
-| `KP 4` / `KP 6` | Fast travel left / right (64 tiles) and 10 tiles up |
-| `KP 7` / `KP 8` / `KP 9` | Game speed x1 / x5 / x20 (`Engine.time_scale`) |
+| `KP 4` / `KP 6` | Fast travel left / right (64 tiles), landing a few tiles above the ground |
+| `KP 7` / `KP 8` / `KP 9` | Game speed halved / reset to x1 / doubled (`Engine.time_scale`, no cap) |
 
 Items are added directly to the inventory or to active passives. The item code lives in `scenes/inventory/inventory.gd` (`DEBUG_TOOLS`) and the speed/travel code in `scripts/debug_tools.gd`; both are meant to be deleted when the testing phase ends. The current speed and keys are shown in a label at the bottom left (`DebugHint`).
 

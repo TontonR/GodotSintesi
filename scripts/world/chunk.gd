@@ -77,7 +77,8 @@ func paint(
 		grass_tile_set: TileSet,
 		floor_row: int,
 		swap_left_right: bool,
-		grass_tints: PackedColorArray = PackedColorArray()
+		grass_tints: PackedColorArray = PackedColorArray(),
+		left_heights: PackedInt32Array = PackedInt32Array()
 ) -> void:
 	_solid.clear()
 	_solid.tile_set = tile_set
@@ -98,6 +99,30 @@ func paint(
 	var colors := PackedColorArray()
 
 	var width := heights.size()
+
+	# Columns left of the chunk origin (negative local x): the mountain that hides
+	# the world's left edge in chunk 0. Painted with the first column's grass tone.
+	var left_count := left_heights.size()
+	for j in range(left_count):
+		var x := j - left_count
+		var surface := left_heights[j]
+		var left_surface := left_heights[j - 1] if j > 0 else surface
+		var right_surface := left_heights[j + 1] if j + 1 < left_count else heights[0]
+		for y in range(surface, floor_row):
+			var col := _edge_col(y, left_surface, right_surface, swap_left_right)
+			var row := ROW_SURFACE if y == surface else ROW_FILL
+			_solid.set_cell(
+				Vector2i(x, y),
+				source_id,
+				atlas_origin + Vector2i(col, row)
+			)
+			if y == surface and grass_texture != null:
+				var coords := atlas_origin + Vector2i(col, 0)
+				if grass_source.has_tile(coords):
+					textures.append(grass_texture)
+					rects.append(Rect2(Vector2(x * grass_size.x, y * grass_size.y), grass_size))
+					regions.append(Rect2(grass_source.get_tile_texture_region(coords)))
+					colors.append(_grass_tint(grass_tints, 0))
 
 	for x in range(width):
 		var surface := heights[x]
