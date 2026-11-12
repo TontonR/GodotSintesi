@@ -62,6 +62,16 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 - The band under the mountains (`MountainBase`, `ColorRect`) is tinted as well: `WorldGenerator.base_tint_paths` points to it and `_update_biome_tint()` writes its `color` with the biome's `forest_color` darkened `MOUNTAIN_BASE_DARKENING` (0.35), so the meadow reproduces `#283D43` and the red forest/snow move with the rest of the background. It is set through `color`, not `modulate`, so the night multiplier of the `mountains` node keeps working.
 - The grass already used the idea (`grass_tile_gray.png`, gray = max(R,G,B)); the backgrounds reuse the recipe with a gray calibrated per layer so the tint recovers each one's original tone and the forest red keeps showing.
 
+## Decor (2026-11-12, T-0057)
+
+- `assets/map/decor/` (2 bushes, 2 trees, 2 rocks) is spawned per chunk by `WorldGenerator`:
+  `decor_per_chunk` 16, weighted kinds, 2-tile margin, deterministic with the chunk RNG.
+- Each sprite is the chunk's **first child**, so it is painted behind `Solid`/`GrassPaint`;
+  its bottom edge rests on the surface row, it has no collision and it is never scaled or
+  parallaxed (it moves and dies with the chunk).
+- Bushes and the living tree use gray copies and take a random `Biome.decor_colors` tint;
+  rocks and the dead tree are not tinted. Full reference: [`docs/decor.md`](decor.md).
+
 ## Ambient per biome (2026-11-05)
 
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.

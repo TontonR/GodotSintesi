@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-12 · `feat/decor` — decoraciones de bioma
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Arbustos, árboles y rocas de `assets/map/decor` se spawnean por chunk detrás del suelo, apoyados en la superficie, sin colisión ni parallax; arbustos y árbol vivo usan copias grises y cada decorado tinta con un color aleatorio del array `decor_colors` del bioma (3 verdes, 3 rojos/naranjas, 3 verdes fríos) | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/biomes/`, `assets/map/decor/`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `AGENTS.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
 ## 2026-11-12 · `main` — auditoría de documentación
 
 | Qué | Dónde | Ticket |

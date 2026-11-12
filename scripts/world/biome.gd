@@ -11,6 +11,9 @@ extends Resource
 @export var forest_color: Color = Color.WHITE
 ## Tint of the mountain stone; white = untinted (snow is separate and not tinted).
 @export var rock_color: Color = Color.WHITE
+## Decoration tints for the bushes and the living tree (their textures are gray).
+## Every decor sprite picks one of these at random; rocks and dead trees are never tinted.
+@export var decor_colors: Array[Color] = []
 ## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Relative weight in the world's biome distribution.

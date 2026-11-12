@@ -19,6 +19,7 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12_
 | `grass_color` | Tint over the gray grass texture (white = untinted) |
 | `forest_color` | Tint of the background pines, the mountain's green layer and the band under the mountains |
 | `rock_color` | Tint of the mountain stone (snow is never tinted) |
+| `decor_colors` | Tints for bushes and the living tree (gray textures); each sprite picks one at random |
 | `ambient` | `"none"`, `"leaves"` or `"snow"` |
 | `spawn_weight` | Relative weight for the order roll |
 | `min_distance_tiles` | Distance from tile 0 before the biome can appear |
@@ -29,11 +30,11 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12_
 
 ## Current biomes
 
-| Biome | Grass | Forest | Rock | Ambient | Weight | Unlock | Enemies per chunk |
-|---|---|---|---|---|---|---|---|
-| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | none | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
-| Red Forest (`bosque_rojo`) | `(0.674, 0.196, 0.159)` | `(0.625, 0, 0.036)` | white | leaves | 0.30 | tile 0 | 1 wolf, 1 toad |
-| Snow (`nieve`) | `(0.93, 0.96, 1)` | `(0.82, 0.88, 0.96)` | `(0.75, 0.78, 0.82)` | snow | 0.20 | tile 4096 | 2 skeleton, 2 archer, 1 wolf |
+| Biome | Grass | Forest | Rock | Decor | Ambient | Weight | Unlock | Enemies per chunk |
+|---|---|---|---|---|---|---|---|---|
+| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | 3 greens | none | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
+| Red Forest (`bosque_rojo`) | `(0.674, 0.196, 0.159)` | `(0.625, 0, 0.036)` | white | 3 reds/oranges | leaves | 0.30 | tile 0 | 1 wolf, 1 toad |
+| Snow (`nieve`) | `(0.93, 0.96, 1)` | `(0.82, 0.88, 0.96)` | `(0.75, 0.78, 0.82)` | 3 cold greens | snow | 0.20 | tile 4096 | 2 skeleton, 2 archer, 1 wolf |
 
 All three keep `terrain_amplitude_multiplier` at 0.95/0.95/1.0 and
 `terrain_frequency_multiplier` at 1.0: a biome only flattens, it never exaggerates relief.

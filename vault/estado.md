@@ -6,8 +6,8 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `main`, commits locales de la sesión (T-0039..T-0049 y T-0051); sin push |
-| Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen), T-0049 (tope de ±1), T-0051 (sin elevaciones exageradas por bioma), T-0052 (montaña en la barrera izquierda) y T-0053 (debug de velocidad mitad/doble/reset); T-0050 revertido. Ver `changelog.md` |
+| Rama | `feat/decor` (T-0057), pendiente de push/PR; `main` con la base documental commiteada |
+| Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen), T-0049 (tope de ±1), T-0051 (sin elevaciones exageradas por bioma), T-0052 (montaña en la barrera izquierda) y T-0053 (debug de velocidad mitad/doble/reset); T-0050 revertido; T-0057 (decoraciones de bioma). Ver `changelog.md` |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile y ningún bioma que exagere el relieve; 6 enemigos terrestres activos. |
 | Siguiente paso | F5 de T-0039..T-0049 y T-0051 (menús/guardado, biomas, sangre, fullscreen y relieve). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
@@ -16,7 +16,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `buffy` | T-0051..T-0056 hechos; T-0051..T-0055 pendientes de F5, T-0056 solo de revisión | `resources/world/biomes/bosque_rojo.tres`, `scripts/world_generator.gd`, `scripts/world/chunk.gd`, `scripts/debug_tools.gd` |
+| `buffy` | T-0057 en revisión (decoraciones); T-0051..T-0055 pendientes de F5, T-0056 solo de revisión | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/biomes/*.tres`, `assets/map/decor/` |
 | `opencode-jorge` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,7 @@ _Actualizado 2026-11-12 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-12 | T-0057 | Decoraciones de bioma: arbustos, árboles y rocas por chunk detrás del suelo, grises tintados y `decor_colors` en los tres biomas; F5 pendiente |
 | 2026-11-12 | T-0056 | Auditoría de documentación: `enemies`/`items` reescritos, `biomes`/`loot`/`passives` nuevos, mundo/UI/jugador/README al día y mapa en `vault/documentacion.md` |
 | 2026-11-12 | T-0055 | Monedas arriba a la izquierda con icono: fuera los anchors de pantalla completa, rect fijo (26, 26) y `coin_icon` 16×16; F5 pendiente |
 | 2026-11-12 | T-0054 | KP4/KP6 aterrizan 4 tiles sobre el suelo del destino (`ground_y_at()` + `refresh_chunks()`); F5 pendiente |

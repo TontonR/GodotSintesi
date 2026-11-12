@@ -11,6 +11,7 @@ display_name = "Snow"
 grass_color = Color(0.93, 0.96, 1, 1)
 forest_color = Color(0.82, 0.88, 0.96, 1)
 rock_color = Color(0.75, 0.78, 0.82, 1)
+decor_colors = Array[Color]([Color(0.72, 0.82, 0.85, 1), Color(0.5, 0.62, 0.66, 1), Color(0.45, 0.58, 0.5, 1)])
 ambient = "snow"
 spawn_weight = 0.2
 min_distance_tiles = 4096

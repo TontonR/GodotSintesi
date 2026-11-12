@@ -10,6 +10,7 @@ script = ExtResource("1_biome")
 display_name = "Meadow"
 grass_color = Color(0.72, 1, 0.28, 1)
 forest_color = Color(0.233, 0.388, 0.388, 1)
+decor_colors = Array[Color]([Color(0.72, 1, 0.28, 1), Color(0.55, 0.95, 0.4, 1), Color(0.85, 1, 0.45, 1)])
 spawn_weight = 0.55
 terrain_amplitude_multiplier = 0.95
 enemy_scenes = Array[PackedScene]([ExtResource("2_orc"), ExtResource("2_6un0d"), ExtResource("3_swogl")])

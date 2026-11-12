@@ -136,6 +136,26 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## settle with their own gravity (`scripts/collectables/coin.gd`).
 @export var coin_spawn_height: float = 40.0
 
+@export_group("Decor")
+## Decor textures of `assets/map/decor` (bushes, trees and rocks), painted
+## behind the ground. The green ones are gray copies tinted by the biome.
+@export var decor_textures: Array[Texture2D] = [
+	preload("res://assets/map/decor/Bush/bush_1_gray.png"),
+	preload("res://assets/map/decor/Bush/bush_2_gray.png"),
+	preload("res://assets/map/decor/Tree/tree_gray.png"),
+	preload("res://assets/map/decor/Tree/tree_dead.png"),
+	preload("res://assets/map/decor/Rock/rock_1.png"),
+	preload("res://assets/map/decor/Rock/rock_2.png"),
+]
+## Whether each texture takes the biome's `decor_colors` tint (same order).
+@export var decor_tinted: Array[bool] = [true, true, true, false, false, false]
+## Relative chance of each texture (same order as `decor_textures`).
+@export var decor_weights: Array[int] = [4, 4, 1, 1, 2, 2]
+## Decor sprites per chunk: they never collide and are not parallax.
+@export var decor_per_chunk: int = 16
+## Margin in tiles to keep decor away from the chunk edges.
+@export var decor_margin_tiles: int = 2
+
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -755,7 +775,50 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_spawn_height)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome, "tints": biome_data["tints"]}
+	# Decor is rolled after enemies and coins so their positions never change.
+	var decor: Array[Dictionary] = []
+	var decor_min_x := clampi(decor_margin_tiles, 0, chunk_width_tiles - 1)
+	var decor_max_x := clampi(
+		chunk_width_tiles - decor_margin_tiles - 1, decor_min_x, chunk_width_tiles - 1
+	)
+	for i in range(maxi(decor_per_chunk, 0)):
+		var kind := _pick_decor_kind(rng)
+		if kind < 0:
+			continue
+		var local_x := rng.randi_range(decor_min_x, decor_max_x)
+		var tint := Color.WHITE
+		if kind < decor_tinted.size() and decor_tinted[kind]:
+			tint = _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
+		decor.append({"texture": decor_textures[kind], "tint": tint, "x": local_x})
+
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "biome": biome, "tints": biome_data["tints"]}
+
+
+## Weighted random decor kind; -1 when there is nothing to spawn.
+func _pick_decor_kind(rng: RandomNumberGenerator) -> int:
+	var count := mini(decor_textures.size(), decor_weights.size())
+	var total := 0
+	for i in range(count):
+		total += maxi(decor_weights[i], 0)
+	if total <= 0:
+		return -1
+	var roll := rng.randi_range(0, total - 1)
+	for i in range(count):
+		roll -= maxi(decor_weights[i], 0)
+		if roll < 0:
+			return i
+	return -1
+
+
+## Random decoration tint of the biome at `tile_x`; white when it defines none.
+func _decor_tint_at(tile_x: int, rng: RandomNumberGenerator) -> Color:
+	var index := _biome_index_at_tile(tile_x)
+	if index < 0:
+		return Color.WHITE
+	var biome := biomes[index]
+	if biome.decor_colors.is_empty():
+		return Color.WHITE
+	return biome.decor_colors[rng.randi_range(0, biome.decor_colors.size() - 1)]
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -799,6 +862,27 @@ func _unload_chunk(coord: Vector2i) -> void:
 
 
 func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
+	# Decor first: sprites are moved to index 0, so they stay behind Solid and
+	# GrassPaint. Their bottom edge rests on the surface row (same height as the
+	# grass) and they have no collision.
+	var decor: Array = data.get("decor", [])
+	for i in range(decor.size()):
+		var texture: Texture2D = decor[i]["texture"]
+		if texture == null:
+			continue
+		var tile_x: int = decor[i]["x"]
+		var sprite := Sprite2D.new()
+		sprite.name = "Decor_%d" % i
+		sprite.texture = texture
+		sprite.centered = false
+		sprite.modulate = decor[i]["tint"]
+		sprite.position = Vector2(
+			tile_x * TILE_SIZE + (TILE_SIZE - texture.get_width()) * 0.5,
+			data["heights"][tile_x] * TILE_SIZE - texture.get_height()
+		)
+		chunk.add_child(sprite)
+		chunk.move_child(sprite, 0)
+
 	for entry in data["enemies"]:
 		var spawn_id: String = entry["id"]
 		if _defeated_spawns.has(spawn_id):

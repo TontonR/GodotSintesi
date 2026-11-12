@@ -429,3 +429,16 @@ Formato de entrada:
   `vault/pasivas/` (Maza +2, Colmillo +3, Piedra de oro +10 %).
 - Verificado con grep/sed sobre escenas, `.tres` y scripts; sin tocar código, no hace
   falta F5. Ticket en `revision`.
+
+## 2026-11-12 · `buffy` · Decoraciones de bioma (T-0057) y ramas por feature
+- `humano-ruben` pide que cada feature vaya en su propia rama y se integre con PR, y que
+  el mundo spawee `assets/map/decor` (2 arbustos, 2 árboles, 2 rocas) detrás del suelo, sin
+  colisión, escala ni parallax, con el verde tintado por bioma.
+- Vault: `README.md` estrena el flujo de ramas/PR (`feat/<slug>`, merge squash, `main` solo
+  recibe merges); `AGENTS.md` recoge la regla y `estado.md` apunta a `feat/decor`.
+- Código: `Biome.decor_colors` (array) y grupo **Decor** en `WorldGenerator`; cada sprite
+  es el primer hijo del chunk (detrás de `Solid`/`GrassPaint`) y las copias grises
+  `bush_1_gray.png`, `bush_2_gray.png` y `tree_gray.png` se generan dejando los troncos.
+- Tres tintes por bioma: verdes en pradera, rojos/naranjas en bosque rojo y verdes fríos en
+  nieve; rocas y árbol muerto no se tintan.
+- Verificado con script headless; queda el F5 visual y el push/PR de la rama.
