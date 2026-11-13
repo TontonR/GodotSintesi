@@ -1,0 +1,39 @@
+# Gauntlet
+
+_Item · pasiva · `Normal` · 2026-11-13_
+
+| Campo | Valor |
+|---|---|
+| Nombre en el juego | **Gauntlet** |
+| Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
+| Calidad | `Normal` |
+| Estado | `por asignar textura` |
+| Textura en el juego | `res://assets/items/iconos/strenghtenW.png` — aplicada, **provisional** |
+| Recurso | `res://resources/guantelete.tres` |
+| Script | `res://scripts/collectables/GauntletPassive.gd` |
+| Lo suelta | — (sin drop) |
+| Doc técnica | [`docs/passives.md`](../../docs/passives.md) · [`docs/loot.md`](../../docs/loot.md) |
+
+## Qué hace
+
+> Every fifth attack in the rotation, the next hit deals double damage.
+
+Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese momento. No se puede repetir: si ya la tienes, la tirada de loot la filtra.
+
+## Valores del recurso
+
+| Campo | Valor |
+|---|---|
+| `passive_id` | `"guantelete"` |
+| `every_n_attacks` | `5` |
+| `damage_multiplier` | `2.0` |
+
+## Cómo conseguirlo
+
+- **Drop**: Sin drop asignado: pool neutral (solo debug).
+- **Debug**: KP2 (pasiva aleatoria)
+- Catálogo: [items.md](../items.md) · enemigos: [enemies.md](../enemies.md)
+
+## Pendiente
+
+- [ ] Asignar textura definitiva (hoy hay icono provisional del pack).

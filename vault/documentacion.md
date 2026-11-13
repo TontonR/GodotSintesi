@@ -20,7 +20,7 @@ el código y se corrige el doc en esa tarea.
 | UI | [`docs/ui.md`](../docs/ui.md) | corregido 2026-11-12 | HUD, monedas, rejilla de pasivas, inventario, menús, pausa y guardado |
 | FX | [`docs/fx.md`](../docs/fx.md) | al día | Partículas, números de daño, shake, parry y sangre |
 | Historial | [`docs/historial.md`](../docs/historial.md) | ampliado 2026-11-12 | Bugs que ya mordieron (drops, HUD, relieve, enemigos) |
-| Pasivas por enemigo | [`vault/pasivas/`](pasivas/README.md) | corregido 2026-11-12 | Reparto de Jorge con probabilidades reales |
+| Pasivas por enemigo | [`vault/pasivas/`](pasivas/README.md) | corregido 2026-11-12 | Reparto de Jorge con probabilidades reales (histórico) |
 | Cómo correr y controles | [`README.md`](../README.md) | corregido 2026-11-12 | F5, controles reales (1-3 consumibles) y debug |
 
 ## Lo que faltaba y se ha creado
