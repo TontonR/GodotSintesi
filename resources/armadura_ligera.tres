@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="DamageReductionPassive" format=3 uid="uid://b8tf07bwucsq6"]
 
 [ext_resource type="Script" uid="uid://d1eal6j7fcg0i" path="res://scripts/collectables/DamageReductionPassive.gd" id="1_defn"]
-[ext_resource type="Texture2D" uid="uid://ditgmpktg6vbd" path="res://assets/items/item579.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://7qr85qgf257t" path="res://assets/items/item221.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_defn")

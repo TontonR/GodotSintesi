@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="StatBonusPassive" format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/StatBonusPassive.gd" id="1_stat"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/healthW.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://10ib4s6ois8y" path="res://assets/items/item890.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_stat")

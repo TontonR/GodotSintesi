@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GuardianWrathPassive" format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/GuardianWrathPassive.gd" id="1_grwr"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/fireW.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://dti6rxxj3a476" path="res://assets/items/item933.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_grwr")

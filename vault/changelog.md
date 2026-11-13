@@ -2,6 +2,24 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-13 · `main` — correcciones de iconos de pasivas
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Ajustes de sprites pedidos y renombrados `Hunter's Faith` y `Sanguine Ruby`; preview de cambios | `resources/armadura_*.tres`, `resources/cazador.tres`, `resources/codicia.tres`, `resources/colmillo_lobo.tres`, `resources/corazon_hierro.tres`, `resources/garras_lobo.tres`, `resources/moco.tres`, `resources/piel_lobo.tres`, `resources/pies_ligeros.tres`, `resources/pulso_vampirico.tres`, `assets/items/sanguine_ruby.png`, `docs/items.md` | [T-0053](tickets/T-0053-ajustes-iconos-pasivas.md) |
+
+## 2026-11-13 · `main` — iconos de pasivas pendientes
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| 34 pasivas con un `item###.png` distinto y adecuado (amuletos, anillo, armaduras, garras, botas...); `Focus` excluido; preview antes/despues | `resources/adn_hombre_lobo.tres`, `resources/amuleto_*.tres`, `resources/anillo_vigor.tres`, `resources/armadura_*.tres`, `resources/*.tres`, `docs/items.md`, `docs/pasivas-antes-despues.png` | [T-0052](tickets/T-0052-iconos-pasivas-pendientes.md) |
+
+## 2026-11-13 · `main` — iconos de consumibles y tiers de pociones
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Vida/estamina en tiers 20/50/100 con sus iconos; `Vital Essence` -> `Vigorizing Pie`; `Mucus Heart` -> `Mucus Essence`; preview antes/despues | `resources/pocion_*.tres`, `resources/elixir_vida.tres`, `resources/bebida_tonificante.tres`, `resources/esencia_vital.tres`, `resources/corazon_mucosil.tres`, `docs/items.md`, `docs/pociones-antes-despues.png` | [T-0051](tickets/T-0051-iconos-consumibles-y-pociones.md) |
+
 ## 2026-11-12 · `main` — tope de pendiente en el terreno
 
 | Qué | Dónde | Ticket |

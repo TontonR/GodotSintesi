@@ -1,15 +1,15 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-12 por `opencode-jorge`_
+_Actualizado 2026-11-13 por `opencode-jorge`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
 | Rama | `main`, commits locales de la sesión (T-0039..T-0049); sin push |
-| Árbol | T-0039..T-0048 (menús, guardado, biomas por tramos, sangre, fullscreen) y T-0049 (tope de pendiente); ver `changelog.md` |
+| Árbol | T-0039..T-0049 (menús, guardado, biomas, sangre, fullscreen, pendiente), T-0051 (pociones), T-0052/T-0053 (iconos de pasivas), sin commit; ver `changelog.md` |
 | Fase | Mundo procedural, cámara, menú, caída y loot estables. Terreno con escalón máximo de 1 tile; 6 enemigos terrestres activos. |
-| Siguiente paso | F5 de T-0039..T-0049 (menús/guardado, biomas, sangre, fullscreen y pendiente del terreno). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 de T-0039..T-0049, T-0051, T-0052 y T-0053 (pociones e iconos de pasivas). Quedan las 4 filas del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. T-0001 queda absorbido por T-0019 (port manual, sin merge) |
 
 ## Foco por agente
@@ -17,7 +17,7 @@ _Actualizado 2026-11-12 por `opencode-jorge`_
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
 | `buffy` | Sin confirmar desde `28050dd` | — |
-| `opencode-jorge` | T-0049 tope de pendiente (hecho, pendiente de F5) | `scripts/world_generator.gd`, `docs/world.md` |
+| `opencode-jorge` | T-0053 correcciones de iconos de pasivas (hecho, pendiente de F5) | `resources/*.tres`, `docs/items.md`, `docs/pasivas-cambios-2026-11-13.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 

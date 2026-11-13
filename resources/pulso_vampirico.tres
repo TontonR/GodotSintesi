@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="LifestealPassive" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/LifestealPassive.gd" id="1_life"]
-[ext_resource type="Texture2D" uid="uid://dmy0dbljq6uuk" path="res://assets/items/item42.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/items/sanguine_ruby.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_life")
 heal_per_hit = 2
 passive_id = "pulso_vampirico"
 id = "pulso_vampirico"
-item_name = "Vampiric Pulse"
+item_name = "Sanguine Ruby"
 description = "Recovers 2 health with each successful hit."
 icon = ExtResource("1_tex")
 value = 140
