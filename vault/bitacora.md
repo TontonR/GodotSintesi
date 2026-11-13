@@ -459,3 +459,107 @@ Formato de entrada:
 - Reparto: slots estratificados (un prop por slot, ±30% de jitter) y `decor_min_gap_tiles` = 3; densidades 20/26/10 por chunk y `Biome.decor_dead_tree_ratio` (nieve 0.4) convierte el 40% exacto de los árboles del chunk en muertos.
 - Verificado headless: tronco idéntico al original con tinte rojo, hojas teñidas, rocas y árbol muerto sin tocar, caché reutilizada; separaciones mínimas 9/5/21 tiles; 20/26/10 props por chunk; nieve 15 vivos / 10 muertos = 0.40. F5 pendiente.
 - Afectados: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `resources/world/biomes/{pradera,bosque_rojo,nieve}.tres`, `docs/decor.md`, ticket T-0057, `changelog.md`, `estado.md`.
+
+## 2026-11-13 · `buffy` · Nieve casi blanca y atravesar enemigos (T-0057 cuarta pasada, T-0058)
+
+- Ruben: la vegetación de la nieve sale gris y, andando, se empuja a los enemigos; prefiere atravesarlos pero que atravesarlos duela.
+- `resources/world/biomes/nieve.tres`: `decor_colors` pasa a `(0.98, 1, 1)`, `(0.88, 0.94, 0.99)` y `(0.78, 0.86, 0.94)` con los mismos pesos 3/3/2.
+- Empuje: `slime.tscn`, `skeleton.tscn` y `archer.tscn` tenían `collision_mask = 3` (mundo + jugador) y su `move_and_slide()` los sacaba del solape; bajan a 1 como el resto.
+- Daño de contacto en `scripts/player.gd`: `body_contact_damage` (5) y `body_contact_cooldown` (1 s por enemigo) con `intersect_shape` sobre la máscara 4 y `take_damage_from()` sin knockback (guardia/parry frontal y KP5 siguen valiendo).
+- Afectados: `resources/world/biomes/nieve.tres`, `scripts/player.gd`, `scenes/enemies/{slime,skeleton,archer}.tscn`, `docs/decor.md`, `docs/biomes.md`, `docs/player.md`, `docs/enemies.md`, tickets T-0057 y T-0058, `changelog.md`, `estado.md`, `roadmap.md`.
+- Verificado solo por inspección: F5 pendiente de empuje, daño de contacto y tono de la nieve.
+
+## 2026-11-13 · `buffy` · Muerte definitiva y tres slots de guardado (T-0059, T-0060)
+
+- Ruben: al morir no se debe revivir; pantalla de muerte y la run se acaba. Guardado en hasta 3 runs (slots) sobrescribibles. Recuerda fusionar las PR a `main`.
+- `scripts/save_game.gd` pasa de un `user://savegame.cfg` a `user://run_slot_N.cfg` con `current_slot`, `slot_summary()`, `start_new_run()` y `delete_slot()`; se van `SAVE_PATH` y `has_save()`.
+- Menú principal: fuera New Game/Continue; `Menu/Layout/Slots/Slot1…3` con `Play` (continúa o empieza run nueva con semilla) y `Erase`.
+- Muerte: `Player.died` + `is_dead()`, `Game._on_player_died()` borra el slot, espera 1.4 s y abre `DeathScreen` (CanvasLayer 30) sin revivir; `save_run()` rechaza salud 0 y la pausa no guarda una run muerta.
+- Afectados: `scripts/save_game.gd`, `scripts/game.gd`, `scripts/player.gd`, `scripts/ui/{main_menu,pause_menu,death_screen}.gd`, `scenes/main_menu.tscn`, `scenes/game.tscn`, `scenes/ui/death_screen.tscn`, `docs/ui.md`, `docs/player.md`, tickets T-0059/T-0060, `changelog.md`, `estado.md`, `roadmap.md`.
+- `gh` no está instalado en esta máquina: la PR #1 sigue abierta y hay que mergearla desde GitHub (o instalando `gh`) antes de que `main` reciba estas features.
+
+## 2026-11-13 · `buffy` · Menú New Game / Continue / Load (T-0060, revisión de UX)
+
+- Ruben: quería el menú anterior (New Game + Continue) y un botón Load que despliegue las partidas guardadas; Continue carga la última run cerrada.
+- `scenes/main_menu.tscn`: vuelven `NewGame` y `Continue`, se añade `Load` y las tres filas de slot (Play/Erase) se mueven a `Menu/LoadDialog` con `Back` y Esc.
+- `scripts/save_game.gd`: `latest_slot()` (mtime más reciente = última run cerrada) y `slot_for_new_run()` (primer slot libre o el más antiguo si los tres están llenos).
+- `scripts/ui/main_menu.gd`: New Game → semilla → slot automático; Continue → `latest_slot()`; Load → diálogo con los tres slots, filas vacías deshabilitadas y Erase.
+- Afectados: `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd`, `scripts/save_game.gd`, `docs/ui.md`, ticket T-0060, `changelog.md`, `estado.md`.
+- Verificado por inspección; F5 pendiente (crear 3 runs, borrar una, Continue y cargar cada slot).
+
+## 2026-11-13 · `buffy` · Arreglo de la pantalla de muerte (T-0059)
+
+- Ruben: la pantalla de muerte no aparecía. Causa: el editor abierto reserializó `scenes/game.tscn` y se llevó el nodo `DeathScreen` y su `ext_resource`; `Game._on_player_died()` no lo encontraba y no mostraba nada.
+- Arreglo: nodo devuelto a `game.tscn` y `Game._ensure_death_screen()` instancia `res://scenes/ui/death_screen.tscn` si la escena no lo trae (protege ante futuras reserializaciones del editor).
+- Verificado con script headless desechable (`res://_death_check.gd`, borrado después): `dead=true`, `health=0`, `screen_visible=true`, `paused=true`, Godot exit 0 sin errores de script.
+- Afectados: `scenes/game.tscn`, `scripts/game.gd`, `docs/ui.md`, ticket T-0059, `changelog.md`, `estado.md`.
+
+## 2026-11-13 · `buffy` · Aviso de sobrescritura + contador de metros (T-0060, T-0061)
+
+- Ruben: quería que al guardar sin hueco el juego avisara y pidiera qué run sobrescribir; contador de metros (bloques) arriba al centro; y que Load muestre monedas y metros en vez de la semilla.
+- `SaveGame`: `has_free_slot()` y `first_free_slot()` (devuelve -1 si no queda hueco) sustituyen a `slot_for_new_run()`; `[run] meters` nuevo, con `SPAWN_X` (808) como fallback para slots viejos; `slot_summary()` expone `meters`.
+- `WorldGenerator.meters_at(world_x)` (spawn 50×16+8); `UILayer/Meters` en `game.tscn`; `Game._process()` refresca el label solo al cambiar de bloque.
+- Menú: Start arranca en el primer hueco o abre `LoadDialog` en modo sobrescritura (todo habilitado, `Erase` oculto, `Back` vuelve al diálogo de semilla); las filas muestran `M m · C coins`.
+- Verificado: `--check-only` en world_generator/save_game/game/main_menu (exit 0) y script headless desechable (borrado) → `start_m=0 label=0 m`, tras +160 px `10 m`. F5 pendiente.
+- Afectados: `scripts/world_generator.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scripts/ui/main_menu.gd`, `scenes/game.tscn`, `docs/ui.md`, tickets T-0060/T-0061, `changelog.md`, `estado.md`, `roadmap.md`.
+
+## 2026-11-13 · `buffy` · El parry perfecto aturde al lobo (T-0062)
+
+- Ruben: el lobo quedó OP con el daño de contacto (atraviesa, golpea por la espalda donde no llega el escudo, corre más que tú y el contacto te desintegra). Pide aturdimiento de 0.5–1 s al pararle perfecto y que sea un poco más lento.
+- Causa real: el lobo ya pega con su propio hitbox y el jugador le sumaba encima los 5 px de contacto genérico (13 + 5 cada 0.5 s).
+- `EnemyBase.uses_custom_contact_damage()` (false por defecto); el lobo lo pone a `true` y `player._update_body_contact()` lo salta.
+- `Player.parried(attacker)`: se emite al consumir la ventana de parry; el lobo se conecta una sola vez (grupo `player`, `_parry_connected`) y, si el atacante es él, entra en `STUN` con `parry_stun_time` 0.8 s, destello azulado y sin daño de contacto; en el aire espera a aterrizar y luego vuelve al aviso.
+- `charge_speed` 150 → 140: sigue superando el paseo (130) y queda por debajo del sprint (221).
+- Verificado headless (script desechable borrado): parry de otro atacante no aturde, parry propio → `state=5` (STUN) 0.8 s, luego vuelve a embestir, `_contact_cooldowns` del jugador vacío con el lobo encima y `charge_speed=140`. `--check-only` en player/enemy_base/werewolf con exit 0. F5 pendiente.
+
+## 2026-11-13 · `buffy` · Cimas blancas en la montaña nevada (T-0063)
+
+- Ruben: en el bioma nevado la cima del fondo se oscurece en vez de verse blanca.
+- Causa: `mountains/Sprite2DSnow` (`mountain2_snow.png`, la capa de nieve) no estaba en ninguna lista de tinte y su textura es blanco sucio (≈ 184, 172, 171) sobre un risco teñido de `rock_color` 0.75; el modulate solo multiplica, así que ningún tinte normal la aclaraba.
+- Nuevo canal `Biome.snow_color` (blanco por defecto) + `snow_tint_paths` (`../mountains/Sprite2DSnow`) aplicado en `_update_biome_tint()` junto a forest/rock/base.
+- `nieve.tres`: `snow_color = (1.55, 1.6, 1.65)` (por encima de 1, empuja la capa a blanco puro) y `rock_color` 0.75 → `(0.92, 0.94, 0.98)`.
+- Antes de tocar código compuse las tres capas en PIL para comparar variantes (actual / roca clara + nieve al 150 % / todo a blanco); se eligió la intermedia.
+- Verificado headless (script desechable borrado): `snow_color=(1.55, 1.6, 1.65)`, `Sprite2DSnow` dentro de `_snow_tint_nodes` y el canal `"snow"` devolviéndolo; `--check-only` en world_generator/biome exit 0. F5 pendiente.
+
+## 2026-11-13 · `buffy` · La capa de nieve no era la cima entera (T-0063, 2.ª pasada)
+
+- Ruben: `mountain2_snow.png` estaba mal; la cima tiene dos colores y la imagen solo recogía el brillo (el más pequeño).
+- Paleta real de `mountain2.png`: roca en tres tonos — brillo `184, 172, 171` (5.944 px), cara iluminada `161, 148, 147` (20.474 px) y cara de sombra `107, 108, 122` (13.136 px) — más dos teales de vegetación (`45, 80, 82`, `40, 61, 67`).
+- La nieve antigua solo tenía el brillo. Regenerada con los tres tonos: blanco puro, `222, 230, 242` y `150, 162, 180`; la vegetación queda fuera (alpha 0). 39.554 px frente a 5.944.
+- Con tres tonos, subir el modulate por encima de 1 los aplasta a blanco: `nieve.tres` pasa a `snow_color = (1, 1, 1, 1)` y el valor por defecto de `Biome.snow_color` es `(1, 1, 1, 0)` para que solo el bioma nevado muestre la capa (antes el prado y el bosque rojo tenían manchas blancas sueltas).
+- Comparadas dos variantes compuestas en PIL (dejar la cara de sombra como roca vs. cubrirla); se elige cubrirla: es la lectura de "la cima entera" y la que pedía Ruben.
+- Verificado: asset con los tres tonos en el PNG y en la textura importada, `--check-only` en `world_generator.gd`/`biome.gd`. F5 pendiente.
+
+## 2026-11-13 · `buffy` · La cima conserva su color fuera de la nieve (T-0063, 3.ª pasada)
+
+- Ruben: en los biomas no nevados la cima debe parecerse al color original de la imagen, con un mini toque del color de cada bioma.
+- La capa de nieve se pintó blanca, así que hay que devolverle el tono del arte con el modulate: `Biome.snow_color` por defecto `(0.72, 0.66, 0.65)` multiplica los tres blancos y deja ≈ `184, 168, 166` donde el arte tenía `184, 172, 171`.
+- `pradera.tres` `(0.715, 0.675, 0.625)` (verde tenue) y `bosque_rojo.tres` `(0.74, 0.65, 0.625)` (cálido tenue); `nieve.tres` sigue en `(1, 1, 1)`.
+- Medido sobre los tres tonos con PIL: peor delta en prado y bosque rojo 12/255 (4,7 %); en nieve 98/255 (38 %), que es justo el salto a blanco.
+- Verificado headless con script desechable (canal `snow` de los tres `.tres`) y `--check-only` en world_generator/biome. F5 pendiente.
+- Confirmado con un probe que renderiza de verdad (captura del viewport, no `--headless`): el brillo del blanco con `snow_color = (0.72, 0.66, 0.65)` sale `184, 168, 166` en pantalla. El modulate multiplica en sRGB, así que la reconstrucción del tono original es exacta en la práctica y no hay que corregir por espacio de color.
+
+## 2026-11-13 · `buffy` · El lobo se congela y siempre repite embestida (T-0064)
+
+- Ruben: el lobo se queda quieto para siempre tras perseguirte; y al salir del stun debería poder correr o saltar.
+- Causa: el `match _state` de `_update_behavior()` no tenía rama `RECOVER`; `_process_recovery()` existía pero nunca se llamaba, así que tras la primera embestida o salto el estado se quedaba congelado y su temporizador (el que devuelve a `WINDUP` o a vagar) no corría nunca.
+- Arreglo: rama `State.RECOVER` añadida al `match`.
+- Stun: `stun_jump_chance` 0.5 y `_stun_next_attack` (-1 ciclo normal, 1 embestida, 2 salto) que `_launch_attack()` consume una vez; se limpia al volver a vagar. Antes el final del stun siempre reembestía porque el contador 2 + 1 no cuenta el stun.
+- Verificado headless: `RECOVER` a 0 pasa a `WINDUP`, 40 stuns reparten 16 embestidas / 24 saltos, y la intención forzada acaba en `CHARGE`/`JUMP`. `--check-only` sin errores; F5 pendiente.
+
+## 2026-11-13 · `buffy` · Catálogo de enemigos e items con estado y skills (T-0065)
+
+- Ruben: faltaba una vista de conjunto de enemigos (drops con probabilidad, stats, mecánicas)
+  y de objetos, con una casilla de estado y fichas detalladas conectadas entre sí.
+- Nuevo `vault/enemies.md` (lista de los 8) + `vault/enemies/<slug>.md` (stats base → finales,
+  IA, tabla de drops con enlace al objeto, spawn y checklist de F5). Todos en `por revisar`;
+  fantasma y demonio marcados como inalcanzables.
+- Nuevo `vault/items.md` (44 objetos) + `vault/items/<slug>.md`, generados desde `resources/*.tres`
+  y los `item_drops` de las escenas: 9 consumibles, 35 pasivas, 17 con drop. Todos en
+  `por asignar textura` (el icono existe, es provisional). Totales: orco 42 %, lobo/rana/slime 32 %.
+- Skills `estado-enemigos` y `estado-items` en `.opencode/skills/` con el vocabulario de estados,
+  dónde mirar, cuándo actualizar y trampas; `.agents/skills/` tiene la entrada para Freebuff.
+- Trampa del generador: en `[ext_resource ... uid="uid://..." path="..." id="..."]`, el regex
+  `id="..."` casa también dentro de `uid="..."`; hay que anclar con `\bid=`. Con eso se resolvieron
+  los 44 iconos y las 4 tablas de loot (antes salían `1_tex` y faltaba Wolf Fang).
+- Sin cambios de código ni de escenas; verificación de enlaces y conteos, sin F5.

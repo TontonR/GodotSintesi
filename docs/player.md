@@ -1,6 +1,6 @@
 # Player — movement, combat, health and stamina
 
-_2026-10-20 · branch `feat/skills-and-complex-passives`_
+_2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives`_
 
 ## What it does and where it lives
 
@@ -20,7 +20,7 @@ _2026-10-20 · branch `feat/skills-and-complex-passives`_
 
 - Left click: `attack_1/2/3` combo, `combo_window` 0.35 s, `hitbox_damage` 20.
 - Right click or E: guard (-15 + -20/s); blocks frontal damage (`from_front`).
-- Parry: `parry_window` (0.2 s) from when the guard is raised. If a frontal hit lands within the window, it deals no damage, returns `parry_stamina_refund` (30) and fires `fx.parry()` (sparks, `PARRY!`, flash and shake); the window is consumed and the rest of the guard blocks normally. When the window opens a subtle notice plays (`fx.parry_ready()`).
+- Parry: `parry_window` (0.2 s) from when the guard is raised. If a frontal hit lands within the window, it deals no damage, returns `parry_stamina_refund` (30) and fires `fx.parry()` (sparks, `PARRY!`, flash and shake); the window is consumed and the rest of the guard blocks normally. When the window opens a subtle notice plays (`fx.parry_ready()`). Every perfect parry emits `parried(attacker)` so the enemy can react: the wolf's charge is cut and it stays stunned 0.8 s (2026-11-13).
 - Anti-spam: `parry_cooldown` (0.3 s) is added to the window when it opens (`_parry_cooldown_timer = parry_window + parry_cooldown`), so holding or mashing the click doesn't chain parries and each attempt pays the guard (15 + 20/s). A successful parry also resets that cooldown.
 - Guard and parry don't push: `_apply_damage()` returns whether the hit actually removed health and `take_damage_from()` cuts before the knockback/knockup when it didn't.
 
@@ -31,10 +31,11 @@ _2026-10-20 · branch `feat/skills-and-complex-passives`_
 - Luck: `EnemyBase._luck_drop_bonus()` adds `luck × 0.01` to any loot `drop_chance` (with 0 nothing changes).
 - API for passives: `add_attack_speed()`, `add_crit_chance()`, `add_crit_damage()`, `add_luck()`.
 - `UILayer/StatsPanel` panel: 2-column `GridContainer` created by `_ensure_stats_ui()` on the left (5, 82, under the coin line), always visible, `modulate` alpha 0.6 and 9 px font with shadow. It refreshes with `_stats_dirty` (`_update_stats_ui()`) when `attack_speed`, `crit_*`, `luck` or `move_speed` change.
-- Health `max_health` 100: `take_damage()`, `heal()`; `_die()` is a placeholder (full respawn).
+- Health `max_health` 100: `take_damage()`, `heal()`. `_die()` is final (2026-11-13): locks the player, plays `death`, emits `died`; `Game._on_player_died()` erases the run slot and shows `DeathScreen` after 1.4 s. There is no revive, and a dead run is never saved (`SaveGame.save_run()` refuses health ≤ 0, the pause menu skips it and `player.is_dead()` exposes the state).
 - Enemy push: `take_damage_from(amount, attacker_pos, knockback, lock, knockup)` applies damage and, if the guard doesn't block it, `apply_knockback()` / `apply_knockup()`. While `lock` lasts (0.12–0.15 s) horizontal input is ignored.
 - `is_guarding()` for enemy areas that distinguish blocking (demon fire).
 - The player's body only collides with the world (`collision_mask` 1): it passes through enemies, can't climb on them. Damage and hits go through `Area2D`.
+- Passing through an enemy costs a contact hit (2026-11-13): `_update_body_contact()` queries the physics space with the player's own collider (mask `ENEMY_LAYER` 4) and applies `body_contact_damage` (5) through `take_damage_from()`, so a frontal guard/parry still blocks it and there is no knockback. Each enemy has its own `body_contact_cooldown` (1 s); `0` in `body_contact_damage` disables the whole thing. Enemies that already hurt with their own hitbox (`EnemyBase.uses_custom_contact_damage()`, the wolf) are skipped so the hit doesn't stack.
 - Coins: `current_coins`, `initial_coins`.
 
 ## Initial fall (2026-11-03, retimed 2026-11-10)

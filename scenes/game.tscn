@@ -21,6 +21,12 @@
 [ext_resource type="Script" uid="uid://18rsr7h1h1n1" path="res://scripts/fx.gd" id="25_fx"]
 [ext_resource type="Script" uid="uid://cysx61qhfpsg2" path="res://scripts/game.gd" id="26_game"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="27_pause"]
+[ext_resource type="Texture2D" uid="uid://b48a2t5pyf60t" path="res://assets/coins/MonedaD.png" id="28_coin"]
+[ext_resource type="PackedScene" path="res://scenes/ui/death_screen.tscn" id="29_death"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_coin_hud"]
+atlas = ExtResource("28_coin")
+region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.176471, 0.176471, 0.176471, 1)
@@ -159,21 +165,23 @@ script = ExtResource("24_parts")
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=223456789]
 layer = 10
 
+[node name="coin_icon" type="TextureRect" parent="UILayer" unique_id=1876716094]
+offset_left = 6.0
+offset_top = 26.0
+offset_right = 22.0
+offset_bottom = 42.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_coin_hud")
+
 [node name="coins" type="Label" parent="UILayer" unique_id=1876716093]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -374.0
-offset_top = -153.0
-offset_right = -374.0
-offset_bottom = -153.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = 26.0
+offset_top = 26.0
+offset_right = 120.0
+offset_bottom = 42.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "0"
-horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="HealthBar" type="ProgressBar" parent="UILayer" unique_id=223456790]
@@ -278,6 +286,8 @@ tile_set = SubResource("TileSet_mdkdc")
 [node name="InventoryScreen" parent="." unique_id=1910117250 instance=ExtResource("18_invs")]
 
 [node name="PauseMenu" parent="." unique_id=933161359 instance=ExtResource("27_pause")]
+
+[node name="DeathScreen" parent="." unique_id=177126728 instance=ExtResource("29_death")]
 
 [node name="fall_intro" type="Node" parent="." unique_id=1899368322]
 script = ExtResource("21_fall")

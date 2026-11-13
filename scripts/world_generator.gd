@@ -109,6 +109,10 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 @export var rock_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2D",
 ]
+## Nodes (Sprite2D) of the mountain snow cap, which use the biome's `snow_color`.
+@export var snow_tint_paths: Array[NodePath] = [
+	^"../mountains/Sprite2DSnow",
+]
 ## Nodes (ColorRect) of the band under the mountains: they take a dark
 ## shade of the biome's `forest_color`.
 @export var base_tint_paths: Array[NodePath] = [
@@ -194,6 +198,7 @@ var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
 var _rock_tint_nodes: Array[CanvasItem] = []
+var _snow_tint_nodes: Array[CanvasItem] = []
 var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
 ## Biome runs already decided, in order: {start, index, length} in tiles.
@@ -249,6 +254,10 @@ func _ready() -> void:
 		var node := get_node_or_null(path) as CanvasItem
 		if node:
 			_rock_tint_nodes.append(node)
+	for path in snow_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_snow_tint_nodes.append(node)
 	for path in base_tint_paths:
 		var node := get_node_or_null(path) as ColorRect
 		if node:
@@ -475,6 +484,12 @@ func refresh_chunks() -> void:
 
 
 ## Seed of this run; the save stores it to rebuild the same world.
+## Blocks (tiles) traveled from the spawn point; negative behind it.
+func meters_at(world_x: float) -> int:
+	var spawn_x := float(safe_start_tiles) * float(TILE_SIZE) + float(TILE_SIZE) * 0.5
+	return floori((world_x - spawn_x) / float(TILE_SIZE))
+
+
 func current_seed() -> int:
 	return _seed
 
@@ -610,7 +625,7 @@ func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
 		counts[index] = remaining
 
 
-## Biome channel tint at a block ("grass", "forest" or "rock").
+## Biome channel tint at a block ("grass", "forest", "rock" or "snow").
 func _biome_color_at_tile(tile_x: int, channel: String) -> Color:
 	if biomes.is_empty():
 		return Color.WHITE
@@ -634,6 +649,8 @@ func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
 				color = biome.forest_color
 			"rock":
 				color = biome.rock_color
+			"snow":
+				color = biome.snow_color
 		total += color * float(counts.get(index, 0))
 	return total / float(samples)
 
@@ -693,7 +710,7 @@ func _chunk_biome_data(chunk_x: int) -> Dictionary:
 ## stone and the band under the mountains. Updated when the block changes,
 ## not the chunk, so the change is continuous.
 func _update_biome_tint(force: bool) -> void:
-	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
+	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _snow_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
 		return
 	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
 	if not force and tile_x == _last_biome_tile:
@@ -701,10 +718,15 @@ func _update_biome_tint(force: bool) -> void:
 	_last_biome_tile = tile_x
 	var forest := _biome_color_at_tile(tile_x, "forest")
 	var rock := _biome_color_at_tile(tile_x, "rock")
+	var snow := _biome_color_at_tile(tile_x, "snow")
 	for node in _forest_tint_nodes:
 		node.modulate = forest
 	for node in _rock_tint_nodes:
 		node.modulate = rock
+	# Snow cap: can be brighter than white (values above 1) so a snowy peak
+	# reads as snow instead of as tinted rock.
+	for node in _snow_tint_nodes:
+		node.modulate = snow
 	var base := forest.darkened(MOUNTAIN_BASE_DARKENING)
 	for node in _base_tint_nodes:
 		node.color = base

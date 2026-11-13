@@ -9,7 +9,7 @@
 | Sistema | world |
 | Rama | `feat/decor` |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-13 |
 | Relacionado | T-0057 |
 
 ## Problema
@@ -50,6 +50,16 @@ para la vegetación ni voz sobre qué decoración aparecía.
    tiles, para quitar tanto los huecos como las acumulaciones.
 3. Bajar la densidad general (pradera 20, bosque rojo 26, nieve 10) y dejar la
    nieve con el 40% de sus árboles muertos de forma exacta por chunk.
+
+## Plan (cuarta pasada)
+
+1. Ruben: la vegetación de la nieve sale gris; llevar todos los tintes de
+   decorado del bioma a casi blanco, conservando el matiz frío.
+
+## Criterios de aceptación (cuarta pasada)
+
+- [x] Arbustos y árboles vivos de nieve se leen escarchados, no grises.
+- [ ] F5 visual en el bioma nevado.
 
 ## Criterios de aceptación (tercera pasada)
 
@@ -100,5 +110,8 @@ para la vegetación ni voz sobre qué decoración aparecía.
   tinte rojo, hojas teñidas, rocas y árbol muerto sin tocar, caché reutilizada;
   separaciones mínimas 8/5/23 tiles; 20/26/10 props por chunk; nieve 40% de
   muertos. F5 pendiente.
+- Cuarta pasada: `nieve.tres` pasa a `decor_colors` `(0.98, 1, 1)`,
+  `(0.88, 0.94, 0.99)` y `(0.78, 0.86, 0.94)` con pesos 3/3/2 (casi blanco con
+  matiz de hielo); `docs/decor.md` y `docs/biomes.md` al día. F5 pendiente.
 - Rama publicada y [PR #1](https://github.com/TontonR/GodotSintesi/pull/1)
   abierta, sin mergear.

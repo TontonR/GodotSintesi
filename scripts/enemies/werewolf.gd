@@ -5,8 +5,10 @@ extends EnemyBase
 ## jump that hits for double the base attack on landing.
 ## Contact damage uses the real hitbox and is checked every physics frame;
 ## the charge always travels its straight line before deciding whether to turn.
+## A perfect parry cuts the charge and leaves it stunned (see `parry_stun_time`);
+## when the stun ends it either charges again or answers with the jump.
 
-enum State { WANDER, WINDUP, CHARGE, JUMP, RECOVER }
+enum State { WANDER, WINDUP, CHARGE, JUMP, RECOVER, STUN }
 
 ## Normal charges before the next pass is a jump.
 const CHARGES_BEFORE_JUMP := 2
@@ -26,8 +28,9 @@ const CHARGES_BEFORE_JUMP := 2
 @export var wander_radius: float = 400.0
 
 @export_group("Charge")
-## Charge speed (px/s). Slower than the player's sprint (221).
-@export var charge_speed: float = 150.0
+## Charge speed (px/s): faster than the player's walk (130), slower than the
+## sprint (221).
+@export var charge_speed: float = 140.0
 ## Still windup time before charging (s).
 @export var charge_windup: float = 0.25
 ## Still pause after each charge or jump, before charging again (s).
@@ -50,6 +53,12 @@ const CHARGES_BEFORE_JUMP := 2
 @export var impact_radius: float = 40.0
 ## Maximum horizontal speed during the jump (px/s).
 @export var jump_speed_max: float = 320.0
+
+@export_group("Stun")
+## Seconds it stays stunned after a perfect parry (s).
+@export_range(0.1, 3.0, 0.05) var parry_stun_time: float = 0.8
+## Chance that the stun is answered with the jump instead of charging again.
+@export_range(0.0, 1.0, 0.05) var stun_jump_chance: float = 0.5
 
 # ---------------------------------------------------------------------------
 # Internal state
@@ -74,6 +83,10 @@ var _jump_vx: float = 0.0
 var _jump_taken_off: bool = false
 ## Seconds left before it can hit by contact again.
 var _hit_cooldown_left: float = 0.0
+## Player whose `parried` signal is already connected (avoids double connect).
+var _parry_connected: Node = null
+## Attack chosen by the stun: -1 = the normal 2 + 1 cycle, 1 = charge, 2 = jump.
+var _stun_next_attack: int = -1
 
 
 func _init() -> void:
@@ -102,6 +115,7 @@ func _ready() -> void:
 	_setup_wander_bounds()
 	_pick_wander_target()
 	_play_animation(idle_animation, true)
+	_connect_player_parry_signal()
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +140,8 @@ func _update_behavior(delta: float) -> void:
 			_process_jump(delta)
 		State.RECOVER:
 			_process_recovery(delta)
+		State.STUN:
+			_process_stun(delta)
 
 
 # ---------------------------------------------------------------------------
@@ -219,9 +235,16 @@ func _process_windup(delta: float) -> void:
 		_launch_attack()
 
 
-## Decides the pass: every two charges, the third is a jump.
+## Decides the pass: what the stun chose, otherwise every two charges the
+## third is a jump.
 func _launch_attack() -> void:
-	if _charges_done >= CHARGES_BEFORE_JUMP:
+	var forced := _stun_next_attack
+	_stun_next_attack = -1
+	if forced == 1:
+		_start_charge()
+	elif forced == 2:
+		_start_jump()
+	elif _charges_done >= CHARGES_BEFORE_JUMP:
 		_start_jump()
 	else:
 		_start_charge()
@@ -351,10 +374,72 @@ func _process_recovery(delta: float) -> void:
 
 ## Returns to wandering (the 2 + 1 cycle counter is kept).
 func _return_to_wander() -> void:
+	_stun_next_attack = -1
 	_state = State.WANDER
 	_wander_pause = 0.0
 	_stop()
 	_pick_wander_target()
+
+
+# ---------------------------------------------------------------------------
+# Parry stun: the risk-reward answer to the charge
+# ---------------------------------------------------------------------------
+
+## Connects to the player's perfect-parry notice (idempotent: one connect).
+func _connect_player_parry_signal() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null or player == _parry_connected or not player.has_signal("parried"):
+		return
+	_parry_connected = player
+	var handler := Callable(self, "_on_player_parried")
+	if not player.is_connected("parried", handler):
+		player.connect("parried", handler)
+
+
+## Only a parry of this wolf's own hit stuns it; other attackers are ignored.
+func _on_player_parried(attacker: Node) -> void:
+	if attacker != self or _is_dead:
+		return
+	_start_stun()
+
+
+## Cuts the current pass (charge or jump) and leaves it standing still.
+func _start_stun() -> void:
+	_state = State.STUN
+	_state_timer = parry_stun_time
+	_charge_hit_done = true
+	_stop()
+	_play_animation(idle_animation, true)
+	_flash_stun()
+
+
+func _process_stun(delta: float) -> void:
+	# Standing still and harmless: `_try_contact_damage` ignores this state.
+	_stop()
+	_play_animation(idle_animation)
+	_state_timer -= delta
+	if _state_timer > 0.0:
+		return
+	# Parried in mid-air: it does not chain until it lands again.
+	if not is_on_floor():
+		return
+	if is_instance_valid(_player):
+		# Two ways out of the stun: charge again or answer with the jump.
+		_stun_next_attack = 2 if randf() < stun_jump_chance else 1
+		_start_windup()
+	else:
+		_return_to_wander()
+
+
+## Bluish flash so the stun reads as a state, not as idle wandering.
+func _flash_stun() -> void:
+	if not sprite:
+		return
+	if _hit_tween:
+		_hit_tween.kill()
+	sprite.modulate = Color(0.65, 0.85, 1.0)
+	_hit_tween = create_tween()
+	_hit_tween.tween_property(sprite, "modulate", Color.WHITE, parry_stun_time)
 
 
 # ---------------------------------------------------------------------------
@@ -401,6 +486,12 @@ func _hit_target(body: Node2D, amount: float, knockup: float = 0.0) -> void:
 # Utilities
 # ---------------------------------------------------------------------------
 
+## The wolf hurts with its own contact hitbox (`_try_contact_damage`), so the
+## player must not stack the generic body-contact hit on top of it.
+func uses_custom_contact_damage() -> bool:
+	return true
+
+
 ## True if the current wall collision is not with the player (the wolf passes through).
 func _is_blocked_by_world() -> bool:
 	if not is_on_wall():
@@ -416,6 +507,7 @@ func _is_blocked_by_world() -> bool:
 func _on_detection_area_body_entered(body: Node2D) -> void:
 	super(body)
 	_ensure_player_collision_exception()
+	_connect_player_parry_signal()
 
 
 ## Horizontal direction (-1/1) toward the player; with no player, where it faces.

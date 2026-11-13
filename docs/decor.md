@@ -1,6 +1,6 @@
 # Decor — bushes, trees and rocks
 
-_2026-11-12 · branch `feat/decor`_
+_2026-11-12 · 2026-11-13 · branch `feat/decor`_
 
 ## What it does and where it lives
 
@@ -70,8 +70,11 @@ random weight, so a sparse biome cannot come out too alive or too dead.
   tree and rocks `false`). The old `*_gray.png` copies are no longer used.
 - `Biome.decor_colors` plus `decor_color_weights`: the red forest mixes red (6),
   orange (3) and yellow (1), so trees and bushes are mostly red with a few
-  orange/yellow ones. Meadow greens 4/4/3, snow cold greens 3/3/2. Empty weights
+  orange/yellow ones. Meadow greens 4/4/3, snow near-whites 3/3/2. Empty weights
   = flat pick; empty colors = `Color.WHITE`.
+- Snow is almost white (2026-11-13): `(0.98, 1, 1)`, `(0.88, 0.94, 0.99)` and
+  `(0.78, 0.86, 0.94)` with 3/3/2, so its bushes and living trees read as pale
+  frosted foliage with just a hint of ice blue instead of gray-green.
 - The tint keeps each leaf pixel's own brightness (`tint * max(R,G,B)`), so the
   original shading of the crown survives instead of flattening.
 

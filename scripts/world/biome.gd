@@ -9,8 +9,12 @@ extends Resource
 @export var grass_color: Color = Color.WHITE
 ## Tint of the background forests and the mountain vegetation; independent from the grass.
 @export var forest_color: Color = Color.WHITE
-## Tint of the mountain stone; white = untinted (snow is separate and not tinted).
+## Tint of the mountain stone; white = untinted.
 @export var rock_color: Color = Color.WHITE
+## Tint of the mountain snow cap over its white tones. The default reproduces
+## the original peak colour of the art (biomes add a tiny hue touch); the snow
+## biome sets it to white. Alpha 0 hides the cap.
+@export var snow_color: Color = Color(0.72, 0.66, 0.65, 1.0)
 ## Decoration tints for the bushes and the living tree (their textures are gray).
 ## Every decor sprite picks one of these at random; rocks and dead trees are never tinted.
 @export var decor_colors: Array[Color] = []

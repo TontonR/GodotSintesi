@@ -1,0 +1,92 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/death_screen.gd" id="1_death"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_death"]
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+bg_color = Color(0.078431, 0.109804, 0.14902, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="DeathScreen" type="CanvasLayer"]
+visible = false
+process_mode = 3
+layer = 30
+script = ExtResource("1_death")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.09, 0.01, 0.02, 0.72)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -190.0
+offset_top = -118.0
+offset_right = 190.0
+offset_bottom = 118.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_death")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.25, 0.25, 1)
+theme_override_font_sizes/font_size = 32
+text = "You died"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "The run is over."
+horizontal_alignment = 1
+
+[node name="Stats" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87, 0.91, 0.87, 1)
+theme_override_font_sizes/font_size = 14
+text = "Seed 0 · 0 coins"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Menu" type="Button" parent="Panel/Margin/Content/Buttons"]
+custom_minimum_size = Vector2(150, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Main menu"
+
+[node name="Quit" type="Button" parent="Panel/Margin/Content/Buttons"]
+custom_minimum_size = Vector2(110, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Quit"
