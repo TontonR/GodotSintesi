@@ -94,9 +94,9 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Lengths of the biome runs are rounded to this many tiles (0 = one chunk).
 @export var biome_sector_tiles: int = 0
 ## Shortest a biome can last before it may change (avoids micro-biomes).
-@export var min_biome_tiles: int = 1024
+@export var min_biome_tiles: int = 512
 ## Longest a biome can last before it has to change (avoids endless ones).
-@export var max_biome_tiles: int = 4096
+@export var max_biome_tiles: int = 2048
 ## Blocks the color transition between biomes lasts (0 = one full chunk).
 @export var biome_transition_tiles: int = 0
 ## Nodes (Sprite2D) of the forests and the mountain's green layer tinted by the biome.

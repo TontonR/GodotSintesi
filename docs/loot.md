@@ -1,6 +1,6 @@
 # Loot — coins, item drops and pickups
 
-_2026-11-09 · 2026-11-12_
+_2026-11-09 · 2026-11-12 · 2026-11-13_
 
 ## Where it lives
 
@@ -72,8 +72,10 @@ The items themselves (stats, effects, quality) are catalogued in
   A tooltip with name and description appears when the player is near.
 - **Coins** (`scripts/collectables/coin.gd`): gravity 900, bounce 0.4 while > 40 px/s,
   settle + 1 px bob; ground searched by raycast with up to 30 retries while the freshly
-  painted chunk registers its collision. Touching gives `add_coin(coin_value)` and fires
-  `fx.coin_pickup()`.
+  painted chunk registers its collision. Since 2026-11-13 the ray starts 64 px above the
+  coin: a drop born a few pixels inside the floor (`loot_drop_y` ±15 around the corpse)
+  now detects the surface and pops out instead of settling underground. Touching gives
+  `add_coin(coin_value)` and fires `fx.coin_pickup()`.
 - Both live on the chunk node and are freed with it (after `KEEP_CHUNKS_SIDE` = 2 chunks).
 
 ## Persistence

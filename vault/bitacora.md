@@ -563,3 +563,22 @@ Formato de entrada:
   `id="..."` casa también dentro de `uid="..."`; hay que anclar con `\bid=`. Con eso se resolvieron
   los 44 iconos y las 4 tablas de loot (antes salían `1_tex` y faltaba Wolf Fang).
 - Sin cambios de código ni de escenas; verificación de enlaces y conteos, sin F5.
+
+## 2026-11-13 · `buffy` · Biomas más cortos, estamina y monedas (T-0066)
+
+- Ruben: biomas demasiado largos, estamina que se agota enseguida y monedas que
+  aparecen bajo el suelo.
+- Biomas: `min_biome_tiles` 1024 → 512 y `max_biome_tiles` 4096 → 2048 (de 4–16 a
+  2–8 chunks); la transición de 256 tiles sigue cabiendo en el tramo mínimo.
+- Estamina: carrera 7 + 6/s y guardia 10 + 12/s (antes 10 + 10/s y 15 + 20/s).
+- Monedas: `coin.gd` lanza el rayo de suelo desde 64 px arriba, así un drop nacido
+  dentro del tile detecta la superficie y sale; antes se asentaba enterrado.
+- Docs `world`/`biomes`/`player`/`loot` actualizados. Sin Godot ni commit; F5 pendiente.
+
+## 2026-11-13 · `buffy` · El salto no corta la carrera (T-0067)
+
+- Ruben: saltar corriendo frenaba y al aterrizar se pagaba otra vez la entrada de carrera.
+- `_update_stamina()` apagaba `_is_running` al despegar; sin el multiplicador, `move_toward`
+  bajaba la X a 130 en el aire, y la rama de entrada volvía a cobrar `run_initial_cost`.
+- Ahora la carrera solo se corta al soltar Shift, guardar, atacar o quedarse sin estamina;
+  el drenaje sigue en el aire. Docs de player al día. Sin Godot; F5 pendiente.

@@ -76,10 +76,10 @@ var stamina: float
 @export_group("Stamina costs")
 @export var run_speed_multiplier: float = 1.7
 @export var run_acceleration_multiplier: float = 1.3
-@export var run_initial_cost: float = 10.0
-@export var run_drain_per_second: float = 10.0
-@export var guard_initial_cost: float = 15.0
-@export var guard_drain_per_second: float = 20.0
+@export var run_initial_cost: float = 7.0
+@export var run_drain_per_second: float = 6.0
+@export var guard_initial_cost: float = 10.0
+@export var guard_drain_per_second: float = 12.0
 @export var stamina_regen_per_second: float = 10.0
 # endregion
 
@@ -793,8 +793,10 @@ func _update_stamina(delta: float) -> void:
 		else:
 			_parry_timer = 0.0
 
+	# Jumping does not cancel the run: keeping `_is_running` holds the 1.7×
+	# speed in the air and avoids paying `run_initial_cost` again on landing.
 	if _is_running:
-		if not run_input or _is_guarding or _is_attacking or not is_on_floor():
+		if not run_input or _is_guarding or _is_attacking:
 			_is_running = false
 		else:
 			spend_stamina(run_drain_per_second * delta)
