@@ -21,6 +21,11 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `vault/entrega-2.md` | Texto de la entrega 2 (catalán): cambios desde la entrega 1, flujo con IA y los 3 objetivos | Al preparar entregas del proyecto |
 | `vault/bitacora.md` | Diario de sesiones y acuerdos entre agentes (append-only) | Al reclamar/entregar trabajo |
 | `vault/documentacion.md` | Mapa de toda la documentación: qué cubre cada `docs/`, qué faltaba y qué huecos quedan | Al crear/mover documentación o cerrar una auditoría |
+| `vault/enemies.md` | Lista de los 8 enemigos: drops con probabilidad, stats, mecánicas y estado, con enlace a su ficha | Al tocar enemigos, su loot o su estado |
+| `vault/enemies/` | Una ficha por enemigo: stats base → finales, IA, drops, spawn y checklist de F5 | Al cambiar stats, IA, escena o loot |
+| `vault/items.md` | Catálogo de los 44 objetos: tipo, calidad, drop, textura y estado, con el reparto por enemigo | Al crear/cambiar un `.tres` o una tabla de loot |
+| `vault/items/` | Una ficha por objeto: efecto, `.tres`, script, ruta de la textura in-game y quién lo suelta | Al tocar un objeto o su icono |
+| `.opencode/skills/estado-enemigos` · `estado-items` | Skills para consultar y actualizar el estado sin releer escenas (también hay entrada en `.agents/skills/`) | Al empezar o cerrar trabajo de enemigos/objetos |
 | `vault/tickets/` | Un fichero por trabajo, con estado y resultado | Siempre que haya trabajo |
 | `vault/tickets/plantilla.md` | Copia base para abrir un ticket | — |
 
