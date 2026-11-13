@@ -11,7 +11,8 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives`_
 ## Movement
 
 - `move_speed` 130, `acceleration` 750, `friction` 1000, `jump_velocity` -340, `gravity` 1400, fall ×1.6, coyote 0.1, buffer 0.12.
-- Keys read raw: A/D, jump Space/W. Shift = run (1.7×, -10 + -10/s). The arrows are left only for the UI (passive and inventory pages).
+- Keys read raw: A/D, jump Space/W. Shift = run (1.7×, 7 to start + 6/s; before 10 + 10/s, tuned 2026-11-13). The arrows are left only for the UI (passive and inventory pages).
+- Jumping does not cancel the run (2026-11-13): `_is_running` only stops on release, guard, attack or empty stamina, so the 1.7× speed holds in the air, jumping doesn't brake, and landing with Shift held doesn't pay `run_initial_cost` again. The drain keeps running while airborne.
 - Auto step-up of 1 tile (16 px) with `test_move` on the real shape: it tests 1 px ahead, goes up 17 px and continues with X intact (doesn't brake or block the frame). The sprite stays 16 px below and rises interpolated in `step_duration` (0.08 s) so the hop isn't visible. 2+ tiles must be jumped.
 - Attacking or guarding blocks jump and turn; while attacking it moves at 38%.
 - Camera: `Camera2D` `offset (60,-70)`, physics `process_callback` (0). The follow target is `player.global_position`, never `camera.global_position`: using the camera's previous position makes the smoothing offset permanent. Each frame the global position is rounded to a whole pixel; on a step jump the Y advances up to 6 px/frame while the offset is ≤18 px. Measured over 1,200 frames on seeds 12345, 67890 and 20261029: max offset 10.21 px, max camera movement 6 px/frame and final offset after settling <0.28 px. `_diag.gd` repeats this check per seed.
@@ -19,9 +20,9 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives`_
 ## Combat
 
 - Left click: `attack_1/2/3` combo, `combo_window` 0.35 s, `hitbox_damage` 20.
-- Right click or E: guard (-15 + -20/s); blocks frontal damage (`from_front`).
+- Right click or E: guard (10 + 12/s; before 15 + 20/s, tuned 2026-11-13); blocks frontal damage (`from_front`).
 - Parry: `parry_window` (0.2 s) from when the guard is raised. If a frontal hit lands within the window, it deals no damage, returns `parry_stamina_refund` (30) and fires `fx.parry()` (sparks, `PARRY!`, flash and shake); the window is consumed and the rest of the guard blocks normally. When the window opens a subtle notice plays (`fx.parry_ready()`). Every perfect parry emits `parried(attacker)` so the enemy can react: the wolf's charge is cut and it stays stunned 0.8 s (2026-11-13).
-- Anti-spam: `parry_cooldown` (0.3 s) is added to the window when it opens (`_parry_cooldown_timer = parry_window + parry_cooldown`), so holding or mashing the click doesn't chain parries and each attempt pays the guard (15 + 20/s). A successful parry also resets that cooldown.
+- Anti-spam: `parry_cooldown` (0.3 s) is added to the window when it opens (`_parry_cooldown_timer = parry_window + parry_cooldown`), so holding or mashing the click doesn't chain parries and each attempt pays the guard (10 + 12/s). A successful parry also resets that cooldown.
 - Guard and parry don't push: `_apply_damage()` returns whether the hit actually removed health and `take_damage_from()` cuts before the knockback/knockup when it didn't.
 
 ## Stats (2026-11-05)

@@ -7,6 +7,9 @@ signal collected
 const WORLD_LAYER: int = 1
 ## Maximum distance (px) searched downwards for the ground on spawn.
 const GROUND_SEARCH_DISTANCE: float = 1024.0
+## The ray starts this many pixels above the coin: a drop can be born a few
+## pixels inside the floor, and a ray starting inside a collider finds nothing.
+const GROUND_PROBE_ABOVE: float = 64.0
 ## Search attempts before giving up (the TileMap may take a frame to
 ## register the collision of the freshly painted chunk).
 const GROUND_SEARCH_TRIES: int = 30
@@ -88,9 +91,12 @@ func _half_height() -> float:
 ## Searches the ground below; after several failed attempts it stays floating.
 func _find_ground() -> void:
 	var space := get_world_2d().direct_space_state
+	# Cast from above so a coin born inside the terrain still finds the surface
+	# and pops out instead of settling underground.
+	var from := global_position - Vector2(0.0, GROUND_PROBE_ABOVE)
 	var query := PhysicsRayQueryParameters2D.create(
-		global_position,
-		global_position + Vector2(0.0, GROUND_SEARCH_DISTANCE),
+		from,
+		from + Vector2(0.0, GROUND_SEARCH_DISTANCE + GROUND_PROBE_ABOVE),
 		WORLD_LAYER
 	)
 	var hit := space.intersect_ray(query)

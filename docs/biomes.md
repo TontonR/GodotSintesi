@@ -1,6 +1,6 @@
 # Biomes — resources, runs and tinting
 
-_2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12_
+_2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13_
 
 ## What it does and where it lives
 
@@ -70,10 +70,10 @@ to come back, their scenes must be added first.
   `_ensure_biome_runs()` builds a cached list of `{start, index, length}` left to right and
   any tile resolves to the run that contains it.
 - The first run starts at tile 0 and is always `biomes[0]` (meadow): the safe zone.
-- Length is rolled between `min_biome_tiles` 1024 (4 chunks) and `max_biome_tiles` 4096
-  (16 chunks), rounded to `biome_sector_tiles` (0 = one chunk, 256 tiles). No micro-biomes
-  and no endless stretches; the 256-tile blend is narrower than the shortest run, so two
-  transitions never overlap.
+- Length is rolled between `min_biome_tiles` 512 (2 chunks) and `max_biome_tiles` 2048
+  (8 chunks), rounded to `biome_sector_tiles` (0 = one chunk, 256 tiles). Shortened on
+  2026-11-13 (was 1024–4096, 4–16 chunks). No micro-biomes and no endless stretches; the
+  256-tile blend is narrower than the 512-tile shortest run, so two transitions never overlap.
 - The next biome is picked by `_roll_biome_at()` among those unlocked at that distance and
   **never repeats the previous one**. `spawn_weight` only biases the pick; the noise
   (`biome_frequency` 0.12 per chunk, `biome_contrast` 2) decides the order.

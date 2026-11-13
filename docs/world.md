@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `main`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · branch `main`_
 
 ## What it does and where it lives
 
@@ -41,7 +41,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 - `scripts/world/biome.gd` (`class_name Biome`, `Resource`): `display_name`, `grass_color`, `forest_color`, `rock_color`, `ambient`, `spawn_weight`, `min_distance_tiles`, `terrain_amplitude_multiplier`, `terrain_frequency_multiplier`, `enemy_scenes`, `enemy_counts` (same order as the scenes).
 - Resources (3): `pradera.tres` (green, 3 orcs + 3 slimes + 1 toad, weight 0.55), `bosque_rojo.tres` (red, 1 wolf + 1 toad, weight 0.3) and `nieve.tres` (blue-white, 2 skeletons + 2 archers + 1 wolf, weight 0.2, unlocked at 4096 tiles). Full reference: [`docs/biomes.md`](biomes.md).
 - **Biomes are decided per run, not per block** (2026-11-10, `_biome_index_at_tile()` / `_ensure_biome_runs()`): `_biome_runs` is a cached list of `{start, index, length}` built left to right, and any block resolves to the run containing it. The first run (tile 0) is the safe zone with the first biome; the whole window still blends, so the tint is smooth inside a run.
-- **Run length**: rolled between `min_biome_tiles` (1024 = 4 chunks) and `max_biome_tiles` (4096 = 16 chunks), rounded to `biome_sector_tiles` (0 = one chunk). This is what kills the micro-biomes (a red forest squeezed inside one transition) and the giga-biomes: no biome lasts under 4 or over 16 chunks. The 256-tile color/terrain blend is narrower than the shortest run, so two transitions can never overlap.
+- **Run length** (shortened 2026-11-13): rolled between `min_biome_tiles` (512 = 2 chunks) and `max_biome_tiles` (2048 = 8 chunks), rounded to `biome_sector_tiles` (0 = one chunk). Before it was 1024–4096 (4–16 chunks): biomes dragged too long. The 256-tile blend is still narrower than the 512-tile shortest run, so two transitions never overlap.
 - **Order** (2026-11-10): `_roll_biome_at()` picks among the biomes unlocked at that distance (`Biome.min_distance_tiles`, 0 by default; snow is set to 4096 tiles) and never repeats the previous one. `spawn_weight` only biases the pick, and the noise (`biome_frequency` 0.12 per chunk, sampled at the run start, `biome_contrast` 2) only decides the order: the weights no longer let the meadow swallow the map.
 - **Enemies**: they are still per chunk; `_biome_for_chunk()` takes the biome of the central block, so a chunk whose seam falls inside a transition keeps a single enemy set.
 - **Block transition**: `biome_transition_tiles` (0 = `chunk_width_tiles`, i.e. 256). Each block uses the moving average of its window's biome colors (±128 blocks), so the change is a gradient over ~256 blocks, not a step at the chunk seam. The seam can fall in the middle of a chunk: logic and color no longer depend on the edges.
@@ -88,7 +88,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · branch `m
 ## Spawns and persistence
 
 - Per chunk, according to the biome: meadow 3 orcs + 3 slimes + 1 toad, red forest 1 wolf + 1 toad, snow 2 skeletons + 2 archers + 1 wolf (see [`docs/biomes.md`](biomes.md)). `enemy_counts_per_chunk` (`[4 orcs, 2 frogs, 1 wolf, 2 slimes, 2 skeletons, 2 archers]`) remains as a fallback for biomes without `enemy_scenes`. 2 coins per chunk.
-- Coins are born `coin_spawn_height` (40 px) above the ground and fall with their own gravity (`scripts/collectables/coin.gd`): they look up the ground once by raycast, bounce with `bounce` 0.4 while the impact exceeds `min_bounce_speed` (40 px/s) and when settling they sway 1 px. Before, they appeared already resting (`coin_ground_offset`).
+- Coins are born `coin_spawn_height` (40 px) above the ground and fall with their own gravity (`scripts/collectables/coin.gd`): they look up the ground once by raycast, bounce with `bounce` 0.4 while the impact exceeds `min_bounce_speed` (40 px/s) and when settling they sway 1 px. Since 2026-11-13 the ray starts 64 px **above** the coin (`GROUND_PROBE_ABOVE`), so a drop born inside the floor finds the surface and pops out instead of staying buried. Before, they appeared already resting (`coin_ground_offset`).
 - Density by distance (`_enemy_count_multiplier(chunk_x)`): chunks 0–1 at 50 % (`enemy_ramp_first_multiplier`), and from there +20 % per chunk (`enemy_ramp_per_chunk`) up to ×1.8 (`enemy_ramp_max_multiplier`).
 - **Even distribution** (2026-11-03): the list of chunk types is assembled and `enemy_min_x..max_x` is split into one slot per enemy; each one falls in the center of its slot with ±25 % slot noise. Before, each enemy picked its X at random and they clumped.
 - **Flyers**: the merge with `feat/biomas` returns them to the biomes (meadow has ghost and red forest demon). `DISABLED_ENEMY_SCENES` remains as an unused reference list.
