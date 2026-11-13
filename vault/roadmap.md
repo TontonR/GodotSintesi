@@ -26,12 +26,17 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 | [T-0004](tickets/T-0004-legado-raiz-y-docs-obsoletos.md) | repo | Borrar legado real (`player.tscn`, `orc.tscn`, `coin` de `game.tscn`) y corregir docs falsos | `abierto` |
 | [T-0005](tickets/T-0005-quitar-debug-numpad.md) | inventario | Retirar el debug del numpad cuando acabe la fase de pruebas | `abierto` |
 | [T-0056](tickets/T-0056-auditoria-documentacion.md) | docs | Auditoría completa: `docs/` al día, biomas/loot/pasivas nuevos y mapa en `vault/documentacion.md` | `revision` |
+| [T-0058](tickets/T-0058-atravesar-enemigos-con-dano.md) | player | Atravesar enemigos cuesta vida en vez de empujarlos | `revision` |
+| [T-0059](tickets/T-0059-pantalla-de-muerte-y-fin-de-run.md) | player | Pantalla de muerte y fin de la run (sin revivir) | `revision` |
+| [T-0060](tickets/T-0060-guardado-en-tres-slots.md) | ui | Guardado en tres slots de run, sobrescribibles y con aviso antes de reemplazar | `revision` |
+| [T-0061](tickets/T-0061-contador-de-metros.md) | ui | Contador de metros (bloques) arriba al centro y en las filas de Load | `revision` |
 
 ## P3 — Contenido
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
 | [T-0008](tickets/T-0008-mundo-biomas-y-densidad.md) | mundo | Biomas/zonas, densidad y variedad de spawns con 5 tipos de enemigo | `abierto` |
+| [T-0057](tickets/T-0057-decoraciones.md) | world | Decoraciones de bioma: escala grande, densidad y tipos por bioma, rocas al fondo y arbustos con bamboleo y hojas | `revision` |
 
 ## Ideas sin ticket
 

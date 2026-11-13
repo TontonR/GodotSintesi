@@ -2,6 +2,103 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-13 · `feat/decor` — el lobo vuelve a moverse y elige salida tras el stun
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Arreglo: faltaba la rama `RECOVER` en el `match` del lobo, así que tras su primera embestida se quedaba quieto para siempre; ahora retoma el ataque o vuelve a vagar | `scripts/enemies/werewolf.gd`, `docs/enemies.md` | [T-0064](tickets/T-0064-lobo-recuperacion-y-stun.md) |
+| Al salir del stun el lobo elige al azar entre embestir y saltar (`stun_jump_chance` 0.5) en vez de repetir siempre embestida | `scripts/enemies/werewolf.gd` | [T-0064](tickets/T-0064-lobo-recuperacion-y-stun.md) |
+
+## 2026-11-13 · `feat/decor` — la cima mantiene su color original fuera de la nieve
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El canal `snow` se usa en todos los biomas: por defecto `(0.72, 0.66, 0.65)` devuelve el color original de la cima (±5 % medido), prado añade `(0.715, 0.675, 0.625)` y bosque rojo `(0.74, 0.65, 0.625)` como mini toque, y la nieve sigue en blanco | `scripts/world/biome.gd`, `resources/world/biomes/{pradera,bosque_rojo}.tres`, `docs/biomes.md` | [T-0063](tickets/T-0063-cimas-blancas-nieve.md) |
+
+## 2026-11-13 · `feat/decor` — la capa de nieve cubre toda la cima
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `mountain2_snow.png` solo recogía el tono de brillo (5.944 px) y dejaba la cara iluminada y la de sombra como roca teñida: se regenera con los tres tonos de la roca (blanco puro / `222, 230, 242` / `150, 162, 180`, 39.554 px) y la capa pasa a mostrarse solo en el bioma nevado (`snow_color` con alpha 0 por defecto) | `assets/map/background/mountain2_snow.png`, `scripts/world/biome.gd`, `resources/world/biomes/nieve.tres`, `docs/biomes.md` | [T-0063](tickets/T-0063-cimas-blancas-nieve.md) |
+
+## 2026-11-13 · `feat/decor` — cimas blancas en la nieve
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| La capa de nieve de la montaña de fondo (`mountains/Sprite2DSnow`) gana su propio canal (`Biome.snow_color`, `snow_tint_paths`): el bioma nevado la empuja por encima de blanco (`1.55, 1.6, 1.65`) para que la cima quede blanca pura, y su `rock_color` sube a `(0.92, 0.94, 0.98)` | `scripts/world/biome.gd`, `scripts/world_generator.gd`, `resources/world/biomes/nieve.tres`, `docs/biomes.md` | [T-0063](tickets/T-0063-cimas-blancas-nieve.md) |
+
+## 2026-11-13 · `feat/decor` — el parry perfecto aturde al lobo
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `Player.parried(attacker)` avisa al enemigo del parry: el lobo corta la embestida y se queda en `STUN` 0.8 s (`parry_stun_time`, destello azulado) antes de volver al aviso. Su `charge_speed` baja a 140 (sigue por encima del paseo, 130) y `uses_custom_contact_damage()` evita que el daño de contacto genérico se sume a su hitbox | `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `scripts/enemies/werewolf.gd`, `docs/enemies.md`, `docs/player.md` | [T-0062](tickets/T-0062-lobo-parry-aturdimiento.md) |
+
+## 2026-11-13 · `feat/decor` — contador de metros arriba al centro
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `UILayer/Meters` muestra los bloques recorridos desde el spawn arriba al centro (`0 m` al empezar, negativos detrás del inicio) con `WorldGenerator.meters_at()` y refresco solo al cambiar de bloque; el guardado escribe `[run] meters` y Load lo enseña junto a las monedas | `scenes/game.tscn`, `scripts/game.gd`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `scripts/ui/main_menu.gd`, `docs/ui.md` | [T-0061](tickets/T-0061-contador-de-metros.md) |
+
+## 2026-11-13 · `feat/decor` — aviso al guardar sin hueco libre
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| New Game ya no borra la run más antigua en silencio: con los tres slots llenos, Start abre `LoadDialog` en modo sobrescritura (`No free slots — overwrite which run?`) para elegir qué partida se reemplaza; las filas muestran metros y monedas | `scripts/save_game.gd`, `scripts/ui/main_menu.gd`, `docs/ui.md` | [T-0060](tickets/T-0060-guardado-en-tres-slots.md) |
+
+## 2026-11-13 · `feat/decor` — arreglo: la pantalla de muerte no aparecía
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El editor abierto había reserializado `game.tscn` y borrado el nodo `DeathScreen`, así que al morir no se mostraba nada; vuelve el nodo a la escena y `Game._ensure_death_screen()` instancia `death_screen.tscn` si falta (comprobado headless: `screen_visible=true`, `paused=true`) | `scenes/game.tscn`, `scripts/game.gd`, `docs/ui.md` | [T-0059](tickets/T-0059-pantalla-de-muerte-y-fin-de-run.md) |
+
+## 2026-11-13 · `feat/decor` — menú con New Game, Continue y Load
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Vuelve el menú de New Game/Continue: Continue carga `latest_slot()` (el slot escrito más recientemente, la última run cerrada) y un botón Load abre `LoadDialog` con los tres slots (`Play` para cargar, `Erase` para liberar, `Back`/Esc); New Game escribe en el primer slot libre o, si los tres están llenos, en el más antiguo | `scripts/ui/main_menu.gd`, `scenes/main_menu.tscn`, `scripts/save_game.gd`, `docs/ui.md` | [T-0060](tickets/T-0060-guardado-en-tres-slots.md) |
+
+## 2026-11-13 · `feat/decor` — tres slots de guardado
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El guardado único pasa a tres runs en `user://run_slot_N.cfg` con `SaveGame.current_slot`: el menú estrena tres filas de slot (`Play` continúa o empieza una run nueva, `Erase` libera el slot) y "Guardar y salir" escribe en el slot en curso; empezar en un slot ocupado borra el guardado viejo al instante | `scripts/save_game.gd`, `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd`, `scripts/ui/pause_menu.gd`, `docs/ui.md` | [T-0060](tickets/T-0060-guardado-en-tres-slots.md) |
+
+## 2026-11-13 · `feat/decor` — pantalla de muerte y fin de la run
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Morir ya no deja la partida abierta: `player.died` llega a `Game._on_player_died()`, que borra el slot de la run, espera 1.4 s y muestra `DeathScreen` (`You died` + seed/monedas + Menú principal/Salir) con el árbol pausado; una run muerta no se guarda ni se puede continuar | `scripts/player.gd`, `scripts/game.gd`, `scripts/save_game.gd`, `scripts/ui/pause_menu.gd`, `scripts/ui/death_screen.gd`, `scenes/ui/death_screen.tscn`, `scenes/game.tscn`, `docs/player.md`, `docs/ui.md` | [T-0059](tickets/T-0059-pantalla-de-muerte-y-fin-de-run.md) |
+
+## 2026-11-13 · `feat/decor` — atravesar enemigos cuesta vida
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| El jugador ya no empuja a los enemigos al andar: slime, esqueleto y arquero bajan a `collision_mask` 1 (como el resto) y, al cruzar un cuerpo enemigo, recibe `body_contact_damage` (5) con `body_contact_cooldown` (1 s) por enemigo, vía `take_damage_from()` para que el guardia frontal lo pare | `scripts/player.gd`, `scenes/enemies/{slime,skeleton,archer}.tscn`, `docs/player.md`, `docs/enemies.md` | [T-0058](tickets/T-0058-atravesar-enemigos-con-dano.md) |
+
+## 2026-11-13 · `feat/decor` — vegetación nevada casi blanca
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| La nieve estrena tintes de vegetación casi blancos (`0.98/0.88/0.78` con 3/3/2) para que arbustos y árboles vivos se lean escarchados en vez de grises | `resources/world/biomes/nieve.tres`, `docs/decor.md`, `docs/biomes.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
+## 2026-11-12 · `feat/decor` — tercera pasada de decoraciones
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Troncos ya no se tiñen: la copia tintada se genera por píxel en runtime y solo recolorea las hojas verdes, con `modulate` en blanco; separación mínima de 3 tiles mediante slots estratificados; densidad baja a 20/26/10 por chunk (pradera/bosque rojo/nieve); la nieve deja el 40% de sus árboles muertos con `decor_dead_tree_ratio` | `scripts/world_generator.gd`, `scripts/world/decor_prop.gd`, `scripts/world/biome.gd`, `resources/world/biomes/*.tres`, `docs/decor.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
+## 2026-11-12 · `feat/decor` — segunda pasada de decoraciones
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Decoración más grande (×1.7–1.9) y decidida por bioma: 32 por chunk en pradera (~13 árboles), 52 en bosque rojo (~35 árboles) y 24 en nieve, con tipos y pesos propios; tintes ponderados (rojo 6 / naranja 3 / amarillo 1 en bosque rojo); rocas a `z_index` −1 detrás de árboles y arbustos; arbustos se inclinan al pasar y sueltan 7 hojas vía `fx.leaves()` | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/decor_prop.gd`, `scripts/fx.gd`, `resources/world/biomes/`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `docs/fx.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
+## 2026-11-12 · `feat/decor` — decoraciones de bioma
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| Arbustos, árboles y rocas de `assets/map/decor` se spawnean por chunk detrás del suelo, apoyados en la superficie, sin colisión ni parallax; arbustos y árbol vivo usan copias grises y cada decorado tinta con un color aleatorio del array `decor_colors` del bioma (3 verdes, 3 rojos/naranjas, 3 verdes fríos) | `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/biomes/`, `assets/map/decor/`, `docs/decor.md`, `docs/biomes.md`, `docs/world.md`, `AGENTS.md` | [T-0057](tickets/T-0057-decoraciones.md) |
+
 ## 2026-11-12 · `main` — auditoría de documentación
 
 | Qué | Dónde | Ticket |

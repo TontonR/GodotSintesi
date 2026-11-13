@@ -18,7 +18,13 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12_
 | `display_name` | Inspector name only |
 | `grass_color` | Tint over the gray grass texture (white = untinted) |
 | `forest_color` | Tint of the background pines, the mountain's green layer and the band under the mountains |
-| `rock_color` | Tint of the mountain stone (snow is never tinted) |
+| `rock_color` | Tint of the mountain stone (white = untinted) |
+| `snow_color` | Tint of the mountain snow cap over its white tones; the default reproduces the original peak, snow uses white |
+| `decor_colors` | Tints for bushes and the living tree (gray textures); each sprite picks one at random |
+| `decor_color_weights` | Weight of each `decor_colors` tint (same order; empty = equal) |
+| `decor_per_chunk` | Decor sprites per chunk (0 = generator fallback, 16) |
+| `decor_kinds` | Decor names from `WorldGenerator.decor_names` |
+| `decor_weights` | Weight per kind (same order; empty = all 1) |
 | `ambient` | `"none"`, `"leaves"` or `"snow"` |
 | `spawn_weight` | Relative weight for the order roll |
 | `min_distance_tiles` | Distance from tile 0 before the biome can appear |
@@ -29,14 +35,30 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12_
 
 ## Current biomes
 
-| Biome | Grass | Forest | Rock | Ambient | Weight | Unlock | Enemies per chunk |
-|---|---|---|---|---|---|---|---|
-| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | none | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
-| Red Forest (`bosque_rojo`) | `(0.674, 0.196, 0.159)` | `(0.625, 0, 0.036)` | white | leaves | 0.30 | tile 0 | 1 wolf, 1 toad |
-| Snow (`nieve`) | `(0.93, 0.96, 1)` | `(0.82, 0.88, 0.96)` | `(0.75, 0.78, 0.82)` | snow | 0.20 | tile 4096 | 2 skeleton, 2 archer, 1 wolf |
+| Biome | Grass | Forest | Rock | Decor | Ambient | Weight | Unlock | Enemies per chunk |
+|---|---|---|---|---|---|---|---|---|
+| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | 3 greens (4/4/3) | none | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
+| Red Forest (`bosque_rojo`) | `(0.674, 0.196, 0.159)` | `(0.625, 0, 0.036)` | white | red/orange/yellow (6/3/1) | leaves | 0.30 | tile 0 | 1 wolf, 1 toad |
+| Snow (`nieve`) | `(0.93, 0.96, 1)` | `(0.82, 0.88, 0.96)` | `(0.92, 0.94, 0.98)` | 3 near-whites (3/3/2) | snow | 0.20 | tile 4096 | 2 skeleton, 2 archer, 1 wolf |
 
 All three keep `terrain_amplitude_multiplier` at 0.95/0.95/1.0 and
 `terrain_frequency_multiplier` at 1.0: a biome only flattens, it never exaggerates relief.
+
+## Decor per biome
+
+Each biome decides how much decoration its chunks get and of which kinds
+(`decor_per_chunk`, `decor_kinds`, `decor_weights`) and how the tints are
+weighted (`decor_color_weights`). Kinds are the generator's names (`bush_1`,
+`bush_2`, `tree`, `tree_dead`, `rock_1`, `rock_2`); an unknown name is skipped.
+
+| Biome | Per chunk | Weights (bush 1/2, tree, dead, rock 1/2) | Living trees |
+|---|---|---|---|
+| Meadow | 32 | 4 / 4 / 12 / 1 / 2 / 2 | ~13 |
+| Red Forest | 52 | 4 / 4 / 26 / 4 / 1 / 1 | ~35 |
+| Snow | 24 | 3 / 3 / 8 / 4 / 3 / 3 | ~8 |
+
+The meadow keeps open air with plenty of trees; the red forest is a dense
+canopy almost twice as thick per chunk. Full reference: [`decor.md`](decor.md).
 
 `bosque_rojo.tres` still has `enemy_counts = [1, 1, 1, 2]` with only two scenes; the loop
 stops at `scenes.size()`, so the last two counts are ignored. If the demon/slimes are meant
@@ -69,7 +91,15 @@ to come back, their scenes must be added first.
 - Backgrounds: `forest_tint_paths` (far pine, near pine, mountain green layer) use
   `forest_color`; `rock_tint_paths` (mountain stone) uses `rock_color`; the band under the
   mountains (`base_tint_paths`) uses `forest_color` darkened `MOUNTAIN_BASE_DARKENING`
-  (0.35), which reproduces the meadow `#283D43`. Snow layers are never tinted.
+  (0.35), which reproduces the meadow `#283D43`. The snow cap (`snow_tint_paths` → `mountains/Sprite2DSnow`) uses `snow_color`. The asset
+  covers every rock tone of the mountain, not just the highlight: `mountain2_snow.png`
+  maps the bright rim to pure white `(255)`, the lit face to `(222, 230, 242)` and the
+  shadow faces to `(150, 162, 180)`, so the relief survives. The default `snow_color`
+  `(0.72, 0.66, 0.65)` multiplied over those tones reproduces the original peak colour
+  (≈ `184, 168, 166` where the art had `184, 172, 171`), so a biome that doesn't set it
+  looks like the untouched art; meadow adds `(0.715, 0.675, 0.625)` and red forest
+  `(0.74, 0.65, 0.625)` as a tiny hue touch (greener / warmer), and snow sets `(1, 1, 1)`
+  for a white cap. Alpha 0 hides the cap (2026-11-13).
 - The pine textures are gray versions of the originals, each with its own calibrated gray
   (far 116, near 92, mountain 172/211), so the tint doesn't flatten the depth difference.
 - Ambient particles: `scripts/world/biome_particles.gd` samples

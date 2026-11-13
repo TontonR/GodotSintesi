@@ -1,5 +1,11 @@
 extends CharacterBody2D
 
+## Emitted once when the player dies; the game root ends the run with it.
+signal died
+## Emitted when a perfect parry stops a hit, passing the attacker so it can
+## react (the wolf stuns its charge).
+signal parried(attacker: Node)
+
 # ==============================================================================
 # CONFIGURATION AND VARIABLES
 # ==============================================================================
@@ -88,8 +94,14 @@ var stamina: float
 @export var parry_cooldown: float = 0.3
 ## Stamina returned by a parry (compensates the cost of raising guard).
 @export var parry_stamina_refund: float = 30.0
+## Health taken when walking through an enemy body (0 = no contact damage).
+@export var body_contact_damage: int = 5
+## Seconds before the same enemy can hurt the player again by contact.
+@export var body_contact_cooldown: float = 1.0
 
 const _ATTACK_ANIMS: Array[String] = ["attack_1", "attack_2", "attack_3"]
+## Physics layer of the enemy bodies; the player only collides with the world.
+const ENEMY_LAYER: int = 4
 const STAMINA_COLOR: Color = Color(0.35, 0.82, 0.29, 1)
 # endregion
 
@@ -136,6 +148,8 @@ var _parry_cooldown_timer: float = 0.0
 # Stats panel: only refreshes when a value changes.
 var _stats_dirty: bool = true
 var _stats_values: Array[Label] = []
+# Contact damage: seconds left before each enemy can hit again (instance id → time).
+var _contact_cooldowns: Dictionary = {}
 
 
 # ==============================================================================
@@ -369,6 +383,7 @@ func _physics_process(delta: float) -> void:
 			_dust_at(_feet_offset() + Vector2(-signf(velocity.x) * 6.0, 0.0), 2, 0.55)
 	_update_camera()
 	_update_animation()
+	_update_body_contact(delta)
 
 
 # ==============================================================================
@@ -482,10 +497,49 @@ func is_guarding() -> bool:
 	return _is_guarding
 
 
+## True from `_die()` on: the run is over and nothing can be saved or revived.
+func is_dead() -> bool:
+	return _is_dead
+
+
 func is_attack_from_front(attacker_position: Vector2) -> bool:
 	if is_equal_approx(attacker_position.x, global_position.x):
 		return true
 	return (attacker_position.x > global_position.x) == _facing_right
+
+
+## Enemies are not solid, so crossing a body costs a contact hit: the space is
+## queried with the player's own collider (its `collision_mask` is only the
+## world) and each enemy can only hit again after `body_contact_cooldown`.
+func _update_body_contact(delta: float) -> void:
+	for id in _contact_cooldowns.keys():
+		var left: float = _contact_cooldowns[id] - delta
+		if left <= 0.0:
+			_contact_cooldowns.erase(id)
+		else:
+			_contact_cooldowns[id] = left
+	if body_contact_damage <= 0 or body_collision == null or body_collision.shape == null:
+		return
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = body_collision.shape
+	query.transform = body_collision.global_transform
+	query.collision_mask = ENEMY_LAYER
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	for hit in get_world_2d().direct_space_state.intersect_shape(query, 12):
+		var enemy := hit["collider"] as EnemyBase
+		if enemy == null:
+			continue
+		# Enemies that already hurt with their own hitbox (wolf) must not take
+		# a second contact hit on top of it.
+		if enemy.uses_custom_contact_damage():
+			continue
+		var id := enemy.get_instance_id()
+		if _contact_cooldowns.has(id):
+			continue
+		_contact_cooldowns[id] = body_contact_cooldown
+		# Same path as an enemy hit, so a frontal guard or parry still stops it.
+		take_damage_from(body_contact_damage, enemy.global_position, 0.0, 0.0, 0.0, enemy)
 
 
 ## Applies damage and returns true only if the hit actually removed health (guard
@@ -503,6 +557,8 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool
 			var fx := _fx()
 			if fx:
 				fx.call("parry", global_position + Vector2(0.0, -26.0))
+			if attacker != null:
+				parried.emit(attacker)
 		# Guard stops the frontal hit (notice for block passives).
 		if passives:
 			passives.trigger_blocked_passives(self)
@@ -648,6 +704,7 @@ func _die() -> void:
 	set_hitbox_active(false)
 	velocity = Vector2.ZERO
 	animated_sprite.play("death")
+	died.emit()
 
 
 # ==============================================================================
@@ -907,19 +964,16 @@ func _ensure_coins_ui() -> void:
 			root.add_child(ui_layer)
 		var lbl = Label.new()
 		lbl.name = "coins"
-		lbl.layout_mode = 1
-		lbl.anchors_preset = 15
-		lbl.anchor_right = 1.0
-		lbl.anchor_bottom = 1.0
-		lbl.grow_horizontal = 2
-		lbl.grow_vertical = 2
-		lbl.offset_left = -180.0
-		lbl.offset_top = -76.0
-		lbl.offset_right = -180.0
-		lbl.offset_bottom = -76.0
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.layout_mode = 0
+		# Fixed rect in the top-left corner: with full-screen anchors the text
+		# drifted with the viewport size and ended up over the stats panel.
+		lbl.offset_left = 26.0
+		lbl.offset_top = 26.0
+		lbl.offset_right = 120.0
+		lbl.offset_bottom = 42.0
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 14)
+		lbl.add_theme_font_size_override("font_size", 12)
 		lbl.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 		lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		ui_layer.add_child(lbl)
@@ -991,7 +1045,7 @@ func _ensure_stats_ui() -> void:
 		grid.name = "StatsPanel"
 		grid.columns = 2
 		grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		# Below the coin line (y≈63): the panel starts at 82 so it doesn't cover it.
+		# Below the coin line (top-left, y 26..42): the panel starts at 82.
 		grid.position = Vector2(5.0, 82.0)
 		grid.add_theme_constant_override("h_separation", 8)
 		grid.add_theme_constant_override("v_separation", 0)

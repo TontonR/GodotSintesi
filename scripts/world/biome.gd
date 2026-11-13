@@ -9,8 +9,25 @@ extends Resource
 @export var grass_color: Color = Color.WHITE
 ## Tint of the background forests and the mountain vegetation; independent from the grass.
 @export var forest_color: Color = Color.WHITE
-## Tint of the mountain stone; white = untinted (snow is separate and not tinted).
+## Tint of the mountain stone; white = untinted.
 @export var rock_color: Color = Color.WHITE
+## Tint of the mountain snow cap over its white tones. The default reproduces
+## the original peak colour of the art (biomes add a tiny hue touch); the snow
+## biome sets it to white. Alpha 0 hides the cap.
+@export var snow_color: Color = Color(0.72, 0.66, 0.65, 1.0)
+## Decoration tints for the bushes and the living tree (their textures are gray).
+## Every decor sprite picks one of these at random; rocks and dead trees are never tinted.
+@export var decor_colors: Array[Color] = []
+## Weight of each `decor_colors` tint; same order (empty = all equal).
+@export var decor_color_weights: Array[float] = []
+## Decor sprites this biome spawns per chunk (0 = generator fallback).
+@export var decor_per_chunk: int = 0
+## Decor kinds by name, from the generator's `decor_names` (`bush_1`, `tree`…).
+@export var decor_kinds: Array[String] = []
+## Relative weight of each kind; same order as `decor_kinds` (empty = all 1).
+@export var decor_weights: Array[int] = []
+## Share of the living trees that come out dead, applied per chunk (0 = none).
+@export_range(0.0, 1.0, 0.05) var decor_dead_tree_ratio: float = 0.0
 ## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Relative weight in the world's biome distribution.

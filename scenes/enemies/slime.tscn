@@ -37,7 +37,7 @@ radius = 180.0
 [node name="Slime" type="CharacterBody2D" unique_id=1462643304]
 scale = Vector2(1.2, 1.2)
 collision_layer = 4
-collision_mask = 3
+collision_mask = 1
 script = ExtResource("1_script")
 item_drops = Array[ExtResource("9_loot")]([SubResource("LootEntry_slime_moco"), SubResource("LootEntry_slime_pocion"), SubResource("LootEntry_slime_compacto"), SubResource("LootEntry_slime_corazon")])
 sprite = NodePath("Pivot/Slime")

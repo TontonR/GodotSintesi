@@ -32,6 +32,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
+	# A dead run belongs to the death screen: no pause, no "Save and quit".
+	var player := get_parent().get_node_or_null("player")
+	if player != null and player.has_method("is_dead") and bool(player.call("is_dead")):
+		return
 	if _settings_panel.visible:
 		return # the panel closes itself with the same key
 	if _is_open:
@@ -71,7 +75,11 @@ func _back_to_pause() -> void:
 
 func _save_and_quit() -> void:
 	var root := get_parent()
-	SaveGame.save_run(root.get_node_or_null("map"), root.get_node_or_null("player"))
+	var player := root.get_node_or_null("player")
+	# A dead run is over: it is never written back (the death screen frees its slot).
+	var dead: bool = player != null and player.has_method("is_dead") and bool(player.call("is_dead"))
+	if not dead:
+		SaveGame.save_run(root.get_node_or_null("map"), player)
 	_is_open = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE)

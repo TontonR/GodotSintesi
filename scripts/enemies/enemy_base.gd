@@ -281,6 +281,12 @@ func _update_behavior(_delta: float) -> void:
 		_chase(to_player)
 
 
+## True when the enemy hurts with its own contact hitbox (wolf), so the player
+## does not add the generic body-contact hit on top of it.
+func uses_custom_contact_damage() -> bool:
+	return false
+
+
 # ---------------------------------------------------------------------------
 # Attack
 # ---------------------------------------------------------------------------

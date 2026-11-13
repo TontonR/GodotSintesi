@@ -52,13 +52,18 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 1. **Antes de tocar código**: lee `vault/estado.md` y el ticket del sistema en `roadmap.md`. Si no hay ticket, créalo.
 2. **Reclamar**: copia `tickets/plantilla.md` como `T-00NN-slug-corto.md` (id incremental, nunca reciclar), pon `Estado: en-curso` y `Dueño: <firma>`, y añade una entrada en `bitacora.md` con fecha, firma y ficheros que vas a tocar.
 3. **Durante**: si cambias de alcance, actualiza el ticket y deja nota en la bitácora. Si te bloqueas, `bloqueado` + motivo.
-4. **Entregar**: rellena `## Resultado` (qué, dónde, cómo se comprobó), pasa `revision` si falta que lo mire el otro agente.
-5. **Cerrar**: `cerrado`, resumen de una línea en `changelog.md`, marca el roadmap y actualiza `estado.md`.
-6. **Documentación obligatoria**: si cambió comportamiento, actualiza `docs/<sistema>.md` según `AGENTS.md`. El ticket enlaza el doc tocado.
+4. **Rama**: cada feature sale de `main` actualizado en su propia rama `feat/<slug>` (o `fix/<slug>`, `docs/<slug>`). Una rama por feature, aunque lleve varios tickets; **nunca se commitea a `main` directamente**.
+5. **Entregar**: commit en la rama, push y **PR a `main`**. El PR lleva título `feat: ...`, el ticket enlazado, qué cambia y cómo se comprobó. Rellena `## Resultado` y deja el ticket en `revision` hasta que el PR esté aprobado.
+6. **Revisión y merge**: revisa `humano-ruben` (o a quién él indique). Un PR = una feature, sin cambios de paso. Merge con squash para que `main` quede con una entrada por feature.
+7. **Cerrar**: tras el merge, `cerrado`, resumen en `changelog.md`, marca el roadmap y actualiza `estado.md`.
+8. **Documentación obligatoria**: si cambió comportamiento, actualiza `docs/<sistema>.md` según `AGENTS.md`. El ticket enlaza el doc tocado.
 
 ## Reglas de convivencia
 
 - **Un trabajo = un ticket.** No hay cambios "de paso" sin ticket; si aparece algo suelto, se abre ticket y se sigue.
+- **`main` solo recibe merges de PR.** Si aparece un commit directo, se avisa en la bitácora.
+- **Una rama por feature**, no por ticket: los tickets de la misma feature comparten rama y PR.
+- **Nombres de rama**: `feat/<slug>`, `fix/<slug>`, `docs/<slug>`; slug corto, en minúsculas y con guiones.
 - **Un dueño por ticket.** Si otro agente lo tiene `en-curso`, se habla en la bitácora antes de tocarlo.
 - `changelog.md` y `bitacora.md` son **append-only**: no se reescribe la historia, se añade.
 - `estado.md` es el único fichero que se reescribe entero.

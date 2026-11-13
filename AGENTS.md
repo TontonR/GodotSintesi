@@ -20,6 +20,7 @@ This is the only file always in context. **Do not read anything else "just in ca
 | `docs/enemies.md` | `EnemyBase`, ghost (TP) and orc; loot |
 | `docs/world.md` | Zone generation, ground, population and layers |
 | `docs/fx.md` | Combat particles, damage numbers, shake and HUD feedback |
+| `docs/decor.md` | Decor sprites (bushes, trees, rocks): spawn, layering, tinting and biome colors |
 | `docs/biomes.md` | Biome `.tres`, runs, transitions, tints and ambient |
 | `docs/loot.md` | Coin/item rolls, per-enemy tables, pickup physics and saved spawn ids |
 | `docs/passives.md` | `PlayerPassives`, hooks and the 35-passive catalog |
@@ -31,6 +32,7 @@ This is the only file always in context. **Do not read anything else "just in ca
 
 - **Do not touch anything that wasn't asked for.** No tests, validation, commits or Godot commands unless explicitly requested.
 - **Before touching code**: read `vault/estado.md` and work from a ticket in `vault/tickets/` (contract in `vault/README.md`). When closing, update the ticket, `changelog.md` and `estado.md`.
+- **Git flow**: never commit to `main`; each feature uses its own `feat/<slug>` branch and lands through a PR (see `vault/README.md`).
 - The Godot editor is usually **open**: after a `checkout/reset` it reserializes open scenes (adds `unique_id`/`node_paths`). If `git status` shows a scene you didn't touch, it's the editor.
 - Terminal output: **always filter**. Never list `assets/` unfiltered (+1000 PNGs blow up the context).
 

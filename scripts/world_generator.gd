@@ -109,6 +109,10 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 @export var rock_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2D",
 ]
+## Nodes (Sprite2D) of the mountain snow cap, which use the biome's `snow_color`.
+@export var snow_tint_paths: Array[NodePath] = [
+	^"../mountains/Sprite2DSnow",
+]
 ## Nodes (ColorRect) of the band under the mountains: they take a dark
 ## shade of the biome's `forest_color`.
 @export var base_tint_paths: Array[NodePath] = [
@@ -136,6 +140,40 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## settle with their own gravity (`scripts/collectables/coin.gd`).
 @export var coin_spawn_height: float = 40.0
 
+@export_group("Decor")
+## Decor names the biomes use in `Biome.decor_kinds` (same order as the arrays below).
+@export var decor_names: Array[String] = [
+	"bush_1", "bush_2", "tree", "tree_dead", "rock_1", "rock_2"
+]
+## Textures in `assets/map/decor`. Foliage ones get a runtime copy where only
+## the leaf pixels take the biome tint, so the trunks keep their own browns.
+@export var decor_textures: Array[Texture2D] = [
+	preload("res://assets/map/decor/Bush/bush_1.png"),
+	preload("res://assets/map/decor/Bush/bush_2.png"),
+	preload("res://assets/map/decor/Tree/tree.png"),
+	preload("res://assets/map/decor/Tree/tree_dead.png"),
+	preload("res://assets/map/decor/Rock/rock_1.png"),
+	preload("res://assets/map/decor/Rock/rock_2.png"),
+]
+## Whether each texture takes the biome's `decor_colors` tint (same order).
+@export var decor_tinted: Array[bool] = [true, true, true, false, false, false]
+## Sprite scale (same order): decoration is big and never scaled by depth.
+@export var decor_scales: Array[float] = [1.9, 1.9, 1.8, 1.8, 1.7, 1.7]
+## Draw order inside the chunk: negative values go behind the grass row.
+@export var decor_z_index: Array[int] = [0, 0, 0, 0, -1, -1]
+## Bushes wobble and drop leaves while the player walks through them.
+@export var decor_sways: Array[bool] = [true, true, false, false, false, false]
+## Fallback weights for biomes without `decor_kinds` (same order as `decor_names`).
+@export var decor_weights: Array[int] = [4, 4, 1, 1, 2, 2]
+## Fallback decor per chunk for biomes without `decor_per_chunk`.
+@export var decor_per_chunk: int = 16
+## Margin in tiles to keep decor away from the chunk edges.
+@export var decor_margin_tiles: int = 2
+## Minimum gap in tiles between two decor props of the same chunk.
+@export var decor_min_gap_tiles: int = 3
+## Radius where a bush starts to bend and drop leaves (px).
+@export var decor_sway_radius_px: float = 48.0
+
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -160,10 +198,15 @@ var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
 var _rock_tint_nodes: Array[CanvasItem] = []
+var _snow_tint_nodes: Array[CanvasItem] = []
 var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
 ## Biome runs already decided, in order: {start, index, length} in tiles.
 var _biome_runs: Array[Dictionary] = []
+## Decor name → index in the generator's parallel arrays.
+var _decor_lookup: Dictionary = {}
+## Tinted foliage textures, keyed by source path and tint (one per biome color).
+var _decor_tint_cache: Dictionary = {}
 ## Mountain painted left of tile 0, left to right; chunk 0 only.
 var _left_wall: PackedInt32Array = PackedInt32Array()
 
@@ -211,6 +254,10 @@ func _ready() -> void:
 		var node := get_node_or_null(path) as CanvasItem
 		if node:
 			_rock_tint_nodes.append(node)
+	for path in snow_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_snow_tint_nodes.append(node)
 	for path in base_tint_paths:
 		var node := get_node_or_null(path) as ColorRect
 		if node:
@@ -437,6 +484,12 @@ func refresh_chunks() -> void:
 
 
 ## Seed of this run; the save stores it to rebuild the same world.
+## Blocks (tiles) traveled from the spawn point; negative behind it.
+func meters_at(world_x: float) -> int:
+	var spawn_x := float(safe_start_tiles) * float(TILE_SIZE) + float(TILE_SIZE) * 0.5
+	return floori((world_x - spawn_x) / float(TILE_SIZE))
+
+
 func current_seed() -> int:
 	return _seed
 
@@ -572,7 +625,7 @@ func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
 		counts[index] = remaining
 
 
-## Biome channel tint at a block ("grass", "forest" or "rock").
+## Biome channel tint at a block ("grass", "forest", "rock" or "snow").
 func _biome_color_at_tile(tile_x: int, channel: String) -> Color:
 	if biomes.is_empty():
 		return Color.WHITE
@@ -596,6 +649,8 @@ func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
 				color = biome.forest_color
 			"rock":
 				color = biome.rock_color
+			"snow":
+				color = biome.snow_color
 		total += color * float(counts.get(index, 0))
 	return total / float(samples)
 
@@ -655,7 +710,7 @@ func _chunk_biome_data(chunk_x: int) -> Dictionary:
 ## stone and the band under the mountains. Updated when the block changes,
 ## not the chunk, so the change is continuous.
 func _update_biome_tint(force: bool) -> void:
-	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
+	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _snow_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
 		return
 	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
 	if not force and tile_x == _last_biome_tile:
@@ -663,10 +718,15 @@ func _update_biome_tint(force: bool) -> void:
 	_last_biome_tile = tile_x
 	var forest := _biome_color_at_tile(tile_x, "forest")
 	var rock := _biome_color_at_tile(tile_x, "rock")
+	var snow := _biome_color_at_tile(tile_x, "snow")
 	for node in _forest_tint_nodes:
 		node.modulate = forest
 	for node in _rock_tint_nodes:
 		node.modulate = rock
+	# Snow cap: can be brighter than white (values above 1) so a snowy peak
+	# reads as snow instead of as tinted rock.
+	for node in _snow_tint_nodes:
+		node.modulate = snow
 	var base := forest.darkened(MOUNTAIN_BASE_DARKENING)
 	for node in _base_tint_nodes:
 		node.color = base
@@ -755,7 +815,216 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_spawn_height)
 		})
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "biome": biome, "tints": biome_data["tints"]}
+	# Decor is rolled after enemies and coins so their positions never change.
+	# The biome decides how much and which kinds; the generator values are only
+	# the fallback for biomes that do not configure decor.
+	var decor_min_x := clampi(decor_margin_tiles, 0, chunk_width_tiles - 1)
+	var decor_max_x := clampi(
+		chunk_width_tiles - decor_margin_tiles - 1, decor_min_x, chunk_width_tiles - 1
+	)
+	var decor_count := decor_per_chunk
+	if biome and biome.decor_per_chunk > 0:
+		decor_count = biome.decor_per_chunk
+	var decor: Array[Dictionary] = []
+	var decor_span := decor_max_x - decor_min_x + 1
+	# One prop per slot instead of a free roll: the chunk stays evenly covered
+	# (no clumps, no long empty stretches) while `decor_min_gap_tiles` holds.
+	var decor_slot := float(decor_span) / float(maxi(decor_count, 1))
+	var decor_jitter := mini(floori(decor_slot * 0.3), maxi(decor_min_gap_tiles - 1, 0))
+	var last_decor_x := -999999
+	for i in range(maxi(decor_count, 0)):
+		# Both rolls are consumed even if the kind fails, so tuning the weights
+		# never shifts the positions of the rest of the decor.
+		var kind := _pick_decor_kind(biome, rng)
+		var center := decor_min_x + floori((float(i) + 0.5) * decor_slot)
+		var local_x := clampi(
+			center + rng.randi_range(-decor_jitter, decor_jitter), decor_min_x, decor_max_x
+		)
+		if kind < 0:
+			continue
+		# Jitter can bring two neighbors too close: snap back to the slot.
+		if local_x - last_decor_x < decor_min_gap_tiles:
+			local_x = center
+			if local_x - last_decor_x < decor_min_gap_tiles:
+				continue
+		var tint := Color.WHITE
+		if kind < decor_tinted.size() and decor_tinted[kind]:
+			tint = _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
+		decor.append({"kind": kind, "tint": tint, "x": local_x})
+		last_decor_x = local_x
+	_apply_dead_tree_ratio(biome, decor, rng)
+	# Front to back: the spawn loop pushes each sprite to index 0, so the last
+	# one processed ends up painted first (rocks), then trees, then bushes.
+	decor.sort_custom(_decor_draws_before)
+
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "biome": biome, "tints": biome_data["tints"]}
+
+
+## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
+## A biome with `decor_kinds` but no weights gives every kind the same chance.
+func _pick_decor_kind(biome: Biome, rng: RandomNumberGenerator) -> int:
+	if biome and not biome.decor_kinds.is_empty():
+		return _pick_decor_from(biome.decor_kinds, biome.decor_weights, rng)
+	return _pick_decor_from(decor_names, decor_weights, rng)
+
+
+func _pick_decor_from(names: Array[String], weights: Array[int], rng: RandomNumberGenerator) -> int:
+	var total := 0
+	for i in names.size():
+		total += _decor_kind_weight(weights, i)
+	if total <= 0:
+		return -1
+	var roll := rng.randi_range(0, total - 1)
+	for i in names.size():
+		roll -= _decor_kind_weight(weights, i)
+		if roll < 0:
+			return _decor_index_of(names[i])
+	return -1
+
+
+## Missing weights count as 1, so `decor_kinds` alone is a flat distribution.
+func _decor_kind_weight(weights: Array[int], index: int) -> int:
+	return maxi(weights[index], 0) if index < weights.size() else 1
+
+
+## Position of a decor name in the generator arrays; -1 for unknown names, so
+## a biome that names a missing kind skips it instead of failing.
+func _decor_index_of(kind_name: String) -> int:
+	if _decor_lookup.is_empty():
+		for i in decor_names.size():
+			if i < decor_textures.size():
+				_decor_lookup[decor_names[i]] = i
+	return int(_decor_lookup.get(kind_name, -1))
+
+
+## Depth of a kind: 0 rocks (background), 1 trees, 2 bushes (foreground).
+func _decor_draw_layer(kind: int) -> int:
+	if kind < 0 or kind >= decor_names.size():
+		return 2
+	var kind_name := decor_names[kind]
+	if kind_name.begins_with("rock"):
+		return 0
+	if kind_name.begins_with("tree"):
+		return 1
+	return 2
+
+
+func _decor_draws_before(a: Dictionary, b: Dictionary) -> bool:
+	return _decor_draw_layer(int(a["kind"])) > _decor_draw_layer(int(b["kind"]))
+
+
+func _decor_scale(kind: int) -> float:
+	return decor_scales[kind] if kind < decor_scales.size() else 1.0
+
+
+func _decor_z_index(kind: int) -> int:
+	return decor_z_index[kind] if kind < decor_z_index.size() else 0
+
+
+func _decor_sways(kind: int) -> bool:
+	return decor_sways[kind] if kind < decor_sways.size() else false
+
+
+## Random decoration tint of the biome at `tile_x`, weighted by
+## `decor_color_weights`; white when it defines none.
+func _decor_tint_at(tile_x: int, rng: RandomNumberGenerator) -> Color:
+	var index := _biome_index_at_tile(tile_x)
+	if index < 0:
+		return Color.WHITE
+	var biome := biomes[index]
+	if biome.decor_colors.is_empty():
+		return Color.WHITE
+	var total := 0.0
+	for i in biome.decor_colors.size():
+		total += _decor_color_weight(biome, i)
+	if total <= 0.0:
+		return Color.WHITE
+	var roll := rng.randf() * total
+	for i in biome.decor_colors.size():
+		roll -= _decor_color_weight(biome, i)
+		if roll <= 0.0:
+			return biome.decor_colors[i]
+	return biome.decor_colors.back()
+
+
+## Missing color weights count as 1, so `decor_colors` alone is a flat pick.
+func _decor_color_weight(biome: Biome, index: int) -> float:
+	if index < biome.decor_color_weights.size():
+		return maxf(biome.decor_color_weights[index], 0.0)
+	return 1.0
+
+
+## Turns exactly `ratio` of the living trees of the chunk into dead ones, so a
+## biome that wants a fixed share of dead trees gets it instead of drifting
+## with the random weights. Runs after every roll, so positions do not change.
+func _apply_dead_tree_ratio(biome: Biome, decor: Array[Dictionary], rng: RandomNumberGenerator) -> void:
+	if biome == null or biome.decor_dead_tree_ratio <= 0.0 or decor.is_empty():
+		return
+	var tree_kind := _decor_index_of("tree")
+	var dead_kind := _decor_index_of("tree_dead")
+	if tree_kind < 0 or dead_kind < 0:
+		return
+	var candidates: Array[int] = []
+	for i in decor.size():
+		if int(decor[i]["kind"]) == tree_kind:
+			candidates.append(i)
+	if candidates.is_empty():
+		return
+	var dead_count := roundi(float(candidates.size()) * clampf(biome.decor_dead_tree_ratio, 0.0, 1.0))
+	# Fisher-Yates over the candidates only: no RNG needed for the rest of the chunk.
+	for i in range(candidates.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var swap := candidates[i]
+		candidates[i] = candidates[j]
+		candidates[j] = swap
+	for i in range(dead_count):
+		decor[candidates[i]]["kind"] = dead_kind
+		# Dead trees are never tinted.
+		decor[candidates[i]]["tint"] = Color.WHITE
+
+
+## Texture for a decor kind and tint. Untinted kinds use the original; foliage
+## gets a cached copy with only the leaf pixels recolored, so the brown trunk
+## survives the biome tint.
+func _decor_texture(kind: int, tint: Color) -> Texture2D:
+	var source: Texture2D = decor_textures[kind]
+	if source == null or kind >= decor_tinted.size() or not decor_tinted[kind]:
+		return source
+	if tint == Color.WHITE or source.resource_path.is_empty():
+		return source
+	var key := "%s|%s" % [source.resource_path, tint.to_html(false)]
+	var cached: Texture2D = _decor_tint_cache.get(key)
+	if cached:
+		return cached
+	var image := source.get_image()
+	if image == null:
+		return source
+	var tinted := _tint_foliage(image, tint)
+	if tinted == null:
+		return source
+	var texture := ImageTexture.create_from_image(tinted)
+	_decor_tint_cache[key] = texture
+	return texture
+
+
+## Copy of `image` where only the green-dominant pixels (the leaves) take
+## `tint * their own brightness`. Trunks, outlines and grey pixels are untouched.
+func _tint_foliage(image: Image, tint: Color) -> Image:
+	var out := image.duplicate() as Image
+	if out.is_compressed():
+		out.decompress()
+	out.convert(Image.FORMAT_RGBA8)
+	for y in out.get_height():
+		for x in out.get_width():
+			var pixel := out.get_pixel(x, y)
+			if pixel.a <= 0.0:
+				continue
+			# Leaves are the only green-dominant pixels of these sprites.
+			if pixel.g <= pixel.r or pixel.g <= pixel.b:
+				continue
+			var shade := maxf(pixel.r, maxf(pixel.g, pixel.b))
+			out.set_pixel(x, y, Color(tint.r * shade, tint.g * shade, tint.b * shade, pixel.a))
+	return out
 
 
 func _load_chunk(coord: Vector2i) -> void:
@@ -799,6 +1068,42 @@ func _unload_chunk(coord: Vector2i) -> void:
 
 
 func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
+	# Decor first: sprites are moved to index 0, so they stay behind Solid and
+	# GrassPaint. Their bottom edge rests on the surface row (same height as the
+	# grass) and they have no collision.
+	var decor: Array = data.get("decor", [])
+	for i in range(decor.size()):
+		var kind: int = decor[i]["kind"]
+		if kind < 0 or kind >= decor_textures.size():
+			continue
+		var tint: Color = decor[i].get("tint", Color.WHITE)
+		var texture: Texture2D = _decor_texture(kind, tint)
+		if texture == null:
+			continue
+		var tile_x: int = decor[i]["x"]
+		var sprite := DecorProp.new()
+		sprite.name = "Decor_%d" % i
+		sprite.texture = texture
+		sprite.centered = false
+		# The offset centers the texture on the node and keeps the origin at the
+		# bottom: scaling never lifts the base off the surface and the sway
+		# rotates around the ground instead of the top-left corner.
+		sprite.offset = Vector2(-texture.get_width() * 0.5, -texture.get_height())
+		sprite.scale = Vector2.ONE * _decor_scale(kind)
+		sprite.z_index = _decor_z_index(kind)
+		# The tint is already baked into the foliage pixels, so the sprite itself
+		# must stay white or the trunk would be tinted too.
+		sprite.modulate = Color.WHITE
+		sprite.tint_color = tint
+		sprite.sways = _decor_sways(kind)
+		sprite.sway_radius_px = decor_sway_radius_px
+		sprite.position = Vector2(
+			tile_x * TILE_SIZE + TILE_SIZE * 0.5,
+			data["heights"][tile_x] * TILE_SIZE
+		)
+		chunk.add_child(sprite)
+		chunk.move_child(sprite, 0)
+
 	for entry in data["enemies"]:
 		var spawn_id: String = entry["id"]
 		if _defeated_spawns.has(spawn_id):
