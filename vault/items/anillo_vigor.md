@@ -24,10 +24,10 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 | Campo | Valor |
 |---|---|
+| `passive_id` | `"anillo_vigor"` |
 | `heal_per_tick` | `0` |
 | `stamina_per_tick` | `2` |
 | `interval` | `1.0` |
-| `passive_id` | `"anillo_vigor"` |
 
 ## Cómo conseguirlo
 
@@ -37,4 +37,5 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Pendiente
 
-- [ ] Asignar textura definitiva (hoy hay icono provisional del pack).
+- [x] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
+- [ ] F5 con el icono en el HUD y en el inventario.

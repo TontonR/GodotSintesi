@@ -609,3 +609,17 @@ Formato de entrada:
 - `ideas.md`, `docs/items.md`, `roadmap.md` y `estado.md` al día. `mutant_toad.tscn`
   revertido y `.obsidian/` ignorado.
 - Sin Godot ni commit: solo docs y `.gitignore`. T-0068 queda en `revision`.
+
+## 2026-11-17 · `opencode-jorge` · Inventario legible y slots fijos (T-0072)
+
+- Ruben: el inventario es feo, el texto del objeto es enorme y con textos largos el HUD
+  se estira; los slots de consumibles se adaptan a la textura y debería ser al revés.
+- `inventory_screen.tscn`: fuentes 20/18/18 -> 15/12/12, cabeceras 13, página 11, icono
+  de preview 128 -> 96 y `clip_text` en la descripción (su altura mínima empujaba la
+  ventana de 248 a 404 px).
+- `inventory_slot.tscn`: `expand_icon = true`; fuera el `expand_icon` que ponía
+  `inventory_screen.gd` a mano. Comprobado headless: 32×32 y 16×16 dan slot 18×18 (HUD) y
+  40×40 (inventario).
+- `vault/items/*.md`: tabla de valores regenerada desde los `.tres` (había fichas con los
+  valores viejos de poción) y el pendiente de textura pasa a icono asignado + F5.
+- `docs/ui.md` y `vault/items.md` al día. Sin F5.

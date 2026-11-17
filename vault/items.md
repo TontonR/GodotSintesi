@@ -90,6 +90,6 @@ Dos tipos y ninguno más: **consumibles** (huecos 1/2/3) y **coleccionables** (u
 
 1. Al crear o cambiar un `.tres`, actualiza su ficha y su fila (nombre, tipo, calidad, drops, icono, estado).
 2. Al tocar `item_drops` de una escena, actualiza el drop aquí **y** en `enemies/<slug>.md`.
-3. No marcar `listo` sin textura final y F5.
+3. No marcar `listo` sin el F5 del icono en el HUD y en el inventario.
 4. Skill asociada: [`.opencode/skills/estado-items/SKILL.md`](../.opencode/skills/estado-items/SKILL.md).
 

@@ -2,6 +2,16 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Inventario legible y slots fijos (T-0072)
+
+- Fuentes del panel derecho del inventario a 15 (nombre) y 12 (stats/descripción);
+  cabeceras 13, contador 11 y preview 96 px.
+- `ItemDescription.clip_text`: con nombre/stats/descripción largos la ventana ya no crece
+  (mínimo 248 px en vez de 404).
+- `InventorySlot.expand_icon = true` en la escena: el slot manda (18×18 HUD, 40×40
+  inventario) y el icono se adapta; los 4 iconos de 32×32 ya no estiran la barra.
+- Las 44 fichas de `vault/items/` regeneradas desde los `.tres` (valores, icono y estado).
+
 ## 2026-11-17 · `opencode-jorge` · Sincronizar el vault tras el F5 (T-0068)
 
 - Ruben confirmó que todo lo que estaba en `revision` funciona probado en el editor:

@@ -9,14 +9,14 @@ _Actualizado 2026-11-17 por `opencode-jorge`_
 | Rama | `main` con T-0068 (PR #4) y los iconos de Jorge (T-0069–T-0071) mergeados |
 | Árbol | Limpio. `.obsidian/` en `.gitignore` |
 | Fase | **Todo lo construido está verificado en F5** (Ruben, 2026-11-17): 52 tickets cerrados en bloque. Los 44 objetos ya tienen icono definitivo asignado |
-| Siguiente paso | F5 de los iconos y de los nuevos tiers de poción; luego T-0003 (inventario lleno) y los coleccionables del arquero (`vault/pasivas/arquero.md`) |
+| Siguiente paso | F5 del inventario nuevo y de los iconos (T-0072, T-0069–T-0071); luego T-0003 (inventario lleno) y los coleccionables del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. Decisiones de diseño abiertas en `vault/ideas.md` §7 |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `opencode-jorge` | T-0069–T-0071 (iconos de items), en `revision` hasta el F5 | `resources/*.tres`, `docs/items.md`, `vault/items*` |
+| `opencode-jorge` | T-0072 (inventario) y T-0069–T-0071 (iconos), en `revision` hasta el F5 | `scenes/inventory/`, `docs/ui.md`, `vault/items*` |
 | `buffy` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,7 @@ _Actualizado 2026-11-17 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-17 | T-0072 | Inventario: fuentes más pequeñas, descripción que no estira la ventana y slots de tamaño fijo con el icono adaptado |
 | 2026-11-17 | T-0069–T-0071 | Iconos definitivos de los 44 objetos, tiers de poción 20/50/100 y renombres (`Vigorizing Pie`, `Mucus Essence`, `Hunter's Faith`, `Sanguine Ruby`) |
 | 2026-11-17 | T-0068 | Cierre en bloque de 52 tickets tras el F5 de Ruben, T-0002 descartado (sin skills) y diseño de objetos corregido (consumibles + coleccionables, sin armas) |
 | 2026-11-13 | T-0066 · T-0067 | Biomas de 2–8 chunks, estamina más barata, monedas que afloran y salto que no corta la carrera (PR #3) |
