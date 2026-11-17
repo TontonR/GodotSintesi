@@ -2,17 +2,17 @@
 
 _Item · pasiva · `Normal` · 2026-11-13_
 
-| Campo | Valor |
-|---|---|
-| Nombre en el juego | **Iron Pendant** |
-| Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
-| Calidad | `Normal` |
-| Estado | `icono asignado` |
-| Textura en el juego | `res://assets/items/item890.png` — aplicada, puede cambiar el arte |
-| Recurso | `res://resources/colgante_hierro.tres` |
-| Script | `res://scripts/collectables/StatBonusPassive.gd` |
-| Lo suelta | [Orco](../enemies/orco.md) · 10 % |
-| Doc técnica | [`docs/passives.md`](../../docs/passives.md) · [`docs/loot.md`](../../docs/loot.md) |
+| Campo               | Valor                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| Nombre en el juego  | **Iron Pendant**                                                                    |
+| Tipo                | Pasiva — no ocupa slot, se equipa al tocarla                                        |
+| Calidad             | `Normal`                                                                            |
+| Estado              | `en proceso`                                                                        |
+| Textura en el juego | `res://assets/items/item890.png` — aplicada, puede cambiar el arte                  |
+| Recurso             | `res://resources/colgante_hierro.tres`                                              |
+| Script              | `res://scripts/collectables/StatBonusPassive.gd`                                    |
+| Lo suelta           | [Orco](../enemies/orco.md) · 10 %                                                   |
+| Doc técnica         | [`docs/passives.md`](../../docs/passives.md) · [`docs/loot.md`](../../docs/loot.md) |
 
 ## Qué hace
 
@@ -22,10 +22,10 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Valores del recurso
 
-| Campo | Valor |
-|---|---|
-| `passive_id` | `"colgante_hierro"` |
-| `bonus_max_health` | `25` |
+| Campo              | Valor               |
+| ------------------ | ------------------- |
+| `passive_id`       | `"colgante_hierro"` |
+| `bonus_max_health` | `25`                |
 
 ## Cómo conseguirlo
 
@@ -35,5 +35,6 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Pendiente
 
-- [x] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
+- [ ] Aplicar los cambios de esta ficha en el `.tres` y en el juego.
+- [ ] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
 - [ ] F5 con el icono en el HUD y en el inventario.

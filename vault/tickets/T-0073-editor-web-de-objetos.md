@@ -49,6 +49,11 @@ ver los 44 de un vistazo ni de saber qué está pendiente de pasar al juego.
   `?slug=` y un visor del `.md` guardado, y el `estado` del formulario arranca en
   `en proceso` para que guardar marque pendiente sin querer.
 - UI revisada con Chrome headless: 44 objetos, 44 iconos en 200, CSS `text/css`.
+- **Tercera revisión (2026-11-17)**: el estado vuelve a ser editable (se carga el real;
+  si cambias contenido y lo dejas igual, se guarda `en proceso`), se pueden **crear** y
+  **borrar** objetos (ficha + fila de catálogo, nunca el `.tres`) y se añade
+  `pendientes.py`, que compara las fichas `en proceso` con su `.tres` campo a campo.
+  Las tablas alineadas con espacios (`colgante_hierro`) ya se parsean.
 - **Segunda revisión (2026-11-17)**: el estado se mostraba siempre como `en proceso`
   porque el desplegable arrancaba en ese valor; ahora el estado real se pinta como
   etiqueta de solo lectura y es el servidor el que fuerza `en proceso` al guardar. Los

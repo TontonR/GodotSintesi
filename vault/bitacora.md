@@ -658,3 +658,16 @@ Formato de entrada:
   real de la ficha y el servidor fuerza `en proceso` al guardar.
 - Valores del recurso: dentro de "Opciones avanzadas" (cerrado), con nota de que son la
   tabla copiada de la ficha y que el editor no lee el `.tres`.
+
+## 2026-11-17 · `opencode-jorge` · Editor: alta/borrado, estado y pendientes (T-0073)
+
+- Ruben: poder añadir y borrar objetos; el estado tenía que cargarse bien, no
+  desaparecer; y un script de pendientes para que el agente sepa qué tocar en Godot.
+- Estado: desplegable con el estado real de la ficha. Regla: si el contenido cambia y el
+  estado no, se guarda `en proceso` (lo decide el cliente, el servidor obedece).
+- Alta: plantilla de ficha (tipo consumible/pasiva, calidad, textura) + fila insertada en
+  orden alfabético en `vault/items.md`. Borrado: ficha + fila; el `.tres` nunca se toca.
+- `pendientes.py`: sin dependencias, importa el parseo del `server.py`, compara ficha y
+  `.tres` y lista solo diferencias; probado con un `.tres` cambiado y con uno que falta.
+- Descubierto y arreglado: `colgante_hierro.md` tiene la tabla alineada con espacios y el
+  parser la dejaba vacía (el objeto no se podía editar).

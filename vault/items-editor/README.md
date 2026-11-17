@@ -22,8 +22,12 @@ Node.
 - **Landing**: los 44 objetos con su icono, tipo, calidad y estado.
 - **Filtros**: por estado (los mismos ids de `vault/items.md`) y buscador por
   nombre, tipo, calidad o drop.
-- **Editor**: nombre en el juego, ruta de la textura y la descripción (`## Qué hace`,
-  la habilidad del objeto). El estado se muestra como etiqueta de solo lectura.
+- **Editor**: nombre en el juego, ruta de la textura, estado y la descripción
+  (`## Qué hace`, la habilidad del objeto). Si cambias el contenido y dejas el estado
+  igual, se guarda como `en proceso` (el `.tres` no se toca desde aquí).
+- **Nuevo** (`+ Nuevo` o `?nuevo=1`): crea `vault/items/<slug>.md` desde plantilla
+  (tipo consumible/pasiva, calidad, textura) y su fila en `vault/items.md`, en orden.
+- **Borrar objeto**: elimina la ficha y su fila del catálogo. El `.tres` **no** se borra.
 - **Opciones avanzadas** (desplegable, cerrado): los valores del recurso copiados en la
   ficha (`## Valores del recurso`). El editor no lee ni escribe el `.tres`.
 - **Guardar**: reescribe la ficha y su fila en `vault/items.md`; el estado pasa siempre a
@@ -36,6 +40,17 @@ Node.
   filas del catálogo) y el `.tres` solo se muestra como texto informativo.
 - `?slug=<slug>` abre un objeto directamente (enlace compartible).
 - Debajo del formulario, «Ver el .md tal cual» muestra la ficha recién guardada.
+
+## Qué falta por aplicar en Godot
+
+```bash
+python3 vault/items-editor/pendientes.py            # todas las fichas en «en proceso»
+python3 vault/items-editor/pendientes.py --slug X   # una sola
+```
+
+Compara cada ficha con su `.tres` y lista **solo las diferencias** (nombre,
+descripción, icono y valores), o avisa de que falta el `.tres`. Pensado para que un
+agente sepa exactamente qué tocar sin releer 44 fichas. No modifica nada.
 
 ## Límites
 

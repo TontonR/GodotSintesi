@@ -72,6 +72,9 @@ input:focus, select:focus, textarea:focus {
 
 textarea { resize: vertical; min-height: 72px; }
 
+.head-tools { display: flex; gap: 8px; }
+.head-tools button { white-space: nowrap; }
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -251,6 +254,9 @@ button[type="submit"]:hover { background: #45539a; }
 button[type="submit"]:disabled { opacity: 0.6; cursor: progress; }
 
 .ghost { padding: 4px 10px; background: transparent; color: var(--muted); }
+.danger { color: #e08585; border-color: #5c3030; background: transparent; }
+.danger:hover { border-color: #a04545; color: #ff9b9b; }
+.create-title { margin: 0 0 4px; font-size: 17px; }
 
 .status { font-size: 12.5px; color: var(--muted); }
 .status.ok { color: var(--ok); }

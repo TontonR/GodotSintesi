@@ -2,6 +2,16 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor: alta, borrado y estado editable + `pendientes.py` (T-0073)
+
+- Estado editable otra vez, cargando el real de la ficha; si cambias contenido y no tocas
+  el estado, se guarda `en proceso`.
+- `+ Nuevo` crea ficha desde plantilla (consumible/pasiva) y su fila de catálogo en orden;
+  `Borrar objeto` elimina ficha y fila. Los `.tres` no se tocan en ningún caso.
+- `vault/items-editor/pendientes.py`: lista las fichas `en proceso` y sus diferencias con
+  el `.tres` (nombre, descripción, icono, valores) o avisa de que falta el recurso.
+- Arreglado el parseo de fichas con tablas alineadas (`colgante_hierro` salía vacía).
+
 ## 2026-11-17 · `opencode-jorge` · Editor de objetos: estado real y valores en avanzadas (T-0073)
 
 - El estado ya no sale siempre `en proceso`: se muestra el estado real de la ficha y el

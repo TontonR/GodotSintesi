@@ -7,6 +7,7 @@ const state = {
   filter: "todos",
   search: "",
   selected: null,
+  original: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -40,10 +41,15 @@ async function load() {
   state.items = data.items;
   state.states = data.states;
   state.drops = data.drops;
+  $("state").innerHTML = state.states
+    .map((s) => `<option value="${esc(s.id)}">${esc(s.id)} — ${esc(s.meaning)}</option>`)
+    .join("");
   renderFilters();
   renderList();
-  const initial = new URLSearchParams(location.search).get("slug");
+  const params = new URLSearchParams(location.search);
+  const initial = params.get("slug");
   if (initial) openItem(initial);
+  if (params.has("nuevo")) $("newItem").click();
 }
 
 function renderFilters() {
@@ -116,16 +122,33 @@ async function openItem(slug) {
   $("preview").src = iconUrl(item.icon);
   $("name").value = item.name;
   $("icon").value = item.icon;
+  $("state").value = item.state;
   const badge = $("stateBadge");
   badge.textContent = item.state || "—";
   badge.className = "badge " + badgeClass(item.state);
   $("description").value = item.description;
+  state.original = snapshot();
+  state.originalState = item.state;
   $("readonly").textContent = `Recurso: ${item.resource || "—"} · Drop: ${item.drops || "—"}`;
   $("raw").textContent = item.raw || "";
   renderValues(item.values);
   setStatus("");
   history.replaceState(null, "", "?slug=" + encodeURIComponent(slug));
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function snapshot() {
+  return JSON.stringify({
+    name: $("name").value,
+    icon: $("icon").value,
+    description: $("description").value,
+    values: collectValues(),
+  });
+}
+
+function scrollToForm(el) {
+  el.hidden = false;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderValues(values) {
@@ -166,16 +189,90 @@ $("search").oninput = (e) => {
 
 $("addValue").onclick = () => addValueRow();
 
+$("delete").onclick = async () => {
+  const name = $("name").value.trim() || state.selected;
+  if (!confirm(`¿Borrar «${name}»? Se elimina vault/items/${state.selected}.md y su fila del catálogo. El .tres no se toca.`)) return;
+  const res = await fetch("/api/items/" + encodeURIComponent(state.selected), { method: "DELETE" });
+  if (!res.ok) return setStatus("No se pudo borrar: " + (await res.text()), "err");
+  state.items = state.items.filter((i) => i.slug !== state.selected);
+  state.selected = null;
+  $("form").hidden = true;
+  $("empty").hidden = false;
+  renderFilters();
+  renderList();
+  history.replaceState(null, "", "/");
+};
+
+$("newItem").onclick = () => {
+  $("form").hidden = true;
+  $("empty").hidden = true;
+  $("createForm").reset();
+  $("newQuality").value = "Normal";
+  $("createStatus").textContent = "";
+  scrollToForm($("createForm"));
+  $("newName").focus();
+};
+
+$("createCancel").onclick = () => {
+  $("createForm").hidden = true;
+  if (state.selected) $("form").hidden = false;
+  else $("empty").hidden = false;
+};
+
+$("newSlug").oninput = (e) => {
+  if (e.target.dataset.touched) return;
+  e.target.value = $("newName").value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+};
+$("newSlug").onchange = (e) => (e.target.dataset.touched = "1");
+
+$("createForm").onsubmit = async (event) => {
+  event.preventDefault();
+  $("createSave").disabled = true;
+  try {
+    const res = await fetch("/api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: $("newSlug").value,
+        name: $("newName").value,
+        type: $("newType").value,
+        quality: $("newQuality").value,
+        icon: $("newIcon").value,
+      }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    const item = await res.json();
+    $("createForm").hidden = true;
+    await load();
+    openItem(item.slug);
+    setStatus(`Ficha creada: vault/items/${item.slug}.md (en proceso, falta el .tres).`, "ok");
+  } catch (error) {
+    $("createStatus").textContent = "Error: " + error.message;
+    $("createStatus").className = "status err";
+  } finally {
+    $("createSave").disabled = false;
+  }
+};
+
 $("form").onsubmit = async (event) => {
   event.preventDefault();
   $("save").disabled = true;
   try {
+    const changed = state.original !== snapshot();
+    const chosen = $("state").value;
+    const nextState = changed && chosen === state.originalState ? PENDING_STATE : chosen;
     const res = await fetch("/api/items/" + encodeURIComponent(state.selected), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: $("name").value,
         icon: $("icon").value,
+        state: nextState,
         description: $("description").value,
         values: collectValues(),
       }),
@@ -189,6 +286,9 @@ $("form").onsubmit = async (event) => {
     $("heading").textContent = item.name;
     $("preview").src = iconUrl(item.icon);
     $("raw").textContent = item.raw || "";
+    $("state").value = item.state;
+    state.original = snapshot();
+    state.originalState = item.state;
     const badge = $("stateBadge");
     badge.textContent = item.state;
     badge.className = "badge " + badgeClass(item.state);

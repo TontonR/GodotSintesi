@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import date
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -30,7 +31,8 @@ PENDING_STATE = "en proceso"
 
 
 def _field(text: str, label: str) -> str:
-    m = re.search(rf"^\| {re.escape(label)} \| (.*?) \|$", text, re.M)
+    # Las tablas del vault pueden venir alineadas con espacios (formateador de markdown).
+    m = re.search(rf"^\|\s*{re.escape(label)}\s*\|\s*(.*?)\s*\|\s*$", text, re.M)
     return m.group(1) if m else ""
 
 
@@ -51,7 +53,7 @@ def catalog_states(text: str) -> list[dict]:
 def icon_res(path: str) -> str:
     """Acepta `items/x.png` o `assets/items/x.png` y devuelve la ruta del juego."""
     path = path.strip().strip("`")
-    if not path:
+    if not path or path in ("—", "-"):
         return ""
     return path if path.startswith("res://") else "res://assets/" + path.removeprefix("assets/")
 
@@ -102,7 +104,7 @@ def parse_page(slug: str) -> dict | None:
     if "## Valores del recurso" in text:
         block = text.split("## Valores del recurso", 1)[1].split("\n## ", 1)[0]
         for line in block.splitlines():
-            m = re.match(r"^\| `([^`]+)` \| `(.*)` \|$", line)
+            m = re.match(r"^\|\s*`([^`]+)`\s*\|\s*`(.*)`\s*\|\s*$", line)
             if m:
                 values.append({"key": m.group(1), "value": m.group(2)})
     desc = ""
@@ -123,6 +125,17 @@ def parse_page(slug: str) -> dict | None:
     }
 
 
+def _replace_section_table(text: str, heading: str, table: str) -> str:
+    """Sustituye la tabla que hay justo debajo de un encabezado `##`."""
+    start = text.find(heading)
+    if start < 0:
+        return text
+    body = text.find("\n", start) + 1
+    nxt = text.find("\n## ", body)
+    end = nxt if nxt >= 0 else len(text)
+    return text[:body] + "\n" + table + "\n" + text[end:]
+
+
 def save_page(slug: str, data: dict) -> dict:
     path = HERE_ROOT / ITEMS_DIR / f"{slug}.md"
     text = path.read_text(encoding="utf-8")
@@ -131,17 +144,30 @@ def save_page(slug: str, data: dict) -> dict:
     state = data["state"].strip()
     icon = data["icon"].strip()
     if icon.startswith("assets/"):
-        icon = "res://" + icon
+        icon = "res://assets/" + icon.removeprefix("assets/")
     description = data["description"].strip()
 
-    text = re.sub(r"^# .*$", f"# {name}", text, count=1, flags=re.M)
-    text = re.sub(r"^\| Nombre en el juego \| .*$", f"| Nombre en el juego | **{name}** |", text, flags=re.M)
-    text = re.sub(r"^\| Estado \| .*$", f"| Estado | `{state}` |", text, flags=re.M)
+    text = re.sub(r"^# .*$", lambda m: f"# {name}", text, count=1, flags=re.M)
+    text = re.sub(
+        r"^\|\s*Nombre en el juego\s*\|.*$",
+        lambda m: f"| Nombre en el juego | **{name}** |",
+        text,
+        count=1,
+        flags=re.M,
+    )
+    text = re.sub(
+        r"^\|\s*Estado\s*\|.*$",
+        lambda m: f"| Estado | `{state}` |",
+        text,
+        count=1,
+        flags=re.M,
+    )
     if icon:
         text = re.sub(
-            r"^\| Textura en el juego \| .*$",
-            f"| Textura en el juego | `{icon}` — aplicada, puede cambiar el arte |",
+            r"^\|\s*Textura en el juego\s*\|.*$",
+            lambda m: f"| Textura en el juego | `{icon}` — aplicada, puede cambiar el arte |",
             text,
+            count=1,
             flags=re.M,
         )
     text = re.sub(r"(## Qué hace\n\n> ).*", lambda m: m.group(1) + description, text, count=1)
@@ -150,11 +176,7 @@ def save_page(slug: str, data: dict) -> dict:
     table = "| Campo | Valor |\n|---|---|"
     if rows:
         table += "\n" + rows
-    text = re.sub(
-        r"## Valores del recurso\n\n\| Campo \| Valor \|\n\|---\|---\|\n(?:\|.*\|\n)*",
-        "## Valores del recurso\n\n" + table + "\n",
-        text,
-    )
+    text = _replace_section_table(text, "## Valores del recurso", table)
 
     if PENDING not in text:
         pending = f"## Pendiente\n\n- [ ] {PENDING}\n"
@@ -170,18 +192,119 @@ def save_page(slug: str, data: dict) -> dict:
     cat_path = HERE_ROOT / CATALOG
     cat = cat_path.read_text(encoding="utf-8")
     icon_short = icon.removeprefix("res://assets/")
+    cat_path.write_text(
+        _rewrite_catalog(cat, slug, name, icon_short, state), encoding="utf-8"
+    )
+
+    return parse_page(slug)
+
+
+def _rewrite_catalog(cat: str, slug: str, name: str, icon_short: str, state: str) -> str:
     lines = []
     for line in cat.splitlines():
         if f"](items/{slug}.md)" in line and line.startswith("| **"):
             cells = _cells(line)
             cells[0] = f"**{name}**"
-            cells[4] = f"`{icon_short}`"
+            cells[4] = f"`{icon_short}`" if icon_short else "—"
             cells[5] = f"`{state}`"
             line = "| " + " | ".join(cells) + " |"
         lines.append(line)
-    cat_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return "\n".join(lines) + "\n"
 
+
+TYPE_TEXT = {
+    "Consumible": (
+        "Consumible — ocupa uno de los 3 slots y se gasta al usarlo",
+        "items",
+    ),
+    "Pasiva": ("Pasiva — no ocupa slot, se equipa al tocarla", "passives"),
+}
+
+
+def create_page(data: dict) -> dict | None:
+    """Crea ficha + fila de catalogo. Devuelve None si el slug ya existe."""
+    name = data["name"].strip()
+    slug = (data.get("slug") or "").strip().lower()
+    slug = re.sub(r"[^a-z0-9_]+", "_", slug).strip("_")
+    if not slug or (HERE_ROOT / ITEMS_DIR / f"{slug}.md").exists():
+        return None
+    type_name = data.get("type") if data.get("type") in TYPE_TEXT else "Pasiva"
+    type_text, doc = TYPE_TEXT[type_name]
+    quality = (data.get("quality") or "Normal").strip() or "Normal"
+    icon = icon_res(data.get("icon", ""))
+    icon_cell = f"`{icon}` — aplicada, puede cambiar el arte" if icon else "— (sin asignar)"
+    description = (data.get("description") or "").strip() or "TODO: describir el efecto."
+
+    page = f"""# {name}
+
+_Item · {type_name.lower()} · `{quality}` · {date.today().isoformat()}_
+
+| Campo | Valor |
+|---|---|
+| Nombre en el juego | **{name}** |
+| Tipo | {type_text} |
+| Calidad | `{quality}` |
+| Estado | `{PENDING_STATE}` |
+| Textura en el juego | {icon_cell} |
+| Recurso | `res://resources/{slug}.tres` |
+| Lo suelta | — (sin drop) |
+| Doc técnica | [`docs/{doc}.md`](../../docs/{doc}.md) |
+
+## Qué hace
+
+> {description}
+
+## Valores del recurso
+
+| Campo | Valor |
+|---|---|
+
+## Cómo conseguirlo
+
+- **Drop**: — (sin drop)
+- Catálogo: [items.md](../items.md) · enemigos: [enemies.md](../enemies.md)
+
+## Pendiente
+
+- [ ] Crear el `.tres`, engancharlo al juego y pasar F5.
+"""
+    (HERE_ROOT / ITEMS_DIR / f"{slug}.md").write_text(page, encoding="utf-8")
+
+    cat_path = HERE_ROOT / CATALOG
+    cat = cat_path.read_text(encoding="utf-8")
+    icon_short = icon.removeprefix("res://assets/")
+    row = f"| **{name}** | {type_name} | `{quality}` | — (sin drop) | {f'`{icon_short}`' if icon_short else '—'} | `{PENDING_STATE}` | [{slug}](items/{slug}.md) |"
+    lines = cat.splitlines()
+    header = next(
+        (i for i, ln in enumerate(lines) if ln.startswith("| Objeto |")), len(lines) - 1
+    )
+    insert_at = header + 2
+    for i in range(header + 2, len(lines)):
+        if not lines[i].startswith("| **"):
+            break
+        if _cells(lines[i])[0].strip("*").casefold() > name.casefold():
+            insert_at = i
+            break
+        insert_at = i + 1
+    lines.insert(insert_at, row)
+    cat_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return parse_page(slug)
+
+
+def delete_page(slug: str) -> bool:
+    path = HERE_ROOT / ITEMS_DIR / f"{slug}.md"
+    if not path.exists():
+        return False
+    path.unlink()
+    cat_path = HERE_ROOT / CATALOG
+    cat = cat_path.read_text(encoding="utf-8")
+    kept = [
+        ln
+        for ln in cat.splitlines()
+        if not (ln.startswith("| **") and f"](items/{slug}.md)" in ln)
+    ]
+    cat_path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    return True
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -237,20 +360,42 @@ class Handler(SimpleHTTPRequestHandler):
             )
         return self._json({"error": "not found"}, 404)
 
-    def do_POST(self):
+    def _body(self) -> dict | None:
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            return json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError:
+            return None
+
+    def do_DELETE(self):
         path = urlparse(self.path).path
         if not path.startswith("/api/items/"):
             return self._json({"error": "not found"}, 404)
         slug = path.rsplit("/", 1)[1]
-        length = int(self.headers.get("Content-Length", 0))
-        try:
-            data = json.loads(self.rfile.read(length) or b"{}")
-        except json.JSONDecodeError:
+        if not delete_page(slug):
+            return self._json({"error": "not found"}, 404)
+        return self._json({"deleted": slug})
+
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if not path.startswith("/api/items"):
+            return self._json({"error": "not found"}, 404)
+        data = self._body()
+        if data is None:
             return self._json({"error": "bad json"}, 400)
         if not data.get("name", "").strip():
             return self._json({"error": "name required"}, 400)
-        # Guardar desde el editor siempre deja la ficha pendiente de pasar al juego.
-        data["state"] = PENDING_STATE
+        if path.rstrip("/") == "/api/items":
+            item = create_page(data)
+            if item is None:
+                return self._json({"error": "slug vacio o ya existe"}, 400)
+            item["raw"] = (HERE_ROOT / ITEMS_DIR / f"{item['slug']}.md").read_text(
+                encoding="utf-8"
+            )
+            return self._json(item)
+        slug = path.rsplit("/", 1)[1]
+        if not data.get("state"):
+            data["state"] = PENDING_STATE
         item = save_page(slug, data)
         if item is None:
             return self._json({"error": "not found"}, 404)

@@ -42,7 +42,7 @@ Dos tipos y ninguno más: **consumibles** (huecos 1/2/3) y **coleccionables** (u
 | **Frog Bubble** | Pasiva | `Normal` | [Rana](enemies/rana.md) · 10 % | `items/item804.png` | `icono asignado` | [burbuja_rana](items/burbuja_rana.md) |
 | **Hunter's Faith** | Pasiva | `Normal` | — (sin drop) | `items/item828.png` | `icono asignado` | [cazador](items/cazador.md) |
 | **Greed** | Pasiva | `Normal` | — (sin drop) | `items/item169.png` | `icono asignado` | [codicia](items/codicia.md) |
-| **Iron Pendant** | Pasiva | `Normal` | [Orco](enemies/orco.md) · 10 % | `items/item890.png` | `icono asignado` | [colgante_hierro](items/colgante_hierro.md) |
+| **Iron Pendant** | Pasiva | `Normal` | [Orco](enemies/orco.md) · 10 % | `items/item890.png` | `en proceso` | [colgante_hierro](items/colgante_hierro.md) |
 | **Wolf Fang** | Pasiva | `Normal` | [Lobo](enemies/lobo.md) · 10 % | `items/iconos/Icon34.png` | `icono asignado` | [colmillo_lobo](items/colmillo_lobo.md) |
 | **Iron Heart** | Pasiva | `Normal` | — (sin drop) | `items/item199.png` | `icono asignado` | [corazon_hierro](items/corazon_hierro.md) |
 | **Mucus Essence** | Pasiva | `Rare` | [Slime](enemies/slime.md) · 2 % | `items/item1122.png` | `icono asignado` | [corazon_mucosil](items/corazon_mucosil.md) |
@@ -88,6 +88,7 @@ Dos tipos y ninguno más: **consumibles** (huecos 1/2/3) y **coleccionables** (u
 
 ## Cómo mantenerlo
 
+- **Pendientes de aplicar**: `python3 vault/items-editor/pendientes.py` lista las fichas `en proceso` con las diferencias campo a campo contra su `.tres` (solo lectura).
 - **Editor web**: `python3 vault/items-editor/server.py` → http://127.0.0.1:8765 (ver `vault/items-editor/README.md`). Guarda en estos `.md` y marca el objeto `en proceso` hasta que el cambio llegue al `.tres`.
 
 1. Al crear o cambiar un `.tres`, actualiza su ficha y su fila (nombre, tipo, calidad, drops, icono, estado).

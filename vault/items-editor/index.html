@@ -14,7 +14,10 @@
     <h1>Objetos</h1>
     <span class="muted">vault/items · fichas <code>.md</code></span>
   </div>
-  <input id="search" type="search" placeholder="Buscar por nombre, tipo, calidad, drop…" autocomplete="off">
+  <div class="head-tools">
+    <input id="search" type="search" placeholder="Buscar por nombre, tipo, calidad, drop…" autocomplete="off">
+    <button type="button" id="newItem" title="Añadir un objeto nuevo">+ Nuevo</button>
+  </div>
   <div id="filters" class="filters"></div>
 </header>
 
@@ -27,6 +30,37 @@
   <section class="editor-col">
     <div class="empty card" id="empty">Selecciona un objeto de la lista para editar su ficha.</div>
 
+    <form id="createForm" class="card" hidden>
+      <h2 class="create-title">Nuevo objeto</h2>
+      <div class="grid-2">
+        <label>Nombre en el juego
+          <input id="newName" required maxlength="60" placeholder="Potion of X">
+        </label>
+        <label>Tipo
+          <select id="newType">
+            <option value="Consumible">Consumible (slot 1/2/3)</option>
+            <option value="Pasiva">Pasiva / coleccionable</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid-2">
+        <label>Slug (nombre del fichero)
+          <input id="newSlug" required maxlength="60" placeholder="pocion_de_x">
+        </label>
+        <label>Calidad
+          <input id="newQuality" maxlength="20" value="Normal">
+        </label>
+      </div>
+      <label>Textura (opcional)
+        <input id="newIcon" placeholder="res://assets/items/item123.png">
+      </label>
+      <div class="actions">
+        <button type="submit" id="createSave">Crear ficha</button>
+        <button type="button" class="ghost" id="createCancel">Cancelar</button>
+        <span id="createStatus" class="status" role="status"></span>
+      </div>
+    </form>
+
     <form id="form" class="card" hidden>
       <div class="title-row">
         <img id="preview" class="preview" alt="">
@@ -36,13 +70,17 @@
         </div>
       </div>
 
-      <label>Nombre en el juego
-        <input id="name" required maxlength="60">
-      </label>
-
+      <div class="grid-2">
+        <label>Nombre en el juego
+          <input id="name" required maxlength="60">
+        </label>
+        <label>Estado
+          <select id="state"></select>
+        </label>
+      </div>
       <p class="state-line">
         <span id="stateBadge" class="badge"></span>
-        <span class="hint">Al guardar la ficha queda «en proceso»: el `.tres` y el juego no se tocan desde aquí.</span>
+        <span class="hint">Si cambias el contenido y dejas el estado igual, se guarda como «en proceso»: el `.tres` no se toca desde aquí.</span>
       </p>
 
       <label>Textura (ruta en el juego)
@@ -64,6 +102,7 @@
 
       <div class="actions">
         <button type="submit" id="save">Guardar en el .md</button>
+        <button type="button" class="danger" id="delete">Borrar objeto</button>
         <span id="status" class="status" role="status"></span>
       </div>
 
