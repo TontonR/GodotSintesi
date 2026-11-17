@@ -62,3 +62,6 @@ Hecho el 2026-11-17 en `fix-items.icons`: 14 `.tres` nuevos, 11 pasivas y
 `enemy_base.gd` gana quemaduras, ticks, `has_dot()` e inmovilización. Loot
 añadido a `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
 `Fragmento` queda fuera. F5 pendiente.
+
+Mergeado en `main` con el PR #8 (commit de merge, sin squash) el 2026-11-17. Sigue en
+`revision` hasta el F5 en el editor.

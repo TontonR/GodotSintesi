@@ -6,8 +6,8 @@ _Actualizado 2026-11-17 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `main`, con T-0054 (objetos de Jorge) mergeado por PR, detrás de T-0072/T-0073 y los iconos T-0069–T-0071 |
-| Árbol | Limpio. Solo queda `main`: las ramas viejas se borraron tras el merge. `.obsidian/` en `.gitignore` |
+| Rama | `main` `a16c11f`: T-0054 (objetos de Jorge) mergeado por PR #8, detrás de T-0072/T-0073 y los iconos T-0069–T-0071. Única rama del repo |
+| Árbol | Limpio. Ramas viejas borradas en local y en `origin` tras el merge. `.obsidian/` en `.gitignore` |
 | Fase | Todo lo construido está verificado en F5 (Ruben, 2026-11-17): 52 tickets cerrados en bloque. T-0054 entra sin F5 y los objetos nuevos ya tienen icono |
 | Siguiente paso | F5 de T-0054 (arco, 14 objetos, DOT, rata e invulnerabilidad) y del inventario (T-0072); luego T-0003 (inventario lleno) y los coleccionables del arquero (`vault/pasivas/arquero.md`) |
 | Bloqueos | Ninguno técnico. Decisiones de diseño abiertas en `vault/ideas.md` §7 |
