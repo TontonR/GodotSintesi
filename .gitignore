@@ -7,3 +7,7 @@ opencode.json
 
 # Obsidian (notas locales del vault)
 .obsidian/
+
+# Python (editor del vault)
+__pycache__/
+*.pyc

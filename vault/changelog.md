@@ -2,6 +2,58 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor: caché y servidor viejo (T-0073)
+
+- `Cache-Control: no-store` en HTML/CSS/JS/API, `?v=5` en las URLs y comprobación de
+  versión: si el servidor en marcha es antiguo, la página avisa de que hay que reiniciarlo.
+- La ficha `colgante_hierro` quedó a medias por un guardado con el servidor viejo (el
+  catálogo decía `icono asignado` y la ficha `en proceso`); se deja `en proceso` en los dos
+  para que `pendientes.py` la siga listando.
+
+## 2026-11-17 · `opencode-jorge` · Editor: alta, borrado y estado editable + `pendientes.py` (T-0073)
+
+- Estado editable otra vez, cargando el real de la ficha; si cambias contenido y no tocas
+  el estado, se guarda `en proceso`.
+- `+ Nuevo` crea ficha desde plantilla (consumible/pasiva) y su fila de catálogo en orden;
+  `Borrar objeto` elimina ficha y fila. Los `.tres` no se tocan en ningún caso.
+- `vault/items-editor/pendientes.py`: lista las fichas `en proceso` y sus diferencias con
+  el `.tres` (nombre, descripción, icono, valores) o avisa de que falta el recurso.
+- Arreglado el parseo de fichas con tablas alineadas (`colgante_hierro` salía vacía).
+
+## 2026-11-17 · `opencode-jorge` · Editor de objetos: estado real y valores en avanzadas (T-0073)
+
+- El estado ya no sale siempre `en proceso`: se muestra el estado real de la ficha y el
+  servidor fuerza `en proceso` al guardar (el `.tres` no se toca).
+- Los valores del recurso se mueven a un desplegable de opciones avanzadas, aclarando que
+  salen de la ficha y no del `.tres`.
+
+## 2026-11-17 · `opencode-jorge` · Editor de objetos: CSS, iconos y fuente `.md` (T-0073)
+
+- El servidor servía `style.css`/`app.js` como `text/plain` y el navegador los ignoraba:
+  ahora se manda el MIME correcto y las rutas son relativas.
+- Los iconos de la lista pedían `/items/*.png` (404); ahora `/assets/*.png`. Los 44 cargan.
+- La lista se construye desde `vault/items/*.md` (el catálogo solo rellena huecos); el
+  editor añade `?slug=` y un visor del `.md` guardado, y el estado arranca en `en proceso`.
+
+## 2026-11-17 · `opencode-jorge` · Editor web de objetos (T-0073)
+
+- `vault/items-editor/`: servidor Python (stdlib) + página que lista los 44 objetos con
+  buscador y filtros por estado, y edita nombre, textura, estado, habilidad y valores del
+  recurso. Guarda en la ficha y en su fila de `vault/items.md`, y deja el objeto
+  `en proceso` con el pendiente "aplicar en el `.tres` y en el juego" (no toca los `.tres`).
+- Arranque: `python3 vault/items-editor/server.py` → http://127.0.0.1:8765.
+- Probado con `--root` sobre una copia del vault; la UI no se ha abierto en navegador.
+
+## 2026-11-17 · `opencode-jorge` · Inventario legible y slots fijos (T-0072)
+
+- Fuentes del panel derecho del inventario a 15 (nombre) y 12 (stats/descripción);
+  cabeceras 13, contador 11 y preview 96 px.
+- `ItemDescription.clip_text`: con nombre/stats/descripción largos la ventana ya no crece
+  (mínimo 248 px en vez de 404).
+- `InventorySlot.expand_icon = true` en la escena: el slot manda (18×18 HUD, 40×40
+  inventario) y el icono se adapta; los 4 iconos de 32×32 ya no estiran la barra.
+- Las 44 fichas de `vault/items/` regeneradas desde los `.tres` (valores, icono y estado).
+
 ## 2026-11-17 · `opencode-jorge` · Sincronizar el vault tras el F5 (T-0068)
 
 - Ruben confirmó que todo lo que estaba en `revision` funciona probado en el editor:

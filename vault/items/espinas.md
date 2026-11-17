@@ -37,4 +37,5 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Pendiente
 
-- [ ] Asignar textura definitiva (hoy hay icono provisional del pack).
+- [x] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
+- [ ] F5 con el icono en el HUD y en el inventario.

@@ -609,3 +609,65 @@ Formato de entrada:
 - `ideas.md`, `docs/items.md`, `roadmap.md` y `estado.md` al día. `mutant_toad.tscn`
   revertido y `.obsidian/` ignorado.
 - Sin Godot ni commit: solo docs y `.gitignore`. T-0068 queda en `revision`.
+
+## 2026-11-17 · `opencode-jorge` · Inventario legible y slots fijos (T-0072)
+
+- Ruben: el inventario es feo, el texto del objeto es enorme y con textos largos el HUD
+  se estira; los slots de consumibles se adaptan a la textura y debería ser al revés.
+- `inventory_screen.tscn`: fuentes 20/18/18 -> 15/12/12, cabeceras 13, página 11, icono
+  de preview 128 -> 96 y `clip_text` en la descripción (su altura mínima empujaba la
+  ventana de 248 a 404 px).
+- `inventory_slot.tscn`: `expand_icon = true`; fuera el `expand_icon` que ponía
+  `inventory_screen.gd` a mano. Comprobado headless: 32×32 y 16×16 dan slot 18×18 (HUD) y
+  40×40 (inventario).
+- `vault/items/*.md`: tabla de valores regenerada desde los `.tres` (había fichas con los
+  valores viejos de poción) y el pendiente de textura pasa a icono asignado + F5.
+- `docs/ui.md` y `vault/items.md` al día. Sin F5.
+
+## 2026-11-17 · `opencode-jorge` · Editor web de objetos (T-0073)
+
+- Ruben: programa HTML para ver y editar `vault/items`; landing con los 44, editor de
+  nombre/habilidades/textura y filtro por estado; al guardar debe quedar claro que el
+  cambio no está en el juego.
+- Servidor local `vault/items-editor/server.py` (stdlib, 127.0.0.1) con `/api/items`,
+  `/api/items/<slug>` (GET/POST) y `/assets/` para los iconos; front en HTML/CSS/JS sin
+  dependencias.
+- Guardar reescribe ficha y catálogo, pone el estado `en proceso` y añade el pendiente
+  "Aplicar los cambios de esta ficha en el `.tres` y en el juego"; el `.tres` no se toca.
+- Probado con `--root` sobre una copia: carga de 44 objetos, 6 estados, guardado y
+  formateo del pendiente. UI sin abrir en navegador.
+
+## 2026-11-17 · `opencode-jorge` · Editor de objetos arreglado (T-0073)
+
+- Ruben: el editor "parece que el CSS no carga" y no se ven las imágenes. Causa real: el
+  servidor mandaba `style.css` y `app.js` como `text/plain` (el navegador descarta la hoja
+  de estilos) y las filas del catálogo pedían `/items/x.png` en lugar de `/assets/items/x.png`.
+- Servidor: MIME por extensión, rutas relativas en `index.html`, `/style.css` y `/app.js`
+  también en la raíz (así se ve algo aunque se abra el fichero a pelo).
+- Datos: la landing ahora sale de `vault/items/*.md`, con el catálogo solo como respaldo
+  para filas sin ficha; `?slug=` y visor del `.md` guardado; el selector de estado arranca
+  en `en proceso`.
+- Comprobado con Chrome headless sobre el repo real: 44 objetos, 44 iconos a 200 y CSS
+  `text/css; charset=utf-8`.
+
+## 2026-11-17 · `opencode-jorge` · Editor: estado real y valores avanzados (T-0073)
+
+- Ruben: el estado aparece siempre "en proceso" y no tiene sentido editar valores del
+  `.tres` en el editor (los `.tres` son del juego).
+- Estado: fuera el desplegable que arrancaba en `en proceso`; ahora se pinta el estado
+  real de la ficha y el servidor fuerza `en proceso` al guardar.
+- Valores del recurso: dentro de "Opciones avanzadas" (cerrado), con nota de que son la
+  tabla copiada de la ficha y que el editor no lee el `.tres`.
+
+## 2026-11-17 · `opencode-jorge` · Editor: alta/borrado, estado y pendientes (T-0073)
+
+- Ruben: poder añadir y borrar objetos; el estado tenía que cargarse bien, no
+  desaparecer; y un script de pendientes para que el agente sepa qué tocar en Godot.
+- Estado: desplegable con el estado real de la ficha. Regla: si el contenido cambia y el
+  estado no, se guarda `en proceso` (lo decide el cliente, el servidor obedece).
+- Alta: plantilla de ficha (tipo consumible/pasiva, calidad, textura) + fila insertada en
+  orden alfabético en `vault/items.md`. Borrado: ficha + fila; el `.tres` nunca se toca.
+- `pendientes.py`: sin dependencias, importa el parseo del `server.py`, compara ficha y
+  `.tres` y lista solo diferencias; probado con un `.tres` cambiado y con uno que falta.
+- Descubierto y arreglado: `colgante_hierro.md` tiene la tabla alineada con espacios y el
+  parser la dejaba vacía (el objeto no se podía editar).

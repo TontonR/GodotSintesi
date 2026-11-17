@@ -148,8 +148,6 @@ func _fill_slots(container: Container, inventory: Inventory, from: int, to: int)
 func _add_slot(container: Container, item: Items, size: Vector2 = SLOT_SIZE) -> void:
 	var slot: InventorySlot = slot_scene.instantiate()
 	slot.custom_minimum_size = size
-	# The icon fills the whole slot; in the HUD the same slot keeps its native size
-	slot.expand_icon = true
 	slot.set_item(item)
 	if item:
 		var index := _entries.size()

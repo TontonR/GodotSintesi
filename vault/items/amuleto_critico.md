@@ -24,9 +24,9 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 | Campo | Valor |
 |---|---|
+| `passive_id` | `"amuleto_critico"` |
 | `crit_chance` | `0.2` |
 | `crit_multiplier` | `1.8` |
-| `passive_id` | `"amuleto_critico"` |
 
 ## Cómo conseguirlo
 
@@ -36,4 +36,5 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Pendiente
 
-- [ ] Asignar textura definitiva (hoy hay icono provisional del pack).
+- [x] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
+- [ ] F5 con el icono en el HUD y en el inventario.

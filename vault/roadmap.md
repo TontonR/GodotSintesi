@@ -8,6 +8,8 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
+| [T-0073](tickets/T-0073-editor-web-de-objetos.md) | vault | Editor web local de objetos: lista, filtros por estado y edición de fichas | `revision` |
+| [T-0072](tickets/T-0072-inventario-texto-y-slots.md) | inventario | Texto del inventario más pequeño, slots de tamaño fijo y fichas de items al día | `revision` |
 | [T-0069](tickets/T-0069-iconos-consumibles-y-pociones.md) | inventario | Iconos de consumibles y tiers de poción 20/50/100 | `revision` |
 | [T-0070](tickets/T-0070-iconos-pasivas-pendientes.md) | inventario | Iconos de las 34 pasivas que seguían provisionales | `revision` |
 | [T-0071](tickets/T-0071-ajustes-iconos-pasivas.md) | inventario | Correcciones de iconos y renombres (`Hunter's Faith`, `Sanguine Ruby`) | `revision` |

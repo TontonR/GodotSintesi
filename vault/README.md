@@ -25,6 +25,7 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `vault/enemies/` | Una ficha por enemigo: stats base → finales, IA, drops, spawn y checklist de F5 | Al cambiar stats, IA, escena o loot |
 | `vault/items.md` | Catálogo de los 44 objetos: tipo, calidad, drop, textura y estado, con el reparto por enemigo | Al crear/cambiar un `.tres` o una tabla de loot |
 | `vault/items/` | Una ficha por objeto: efecto, `.tres`, script, ruta de la textura in-game y quién lo suelta | Al tocar un objeto o su icono |
+| `vault/items-editor/` | Editor web local de los objetos (lista, filtros por estado, alta y borrado, edición de nombre/textura/estado/habilidad) y `pendientes.py`, que lista las fichas `en proceso` con las diferencias contra su `.tres` | Al corregir objetos fuera de Godot o al aplicar fichas al juego |
 | `.opencode/skills/estado-enemigos` · `estado-items` | Skills para consultar y actualizar el estado sin releer escenas (también hay entrada en `.agents/skills/`) | Al empezar o cerrar trabajo de enemigos/objetos |
 | `vault/tickets/` | Un fichero por trabajo, con estado y resultado | Siempre que haya trabajo |
 | `vault/tickets/plantilla.md` | Copia base para abrir un ticket | — |

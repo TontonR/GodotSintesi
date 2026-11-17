@@ -25,6 +25,7 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 | Campo | Valor |
 |---|---|
 | `passive_id` | `"burbuja_rana"` |
+| `projectile_scene` | `ExtResource("2_proj")` |
 | `every_n_attacks` | `3` |
 | `damage_ratio` | `0.15` |
 | `projectile_count` | `3` |
@@ -41,4 +42,5 @@ Se equipa al tocarla (`PlayerPassives.add_passive`) y aplica su efecto desde ese
 
 ## Pendiente
 
-- [ ] Asignar textura definitiva (hoy hay icono provisional del pack).
+- [x] Icono definitivo asignado en el `.tres` (el arte aún puede cambiar).
+- [ ] F5 con el icono en el HUD y en el inventario.
