@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `docs` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
@@ -47,7 +47,7 @@ seguía contando lo contrario:
 - [x] T-0002 cerrado como descartado, con el motivo escrito.
 - [x] `estado.md`, `roadmap.md` e `ideas.md` sin skills, sin armas y con `main` al día.
 - [x] Árbol limpio salvo cambios con ticket.
-- [ ] Revisión de `humano-ruben` y merge del PR.
+- [x] PR #4 mergeado en `main` (`df20843`).
 
 ## Resultado
 
@@ -64,3 +64,5 @@ seguía contando lo contrario:
   pasiva siempre activa o condicional por coleccionable.
 - `mutant_toad.tscn` revertido (el `node_paths` lo borraba el editor; el script ya tiene
   fallback `get_node_or_null`) y `.obsidian/` añadido a `.gitignore`.
+
+Merge: [PR #4](https://github.com/TontonR/GodotSintesi/pull/4), squash en `df20843`.
