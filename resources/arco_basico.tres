@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BowPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/BowPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item1.png" id="2_icon"]
+[ext_resource type="PackedScene" path="res://scenes/collectables/player_arrow.tscn" id="3_arrow"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "arco_basico"
+id = "arco_basico"
+item_name = "Basic Bow"
+description = "Hold attack to fire an arrow (5 damage); at 2 seconds it deals +150%. A short tap still performs a melee hit."
+icon = ExtResource("2_icon")
+value = 110
+arrow_scene = ExtResource("3_arrow")
+base_damage = 5.0
+full_bonus = 1.5
+min_hold = 0.25
+full_hold = 2.0
+projectile_speed = 420.0

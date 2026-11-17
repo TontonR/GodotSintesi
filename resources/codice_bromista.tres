@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TricksterCodexPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/TricksterCodexPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item663.png" id="2_icon"]
+[ext_resource type="PackedScene" path="res://scenes/collectables/player_projectile.tscn" id="3_projectile"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "codice_bromista"
+id = "codice_bromista"
+item_name = "Trickster's Codex"
+description = "Up to 3 jumps charge projectiles for the next attack: each projectile deals 5% of your attack and has a 25% chance to push."
+icon = ExtResource("2_icon")
+value = 170
+projectile_scene = ExtResource("3_projectile")
+max_charges = 3
+damage_ratio = 0.05
+projectile_speed = 320.0
+spread_degrees = 12.0
+knockback_force = 120.0
+knockback_chance = 0.25

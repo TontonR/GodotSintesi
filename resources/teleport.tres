@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TeleportConsumable" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/TeleportConsumable.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/swirlW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "teleport"
+item_name = "Teleport"
+description = "After a 0.6-second cast, moves you 96 px forward, stopping before a wall."
+icon = ExtResource("2_icon")
+value = 80
+distance = 96.0
+cast_time = 0.6

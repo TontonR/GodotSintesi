@@ -1,6 +1,6 @@
 # Enemies — `EnemyBase` and the active catalog
 
-_2026-10-20 · 2026-11-01 · 2026-11-10 · 2026-11-12 · 2026-11-13_
+_2026-10-20 · 2026-11-01 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-17_
 
 ## What it does and where it lives
 
@@ -40,6 +40,19 @@ _2026-10-20 · 2026-11-01 · 2026-11-10 · 2026-11-12 · 2026-11-13_
 - API used by passives: `apply_slow(multiplier, seconds)` and the
   `PlayerPassives.trigger_kill_passives()` notice on death.
 
+## Damage over time (2026-11-17)
+
+- `EnemyBase.apply_burn(dps, seconds, max_stacks = 5, special = false)` stores independent stacks.
+  Normal burns stop at `max_stacks`; `special` is separate and only one can be active.
+- `get_burn_count()` counts normal burns; `has_special_burn()` and `has_dot()` expose the state to
+  passives (`AlmaPenaPassive`, `PenaPassive`).
+- Ticks every 0.5 s and calls `_apply_dot_damage()`, which bypasses defence and does not flash the
+  sprite. It still triggers `_die()` normally.
+- `apply_immobilize(seconds)` blocks movement and new behavior in `_physics_process()`; it does not
+  cancel an attack that was already in progress, nor clear the burn.
+- `ChainPerpetualConsumable` arms the player; on the next enemy hit the player applies a burn and,
+  if the enemy already had burns, immobilizes it for 2 s.
+
 ## Catalog (stats before the difficulty multipliers)
 
 | Enemy | Scene / script | HP | Damage | Speed | Cooldown | Notes |
@@ -64,7 +77,7 @@ count to that biome's `enemy_counts` (same order).
 - **Slime**: plain melee, slow, short cooldown.
 - **Skeleton**: melee; `_first_hit_blocked` eats the first `take_damage()` and only flashes.
 - **Archer**: `ranged_enemy`; stops inside its (large) attack range and shoots a projectile
-  from `Pivot/muzzle`, aiming at the player while detected. No `item_drops`.
+  from `Pivot/muzzle`, aiming at the player while detected. Has its own `item_drops`.
 - **Werewolf**: wanders around its chunk (radius 400, speed 70), charges when the player is
   in range at 140 px/s (faster than walking, 130; slower than sprinting, 221) with a 0.25 s
   wind-up and 1.5 s recovery; the first hit of each charge knocks the player up

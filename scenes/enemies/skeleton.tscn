@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/enemies/skeleton.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/enemies/skeleton_frames.tres" id="2_frames"]
+[ext_resource type="Script" path="res://scripts/resources/loot_entry.gd" id="3_loot"]
+[ext_resource type="Resource" path="res://resources/mangual.tres" id="4_mangual"]
+[ext_resource type="Resource" path="res://resources/venganza.tres" id="5_venganza"]
+[ext_resource type="Resource" path="res://resources/craneo.tres" id="6_craneo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(14, 24)
@@ -12,11 +16,27 @@ size = Vector2(20, 20)
 [sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
 radius = 200.0
 
+[sub_resource type="Resource" id="LootEntry_skeleton_mangual"]
+script = ExtResource("3_loot")
+item = ExtResource("4_mangual")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_skeleton_venganza"]
+script = ExtResource("3_loot")
+item = ExtResource("5_venganza")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_skeleton_craneo"]
+script = ExtResource("3_loot")
+item = ExtResource("6_craneo")
+drop_chance = 0.1
+
 [node name="Skeleton" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_script")
 scale = Vector2(2, 2)
+item_drops = Array[ExtResource("3_loot")]([SubResource("LootEntry_skeleton_mangual"), SubResource("LootEntry_skeleton_venganza"), SubResource("LootEntry_skeleton_craneo")])
 sprite = NodePath("Pivot/Skeleton")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")

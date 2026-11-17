@@ -671,3 +671,8 @@ Formato de entrada:
   `.tres` y lista solo diferencias; probado con un `.tres` cambiado y con uno que falta.
 - Descubierto y arreglado: `colgante_hierro.md` tiene la tabla alineada con espacios y el
   parser la dejaba vacía (el objeto no se podía editar).
+## 2026-11-17 · `opencode-jorge` · Nuevos objetos de ideas.md (T-0054)
+- Ruben aprueba las 4 tandas y los valores propuestos; `Fragmento` queda fuera.
+- Se crean los 14 objetos de arquero, esqueleto, fantasma y demonio, con sistemas nuevos para arco, invulnerabilidad, teleport, saltos, rata y DOT.
+- Se añaden al `item_drops` de `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
+- Ficheros: `scripts/collectables/*.gd`, `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, escenas de enemigos y docs.

@@ -116,6 +116,11 @@ var _is_facing_left: bool = false
 ## Active slow (frog tongue): factor and remaining seconds.
 var _slow_factor: float = 1.0
 var _slow_timer: float = 0.0
+## Active burns: each entry has `dps`, `remaining` and `special`.
+var _burns: Array[Dictionary] = []
+var _dot_tick: float = 0.0
+## Movement is blocked while this is above zero.
+var _immobilize_timer: float = 0.0
 var _hit_tween: Tween
 
 
@@ -164,6 +169,11 @@ func _physics_process(delta: float) -> void:
 		_slow_timer = maxf(_slow_timer - delta, 0.0)
 		if _slow_timer <= 0.0:
 			_slow_factor = 1.0
+	if _immobilize_timer > 0.0:
+		_immobilize_timer = maxf(_immobilize_timer - delta, 0.0)
+	_update_dots(delta)
+	if _is_dead:
+		return
 
 	# Flying enemies are not affected by gravity.
 	if not flying_enemy and not is_on_floor():
@@ -172,6 +182,9 @@ func _physics_process(delta: float) -> void:
 	# While attacking it brakes; otherwise it decides what to do.
 	if _is_attacking:
 		_decelerate()
+	elif _immobilize_timer > 0.0:
+		_stop()
+		_play_animation(idle_animation)
 	else:
 		_update_behavior(delta)
 
@@ -259,6 +272,10 @@ func _refresh_area_flags() -> void:
 
 ## Priority: flee > attack > chase.
 func _update_behavior(_delta: float) -> void:
+	if _immobilize_timer > 0.0:
+		_stop()
+		_play_animation(idle_animation)
+		return
 	if not is_instance_valid(_player):
 		_decelerate()
 		_play_animation(idle_animation)
@@ -380,9 +397,10 @@ func _get_projectile_damage() -> float:
 
 
 func _deal_damage_to(body: Node2D) -> void:
-	# If the target supports knockback we pass our position.
+	# If the target supports knockback we pass our position and ourselves so
+	# passives such as Life Sentence or Skull can identify the attacker.
 	if body.has_method("take_damage_from"):
-		body.take_damage_from(base_attack, global_position)
+		body.take_damage_from(base_attack, global_position, 0.0, 0.0, 0.0, self)
 	else:
 		body.take_damage(base_attack)
 
@@ -522,6 +540,81 @@ func apply_slow(multiplier: float, seconds: float) -> void:
 		return
 	_slow_factor = clampf(multiplier, 0.1, 1.0)
 	_slow_timer = maxf(seconds, 0.0)
+
+
+## Adds a burn. Normal burns respect `max_stacks`; a special burn is separate.
+func apply_burn(dps: float, seconds: float, max_stacks: int = 5, special: bool = false) -> void:
+	if _is_dead or dps <= 0.0 or seconds <= 0.0:
+		return
+	if special:
+		if has_special_burn():
+			return
+	else:
+		if get_burn_count() >= max_stacks:
+			return
+	_burns.append({
+		"dps": dps,
+		"remaining": seconds,
+		"special": special,
+	})
+
+
+## Number of normal burns (special burns are excluded).
+func get_burn_count() -> int:
+	var count := 0
+	for burn in _burns:
+		if not bool(burn.get("special", false)):
+			count += 1
+	return count
+
+
+func has_special_burn() -> bool:
+	for burn in _burns:
+		if bool(burn.get("special", false)):
+			return true
+	return false
+
+
+## Any damage-over-time effect is active.
+func has_dot() -> bool:
+	return not _burns.is_empty()
+
+
+func apply_immobilize(seconds: float) -> void:
+	if _is_dead:
+		return
+	_immobilize_timer = maxf(_immobilize_timer, seconds)
+
+
+func _update_dots(delta: float) -> void:
+	if _burns.is_empty():
+		_dot_tick = 0.0
+		return
+	for i in range(_burns.size() - 1, -1, -1):
+		_burns[i]["remaining"] = float(_burns[i]["remaining"]) - delta
+		if float(_burns[i]["remaining"]) <= 0.0:
+			_burns.remove_at(i)
+	if _burns.is_empty():
+		_dot_tick = 0.0
+		return
+	_dot_tick += delta
+	if _dot_tick < 0.5:
+		return
+	var total := 0.0
+	for burn in _burns:
+		total += float(burn["dps"]) * _dot_tick
+	_dot_tick = 0.0
+	if total > 0.0:
+		_apply_dot_damage(total)
+
+
+## DOT damage ignores defence and does not flash the sprite on every tick.
+func _apply_dot_damage(amount: float) -> void:
+	if _is_dead:
+		return
+	health = maxf(health - amount, 0.0)
+	if health <= 0.0:
+		_die()
 
 
 func _current_speed() -> float:

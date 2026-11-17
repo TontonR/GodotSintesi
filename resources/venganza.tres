@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="VengeancePassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/VengeancePassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item688.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "venganza"
+id = "venganza"
+item_name = "Vengeance"
+description = "Reaching 0 stamina opens a 20-second window with 20% critical chance. It closes when stamina returns above 75%."
+icon = ExtResource("2_icon")
+value = 160
+crit_chance = 0.2
+crit_multiplier = 1.8
+duration = 20.0
+end_stamina_ratio = 0.75
