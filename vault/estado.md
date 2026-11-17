@@ -6,10 +6,10 @@ _Actualizado 2026-11-17 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `main` `a16c11f`: T-0054 (objetos de Jorge) mergeado por PR #8, detrás de T-0072/T-0073 y los iconos T-0069–T-0071. Única rama del repo |
+| Rama | `main` `ccbae38` (T-0054 mergeado por PR #8, cierre en PR #9) y la nueva `feat/estructuras-chunk` con el T-0074 |
 | Árbol | Limpio. Ramas viejas borradas en local y en `origin` tras el merge. `.obsidian/` en `.gitignore` |
-| Fase | Todo lo construido está verificado en F5 (Ruben, 2026-11-17): 52 tickets cerrados en bloque. T-0054 entra sin F5 y los objetos nuevos ya tienen icono |
-| Siguiente paso | F5 de T-0054 (arco, 14 objetos, DOT, rata e invulnerabilidad) y del inventario (T-0072); luego T-0003 (inventario lleno) y los coleccionables del arquero (`vault/pasivas/arquero.md`) |
+| Fase | T-0074 abierto (solo ticket y rama, sin código). Todo lo construido está verificado en F5 (Ruben, 2026-11-17): 52 tickets cerrados en bloque. T-0054 entra sin F5 y los objetos nuevos ya tienen icono |
+| Siguiente paso | T-0074 (estructuras por chunk), F5 de T-0054 (arco, 14 objetos, DOT, rata e invulnerabilidad) y del inventario (T-0072); luego T-0003 y los coleccionables del arquero |
 | Bloqueos | Ninguno técnico. Decisiones de diseño abiertas en `vault/ideas.md` §7 |
 
 ## Foco por agente
@@ -17,7 +17,7 @@ _Actualizado 2026-11-17 por `buffy`_
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
 | `opencode-jorge` | T-0054 mergeado en `main`, pendiente de F5 | ya integrado: `scripts/collectables/*.gd`, `resources/*.tres`, `scenes/enemies/*.tscn` |
-| `buffy` | — | — |
+| `buffy` | T-0074: estructuras por chunk decididas por semilla | `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/structures/`, `docs/world.md`, `docs/biomes.md` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 

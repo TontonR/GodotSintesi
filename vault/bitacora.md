@@ -676,3 +676,17 @@ Formato de entrada:
 - Se crean los 14 objetos de arquero, esqueleto, fantasma y demonio, con sistemas nuevos para arco, invulnerabilidad, teleport, saltos, rata y DOT.
 - Se añaden al `item_drops` de `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
 - Ficheros: `scripts/collectables/*.gd`, `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, escenas de enemigos y docs.
+
+---
+
+## 2026-11-17 · `buffy` · Abierto T-0074: estructuras por chunk
+
+- Abierto [T-0074](tickets/T-0074-estructuras-por-chunk.md) a petición de Ruben: que se
+  puedan **añadir estructuras** (como recurso `.tres` o escena) a un bioma y que el
+  generador decida por chunk si salen, **con la semilla** como fuente del reparto.
+- Rama `feat/estructuras-chunk` sale de `main`; de momento **solo el ticket**, sin código
+  ni arte: el prototipo usará un placeholder cantoso.
+- Ficheros previstos: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/`, `docs/world.md`, `docs/biomes.md`.
+- Dudas en el ticket: colisión (no en el prototipo), textura vs escena y estructuras que
+  crucen chunks (fuera de alcance).

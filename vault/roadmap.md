@@ -18,6 +18,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
+| [T-0074](tickets/T-0074-estructuras-por-chunk.md) | mundo | Estructuras colocables por chunk, definidas como `.tres` y decididas por semilla (placeholder de prueba) | `en-curso` |
 | [T-0003](tickets/T-0003-inventario-lleno-intercambio.md) | inventario | Intercambio/rechazo cuando la barra está llena (hoy el drop se queda en el suelo) | `abierto` |
 | [T-0007](tickets/T-0007-pulido-enemigos-nuevos.md) | enemigos | Balance, capas y muerte de los enemigos integrados | `abierto` |
 
