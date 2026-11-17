@@ -2,6 +2,14 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor de objetos: CSS, iconos y fuente `.md` (T-0073)
+
+- El servidor servía `style.css`/`app.js` como `text/plain` y el navegador los ignoraba:
+  ahora se manda el MIME correcto y las rutas son relativas.
+- Los iconos de la lista pedían `/items/*.png` (404); ahora `/assets/*.png`. Los 44 cargan.
+- La lista se construye desde `vault/items/*.md` (el catálogo solo rellena huecos); el
+  editor añade `?slug=` y un visor del `.md` guardado, y el estado arranca en `en proceso`.
+
 ## 2026-11-17 · `opencode-jorge` · Editor web de objetos (T-0073)
 
 - `vault/items-editor/`: servidor Python (stdlib) + página que lista los 44 objetos con

@@ -636,3 +636,16 @@ Formato de entrada:
   "Aplicar los cambios de esta ficha en el `.tres` y en el juego"; el `.tres` no se toca.
 - Probado con `--root` sobre una copia: carga de 44 objetos, 6 estados, guardado y
   formateo del pendiente. UI sin abrir en navegador.
+
+## 2026-11-17 · `opencode-jorge` · Editor de objetos arreglado (T-0073)
+
+- Ruben: el editor "parece que el CSS no carga" y no se ven las imágenes. Causa real: el
+  servidor mandaba `style.css` y `app.js` como `text/plain` (el navegador descarta la hoja
+  de estilos) y las filas del catálogo pedían `/items/x.png` en lugar de `/assets/items/x.png`.
+- Servidor: MIME por extensión, rutas relativas en `index.html`, `/style.css` y `/app.js`
+  también en la raíz (así se ve algo aunque se abra el fichero a pelo).
+- Datos: la landing ahora sale de `vault/items/*.md`, con el catálogo solo como respaldo
+  para filas sin ficha; `?slug=` y visor del `.md` guardado; el selector de estado arranca
+  en `en proceso`.
+- Comprobado con Chrome headless sobre el repo real: 44 objetos, 44 iconos a 200 y CSS
+  `text/css; charset=utf-8`.

@@ -29,7 +29,17 @@ Node.
   `en proceso` y se añade `- [ ] Aplicar los cambios de esta ficha en el .tres y
   en el juego.` si no estaba.
 
+## Detalles
+
+- La fuente de datos son los `.md`: la lista sale de `vault/items/*.md` (no solo de las
+  filas del catálogo) y el `.tres` solo se muestra como texto informativo.
+- `?slug=<slug>` abre un objeto directamente (enlace compartible).
+- Debajo del formulario, «Ver el .md tal cual» muestra la ficha recién guardada.
+
 ## Límites
+
+- Abrir `index.html` con doble clic (`file://`) enseña la página pero **no** puede leer el
+  vault: hay que entrar por `http://127.0.0.1:8765`. Si no, sale un aviso rojo arriba.
 
 - Ver el cambio **en el juego** exige editar el `.tres` y pasar F5: el editor no
   lo hace a propósito (una ficha no debe tocar recursos).

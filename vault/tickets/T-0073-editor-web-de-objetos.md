@@ -41,5 +41,11 @@ ver los 44 de un vistazo ni de saber qué está pendiente de pasar al juego.
   `style.css` y `README.md`.
 - Rutas: `/api/items` (catálogo + estados + reparto), `/api/items/<slug>` (GET/POST),
   `/assets/...` para los iconos.
-- Sin dependencias nuevas ni cambios en el juego. No se ha probado la UI en navegador
-  (solo la API y el HTML servido).
+- Sin dependencias nuevas ni cambios en el juego.
+- **Corregido tras la revisión de Ruben (2026-11-17)**: el CSS y el JS se servían como
+  `text/plain` y el navegador no los aplicaba (había que servir el MIME correcto); los
+  iconos de la lista pedían `/items/x.png` en vez de `/assets/items/x.png` (404). La
+  fuente de la lista pasa a ser `vault/items/*.md` (catálogo solo como respaldo), se añade
+  `?slug=` y un visor del `.md` guardado, y el `estado` del formulario arranca en
+  `en proceso` para que guardar marque pendiente sin querer.
+- UI revisada con Chrome headless: 44 objetos, 44 iconos en 200, CSS `text/css`.

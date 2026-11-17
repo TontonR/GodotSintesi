@@ -48,6 +48,14 @@ def catalog_states(text: str) -> list[dict]:
     return states
 
 
+def icon_res(path: str) -> str:
+    """Acepta `items/x.png` o `assets/items/x.png` y devuelve la ruta del juego."""
+    path = path.strip().strip("`")
+    if not path:
+        return ""
+    return path if path.startswith("res://") else "res://assets/" + path.removeprefix("assets/")
+
+
 def catalog_rows(text: str) -> list[dict]:
     rows = []
     for line in text.splitlines():
@@ -193,32 +201,40 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
-        if path == "/":
-            return self._static("index.html", "text/html")
+        if path in ("/", "/index.html"):
+            return self._static("index.html")
         if path.startswith("/assets/"):
-            return self._file(HERE_ROOT / unquote(path.lstrip("/")), "image/png")
+            return self._file(HERE_ROOT / unquote(path.lstrip("/")))
         if path.startswith("/editor/"):
-            name = unquote(path.split("/editor/", 1)[1])
-            return self._static(name)
+            return self._static(unquote(path.split("/editor/", 1)[1]))
+        if path in ("/style.css", "/app.js"):
+            return self._static(path.lstrip("/"))
+        if path.startswith("/api/items/"):
+            slug = path.rsplit("/", 1)[1]
+            item = parse_page(slug)
+            if item is None:
+                return self._json({"error": "not found"}, 404)
+            md = HERE_ROOT / ITEMS_DIR / f"{slug}.md"
+            item["raw"] = md.read_text(encoding="utf-8")
+            return self._json(item)
         if path == "/api/items":
             cat = (HERE_ROOT / CATALOG).read_text(encoding="utf-8")
+            # Las fichas `vault/items/*.md` son la fuente; el catalogo solo aporta el orden
+            # y las filas que aun no tienen ficha.
+            rows = {r["slug"]: r for r in catalog_rows(cat)}
             items = []
-            for row in catalog_rows(cat):
-                page = parse_page(row["slug"]) or {}
-                row.update(
-                    {
-                        "description": page.get("description", ""),
-                        "resource": page.get("resource", ""),
-                        "values": page.get("values", []),
-                    }
-                )
-                items.append(row)
+            for md in sorted((HERE_ROOT / ITEMS_DIR).glob("*.md")):
+                page = parse_page(md.stem)
+                if page is None:
+                    continue
+                page = dict(rows.pop(md.stem, {}), **page)
+                page["icon"] = icon_res(page.get("icon", ""))
+                items.append(page)
+            items.extend(rows.values())
+            items.sort(key=lambda i: i.get("name", "").casefold())
             return self._json(
                 {"states": catalog_states(cat), "items": items, "drops": catalog_summary(cat)}
             )
-        if path.startswith("/api/items/"):
-            item = parse_page(path.rsplit("/", 1)[1])
-            return self._json(item or {"error": "not found"}, 200 if item else 404)
         return self._json({"error": "not found"}, 404)
 
     def do_POST(self):
@@ -238,31 +254,39 @@ class Handler(SimpleHTTPRequestHandler):
         item = save_page(slug, data)
         if item is None:
             return self._json({"error": "not found"}, 404)
+        item["raw"] = (HERE_ROOT / ITEMS_DIR / f"{slug}.md").read_text(encoding="utf-8")
         return self._json(item)
 
-    def _static(self, name: str, ctype: str = "text/plain"):
+    MIME = {
+        ".html": "text/html; charset=utf-8",
+        ".css": "text/css; charset=utf-8",
+        ".js": "text/javascript; charset=utf-8",
+        ".svg": "image/svg+xml",
+    }
+
+    def _static(self, name: str):
         path = HERE / name
-        if not path.exists():
+        if not path.is_file():
             return self._json({"error": "not found"}, 404)
         body = path.read_bytes()
         self.send_response(200)
-        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Type", self.MIME.get(path.suffix.lower(), "application/octet-stream"))
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
-    def _file(self, path: Path, ctype: str):
+    def _file(self, path: Path):
         try:
             path.resolve().relative_to(HERE_ROOT)
         except ValueError:
             return self._json({"error": "forbidden"}, 403)
         if not path.is_file():
             return self._json({"error": "not found"}, 404)
-        suffix = path.suffix.lower()
-        if suffix == ".svg":
-            ctype = "image/svg+xml"
-        elif suffix in (".jpg", ".jpeg"):
-            ctype = "image/jpeg"
+        ctype = {
+            ".svg": "image/svg+xml",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+        }.get(path.suffix.lower(), "image/png")
         body = path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", ctype)

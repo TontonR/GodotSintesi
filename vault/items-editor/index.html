@@ -4,48 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Objetos — vault/items</title>
-<link rel="stylesheet" href="/editor/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="banner" class="banner" hidden></div>
+
 <header>
-  <h1>Objetos <span class="muted">vault/items</span></h1>
-  <input id="search" type="search" placeholder="Buscar por nombre, tipo, drop…" autocomplete="off">
+  <div class="brand">
+    <h1>Objetos</h1>
+    <span class="muted">vault/items · fichas <code>.md</code></span>
+  </div>
+  <input id="search" type="search" placeholder="Buscar por nombre, tipo, calidad, drop…" autocomplete="off">
   <div id="filters" class="filters"></div>
 </header>
 
 <main>
-  <section id="list" class="list" aria-label="Objetos"></section>
+  <section class="list-col">
+    <p class="count muted" id="count"></p>
+    <div id="list" class="list" aria-label="Objetos"></div>
+  </section>
 
-  <section id="editor" class="editor">
-    <div class="empty" id="empty">Selecciona un objeto de la lista.</div>
-    <form id="form" hidden>
+  <section class="editor-col">
+    <div class="empty card" id="empty">Selecciona un objeto de la lista para editar su ficha.</div>
+
+    <form id="form" class="card" hidden>
       <div class="title-row">
-        <img id="preview" alt="">
-        <div>
+        <img id="preview" class="preview" alt="">
+        <div class="title-text">
           <h2 id="heading">—</h2>
           <p class="meta" id="meta"></p>
         </div>
       </div>
 
-      <label>Nombre en el juego
-        <input id="name" required maxlength="60">
-      </label>
+      <div class="grid-2">
+        <label>Nombre en el juego
+          <input id="name" required maxlength="60">
+        </label>
+        <label>Estado
+          <select id="state"></select>
+        </label>
+      </div>
 
-      <label>Textura (ruta in-game)
+      <label>Textura (ruta en el juego)
         <input id="icon" placeholder="res://assets/items/item123.png">
       </label>
 
-      <label>Estado
-        <select id="state"></select>
-      </label>
-
-      <label>Habilidad / descripción (<code>## Qué hace</code>)
-        <textarea id="description" rows="4"></textarea>
+      <label>Habilidad / descripción <span class="hint">sección <code>## Qué hace</code></span>
+        <textarea id="description" rows="3"></textarea>
       </label>
 
       <fieldset>
-        <legend>Valores del recurso</legend>
-        <div id="values"></div>
+        <legend>Valores del recurso <span class="hint">sección <code>## Valores del recurso</code></span></legend>
+        <div id="values" class="values"></div>
         <button type="button" id="addValue" class="ghost">+ valor</button>
       </fieldset>
 
@@ -55,10 +65,15 @@
         <button type="submit" id="save">Guardar en el .md</button>
         <span id="status" class="status" role="status"></span>
       </div>
+
+      <details class="raw">
+        <summary>Ver el .md tal cual</summary>
+        <pre id="raw"></pre>
+      </details>
     </form>
   </section>
 </main>
 
-<script src="/editor/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
