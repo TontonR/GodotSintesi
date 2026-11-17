@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="InvulnerabilityConsumable" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/InvulnerabilityConsumable.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item241.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "capa_inv"
+item_name = "Cloak of Invisibility"
+description = "For 2 seconds, the next hit you receive is ignored."
+icon = ExtResource("2_icon")
+value = 80
+invulnerability_seconds = 2.0

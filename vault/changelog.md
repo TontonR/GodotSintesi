@@ -18,6 +18,12 @@ _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 - Árbol: `mutant_toad.tscn` revertido (el editor borraba `node_paths`, el script ya tiene
   `get_node_or_null`) y `.obsidian/` añadido a `.gitignore`.
 
+## 2026-11-17 · `fix-items.icons` — nuevos objetos de `ideas.md`
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| 14 objetos nuevos (arquero, esqueleto, fantasma y demonio), arco cargado, invulnerabilidad, teleport, rata, DOT de quemadura y loot en cuatro enemigos; `Fragmento` queda fuera | `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `scripts/collectables/*.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, `scenes/enemies/*.tscn`, `docs/items.md`, `docs/player.md`, `docs/enemies.md`, `vault/ideas.md`, `vault/pasivas/arquero.md` | [T-0054](tickets/T-0054-nuevos-objetos-ideas.md) |
+
 ## 2026-11-13 · `main` — correcciones de iconos de pasivas
 
 | Qué | Dónde | Ticket |

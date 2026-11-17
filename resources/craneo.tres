@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkullPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/SkullPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item1167.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "craneo"
+id = "craneo"
+item_name = "Skull"
+description = "Loses 20 maximum health. Every hit taken reflects 5% of your current health to the attacker."
+icon = ExtResource("2_icon")
+value = 130
+max_health_penalty = 20
+reflect_ratio = 0.05

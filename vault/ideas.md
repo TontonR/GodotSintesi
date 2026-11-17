@@ -76,10 +76,10 @@ que se cree ese sistema.
 | Efecto | Regla de diseño | Estado | Dudas abiertas |
 |---|---|---|---|
 | Veneno | DOT puro, sin efecto extra. Si el enemigo muere envenenado, el veneno se propaga a los cercanos. | `parcial` | `poison_cloud.gd` hace 2 de daño cada 0,5 s en 44 px durante 4 s, pero no hay DOT sobre el enemigo ni propagación al morir. Falta radio/duración de la propagación. |
-| Quemadura | DOT que se propaga y se acumula. | `idea` | ¿Cuántos stacks? ¿Cómo se refresca? ¿Se propaga al morir o al golpear? |
-| Pena | Quemadura especial, un 25 % más fuerte que la base. **No** cuenta para el límite de quemaduras normales. | `idea` | Se activa con más de 3 quemaduras; falta definir si el umbral es ">3" o "≥3". |
+| Quemadura | DOT que se acumula en el enemigo. | `hecho` | Máximo 5 quemaduras normales; no se propaga al morir. `EnemyBase.apply_burn()`. |
+| Pena | Quemadura especial, un 25 % más fuerte que la base. **No** cuenta para el límite de quemaduras normales. | `hecho` | Umbral ">3"; una sola Pena activa a la vez (`PenaPassive`). |
 | Sangrado | Daño verdadero (ignora defensa) + un porcentaje de la vida actual. | `idea` | ¿Porcentaje por tick, por golpe o al moverse? ¿Cada cuánto? ¿Tope? |
-| Alma en pena | Mientras el enemigo tenga veneno, quemadura o similar, recibe +10 % de daño de todas las fuentes. | `idea` | Depende de que exista el sistema de DOT. |
+| Alma en pena | Mientras el enemigo tenga una quemadura, tus golpes hacen +10 % de daño. | `hecho` | Aplicado a golpes del jugador; los ticks de DOT no se multiplican (`AlmaPenaPassive`). |
 
 ### 3.2 Estados y control
 
@@ -159,41 +159,41 @@ en `Items`.
 | Moco compacto | Generas moco permanentemente; cuantas más partículas, más defensa | Normal | `hecho` (+1 nivel de moco). |
 | Corazón mucosil | Duplicas las partículas de moco | Raro | `hecho`; dobla el nivel de moco. |
 
-**Arquero** — ninguna implementada; `vault/pasivas/arquero.md` sigue con huecos:
+**Arquero** — implementada; `vault/pasivas/arquero.md` actualizado:
 
 | Objeto | Efecto | Calidad | Estado / notas |
 |---|---|---|---|
-| Arco básico | Mantienes pulsado el ataque un poco más y lanzas una flecha de 5 de daño; +150 % si mantuviste 2 s antes de soltar | — | `idea`; el arquero enemigo ya dispara, el jugador no tiene arco. |
-| Capa de caza | +10 de vida y +5 % de estamina | — | `idea`; "+5 % de estamina" es ambiguo (¿máxima o regeneración?). |
-| Maestría a distancia | Al hacer daño a cierta distancia, infliges un 15 % más | — | `idea`; falta definir la distancia mínima. |
-| Fuerza del bosque | Cada cierto tiempo invocas una rata invulnerable que daña a los enemigos a su paso y puede bloquear ataques | — | `idea`; faltan intervalo, duración y daño. |
+| Arco básico | Mantienes pulsado el ataque un poco más y lanzas una flecha de 5 de daño; +150 % si mantuviste 2 s antes de soltar | — | `hecho`; `arco_basico`, `player_arrow.tscn`. |
+| Capa de caza | +10 de vida y +5 de estamina máxima | — | `hecho`; `capa_caza`, confirmado máximo, no regeneración. |
+| Maestría a distancia | Al hacer daño a 80 px o más, infliges un 15 % más | — | `hecho`; `maestria_distancia`. |
+| Fuerza del bosque | Cada 15 s invocas una rata invulnerable de 8 s que hace 3 de daño cada 0.5 s y bloquea proyectiles | — | `hecho`; `fuerza_bosque`. |
 
-**Esqueleto** — ninguna implementada:
-
-| Objeto | Efecto | Calidad | Estado / notas |
-|---|---|---|---|
-| Mangual | +2 de ataque | — | `idea` |
-| Venganza | Al quedarte sin estamina, 20 s con 20 % de probabilidad de crítico; se pierde al superar el 75 % de estamina | — | `idea` |
-| Cráneo | −20 de vida máxima; al recibir daño reflejas el 5 % de tu vida por tick de daño | — | `idea`; falta aclarar si el 5 % es de vida actual o máxima y qué cuenta como tick. |
-| Fragmento | Parece que no hace nada; quizá al obtenerlo 5 veces haga algo | — | `por definir` |
-
-**Fantasma** — ninguna implementada. La nota marca varias como `cons`; se interpreta
-como **consumible**, pendiente de confirmar:
+**Esqueleto** — implementada:
 
 | Objeto | Efecto | Calidad | Estado / notas |
 |---|---|---|---|
-| Capa de inv | Consumible: esquivas el siguiente ataque recibido dentro de una ventana de 2 s | — | `idea` |
-| Teleport | Consumible: te teletransportas hacia delante una cierta distancia, con tiempo de casteo antes | — | `idea`; faltan distancia y casteo. |
-| Códice del bromista | Tras cada salto (máximo 3), tu siguiente ataque lanza un proyectil por salto (5 % del ataque) con probabilidad de empujar | — | `idea` |
-| Alma en pena | El daño de veneno, quemadura y similares hace que el enemigo reciba un 10 % más de daño de todas las fuentes | — | `idea`; depende del sistema de DOT. |
+| Mangual | +2 de ataque | — | `hecho`; `mangual`. |
+| Venganza | Al quedarte sin estamina, 20 s con 20 % de probabilidad de crítico; se pierde al superar el 75 % de estamina | — | `hecho`; `venganza`. |
+| Cráneo | −20 de vida máxima; al recibir daño reflejas el 5 % de tu vida actual por golpe | — | `hecho`; `craneo`; el 5 % es de vida actual y cada golpe cuenta. |
+| Fragmento | Parece que no hace nada; quizá al obtenerlo 5 veces haga algo | — | `por definir`; no se crea. |
 
-**Demonio** — ninguna implementada; todas dependen del sistema de quemadura:
+**Fantasma** — implementada. La nota marca varias como `cons`; se interpreta
+como **consumible**:
 
 | Objeto | Efecto | Calidad | Estado / notas |
 |---|---|---|---|
-| Cadena perpetua | Consumible: quemas al siguiente enemigo que entre en contacto; si ya está quemado, lo inmovilizas | — | `idea` |
-| Cenizas de sufrimiento | Cada ataque aplica una quemadura del 5 % de tu ataque durante 5 s; se acumula hasta 5 quemaduras activas | — | `idea` |
-| Pena | Si el enemigo tiene más de 3 quemaduras, sufre Pena: una quemadura un 25 % más fuerte que las base, especial y fuera del conteo normal | — | `idea` |
+| Capa de inv | Consumible: esquivas el siguiente ataque recibido dentro de una ventana de 2 s | — | `hecho`; `capa_inv`. |
+| Teleport | Consumible: te teletransportas 96 px hacia delante con 0.6 s de casteo | — | `hecho`; `teleport`; se detiene ante una pared. |
+| Códice del bromista | Tras cada salto (máximo 3), tu siguiente ataque lanza un proyectil por salto (5 % del ataque) con 25 % de empuje | — | `hecho`; `codice_bromista`. |
+| Alma en pena | El daño de veneno, quemadura y similares hace que el enemigo reciba un 10 % más de daño de todas las fuentes | — | `hecho`; `alma_pena`, usa `EnemyBase.has_dot()` para los golpes del jugador. |
+
+**Demonio** — implementada; usa el sistema de quemadura de `EnemyBase`:
+
+| Objeto | Efecto | Calidad | Estado / notas |
+|---|---|---|---|
+| Cadena perpetua | Consumible: quemas al siguiente enemigo que te golpee; si ya está quemado, lo inmovilizas 2 s | — | `hecho`; `cadena_perpetua`, 20 s armado. |
+| Cenizas de sufrimiento | Cada ataque aplica una quemadura del 5 % de tu ataque durante 5 s; se acumula hasta 5 quemaduras activas | — | `hecho`; `cenizas_sufrimiento`. |
+| Pena | Si el enemigo tiene más de 3 quemaduras, sufre Pena: una quemadura un 25 % más fuerte que la base, especial y fuera del conteo normal | — | `hecho`; `pena`. |
 
 Fuera de esta tabla siguen existiendo los objetos antiguos del compañero y de T-0017
 (amuleto de ataque, armaduras, pociones, `vampirismo`, `espinas`, `codicia`…). Están

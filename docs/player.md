@@ -1,6 +1,6 @@
 # Player — movement, combat, health and stamina
 
-_2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives`_
+_2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives` · 2026-11-17_
 
 ## What it does and where it lives
 
@@ -24,6 +24,15 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives`_
 - Parry: `parry_window` (0.2 s) from when the guard is raised. If a frontal hit lands within the window, it deals no damage, returns `parry_stamina_refund` (30) and fires `fx.parry()` (sparks, `PARRY!`, flash and shake); the window is consumed and the rest of the guard blocks normally. When the window opens a subtle notice plays (`fx.parry_ready()`). Every perfect parry emits `parried(attacker)` so the enemy can react: the wolf's charge is cut and it stays stunned 0.8 s (2026-11-13).
 - Anti-spam: `parry_cooldown` (0.3 s) is added to the window when it opens (`_parry_cooldown_timer = parry_window + parry_cooldown`), so holding or mashing the click doesn't chain parries and each attempt pays the guard (10 + 12/s). A successful parry also resets that cooldown.
 - Guard and parry don't push: `_apply_damage()` returns whether the hit actually removed health and `take_damage_from()` cuts before the knockback/knockup when it didn't.
+
+## Item hooks (2026-11-17)
+
+- `signal jumped`: emitted after a normal jump starts; `TricksterCodexPassive` uses it to store up to 3 charges.
+- Bow: if a passive implements `can_fire()` and `fire_arrow()`, holding left click charges instead of attacking. Release below 0.25 s performs the normal melee; above it, `BowPassive` spawns `player_arrow.tscn`. A 2 s hold applies +150 %.
+- `apply_invulnerability(seconds)`: `_apply_damage()` ignores the next hit while `_invulnerability_timer > 0` and consumes the window; `take_damage_from()` also drops knockback/knockup for that hit.
+- `apply_control_lock(seconds)` and `teleport_forward(distance)`: used by `Teleport`; the second one advances in 4 px steps with `test_move`, so it stops before a wall.
+- `arm_chain_perpetua(...)`: stores a 20 s charge; the next enemy that removes health is burned, and immobilized if it already had burns.
+- `_apply_damage()` still applies knockback under debug immortality, but not under the invisibility window.
 
 ## Stats (2026-11-05)
 

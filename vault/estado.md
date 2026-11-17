@@ -6,17 +6,17 @@ _Actualizado 2026-11-17 por `opencode-jorge`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `main` con T-0068 (PR #4) y los iconos de Jorge (T-0069–T-0071) mergeados |
-| Árbol | Limpio. `.obsidian/` en `.gitignore` |
-| Fase | **Todo lo construido está verificado en F5** (Ruben, 2026-11-17): 52 tickets cerrados en bloque. Los 44 objetos ya tienen icono definitivo asignado |
-| Siguiente paso | F5 de los iconos y de los nuevos tiers de poción; luego T-0003 (inventario lleno) y los coleccionables del arquero (`vault/pasivas/arquero.md`) |
-| Bloqueos | Ninguno técnico. Decisiones de diseño abiertas en `vault/ideas.md` §7 |
+| Rama | `fix-items.icons`; T-0054 sobre `main` |
+| Árbol | T-0054 commiteado; el resto de `main` limpio. `.obsidian/` en `.gitignore` |
+| Fase | Todo lo anterior verificado en F5 (52 tickets); T-0054 pendiente de F5. Los 44 objetos ya tienen icono definitivo |
+| Siguiente paso | F5 de T-0054 (arco, 14 objetos, DOT, rata e invulnerabilidad); después F5 de iconos/tiers y T-0003 |
+| Bloqueos | Ninguno técnico. T-0001 absorbido por T-0019; decisiones de diseño abiertas en `vault/ideas.md` §7 |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `opencode-jorge` | T-0069–T-0071 (iconos de items), en `revision` hasta el F5 | `resources/*.tres`, `docs/items.md`, `vault/items*` |
+| `opencode-jorge` | T-0054 (14 objetos nuevos), pendiente de F5; T-0069–T-0071 en `revision` | `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `scripts/collectables/*.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, `scenes/enemies/*.tscn`, `docs/items.md` |
 | `buffy` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.

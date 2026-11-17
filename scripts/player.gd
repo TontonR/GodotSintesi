@@ -5,6 +5,8 @@ signal died
 ## Emitted when a perfect parry stops a hit, passing the attacker so it can
 ## react (the wolf stuns its charge).
 signal parried(attacker: Node)
+## Emitted after a normal jump starts (Trickster Codex charges).
+signal jumped
 
 # ==============================================================================
 # CONFIGURATION AND VARIABLES
@@ -145,6 +147,18 @@ var _combo_timer: float = 0.0
 var _parry_timer: float = 0.0
 # Cooldown that prevents re-arming the parry window by spamming guard.
 var _parry_cooldown_timer: float = 0.0
+# Invisibility cloak: ignores hits while this is above zero.
+var _invulnerability_timer: float = 0.0
+# Bow charge: the attack button is held before releasing the arrow.
+var _attack_button_down: bool = false
+var _bow_charging: bool = false
+var _bow_charge_time: float = 0.0
+# Life sentence: next enemy that hits the player gets burned.
+var _chain_armed: bool = false
+var _chain_timer: float = 0.0
+var _chain_burn_dps: float = 0.0
+var _chain_burn_seconds: float = 0.0
+var _chain_immobilize_seconds: float = 0.0
 # Stats panel: only refreshes when a value changes.
 var _stats_dirty: bool = true
 var _stats_values: Array[Label] = []
@@ -218,13 +232,64 @@ func _try_step_up(direction: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_try_attack()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		_on_attack_button(event.pressed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		_on_attack_button(event.pressed)
+
+
+## Press/release router for the bow. Without a bow it keeps the old behavior:
+## the melee attack starts on press.
+func _on_attack_button(pressed: bool) -> void:
+	if pressed:
+		if _attack_button_down:
+			return
+		_attack_button_down = true
+		if _is_dead or not control_enabled:
+			return
+		var bow := _bow_passive()
+		if bow != null and not _is_attacking:
+			_bow_charging = true
+			_bow_charge_time = 0.0
+		else:
+			_try_attack()
+		return
+
+	if not _attack_button_down:
+		return
+	_attack_button_down = false
+	if not _bow_charging:
+		return
+	_bow_charging = false
+	var bow := _bow_passive()
+	if bow != null and not _is_dead and control_enabled and not _is_attacking:
+		if bool(bow.call("can_fire", _bow_charge_time)):
+			var direction := Vector2(1.0 if _facing_right else -1.0, 0.0)
+			if passives:
+				passives.trigger_attack_started_passives(self, 1, direction)
+			bow.call(
+				"fire_arrow",
+				self,
+				_bow_charge_time,
+				direction
+			)
+			_bow_charge_time = 0.0
+			return
+	_bow_charge_time = 0.0
+	if not _is_dead and control_enabled:
 		_try_attack()
+
+
+func _bow_passive() -> PassiveItems:
+	if passives == null:
+		return null
+	for passive in passives.active_passives:
+		if passive != null and passive.has_method("can_fire") and passive.has_method("fire_arrow"):
+			return passive
+	return null
 
 
 ## Debug: toggles immortality and returns the new state (KP5).
@@ -268,6 +333,16 @@ func _physics_process(delta: float) -> void:
 	_jump_bonus_timer = maxf(_jump_bonus_timer - delta, 0.0)
 	_parry_timer = maxf(_parry_timer - delta, 0.0)
 	_parry_cooldown_timer = maxf(_parry_cooldown_timer - delta, 0.0)
+	_invulnerability_timer = maxf(_invulnerability_timer - delta, 0.0)
+	_chain_timer = maxf(_chain_timer - delta, 0.0)
+	if _chain_timer <= 0.0:
+		_chain_armed = false
+	if _bow_charging:
+		if _is_dead or not control_enabled:
+			_bow_charging = false
+			_bow_charge_time = 0.0
+		else:
+			_bow_charge_time += delta
 	if _jump_bonus_timer <= 0.0:
 		_jump_bonus_factor = 1.0
 
@@ -365,6 +440,7 @@ func _physics_process(delta: float) -> void:
 			_jump_buffer_timer = 0.0
 			_coyote_timer = 0.0
 			_dust_at(_feet_offset(), 4, 0.7)
+			jumped.emit()
 
 		if not jump_pressed and _jump_was_pressed and velocity.y < 0.0:
 			velocity.y *= 0.45
@@ -438,6 +514,13 @@ func _register_hit(target: Node) -> void:
 	_deal_damage(target)
 
 
+## Lets player projectiles run the same damage passives as melee hits.
+func modify_projectile_damage(target: Node, damage: float) -> float:
+	if passives:
+		return passives.trigger_attack_passives(target, damage)
+	return damage
+
+
 func _deal_damage(target: Node) -> void:
 	# Active passives can modify the hit damage.
 	var damage := float(hitbox_damage)
@@ -477,9 +560,11 @@ func take_damage_from(
 	attacker: Node = null
 ) -> void:
 	var from_front := is_attack_from_front(attacker_position)
-	# If guard (or parry) stops the hit, there is no knockback or control lock.
+	# If guard (or parry) or the cloak stops the hit, there is no knockback.
 	# Debug immortality does not change knockback: it still applies.
-	if not _apply_damage(amount, from_front, attacker) and from_front and _is_guarding:
+	var invulnerable := _invulnerability_timer > 0.0
+	var applied := _apply_damage(amount, from_front, attacker)
+	if not applied and ((from_front and _is_guarding) or invulnerable):
 		return
 	var away := signf(global_position.x - attacker_position.x)
 	if is_zero_approx(away):
@@ -563,6 +648,9 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool
 		if passives:
 			passives.trigger_blocked_passives(self)
 		return false
+	if _invulnerability_timer > 0.0:
+		_invulnerability_timer = 0.0
+		return false
 	# Active passives can reduce (or increase) incoming damage
 	var final_amount := amount
 	if passives:
@@ -572,6 +660,7 @@ func _apply_damage(amount: int, from_front: bool, attacker: Node = null) -> bool
 	health = maxi(health - final_amount, 0)
 	_update_health_ui()
 	if final_amount > 0:
+		_trigger_chain_perpetua(attacker)
 		var fx := _fx()
 		if fx:
 			fx.call("player_hit", global_position + Vector2(0.0, -26.0), final_amount)
@@ -587,6 +676,72 @@ func heal(amount: int) -> void:
 		var fx := _fx()
 		if fx:
 			fx.call("heal", global_position + Vector2(0.0, -20.0), amount)
+
+
+## Invisibility cloak: ignores the next hit while the window is open.
+func apply_invulnerability(seconds: float) -> void:
+	_invulnerability_timer = maxf(_invulnerability_timer, seconds)
+
+
+## Used by the teleport cast and other effects that briefly block input.
+func apply_control_lock(seconds: float) -> void:
+	_control_lock_timer = maxf(_control_lock_timer, seconds)
+
+
+## Moves forward in small steps, stopping before a wall.
+func teleport_forward(distance: float) -> void:
+	if _is_dead:
+		return
+	var direction := 1.0 if _facing_right else -1.0
+	var remaining := maxf(distance, 0.0)
+	var step := 4.0
+	while remaining > 0.0:
+		var motion := Vector2(direction * minf(step, remaining), 0.0)
+		if test_move(global_transform, motion):
+			break
+		global_position += motion
+		remaining -= step
+	velocity = Vector2.ZERO
+	_visual_step_offset = 0.0
+	sprite_pivot.position.y = 0.0
+	_cam_y = NAN
+	_update_camera()
+
+
+## Life sentence: stores the effect that will hit the next enemy attacker.
+func arm_chain_perpetua(
+	burn_dps: float,
+	burn_seconds: float,
+	immobilize_seconds: float,
+	arm_seconds: float
+) -> void:
+	_chain_armed = true
+	_chain_timer = maxf(arm_seconds, 0.1)
+	_chain_burn_dps = maxf(burn_dps, 0.0)
+	_chain_burn_seconds = maxf(burn_seconds, 0.0)
+	_chain_immobilize_seconds = maxf(immobilize_seconds, 0.0)
+
+
+func _trigger_chain_perpetua(attacker: Node) -> void:
+	if not _chain_armed or attacker == null:
+		return
+	var enemy := attacker
+	for _i in 4:
+		if enemy == null:
+			return
+		if enemy.has_method("apply_burn"):
+			break
+		enemy = enemy.get_parent()
+	if enemy == null or not enemy.has_method("apply_burn"):
+		return
+	var burns := 0
+	if enemy.has_method("get_burn_count"):
+		burns = int(enemy.call("get_burn_count"))
+	enemy.call("apply_burn", _chain_burn_dps, _chain_burn_seconds, 5, false)
+	if burns > 0 and enemy.has_method("apply_immobilize"):
+		enemy.call("apply_immobilize", _chain_immobilize_seconds)
+	_chain_armed = false
+	_chain_timer = 0.0
 
 
 # ==============================================================================

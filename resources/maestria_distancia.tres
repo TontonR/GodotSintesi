@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RangedMasteryPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/RangedMasteryPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item8.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "maestria_distancia"
+id = "maestria_distancia"
+item_name = "Ranged Mastery"
+description = "Deals 15% more damage to targets at 80 px or farther."
+icon = ExtResource("2_icon")
+value = 120
+min_distance = 80.0
+damage_bonus = 0.15

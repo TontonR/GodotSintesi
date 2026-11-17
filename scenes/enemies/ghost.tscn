@@ -7,6 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://b8v8t1nbwmavd" path="res://assets/enemies/ghost-Chase.png" id="3_hiw70"]
 [ext_resource type="Texture2D" uid="uid://dq53d1hkoi7w5" path="res://assets/enemies/ghost-Shriek.png" id="4_jw18l"]
 [ext_resource type="Texture2D" uid="uid://bqjhafkmxx2n2" path="res://assets/enemies/ghost-Idle.png" id="5_hiw70"]
+[ext_resource type="Script" path="res://scripts/resources/loot_entry.gd" id="6_loot"]
+[ext_resource type="Resource" path="res://resources/capa_inv.tres" id="7_capa"]
+[ext_resource type="Resource" path="res://resources/teleport.tres" id="8_teleport"]
+[ext_resource type="Resource" path="res://resources/codice_bromista.tres" id="9_codice"]
+[ext_resource type="Resource" path="res://resources/alma_pena.tres" id="10_alma"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3ay35"]
 size = Vector2(37, 54)
@@ -256,11 +261,32 @@ radius = 304.9985
 [sub_resource type="CircleShape2D" id="CircleShape2D_6dhoe"]
 radius = 218.94214
 
+[sub_resource type="Resource" id="LootEntry_ghost_capa"]
+script = ExtResource("6_loot")
+item = ExtResource("7_capa")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_ghost_teleport"]
+script = ExtResource("6_loot")
+item = ExtResource("8_teleport")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_ghost_codice"]
+script = ExtResource("6_loot")
+item = ExtResource("9_codice")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_ghost_alma"]
+script = ExtResource("6_loot")
+item = ExtResource("10_alma")
+drop_chance = 0.1
+
 [node name="ghost" type="CharacterBody2D" unique_id=1875466108 node_paths=PackedStringArray("flee_area", "sprite", "detection_area", "attack_range", "flip_pivot")]
 collision_layer = 8
 collision_mask = 0
 script = ExtResource("1_kjq22")
 scale = Vector2(2, 2)
+item_drops = Array[ExtResource("6_loot")]([SubResource("LootEntry_ghost_capa"), SubResource("LootEntry_ghost_teleport"), SubResource("LootEntry_ghost_codice"), SubResource("LootEntry_ghost_alma")])
 spawn_y_offset = 6.0
 flying_enemy = true
 ranged_enemy = true

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/StatBonusPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item240.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "capa_caza"
+id = "capa_caza"
+item_name = "Hunter's Cloak"
+description = "Increases maximum health by 10 and maximum stamina by 5."
+icon = ExtResource("2_icon")
+value = 90
+bonus_max_health = 10
+bonus_max_stamina = 5.0

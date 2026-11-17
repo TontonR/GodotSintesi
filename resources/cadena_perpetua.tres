@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ChainPerpetualConsumable" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/ChainPerpetualConsumable.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item1197.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "cadena_perpetua"
+item_name = "Life Sentence"
+description = "For 20 seconds, the next enemy that hits you is burned. If it was already burning, it is immobilized for 2 seconds."
+icon = ExtResource("2_icon")
+value = 90
+burn_dps = 5.0
+burn_seconds = 5.0
+immobilize_seconds = 2.0
+arm_seconds = 20.0

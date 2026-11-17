@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StatBonusPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/StatBonusPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item195.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "mangual"
+id = "mangual"
+item_name = "Flail"
+description = "Increases attack damage by 2."
+icon = ExtResource("2_icon")
+value = 95
+bonus_attack = 2
