@@ -16,7 +16,7 @@ _Actualizado 2026-11-17 por `opencode-jorge`_
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `opencode-jorge` | T-0072 (inventario) y T-0069–T-0071 (iconos), en `revision` hasta el F5 | `scenes/inventory/`, `docs/ui.md`, `vault/items*` |
+| `opencode-jorge` | T-0072 (inventario), T-0073 (editor web de objetos) y T-0069–T-0071 (iconos), en `revision` | `scenes/inventory/`, `docs/ui.md`, `vault/items*`, `vault/items-editor/` |
 | `buffy` | — | — |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -25,6 +25,7 @@ _Actualizado 2026-11-17 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-17 | T-0073 | Editor web local de `vault/items`: landing con filtros por estado y edición de nombre, textura, habilidad y valores |
 | 2026-11-17 | T-0072 | Inventario: fuentes más pequeñas, descripción que no estira la ventana y slots de tamaño fijo con el icono adaptado |
 | 2026-11-17 | T-0069–T-0071 | Iconos definitivos de los 44 objetos, tiers de poción 20/50/100 y renombres (`Vigorizing Pie`, `Mucus Essence`, `Hunter's Faith`, `Sanguine Ruby`) |
 | 2026-11-17 | T-0068 | Cierre en bloque de 52 tickets tras el F5 de Ruben, T-0002 descartado (sin skills) y diseño de objetos corregido (consumibles + coleccionables, sin armas) |

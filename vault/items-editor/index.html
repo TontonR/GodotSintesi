@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objetos — vault/items</title>
+<link rel="stylesheet" href="/editor/style.css">
+</head>
+<body>
+<header>
+  <h1>Objetos <span class="muted">vault/items</span></h1>
+  <input id="search" type="search" placeholder="Buscar por nombre, tipo, drop…" autocomplete="off">
+  <div id="filters" class="filters"></div>
+</header>
+
+<main>
+  <section id="list" class="list" aria-label="Objetos"></section>
+
+  <section id="editor" class="editor">
+    <div class="empty" id="empty">Selecciona un objeto de la lista.</div>
+    <form id="form" hidden>
+      <div class="title-row">
+        <img id="preview" alt="">
+        <div>
+          <h2 id="heading">—</h2>
+          <p class="meta" id="meta"></p>
+        </div>
+      </div>
+
+      <label>Nombre en el juego
+        <input id="name" required maxlength="60">
+      </label>
+
+      <label>Textura (ruta in-game)
+        <input id="icon" placeholder="res://assets/items/item123.png">
+      </label>
+
+      <label>Estado
+        <select id="state"></select>
+      </label>
+
+      <label>Habilidad / descripción (<code>## Qué hace</code>)
+        <textarea id="description" rows="4"></textarea>
+      </label>
+
+      <fieldset>
+        <legend>Valores del recurso</legend>
+        <div id="values"></div>
+        <button type="button" id="addValue" class="ghost">+ valor</button>
+      </fieldset>
+
+      <p class="meta" id="readonly"></p>
+
+      <div class="actions">
+        <button type="submit" id="save">Guardar en el .md</button>
+        <span id="status" class="status" role="status"></span>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script src="/editor/app.js"></script>
+</body>
+</html>

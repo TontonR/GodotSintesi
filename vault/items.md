@@ -88,6 +88,8 @@ Dos tipos y ninguno más: **consumibles** (huecos 1/2/3) y **coleccionables** (u
 
 ## Cómo mantenerlo
 
+- **Editor web**: `python3 vault/items-editor/server.py` → http://127.0.0.1:8765 (ver `vault/items-editor/README.md`). Guarda en estos `.md` y marca el objeto `en proceso` hasta que el cambio llegue al `.tres`.
+
 1. Al crear o cambiar un `.tres`, actualiza su ficha y su fila (nombre, tipo, calidad, drops, icono, estado).
 2. Al tocar `item_drops` de una escena, actualiza el drop aquí **y** en `enemies/<slug>.md`.
 3. No marcar `listo` sin el F5 del icono en el HUD y en el inventario.

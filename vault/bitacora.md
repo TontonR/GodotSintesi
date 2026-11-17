@@ -623,3 +623,16 @@ Formato de entrada:
 - `vault/items/*.md`: tabla de valores regenerada desde los `.tres` (había fichas con los
   valores viejos de poción) y el pendiente de textura pasa a icono asignado + F5.
 - `docs/ui.md` y `vault/items.md` al día. Sin F5.
+
+## 2026-11-17 · `opencode-jorge` · Editor web de objetos (T-0073)
+
+- Ruben: programa HTML para ver y editar `vault/items`; landing con los 44, editor de
+  nombre/habilidades/textura y filtro por estado; al guardar debe quedar claro que el
+  cambio no está en el juego.
+- Servidor local `vault/items-editor/server.py` (stdlib, 127.0.0.1) con `/api/items`,
+  `/api/items/<slug>` (GET/POST) y `/assets/` para los iconos; front en HTML/CSS/JS sin
+  dependencias.
+- Guardar reescribe ficha y catálogo, pone el estado `en proceso` y añade el pendiente
+  "Aplicar los cambios de esta ficha en el `.tres` y en el juego"; el `.tres` no se toca.
+- Probado con `--root` sobre una copia: carga de 44 objetos, 6 estados, guardado y
+  formateo del pendiente. UI sin abrir en navegador.

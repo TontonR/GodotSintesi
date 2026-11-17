@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor web de objetos (T-0073)
+
+- `vault/items-editor/`: servidor Python (stdlib) + página que lista los 44 objetos con
+  buscador y filtros por estado, y edita nombre, textura, estado, habilidad y valores del
+  recurso. Guarda en la ficha y en su fila de `vault/items.md`, y deja el objeto
+  `en proceso` con el pendiente "aplicar en el `.tres` y en el juego" (no toca los `.tres`).
+- Arranque: `python3 vault/items-editor/server.py` → http://127.0.0.1:8765.
+- Probado con `--root` sobre una copia del vault; la UI no se ha abierto en navegador.
+
 ## 2026-11-17 · `opencode-jorge` · Inventario legible y slots fijos (T-0072)
 
 - Fuentes del panel derecho del inventario a 15 (nombre) y 12 (stats/descripción);

@@ -1,0 +1,38 @@
+# Editor de objetos (`vault/items`)
+
+Editor local para ver y corregir los 44 objetos sin abrir 44 ficheros. Lee
+`vault/items.md` (catálogo) y `vault/items/<slug>.md` (fichas) y escribe en los
+mismos `.md`. **No toca los `.tres`**: al guardar, deja el objeto en `en proceso`
+y añade un pendiente en la ficha, para que se sepa que el cambio todavía no se
+refleja en el juego.
+
+## Arrancar
+
+```bash
+python3 vault/items-editor/server.py          # http://127.0.0.1:8765
+python3 vault/items-editor/server.py --port 9000
+python3 vault/items-editor/server.py --root /ruta/a/una/copia   # pruebas
+```
+
+Solo librería estándar de Python (3.10+) y un navegador. No hace falta Godot ni
+Node.
+
+## Qué se puede hacer
+
+- **Landing**: los 44 objetos con su icono, tipo, calidad y estado.
+- **Filtros**: por estado (los mismos ids de `vault/items.md`) y buscador por
+  nombre, tipo, calidad o drop.
+- **Editor**: nombre en el juego, ruta de la textura, estado, la descripción
+  (`## Qué hace`, la habilidad del objeto) y los valores del recurso
+  (`## Valores del recurso`, filas campo/valor).
+- **Guardar**: reescribe la ficha y su fila en `vault/items.md`; el estado pasa a
+  `en proceso` y se añade `- [ ] Aplicar los cambios de esta ficha en el .tres y
+  en el juego.` si no estaba.
+
+## Límites
+
+- Ver el cambio **en el juego** exige editar el `.tres` y pasar F5: el editor no
+  lo hace a propósito (una ficha no debe tocar recursos).
+- Los iconos se sirven desde `assets/`, así que el servidor tiene que arrancarse
+  desde el repo (o con `--root` apuntando a una copia completa).
+- Solo escucha en `127.0.0.1`.
