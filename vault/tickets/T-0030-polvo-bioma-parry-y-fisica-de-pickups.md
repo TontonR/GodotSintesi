@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | player / world / docs |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0028, T-0029 |
 
 ## Problema

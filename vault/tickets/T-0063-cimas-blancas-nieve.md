@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `cambio` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 (tercera pasada: color de la cima por bioma) |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0040, T-0057 |
 
 ## Problema
@@ -49,7 +49,7 @@ imagen original, con un mini toque del color de cada bioma.
 - [x] La nieve de la cima queda blanca en el bioma nevado.
 - [x] El resto de biomas conserva el color original de la cima (±5 % medido) con
       un mini toque de su propio color.
-- [ ] F5: mirar las montañas en los tres biomas y en la transición.
+- [x] F5: mirar las montañas en los tres biomas y en la transición.
 - [x] `docs/biomes.md` actualizado.
 
 ## Resultado

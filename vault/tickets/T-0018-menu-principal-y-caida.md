@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `hecho` (pendiente de probar en F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | UI / arranque / mundo |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Ficheros | `scenes/main_menu.tscn`, `scripts/ui/main_menu.gd`, `scripts/world/fall_intro.gd`, `scenes/game.tscn`, `scripts/player.gd`, `scripts/world_generator.gd`, `project.godot` |
 
 ## Pedido

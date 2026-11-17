@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world / player / loot |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0030 (física de monedas), T-0044 (biomas por tramos) |
 
 ## Problema
@@ -40,7 +40,7 @@ guardando; y algunas monedas aparecen enterradas bajo el suelo.
 - [x] Correr y guardar consumen menos estamina (más segundos por barra).
 - [x] Una moneda que nace dentro del suelo sube a la superficie al detectar el suelo.
 - [x] `docs/world.md`, `docs/biomes.md`, `docs/player.md` y `docs/loot.md` al día.
-- [ ] F5: notar la duración de los biomas y la estamina; ver monedas de drops de pie.
+- [x] F5: notar la duración de los biomas y la estamina; ver monedas de drops de pie.
 
 ## Resultado
 

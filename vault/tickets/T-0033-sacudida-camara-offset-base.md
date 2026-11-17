@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player |
 | Creado | 2026-11-06 |
-| Actualizado | 2026-11-06 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0009, T-0028 |
 
 ## Problema

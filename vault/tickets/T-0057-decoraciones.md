@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Rama | `feat/decor` |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0057 |
 
 ## Problema
@@ -59,7 +59,7 @@ para la vegetación ni voz sobre qué decoración aparecía.
 ## Criterios de aceptación (cuarta pasada)
 
 - [x] Arbustos y árboles vivos de nieve se leen escarchados, no grises.
-- [ ] F5 visual en el bioma nevado.
+- [x] F5 visual en el bioma nevado.
 
 ## Criterios de aceptación (tercera pasada)
 
@@ -79,7 +79,7 @@ para la vegetación ni voz sobre qué decoración aparecía.
 - [x] Las rocas se leen como fondo, detrás de árboles y arbustos.
 - [x] Los arbustos se inclinan al pasar el jugador y sueltan hojas.
 - [x] `docs/decor.md` actualizado y enlazado desde `docs/world.md` y `AGENTS.md`.
-- [ ] F5 visual con los tres biomas (densidad, escala y tonos).
+- [x] F5 visual con los tres biomas (densidad, escala y tonos).
 
 ## Resultado
 

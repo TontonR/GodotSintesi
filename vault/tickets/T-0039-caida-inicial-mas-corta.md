@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player / world |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0018 |
 
 ## Problema

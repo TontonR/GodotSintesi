@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `ui` |
 | Prioridad | `baja` |
 | Dueño | `buffy` |
 | Sistema | ui |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0032, T-0054 |
 
 ## Petición
@@ -39,7 +39,7 @@ arriba a la izquierda.
       (y 4..22) ni el panel de stats (y 82).
 - [x] El contador no se mueve al cambiar el tamaño del viewport.
 - [x] El pop al recoger una moneda sigue funcionando.
-- [ ] F5 en editor.
+- [x] F5 en editor.
 
 ## Resultado
 

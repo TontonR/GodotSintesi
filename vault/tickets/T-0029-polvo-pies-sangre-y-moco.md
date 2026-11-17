@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | fx/player |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0028 (FX), T-0027 (partículas de bioma) |
 
 ## Problema
@@ -31,9 +31,9 @@
 
 ## Criterios de aceptación
 
-- [ ] F5: el polvo nace en los pies al saltar, aterrizar y correr.
-- [ ] F5: el moco gotea de todo el cuerpo, no de un punto.
-- [ ] F5: la muerte deja un reventón amplio y satisfactorio sin tapar el combate.
+- [x] F5: el polvo nace en los pies al saltar, aterrizar y correr.
+- [x] F5: el moco gotea de todo el cuerpo, no de un punto.
+- [x] F5: la muerte deja un reventón amplio y satisfactorio sin tapar el combate.
 - [x] `docs/fx.md` y `docs/items.md` actualizados.
 - [x] Entrada en `changelog.md`, `bitacora.md` y `estado.md` al cerrar.
 

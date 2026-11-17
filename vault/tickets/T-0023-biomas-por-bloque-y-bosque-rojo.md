@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` + `balance` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0013 (chunks), T-0020 (dificultad) |
 
 ## Petición
@@ -46,7 +46,7 @@
 - [x] El bioma no cambia de golpe en el borde del chunk.
 - [x] El bosque rojo aparece con más frecuencia y sin quedar deslavado.
 - [x] `docs/world.md` explica qué determina el bioma.
-- [ ] F5 en editor: color, costuras y frecuencia de bosque rojo.
+- [x] F5 en editor: color, costuras y frecuencia de bosque rojo.
 
 ## Resultado
 

@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `hecho` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `balance` + `fix` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world / enemies / ui |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0019 (enemigos del compañero), T-0020 (densidad), T-0018 (menú) |
 
 ## Petición
@@ -40,3 +40,8 @@
   **y** sus cuentas a `enemy_counts_per_chunk` en el mismo orden.
 - El ruido del reparto es del 25 % del hueco; con un chunk muy poblado el ruido baja
   porque el hueco se estrecha (se recalcula solo).
+
+## Resultado
+
+Reparto de voladores y banda de ruido funcionando, con fantasma/demonio fuera. Verificado
+en F5 por Ruben (2026-11-17).

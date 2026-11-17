@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `arreglo` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | enemies |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0062 |
 
 ## Problema
@@ -44,7 +44,7 @@ un ataque de salto.
 - [x] Si el jugador sale del área, el lobo vuelve a vagar en vez de quedarse
       parado.
 - [x] Al terminar el stun puede embestir o saltar (ambas salidas aparecen).
-- [ ] F5: embestir, parar el golpe con parry y ver que alterna.
+- [x] F5: embestir, parar el golpe con parry y ver que alterna.
 
 ## Resultado
 

@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `docs` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | docs |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0056 |
 
 ## Problema

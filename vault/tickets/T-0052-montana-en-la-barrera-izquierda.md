@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0044, T-0049, T-0051 |
 
 ## Petición
@@ -35,7 +35,7 @@ subir, y así la barrera queda camuflada.
       (64 px) que no se saltan (`jump_velocity` −340 y `gravity` 1400 → ~41 px).
 - [x] La cresta queda en `min_height` (fila 5), muy por encima de la pantalla.
 - [x] El jugador sigue sin poder salir del terreno pintado.
-- [ ] F5 en editor.
+- [x] F5 en editor.
 
 ## Resultado
 

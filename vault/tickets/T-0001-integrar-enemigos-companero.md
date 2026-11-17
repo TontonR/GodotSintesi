@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `cerrado` |
 | Tipo | `feat` (integración) |
 | Prioridad | `alta` |
 | Dueño | `sin asignar` |
@@ -10,7 +10,7 @@
 | Rama origen | `origin/feat/enemigos-demon-toad-werewolf` · `685bc30` (2026-10-27) |
 | Base de la rama | `58c4a0f` (2026-10-15) → 1 commit tras el merge-base con `main` |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0006, T-0007, T-0008 |
 
 ## Qué hay en la rama
@@ -69,4 +69,5 @@ La rama nace **antes** del mundo por chunks (`19d7363`) y de los arreglos de cá
 
 ## Resultado
 
-Pendiente.
+Absorbido por T-0019 (port manual, sin merge de la rama del compañero). Los tres
+enemigos y su loot están integrados y verificados en F5 por Ruben (2026-11-17).

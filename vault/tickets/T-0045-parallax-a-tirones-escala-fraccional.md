@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | ui / render |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0010, T-0041, T-0042 |
 
 ## Problema
@@ -36,8 +36,8 @@ la que lo delata. Es exactamente el temblor que T-0010 arregló con `scale_mode=
 ## Criterios de aceptación
 
 - [x] `content_scale_stretch` es siempre `1` (entero) en cualquier modo y resolución.
-- [ ] F5 en fullscreen 1080p: montañas sin tirones (2× con bandas).
-- [ ] F5 en ventana 1600×900: sin tirones (letterbox).
+- [x] F5 en fullscreen 1080p: montañas sin tirones (2× con bandas).
+- [x] F5 en ventana 1600×900: sin tirones (letterbox).
 - [x] `docs/ui.md` y `docs/world.md` actualizados.
 
 ## Resultado

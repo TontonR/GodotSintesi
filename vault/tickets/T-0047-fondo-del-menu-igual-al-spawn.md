@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | ui / mundo |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0018, T-0016 |
 
 ## Problema
@@ -38,7 +38,7 @@ juego está sobre el jugador en el spawn. Con `scroll_scale.y` distinto por capa
 
 - [x] El menú usa la misma cámara (posición + offset) que el juego en el spawn.
 - [x] Documentado el motivo y de dónde salen los números.
-- [ ] F5: el fondo del menú encaja igual que el del spawn, sin huecos entre pinos.
+- [x] F5: el fondo del menú encaja igual que el del spawn, sin huecos entre pinos.
 
 ## Resultado
 

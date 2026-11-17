@@ -7,7 +7,10 @@ _2026-10-14 · 2026-11-10 · 2026-11-12_
 `Items` (`Resource`) → `Collectable` (`on_pickup(player) -> bool`) → `Consumable` /
 `PassiveItems`. Concrete passives extend `PassiveItems` (see [`docs/passives.md`](passives.md)).
 The generic ground pickup is `item_pickup.gd/.tscn` with `@export var item: Items`;
-`Skills` and its slots no longer exist.
+`Skills` and its slots no longer exist. **There are no weapons either** and none are
+planned: items are only consumables (slots 1/2/3) and collectables. A collectable gives a
+passive ability, always-on or conditional (e.g. `tapoarrabos` is always-on stats), and it
+never takes an inventory slot — see [`docs/passives.md`](passives.md).
 
 All 44 resources in `resources/*.tres` have an **icon** now (potions from
 `assets/potions/`, passives from `assets/items/`). They are provisional art, not final, but
@@ -19,7 +22,8 @@ the old "missing texture" state is gone.
 |---|---|---|
 | 1–3 | Consumables (used up) | `1`, `2`, `3` (`use_slot_1..3`) |
 
-- `Inventory.MAX_SLOTS = 3`; `add_item()` puts the item in the first free slot and returns
+- `Inventory.MAX_SLOTS = 3`; extra *obtainable* slots are design only (`vault/ideas.md`
+  §4.1), today the hard max is 3. `add_item()` puts the item in the first free slot and returns
   `false` when all three are full (the pickup stays on the ground).
 - `use_slot()` empties the slot **before** calling `item.use(target)`, then emits
   `slots_changed`.

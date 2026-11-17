@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `cambio` |
 | Prioridad | `media` |
 | Dueño | `opencode-jorge` |
 | Sistema | world |
 | Creado | 2026-11-09 |
-| Actualizado | 2026-11-09 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0023 |
 
 ## Problema

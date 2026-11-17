@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` + `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player / inventory / enemies |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0015 (debug), T-0017/T-0019 (pasivas), T-0020 (drops) |
 
 ## Petición
@@ -39,7 +39,7 @@
       60 s desde el spawn se borra aunque nunca se haya visto.
 - [x] Las monedas no caducan.
 - [x] `docs/items.md` y `docs/player.md` actualizados; changelog y estado al día.
-- [ ] F5 en editor: tiempos y KP5.
+- [x] F5 en editor: tiempos y KP5.
 
 ## Resultado
 

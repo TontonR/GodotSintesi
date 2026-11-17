@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `hecho` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `fix` + `balance` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world / enemies / objects / loot |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0018 (caída), T-0019 (loot por enemigo), T-0017 |
 
 ## Petición
@@ -50,3 +50,8 @@
 - 16 enemigos por chunk maduro: vigilar el rendimiento con varios chunks cargados.
 - `health_multiplier`/`attack_multiplier` se aplican una vez por instancia; si se
   recarga una escena ya escalada, no se reaplica (no hay guardado entre partidas).
+
+## Resultado
+
+Drops al arrancar y escalado de dificultad por chunk en marcha. Verificado en F5 por
+Ruben (2026-11-17).

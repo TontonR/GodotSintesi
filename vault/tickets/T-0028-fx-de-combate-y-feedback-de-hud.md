@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | fx/ui |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0027 (partículas de bioma) |
 
 ## Petición
@@ -38,7 +38,7 @@
 - [x] Monedas y objetos brillan al recogerse; la moneda suma `+1`.
 - [x] El HUD hace pop con las monedas y late con poca vida.
 - [x] Hojas y copos entran/salen con fundido y viento.
-- [ ] F5: comprobar legibilidad de los números y que la sacudida no marea.
+- [x] F5: comprobar legibilidad de los números y que la sacudida no marea.
 
 ## Verificación
 

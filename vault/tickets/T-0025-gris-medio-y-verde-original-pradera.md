@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0024 (fondos tintables) |
 
 ## Petición
@@ -36,7 +36,7 @@
 - [x] El gris ya no es tan claro (≈113–129 en vez de ≈165).
 - [x] El bosque rojo sigue viéndose rojo, no negro.
 - [x] Piedra y punta de la montaña siguen sin teñirse.
-- [ ] F5 en editor: comparar pradera y bosque rojo.
+- [x] F5 en editor: comparar pradera y bosque rojo.
 
 ## Resultado
 

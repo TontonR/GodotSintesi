@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0024, T-0025, T-0026 (fondos tintables) |
 
 ## Petición
@@ -50,7 +50,7 @@
 - [x] Existe el bioma de nieve y entra en el reparto.
 - [x] Bosque rojo menos abrupto y pradera algo más plana.
 - [x] Hojas en bosque rojo y copos en nieve.
-- [ ] F5: comprobar que se ve y que el coste de 220 copos es aceptable.
+- [x] F5: comprobar que se ve y que el coste de 220 copos es aceptable.
 
 ## Verificación
 

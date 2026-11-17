@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0066 |
 
 ## Problema
@@ -39,7 +39,7 @@ veía `run_input` + `is_on_floor()` y volvía a llamar a `spend_stamina(run_init
 - [x] Al aterrizar con Shift pulsado no se cobra de nuevo la entrada.
 - [x] El drenaje de carrera sigue activo mientras se está en el aire.
 - [x] `docs/player.md` actualizado.
-- [ ] F5: correr, saltar y comprobar que no frena y que la barra solo baja por drenaje.
+- [x] F5: correr, saltar y comprobar que no frena y que la barra solo baja por drenaje.
 
 ## Resultado
 

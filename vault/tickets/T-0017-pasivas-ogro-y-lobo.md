@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `en curso` (recursos creados y parseando, drops sin cablear) |
+| Estado | `cerrado` |
 | Tipo | `feat` (contenido) |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | objetos / pasivas / loot |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Ficheros | `resources/*.tres`, `scripts/collectables/*Passive.gd`, `docs/items.md` |
 
 ## Tabla pedida por Jorge
@@ -61,3 +61,8 @@
 
 - Cablear drops por enemigo y calidad: hoy no están en `EnemyBase.DROP_ITEMS`. El lobo aún no está integrado (T-0001), así que los seis de lobo saldrían del orco si se meten ya en el pool global.
 - Iconos definitivos.
+
+## Resultado
+
+Los 9 coleccionables existen como `.tres` con su script, icono y drop por enemigo
+(T-0037/T-0019 cablearon los pools). Verificado en F5 por Ruben (2026-11-17).

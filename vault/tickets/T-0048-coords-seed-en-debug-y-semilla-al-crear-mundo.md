@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | ui / mundo / debug |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0015, T-0041, T-0042 |
 
 ## Problema
@@ -35,7 +35,7 @@
 - [x] Nueva partida pide semilla; vacío = aleatoria.
 - [x] La seed escrita en el menú genera exactamente ese mundo (`_seed`/`_noise.seed`).
 - [x] Continuar sigue usando la seed guardada (`pending_load` manda).
-- [ ] F5: escribir una seed, verla en el overlay y que el mundo se repita al reintroducirla.
+- [x] F5: escribir una seed, verla en el overlay y que el mundo se repita al reintroducirla.
 
 ## Resultado
 

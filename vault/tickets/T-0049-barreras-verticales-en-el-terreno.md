@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
 | Sistema | mundo |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0044, T-0027, T-0050, T-0051 |
 
 ## Problema

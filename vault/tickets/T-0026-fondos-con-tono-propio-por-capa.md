@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0025 (gris medio), T-0024 (fondos tintables) |
 
 ## Petición
@@ -40,7 +40,7 @@
 - [x] Los tres fondos tienen colores distintos en el bosque rojo.
 - [x] El pino cercano sigue siendo el más oscuro y la montaña la más clara.
 - [x] Comprobado con PIL: diferencia entre capas ≥ 20 sumando canales.
-- [ ] F5 en editor: revisar que se distingan bien en pantalla.
+- [x] F5 en editor: revisar que se distingan bien en pantalla.
 
 ## Resultado
 

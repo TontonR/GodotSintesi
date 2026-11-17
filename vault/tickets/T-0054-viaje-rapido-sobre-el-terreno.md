@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `debug` |
 | Prioridad | `baja` |
 | Dueño | `buffy` |
 | Sistema | debug |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0015, T-0052, T-0053 |
 
 ## Petición
