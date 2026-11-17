@@ -49,3 +49,8 @@ ver los 44 de un vistazo ni de saber qué está pendiente de pasar al juego.
   `?slug=` y un visor del `.md` guardado, y el `estado` del formulario arranca en
   `en proceso` para que guardar marque pendiente sin querer.
 - UI revisada con Chrome headless: 44 objetos, 44 iconos en 200, CSS `text/css`.
+- **Segunda revisión (2026-11-17)**: el estado se mostraba siempre como `en proceso`
+  porque el desplegable arrancaba en ese valor; ahora el estado real se pinta como
+  etiqueta de solo lectura y es el servidor el que fuerza `en proceso` al guardar. Los
+  valores del recurso pasan a un desplegable de opciones avanzadas: el editor no lee el
+  `.tres`, solo la tabla copiada en la ficha.

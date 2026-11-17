@@ -36,14 +36,14 @@
         </div>
       </div>
 
-      <div class="grid-2">
-        <label>Nombre en el juego
-          <input id="name" required maxlength="60">
-        </label>
-        <label>Estado
-          <select id="state"></select>
-        </label>
-      </div>
+      <label>Nombre en el juego
+        <input id="name" required maxlength="60">
+      </label>
+
+      <p class="state-line">
+        <span id="stateBadge" class="badge"></span>
+        <span class="hint">Al guardar la ficha queda «en proceso»: el `.tres` y el juego no se tocan desde aquí.</span>
+      </p>
 
       <label>Textura (ruta en el juego)
         <input id="icon" placeholder="res://assets/items/item123.png">
@@ -53,11 +53,12 @@
         <textarea id="description" rows="3"></textarea>
       </label>
 
-      <fieldset>
-        <legend>Valores del recurso <span class="hint">sección <code>## Valores del recurso</code></span></legend>
+      <details class="advanced">
+        <summary>Opciones avanzadas · valores del recurso</summary>
+        <p class="hint">Estos valores están copiados en la ficha (<code>## Valores del recurso</code>); el editor no lee el <code>.tres</code>. Cámbialos solo si sabes qué campo del recurso es.</p>
         <div id="values" class="values"></div>
         <button type="button" id="addValue" class="ghost">+ valor</button>
-      </fieldset>
+      </details>
 
       <p class="meta" id="readonly"></p>
 

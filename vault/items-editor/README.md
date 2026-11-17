@@ -22,12 +22,13 @@ Node.
 - **Landing**: los 44 objetos con su icono, tipo, calidad y estado.
 - **Filtros**: por estado (los mismos ids de `vault/items.md`) y buscador por
   nombre, tipo, calidad o drop.
-- **Editor**: nombre en el juego, ruta de la textura, estado, la descripción
-  (`## Qué hace`, la habilidad del objeto) y los valores del recurso
-  (`## Valores del recurso`, filas campo/valor).
-- **Guardar**: reescribe la ficha y su fila en `vault/items.md`; el estado pasa a
-  `en proceso` y se añade `- [ ] Aplicar los cambios de esta ficha en el .tres y
-  en el juego.` si no estaba.
+- **Editor**: nombre en el juego, ruta de la textura y la descripción (`## Qué hace`,
+  la habilidad del objeto). El estado se muestra como etiqueta de solo lectura.
+- **Opciones avanzadas** (desplegable, cerrado): los valores del recurso copiados en la
+  ficha (`## Valores del recurso`). El editor no lee ni escribe el `.tres`.
+- **Guardar**: reescribe la ficha y su fila en `vault/items.md`; el estado pasa siempre a
+  `en proceso` y se añade `- [ ] Aplicar los cambios de esta ficha en el .tres y en
+  el juego.` si no estaba.
 
 ## Detalles
 

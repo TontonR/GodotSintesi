@@ -40,9 +40,6 @@ async function load() {
   state.items = data.items;
   state.states = data.states;
   state.drops = data.drops;
-  $("state").innerHTML = state.states
-    .map((s) => `<option value="${esc(s.id)}">${esc(s.id)} — ${esc(s.meaning)}</option>`)
-    .join("");
   renderFilters();
   renderList();
   const initial = new URLSearchParams(location.search).get("slug");
@@ -115,12 +112,13 @@ async function openItem(slug) {
   $("empty").hidden = true;
   $("form").hidden = false;
   $("heading").textContent = item.name;
-  $("meta").textContent = `${item.type || "—"} · ${item.quality || "—"} · estado actual: ${item.state || "—"} · vault/items/${item.slug}.md`;
+  $("meta").textContent = `${item.type || "—"} · ${item.quality || "—"} · vault/items/${item.slug}.md`;
   $("preview").src = iconUrl(item.icon);
   $("name").value = item.name;
   $("icon").value = item.icon;
-  // Al guardar se marca pendiente por defecto: el .tres y el juego no se tocan.
-  $("state").value = state.states.some((s) => s.id === PENDING_STATE) ? PENDING_STATE : item.state;
+  const badge = $("stateBadge");
+  badge.textContent = item.state || "—";
+  badge.className = "badge " + badgeClass(item.state);
   $("description").value = item.description;
   $("readonly").textContent = `Recurso: ${item.resource || "—"} · Drop: ${item.drops || "—"}`;
   $("raw").textContent = item.raw || "";
@@ -178,7 +176,6 @@ $("form").onsubmit = async (event) => {
       body: JSON.stringify({
         name: $("name").value,
         icon: $("icon").value,
-        state: $("state").value,
         description: $("description").value,
         values: collectValues(),
       }),
@@ -192,6 +189,9 @@ $("form").onsubmit = async (event) => {
     $("heading").textContent = item.name;
     $("preview").src = iconUrl(item.icon);
     $("raw").textContent = item.raw || "";
+    const badge = $("stateBadge");
+    badge.textContent = item.state;
+    badge.className = "badge " + badgeClass(item.state);
     setStatus(
       item.state === PENDING_STATE
         ? "Guardado en el .md como «en proceso»: todavía NO está en el juego."

@@ -649,3 +649,12 @@ Formato de entrada:
   en `en proceso`.
 - Comprobado con Chrome headless sobre el repo real: 44 objetos, 44 iconos a 200 y CSS
   `text/css; charset=utf-8`.
+
+## 2026-11-17 · `opencode-jorge` · Editor: estado real y valores avanzados (T-0073)
+
+- Ruben: el estado aparece siempre "en proceso" y no tiene sentido editar valores del
+  `.tres` en el editor (los `.tres` son del juego).
+- Estado: fuera el desplegable que arrancaba en `en proceso`; ahora se pinta el estado
+  real de la ficha y el servidor fuerza `en proceso` al guardar.
+- Valores del recurso: dentro de "Opciones avanzadas" (cerrado), con nota de que son la
+  tabla copiada de la ficha y que el editor no lee el `.tres`.

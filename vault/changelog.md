@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor de objetos: estado real y valores en avanzadas (T-0073)
+
+- El estado ya no sale siempre `en proceso`: se muestra el estado real de la ficha y el
+  servidor fuerza `en proceso` al guardar (el `.tres` no se toca).
+- Los valores del recurso se mueven a un desplegable de opciones avanzadas, aclarando que
+  salen de la ficha y no del `.tres`.
+
 ## 2026-11-17 · `opencode-jorge` · Editor de objetos: CSS, iconos y fuente `.md` (T-0073)
 
 - El servidor servía `style.css`/`app.js` como `text/plain` y el navegador los ignoraba:

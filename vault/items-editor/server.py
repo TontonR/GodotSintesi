@@ -249,8 +249,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"error": "bad json"}, 400)
         if not data.get("name", "").strip():
             return self._json({"error": "name required"}, 400)
-        if not data.get("state"):
-            data["state"] = PENDING_STATE
+        # Guardar desde el editor siempre deja la ficha pendiente de pasar al juego.
+        data["state"] = PENDING_STATE
         item = save_page(slug, data)
         if item is None:
             return self._json({"error": "not found"}, 404)
