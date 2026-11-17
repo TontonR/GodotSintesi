@@ -13,7 +13,10 @@ _2026-10-20 · 2026-11-03 · 2026-11-09 · 2026-11-12_
   `on_pickup()` → `PlayerPassives.add_passive()`. Duplicates are refused by instance,
   `resource_path` or `passive_id`, so an enemy never drops one the player already has
   (`EnemyBase._available_drops()` also filters them out of the roll).
-- No skills and no skill slots exist anymore.
+- No skills and no skill slots exist anymore, and **no weapons exist or are planned**.
+  The design name for these items is **coleccionable** (code keeps `PassiveItems`): each
+  one grants exactly one passive ability, either always-on or conditional — e.g.
+  `tapoarrabos` always adds stats, `garras_lobo` only below 30 % health.
 
 ## Hooks
 

@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | ui |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0042, T-0059 |
 
 ## Problema
@@ -54,7 +54,7 @@ runs guardadas en slots, con posibilidad de sobrescribirlas.
 - [x] Load lista los tres slots con seed/monedas y permite borrarlos.
 - [x] Sin hueco libre, New Game avisa y pide qué run sobrescribir.
 - [x] Load muestra metros y monedas de cada run (sin semilla).
-- [ ] F5: crear tres runs, borrar una, sobrescribir, Continue y cargar cada slot.
+- [x] F5: crear tres runs, borrar una, sobrescribir, Continue y cargar cada slot.
 
 ## Resultado
 

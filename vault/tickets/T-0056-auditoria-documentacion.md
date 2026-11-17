@@ -1,8 +1,8 @@
 # T-0056 — Auditoría de documentación
 
-- **Estado:** `revision`
+- **Estado:** `cerrado`
 - **Dueño:** `buffy`
-- **Fecha:** 2026-11-12
+- **Fecha:** 2026-11-17
 - **Sistema:** docs / vault
 - **Ficheros:** `docs/*.md`, `README.md`, `AGENTS.md`, `vault/documentacion.md`,
   `vault/README.md`, `vault/pasivas/*.md`, `vault/roadmap.md`, `vault/changelog.md`,

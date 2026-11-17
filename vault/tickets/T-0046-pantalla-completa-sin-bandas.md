@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | ui / render |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0010, T-0045 |
 
 ## Problema
@@ -44,8 +44,8 @@ píxeles de pantalla.
 - [x] Cualquier tamaño de ventana o de pantalla llena sin bandas (a lo sumo `factor - 1` px de resto).
 - [x] El viewport nunca queda por debajo de 768×432.
 - [x] Lista de resoluciones ampliada y filtrada por pantalla.
-- [ ] F5 en fullscreen 1080p: sin bandas, montañas sin tirones, HUD e inventario bien.
-- [ ] F5 en fullscreen 4K/1440p si hay pantalla: mismo resultado (3× y 5×).
+- [x] F5 en fullscreen 1080p: sin bandas, montañas sin tirones, HUD e inventario bien.
+- [x] F5 en fullscreen 4K/1440p si hay pantalla: mismo resultado (3× y 5×).
 - [x] `docs/ui.md` y `docs/world.md` actualizados.
 
 ## Resultado

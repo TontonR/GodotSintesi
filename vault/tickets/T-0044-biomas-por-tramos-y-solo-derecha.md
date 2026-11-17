@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-10 |
-| Actualizado | 2026-11-10 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0013, T-0027 |
 
 ## Problema
@@ -49,7 +49,7 @@ bioma duraba menos que la ventana.
 - [x] Dos transiciones no pueden solaparse.
 - [x] La nieve no puede salir antes de 4096 bloques.
 - [x] No se generan chunks con x < 0.
-- [ ] F5: recorrer pradera → bosque → nieve sin ver un bioma diminuto ni una pradera eterna.
+- [x] F5: recorrer pradera → bosque → nieve sin ver un bioma diminuto ni una pradera eterna.
 - [x] `docs/world.md` actualizado.
 - [x] `changelog.md` y `estado.md` actualizados.
 

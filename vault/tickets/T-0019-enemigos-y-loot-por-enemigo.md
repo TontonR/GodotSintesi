@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `en curso` (integrado, sin F5) |
+| Estado | `cerrado` |
 | Tipo | `feat` (integración + contenido) |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | enemies / loot / objetos |
 | Rama origen | `origin/feat/enemigos-demon-toad-werewolf` (`a5b95d9`, `639d294`, `685bc30`) |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0001 (queda absorbido), T-0017 |
 
 ## Qué se ha traído
@@ -70,3 +70,8 @@
   (`_defeated_spawns`) sigue bien. El lobo necesita el mundo para merodear.
 - Revisar capas de colisión del demonio y del sapo en partida.
 - Las 4 filas del arquero siguen vacías (`vault/pasivas/arquero.md`).
+
+## Resultado
+
+Port manual de los tres enemigos del compañero con su loot por enemigo; fantasma y
+demonio quedaron aparcados. Verificado en F5 por Ruben (2026-11-17); T-0001 absorbido.

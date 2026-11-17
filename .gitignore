@@ -4,3 +4,6 @@
 
 # Configuración local de OpenCode
 opencode.json
+
+# Obsidian (notas locales del vault)
+.obsidian/

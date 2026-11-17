@@ -582,3 +582,13 @@ Formato de entrada:
   bajaba la X a 130 en el aire, y la rama de entrada volvía a cobrar `run_initial_cost`.
 - Ahora la carrera solo se corta al soltar Shift, guardar, atacar o quedarse sin estamina;
   el drenaje sigue en el aire. Docs de player al día. Sin Godot; F5 pendiente.
+
+## 2026-11-17 · `opencode-jorge` · Sincronizar el vault tras el F5 (T-0068)
+
+- Ruben probó durante días todo lo que estaba en `revision` y funciona. Cierro los 52
+  tickets verificados, T-0001 como absorbido y T-0002 como descartado (no hay skills).
+- Corrección de diseño: inventario = consumibles (1/2/3, ampliables) + coleccionables con
+  pasiva siempre activa o condicional; **no hay armas ni las habrá**.
+- `ideas.md`, `docs/items.md`, `roadmap.md` y `estado.md` al día. `mutant_toad.tscn`
+  revertido y `.obsidian/` ignorado.
+- Sin Godot ni commit: solo docs y `.gitignore`. T-0068 queda en `revision`.

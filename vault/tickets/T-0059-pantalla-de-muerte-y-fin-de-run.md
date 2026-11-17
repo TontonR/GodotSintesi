@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0060 |
 
 ## Problema
@@ -36,7 +36,7 @@ terminado.
 - [x] El slot de la run muerta desaparece del menú (no se puede continuar).
 - [x] La pantalla solo ofrece menú principal o salir.
 - [x] Guardar durante/después de morir no escribe una run muerta.
-- [ ] F5: morir de verdad (sin KP5) y comprobar pantalla, pausa y menú.
+- [x] F5: morir de verdad (sin KP5) y comprobar pantalla, pausa y menú.
 
 ## Resultado
 

@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `cambio` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | ui / world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0031, T-0028 |
 
 ## Problema

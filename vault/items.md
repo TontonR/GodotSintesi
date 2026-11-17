@@ -16,6 +16,8 @@ Catálogo vivo de objetos. Cada fila enlaza a su ficha en [`items/`](items/) y c
 
 > **Los 44 objetos están en `por asignar textura`**: todos los `.tres` ya tienen `icon` aplicado (potions del pack y pasivas de `assets/items/`), pero es arte provisional. El estado cambia cuando el icono sea el definitivo, no cuando exista un PNG.
 
+Dos tipos y ninguno más: **consumibles** (huecos 1/2/3) y **coleccionables** (una pasiva siempre activa o condicional, fuera del inventario). En las tablas aparecen como `Consumible` y `Pasiva` (nombre del código); el nombre de diseño del segundo es *coleccionable*. **No hay armas ni skills.**
+
 ## Reglas de drop (resumen)
 
 - **Una sola tirada por enemigo**: se suman los `drop_chance` de su tabla. Si sale, se elige **un** objeto ponderado; dos objetos distintos del mismo enemigo no caen juntos.

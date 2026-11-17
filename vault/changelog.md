@@ -409,3 +409,19 @@ Aporta tres enemigos completos (escena + script + doc) y assets:
 | Lobo | `werewolf.gd` | `werewolf.tscn` (+ `werewolf.tscn` y `plantilla_enemy.tscn` en la raíz) | `docs/enemigo_werewolf.md` |
 
 También toca `scripts/player.gd` (knockback/knockup/`is_guarding`) y `scripts/world_generator.gd` (zonas). Detalle y plan de integración: [T-0001](tickets/T-0001-integrar-enemigos-companero.md).
+
+## 2026-11-17 · `opencode-jorge` · Sincronizar el vault tras el F5 (T-0068)
+
+- Ruben confirmó que todo lo que estaba en `revision` funciona probado en el editor:
+  **52 tickets cerrados en bloque** (T-0001, T-0002, T-0017–T-0029, T-0030–T-0049,
+  T-0051–T-0067) con sus casillas de F5 marcadas. T-0001 queda absorbido por T-0019.
+- **T-0002 descartado**: no hay skills y no las habrá.
+- Diseño de objetos confirmado: solo consumibles (huecos 1/2/3, ampliables) y
+  coleccionables con una habilidad pasiva, siempre activa o condicional (taparrabos =
+  siempre). **Sin armas, nunca.** `ideas.md` §4.1 y las decisiones 14-16 reescritas;
+  `docs/items.md` con la nota de taxonomía; `docs/passives.md` y `vault/items.md` con
+  "coleccionable" como nombre de diseño; `roadmap.md` sin skills/armas ni cerrados.
+- `estado.md` reescrito: `main` en `3001492` con PR #1 y #3 mergeados, árbol limpio y
+  siguiente paso T-0003 + coleccionables del arquero.
+- Árbol: `mutant_toad.tscn` revertido (el editor borraba `node_paths`, el script ya tiene
+  `get_node_or_null`) y `.obsidian/` añadido a `.gitignore`.

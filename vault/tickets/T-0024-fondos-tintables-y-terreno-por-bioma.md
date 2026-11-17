@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` (pendiente de F5) |
+| Estado | `cerrado` |
 | Tipo | `fix` + `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-05 |
-| Actualizado | 2026-11-05 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0023 (biomas por bloque), T-0016 (noche) |
 
 ## Petición
@@ -49,7 +49,7 @@
 - [x] El bosque rojo genera relieve más marcado y la transición es gradual.
 - [x] Las alturas de dos chunks siguen coincidiendo en la costura.
 - [x] `docs/world.md`, changelog, bitácora y estado actualizados.
-- [ ] F5 en editor: color de fondos y relieve.
+- [x] F5 en editor: color de fondos y relieve.
 
 ## Resultado
 

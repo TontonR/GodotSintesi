@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `cambio` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | enemies |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0035, T-0058 |
 
 ## Problema
@@ -44,7 +44,7 @@ que cada pasada se lleva la vida entera.
 - [x] Un parry perfecto contra el lobo lo deja quieto `parry_stun_time`.
 - [x] Atravesarlo ya no suma el daño de contacto genérico (solo pega su hitbox).
 - [x] La embestida (140) sigue siendo más rápida que el jugador andando (130).
-- [ ] F5: se nota la ventana de castigo tras el parry y la pasada se puede esquivar.
+- [x] F5: se nota la ventana de castigo tras el parry y la pasada se puede esquivar.
 - [x] `docs/enemies.md` y `docs/player.md` actualizados.
 
 ## Resultado

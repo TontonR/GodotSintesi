@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `cambio` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | player |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0043, T-0035 |
 
 ## Problema
@@ -46,7 +46,7 @@ muebles. Prefiere atravesarlos, pero que atravesarlos duela.
 - [x] El guardia frontal (y el parry dentro de la ventana) paran el daño de
       contacto; la inmortalidad de debug (KP5) también lo anula.
 - [x] `body_contact_damage = 0` desactiva la mecánica.
-- [ ] F5: empujar ya no ocurre y atravesar duele.
+- [x] F5: empujar ya no ocurre y atravesar duele.
 - [x] `docs/player.md` y `docs/enemies.md` actualizados.
 
 ## Resultado

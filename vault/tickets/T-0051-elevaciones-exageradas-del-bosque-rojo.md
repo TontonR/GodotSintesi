@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-12 |
-| Actualizado | 2026-11-12 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0050, T-0049, T-0044, T-0024 |
 
 ## Problema
@@ -55,7 +55,7 @@ la que hinchaba las montañas; con 0.95/1.0 el bosque rojo se comporta como la p
 - [x] Relieve máximo por 300 tiles de 36 a 26; desaparecen las montañas de 30–40 tiles.
 - [x] Costuras exactas y spawn plano (comprobado en el generador real).
 - [x] `docs/world.md` actualizado.
-- [ ] F5 en editor: recorrer pradera, bosque rojo y nieve y confirmar que no queda
+- [x] F5 en editor: recorrer pradera, bosque rojo y nieve y confirmar que no queda
       ninguna elevación rara.
 
 ## Resultado

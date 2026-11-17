@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `sin asignar` |
 | Sistema | inventory |
 | Creado | 2026-11-03 |
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0005 |
 | Ficheros | `scripts/collectables/Skills.gd`, `scenes/inventory/inventory.gd`, `scripts/player.gd`, `resources/` |
 
@@ -39,4 +39,6 @@
 
 ## Resultado
 
-Pendiente.
+**Descartado** (Ruben, 2026-11-17): no habrá skills. El inventario queda en consumibles
+(1/2/3, ampliables) y coleccionables con pasiva; ver `docs/items.md` y `vault/ideas.md`.
+El resto de criterios no aplica.

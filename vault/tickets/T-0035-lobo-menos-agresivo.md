@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
 | Sistema | enemies |
 | Creado | 2026-11-09 |
-| Actualizado | 2026-11-09 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0019 |
 
 ## Problema

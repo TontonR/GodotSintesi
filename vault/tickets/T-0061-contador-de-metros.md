@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | ui |
 | Creado | 2026-11-13 |
-| Actualizado | 2026-11-13 |
+| Actualizado | 2026-11-17 |
 | Relacionado | T-0060 |
 
 ## Problema
@@ -34,7 +34,7 @@ al centro, y que las partidas guardadas muestren ese dato al cargarlas.
 - [x] Se oculta con el HUD durante la caída inicial y no tapa vida/stamina.
 - [x] `meters_at()` devuelve negativos detrás del spawn.
 - [x] El guardado escribe `meters` y Load lo muestra con las monedas.
-- [ ] F5: recorrer el mundo y comprobar el contador y las filas de Load.
+- [x] F5: recorrer el mundo y comprobar el contador y las filas de Load.
 
 ## Resultado
 

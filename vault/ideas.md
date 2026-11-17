@@ -1,6 +1,7 @@
 # Bóveda de ideas — diseño de OffBeaten Path
 
-_2026-11-06 · `buffy` · fuente: notas de `humano-ruben` (texto pegado sin formato)_
+_2026-11-06 · `buffy` · fuente: notas de `humano-ruben` (texto pegado sin formato).
+Actualizado 2026-11-17: sin skills ni armas, inventario = consumibles + coleccionables._
 
 Este documento reúne **todo el diseño propuesto** en un solo sitio: lo que ya está
 hecho, lo que falta y lo que todavía no tiene decisión. No sustituye a `docs/`
@@ -99,19 +100,22 @@ inmunidades por enemigo, y si los efectos activos se muestran en el HUD.
 
 ## 4. Objetos e inventario
 
-### 4.1 Estructura
+### 4.1 Estructura (decidida 2026-11-17)
 
-| Hueco | Hoy | Diseño propuesto |
+Solo hay **dos tipos de objeto**. Ni skills ni armas: nunca las habrá.
+
+| Tipo | Dónde | Regla |
 |---|---|---|
-| 1-2 | Skills (sin objetos cableados) | Consumibles (2): curación, buff de ataque temporal, etc. |
-| 3-5 | Consumibles | Armas mejorables (3): hacen un efecto base y se mejoran con el tiempo. |
-| Fuera de la UI | Pasivas en una rejilla paginada del HUD | Mejoras permanentes de estadísticas, **no visibles en la UI**. |
+| **Consumible** | Huecos 1, 2, 3 (teclas `1`/`2`/`3`); se pueden **obtener más huecos** | Se gasta al usarlo. Curación, estamina, buffs temporales… |
+| **Coleccionable** | `PlayerPassives`, en la rejilla paginada del HUD | No ocupa hueco. Da una **habilidad pasiva**, siempre activa o bajo condición |
 
-Decisiones abiertas: qué pasa con las skills, cómo se mejoran las armas (¿monedas,
-materiales o uso?) y si las mejoras permanentes se ocultan o se dejan en la rejilla
-actual.
+Ejemplos: el **taparrabos** es un coleccionable siempre activo (+10 de estamina);
+las garras de lobo solo actúan por debajo del 30 % de vida. En código se les sigue
+llamando *pasivas* (`PassiveItems`), el nombre de diseño es **coleccionable**.
 
-### 4.2 Pasivas por enemigo
+Queda por definir solo la ampliación de huecos: cuántos y cómo se obtienen.
+
+### 4.2 Coleccionables por enemigo (pasivas en código)
 
 17 de las 32 ideas de la tabla están implementadas y ya entran en el `item_drops` de la
 escena del enemigo correspondiente, cada una con su probabilidad. Las calidades
@@ -264,13 +268,17 @@ Contenido:
 13. ¿Se implementan las cuatro pasivas del arquero tal cual? Falta la calidad de
     todas y el efecto exacto de dos.
 
-Inventario y tienda:
+Inventario:
 
-14. ¿Se cambia el inventario de 5 huecos (2 skills + 3 consumibles) por 2
-    consumibles + 3 armas mejorables?
-15. ¿Qué son las "armas mejorables" y con qué se mejoran?
-16. ¿Las mejoras permanentes se ocultan de la UI o se quedan en la rejilla actual?
-17. Tienda: ¿qué moneda usa, qué precios tiene y se puede comprar más de una vez?
+14. ~~¿Se cambia el inventario de 5 huecos (2 skills + 3 consumibles) por 2
+    consumibles + 3 armas mejorables?~~ Resuelto: consumibles en 1/2/3 (ampliables) y
+    coleccionables fuera de la UI. Sin armas ni skills.
+15. ¿Cuántos huecos extra se pueden obtener y con qué (monedas, hito, zona)?
+16. ¿Los coleccionables se ocultan de la UI o se quedan en la rejilla actual?
+
+Tienda:
+
+17. ¿Qué moneda usa, ¿qué moneda usa, qué precios tiene y se puede comprar más de una vez?
 18. Tienda: ¿"una por zona, no asegurada salvo la siguiente" significa que la
     primera es fija y luego hay como máximo una por zona?
 19. Tienda: ¿el surtido es un objeto de cada rareza o un único objeto de rareza alta?
