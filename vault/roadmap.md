@@ -8,7 +8,9 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
-| [T-0068](tickets/T-0068-sincronizar-vault-tras-f5.md) | docs | Sincronizar el vault tras el F5, sin skills ni armas | `revision` |
+| [T-0069](tickets/T-0069-iconos-consumibles-y-pociones.md) | inventario | Iconos de consumibles y tiers de poción 20/50/100 | `revision` |
+| [T-0070](tickets/T-0070-iconos-pasivas-pendientes.md) | inventario | Iconos de las 34 pasivas que seguían provisionales | `revision` |
+| [T-0071](tickets/T-0071-ajustes-iconos-pasivas.md) | inventario | Correcciones de iconos y renombres (`Hunter's Faith`, `Sanguine Ruby`) | `revision` |
 
 ## P1 — Huecos funcionales del juego
 

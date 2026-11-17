@@ -1,14 +1,14 @@
-# Vampiric Pulse
+# Sanguine Ruby
 
 _Item · pasiva · `Normal` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Vampiric Pulse** |
+| Nombre en el juego | **Sanguine Ruby** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/item42.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/sanguine_ruby.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/pulso_vampirico.tres` |
 | Script | `res://scripts/collectables/LifestealPassive.gd` |
 | Lo suelta | — (sin drop) |

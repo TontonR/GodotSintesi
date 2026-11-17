@@ -1,14 +1,14 @@
-# Hunter
+# Hunter's Faith
 
 _Item · pasiva · `Normal` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Hunter** |
+| Nombre en el juego | **Hunter's Faith** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/swingW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item828.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/cazador.tres` |
 | Script | `res://scripts/collectables/HunterPassive.gd` |
 | Lo suelta | — (sin drop) |

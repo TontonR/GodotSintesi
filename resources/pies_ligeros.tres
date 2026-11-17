@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="LightFeetPassive" format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/LightFeetPassive.gd" id="1_lgft"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/lightningW.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://di76uc4wymnmk" path="res://assets/items/item276.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_lgft")

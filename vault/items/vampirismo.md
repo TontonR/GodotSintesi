@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Vampirism** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/poisonW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item1173.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/vampirismo.tres` |
 | Script | `res://scripts/collectables/VampirismPassive.gd` |
 | Lo suelta | — (sin drop) |

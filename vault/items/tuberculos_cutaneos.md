@@ -7,8 +7,8 @@ _Item · pasiva · `Rare` · 2026-11-13_
 | Nombre en el juego | **Skin Tubercles** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Rare` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/poisonW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item910.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/tuberculos_cutaneos.tres` |
 | Script | `res://scripts/collectables/PoisonCloudPassive.gd` |
 | Lo suelta | [Rana](../enemies/rana.md) · 2 % |

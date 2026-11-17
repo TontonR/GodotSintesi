@@ -1,14 +1,14 @@
-# Greater Stamina Potion
+# Perfect Stamina Potion
 
 _Item · consumible · `Normal` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Greater Stamina Potion** |
+| Nombre en el juego | **Perfect Stamina Potion** |
 | Tipo | Consumible — ocupa uno de los 3 slots y se gasta al usarlo |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/potions/potion10.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/potions/potion166.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/pocion_stamina_mayor.tres` |
 | Script | `res://scripts/collectables/consumable.gd` |
 | Lo suelta | — (sin drop) |
@@ -16,7 +16,7 @@ _Item · consumible · `Normal` · 2026-11-13_
 
 ## Qué hace
 
-> Restores 70 stamina.
+> Restores 100 stamina.
 
 Se usa con las teclas `1`/`2`/`3` y se gasta al usarlo. Si la barra de 3 slots está llena no se puede recoger (el objeto se queda en el suelo).
 
@@ -24,7 +24,7 @@ Se usa con las teclas `1`/`2`/`3` y se gasta al usarlo. Si la barra de 3 slots e
 
 | Campo | Valor |
 |---|---|
-| `stamina_amount` | `70` |
+| `stamina_amount` | `100` |
 
 ## Cómo conseguirlo
 

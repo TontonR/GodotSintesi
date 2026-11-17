@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CoinDropBonusPassive" format=3 uid="uid://bw24s4qmlk5g3"]
 
 [ext_resource type="Script" uid="uid://b35ni664gfvsi" path="res://scripts/collectables/CoinDropBonusPassive.gd" id="1_coin"]
-[ext_resource type="Texture2D" uid="uid://cliyicpm4rdpe" path="res://assets/items/moneda_oro.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://cl34fix250h3t" path="res://assets/items/item591.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_coin")

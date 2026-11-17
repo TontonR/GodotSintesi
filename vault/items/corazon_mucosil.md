@@ -1,14 +1,14 @@
-# Mucus Heart
+# Mucus Essence
 
 _Item · pasiva · `Rare` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Mucus Heart** |
+| Nombre en el juego | **Mucus Essence** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Rare` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/healthW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item1122.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/corazon_mucosil.tres` |
 | Script | `res://scripts/collectables/MocoLevelPassive.gd` |
 | Lo suelta | [Slime](../enemies/slime.md) · 2 % |

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/collectables/ComboProjectilePassive.gd" id="1_cmbp"]
 [ext_resource type="PackedScene" path="res://scenes/collectables/player_projectile.tscn" id="2_proj"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/swirlW.png" id="3_icon"]
+[ext_resource type="Texture2D" uid="uid://djygycnjwq24g" path="res://assets/items/item925.png" id="3_icon"]
 
 [resource]
 script = ExtResource("1_cmbp")

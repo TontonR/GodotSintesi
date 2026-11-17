@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Compact Mucus** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/iceW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item593.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/moco_compacto.tres` |
 | Script | `res://scripts/collectables/MocoLevelPassive.gd` |
 | Lo suelta | [Slime](../enemies/slime.md) · 10 % |

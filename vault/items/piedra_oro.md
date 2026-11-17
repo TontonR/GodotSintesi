@@ -7,8 +7,8 @@ _Item · pasiva · `Rare` · 2026-11-13_
 | Nombre en el juego | **Gold Stone** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Rare` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/moneda_oro.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item591.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/piedra_oro.tres` |
 | Script | `res://scripts/collectables/CoinDropBonusPassive.gd` |
 | Lo suelta | [Orco](../enemies/orco.md) · 2 % |

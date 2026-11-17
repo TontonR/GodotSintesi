@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Wolf Fang** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/swingW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/iconos/Icon34.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/colmillo_lobo.tres` |
 | Script | `res://scripts/collectables/StatBonusPassive.gd` |
 | Lo suelta | [Lobo](../enemies/lobo.md) · 10 % |

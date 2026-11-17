@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="Consumable" load_steps=3 format=3]
 
 [ext_resource type="Script" uid="uid://b3y6d7mpmp5aj" path="res://scripts/collectables/consumable.gd" id="1_csbl"]
-[ext_resource type="Texture2D" uid="uid://dvoc8bdsggyd6" path="res://assets/potions/potion15.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://cnaoklablmhet" path="res://assets/potions/potion158.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_csbl")
 heal_amount = 100
-id = "elixir_vida"
-item_name = "Life Elixir"
+id = "pocion_cura_perfecta"
+item_name = "Perfect Healing Potion"
 description = "Restores 100 health."
 icon = ExtResource("1_tex")
 value = 120

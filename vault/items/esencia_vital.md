@@ -1,14 +1,14 @@
-# Vital Essence
+# Vigorizing Pie
 
 _Item · consumible · `Normal` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Vital Essence** |
+| Nombre en el juego | **Vigorizing Pie** |
 | Tipo | Consumible — ocupa uno de los 3 slots y se gasta al usarlo |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/item410.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item410.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/esencia_vital.tres` |
 | Script | `res://scripts/collectables/consumable.gd` |
 | Lo suelta | — (sin drop) |

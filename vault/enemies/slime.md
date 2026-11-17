@@ -40,7 +40,7 @@ _Enemigo · melee · activo · `por revisar` · 2026-11-13_
 | Mucus | 10 % | +1 nivel de moco permanente (5 partículas y +0.5 defensa por nivel) | [moco](../items/moco.md) |
 | Mucus Potion | 10 % | Consumible: salto ×1.3 durante 60 s y +1 nivel de moco permanente | [pocion_mocos](../items/pocion_mocos.md) |
 | Compact Mucus | 10 % | +3 niveles de moco | [moco_compacto](../items/moco_compacto.md) |
-| Mucus Heart | 2 % | Duplica el nivel de moco actual | [corazon_mucosil](../items/corazon_mucosil.md) |
+| Mucus Essence | 2 % | Duplica el nivel de moco actual | [corazon_mucosil](../items/corazon_mucosil.md) |
 
 - **Suma de la tirada: 32 %**; un solo objeto por muerte.
 - Moneda aparte: 45 % de serie.
@@ -57,7 +57,7 @@ _Enemigo · melee · activo · `por revisar` · 2026-11-13_
 
 - [ ] Aparece en pradera, persigue lento y golpea a los ~0.5 s.
 - [ ] Al morir puede soltar Mucus Potion y esta **ocupa un slot** (teclas 1–3), no la barra de pasivas.
-- [ ] Mucus/Compact Mucus suben el nivel y se ven más partículas; Mucus Heart lo duplica.
+- [ ] Mucus/Compact Mucus suben el nivel y se ven más partículas; Mucus Essence lo duplica.
 - [ ] Con la barra llena, la poción se queda en el suelo.
 - [ ] No empuja al jugador al atravesarlo.
 

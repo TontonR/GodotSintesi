@@ -583,6 +583,23 @@ Formato de entrada:
 - Ahora la carrera solo se corta al soltar Shift, guardar, atacar o quedarse sin estamina;
   el drenaje sigue en el aire. Docs de player al día. Sin Godot; F5 pendiente.
 
+## 2026-11-13 · `opencode-jorge` · Iconos de consumibles y tiers de pociones (T-0069)
+- Ruben confirma el mapa de sprites y pide aplicar el rework: vida/estamina en 20/50/100.
+- 9 `.tres` de consumibles actualizados (nombre, efecto, icono, `id`); `Vital Essence` pasa a `Vigorizing Pie` y `Mucus Heart` a `Mucus Essence`.
+- Rutas de `.tres` intactas para no romper saves; `pocion_mocos` usa `assets/items/Icon19.png` (aun sin `.import`).
+- `docs/items.md` y preview `docs/pociones-antes-despues.png` actualizados. F5 pendiente; ticket en `revision`.
+
+## 2026-11-13 · `opencode-jorge` · Iconos de pasivas pendientes (T-0070)
+- Ruben pide asignar sprites parecidos a las 34 pasivas que seguian con iconos provisionales o genericos.
+- Cada pasiva usa un `assets/items/item###.png` distinto: amuletos con colgante, anillo, armaduras, botas, garras, etc.
+- `Focus` no existe y no se crea; `Third-Hit Projectile` no estaba en la lista y conserva `magicW`.
+- `docs/items.md` y preview `docs/pasivas-antes-despues.png` actualizados. F5 pendiente; ticket en `revision`.
+
+## 2026-11-13 · `opencode-jorge` · Correcciones de iconos de pasivas (T-0071)
+- Ruben corrige T-0070: Light Armor `item221`, Heavy Armor `item226`, Greed `item169`, Wolf Fang `Icon34`, Iron Heart `item199`, Wolf Claws `Icon12`, Mucus `item310`, Wolf Pelt `item202`, Light Feet `item276`.
+- `cazador` pasa a `Hunter's Faith`; `pulso_vampirico` pasa a `Sanguine Ruby` con `Icon29` copiado a `sanguine_ruby.png`.
+- `docs/items.md` y preview `docs/pasivas-cambios-2026-11-13.png` actualizados. F5 pendiente; ticket en `revision`.
+
 ## 2026-11-17 · `opencode-jorge` · Sincronizar el vault tras el F5 (T-0068)
 
 - Ruben probó durante días todo lo que estaba en `revision` y funciona. Cierro los 52

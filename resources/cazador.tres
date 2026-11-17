@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="HunterPassive" format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/HunterPassive.gd" id="1_hntr"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/swingW.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://dw75w6r8n0afs" path="res://assets/items/item828.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_hntr")
 id = "cazador"
-item_name = "Hunter"
+item_name = "Hunter's Faith"
 description = "Deal 20% more damage to enemies below 30% health."
 icon = ExtResource("2_icon")
 value = 70
