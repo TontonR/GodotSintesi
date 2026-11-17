@@ -2,6 +2,21 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `buffy` · Merge de T-0054 y limpieza de ramas
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| PR #8: `fix-items.icons` (Jorge) mergeada en `main` con **commit de merge** (no squash, para no perder sus commits `0860fd8`, `2477e74`, `5075d31`) | `main` `a16c11f` | [T-0054](tickets/T-0054-nuevos-objetos-ideas.md) |
+
+- Conflictos de 7 ficheros resueltos conservando los dos lados; `items.md` y
+  `colgante_hierro.md` se quedan en `en proceso` a propósito (T-0073).
+- Ramas borradas (locales y en `origin`) tras el merge: todas las de features ya
+  integradas. Solo queda `main`.
+- Trazabilidad: `feat/enemigos-demon-toad-werewolf` (punta `a5b95d9`, 2026-11-03) se
+  borra porque su código entró en T-0019; lo único que no estaba en `main` eran packs
+  de arte sin adoptar (`assets/enemies/Slime_*`, `ArcherHero`, `PixelRats`) y docs
+  viejos que sustituye `docs/enemies.md`.
+
 ## 2026-11-17 · `opencode-jorge` · Editor: caché y servidor viejo (T-0073)
 
 - `Cache-Control: no-store` en HTML/CSS/JS/API, `?v=5` en las URLs y comprobación de
