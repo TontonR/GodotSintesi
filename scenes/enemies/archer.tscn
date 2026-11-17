@@ -3,6 +3,11 @@
 [ext_resource type="Script" path="res://scripts/enemies/archer.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/enemies/archer_frames.tres" id="2_frames"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/archer_projectile.tscn" id="3_projectile"]
+[ext_resource type="Script" path="res://scripts/resources/loot_entry.gd" id="4_loot"]
+[ext_resource type="Resource" path="res://resources/arco_basico.tres" id="5_arco"]
+[ext_resource type="Resource" path="res://resources/capa_caza.tres" id="6_capa"]
+[ext_resource type="Resource" path="res://resources/maestria_distancia.tres" id="7_maestria"]
+[ext_resource type="Resource" path="res://resources/fuerza_bosque.tres" id="8_fuerza"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(12, 26)
@@ -13,11 +18,32 @@ radius = 180.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_detection"]
 radius = 260.0
 
+[sub_resource type="Resource" id="LootEntry_archer_arco"]
+script = ExtResource("4_loot")
+item = ExtResource("5_arco")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_archer_capa"]
+script = ExtResource("4_loot")
+item = ExtResource("6_capa")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_archer_maestria"]
+script = ExtResource("4_loot")
+item = ExtResource("7_maestria")
+drop_chance = 0.1
+
+[sub_resource type="Resource" id="LootEntry_archer_fuerza"]
+script = ExtResource("4_loot")
+item = ExtResource("8_fuerza")
+drop_chance = 0.1
+
 [node name="Archer" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_script")
 scale = Vector2(2, 2)
+item_drops = Array[ExtResource("4_loot")]([SubResource("LootEntry_archer_arco"), SubResource("LootEntry_archer_capa"), SubResource("LootEntry_archer_maestria"), SubResource("LootEntry_archer_fuerza")])
 sprite = NodePath("Pivot/Archer")
 detection_area = NodePath("Pivot/detection_area")
 attack_range = NodePath("Pivot/attack_range")

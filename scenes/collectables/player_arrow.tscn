@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/player_projectile.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/player_arrow.png" id="2_arrow"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_arrow"]
+size = Vector2(14, 4)
+
+[node name="PlayerArrow" type="Area2D"]
+z_index = 2
+collision_layer = 16
+collision_mask = 13
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+rotation = 3.1415927
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_arrow")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_arrow")

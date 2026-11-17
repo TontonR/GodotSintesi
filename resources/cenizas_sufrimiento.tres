@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AshesPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/AshesPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/iconos/fireW.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "cenizas_sufrimiento"
+id = "cenizas_sufrimiento"
+item_name = "Ashes of Suffering"
+description = "Every hit applies a burn for 5% of the hit's damage per second during 5 seconds. It stacks up to 5 times."
+icon = ExtResource("2_icon")
+value = 160
+burn_ratio = 0.05
+burn_seconds = 5.0
+max_stacks = 5

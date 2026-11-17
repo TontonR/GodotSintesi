@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PenaPassive" format=3]
+
+[ext_resource type="Script" path="res://scripts/collectables/PenaPassive.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/item1179.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+passive_id = "pena"
+id = "pena"
+item_name = "Sorrow"
+description = "When a target has more than 3 normal burns, it receives a special burn 25% stronger that does not count towards the limit."
+icon = ExtResource("2_icon")
+value = 170
+required_burns = 3
+extra_ratio = 0.25
+burn_seconds = 5.0

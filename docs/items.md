@@ -1,6 +1,6 @@
 # Items and inventory — catalog
 
-_2026-10-14 · 2026-11-13 · 2026-11-17 · 9 consumables, no skills, no weapons_
+_2026-10-14 · 2026-11-13 · 2026-11-17 · 12 consumables, no skills, no weapons_
 
 ## Hierarchy
 
@@ -27,7 +27,7 @@ and it never takes an inventory slot — see [`docs/passives.md`](passives.md).
 
 All items are **implemented in code** and have an assigned sprite. The state column says `assigned icon`; the art can still change, but it is no longer missing. An item without logic would be `not done`.
 
-## Consumables (9)
+## Consumables (12)
 
 They are used up when used with 1/2/3.
 
@@ -42,8 +42,11 @@ They are used up when used with 1/2/3.
 | Tonic Drink | `bebida_tonificante` | +20 health, +20 stamina | Heals and restores stamina | assigned icon |
 | Vigorizing Pie | `esencia_vital` | +40 health, +40 stamina | Heals and restores stamina | assigned icon |
 | Mucus Potion | `pocion_mocos` | jump ×1.3 (60 s) | +1 permanent mucus level | assigned icon |
+| Cloak of Invisibility | `capa_inv` | 2 s | The next hit received is ignored | assigned icon |
+| Teleport | `teleport` | 96 px, 0.6 s cast | Moves forward, stops before a wall | assigned icon |
+| Life Sentence | `cadena_perpetua` | 20 s armed | Burns the next enemy that hits; immobilizes it if already burning | assigned icon |
 
-### Consumable icons (2026-11-13)
+### Consumable icons (2026-11-13 · extended 2026-11-17)
 
 The `.tres` paths stay unchanged for save compatibility; only their internal
 fields changed.
@@ -59,8 +62,11 @@ fields changed.
 | `bebida_tonificante` | `assets/potions/potion219.png` |
 | `esencia_vital` | `assets/items/item410.png` |
 | `pocion_mocos` | `assets/items/Icon19.png` |
+| `capa_inv` | `assets/items/item241.png` |
+| `teleport` | `assets/items/iconos/swirlW.png` |
+| `cadena_perpetua` | `assets/items/item1197.png` |
 
-## Passives dropped by enemies (17)
+## Passives dropped by enemies (28)
 
 Each enemy has its own `item_drops` table; see “Drops”.
 
@@ -100,6 +106,40 @@ Each enemy has its own `item_drops` table; see “Drops”.
 | Compact Mucus | `moco_compacto` | +3 mucus levels | Each level gives +0.5 defense | assigned icon |
 | Mucus Essence | `corazon_mucosil` | doubles the mucus level | More particles and defense | assigned icon |
 | Mucus Potion | `pocion_mocos` | jump ×1.3 (60 s) | +1 permanent mucus level | assigned icon |
+
+### Archer (4)
+
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Basic Bow | `arco_basico` | 5 damage, +150 % at 2 s | Hold attack to fire; short tap is melee | assigned icon |
+| Hunter's Cloak | `capa_caza` | +10 max health, +5 max stamina | Flat bonus | assigned icon |
+| Ranged Mastery | `maestria_distancia` | +15 % at 80 px or more | Distance bonus | assigned icon |
+| Forest's Might | `fuerza_bosque` | rat every 15 s, 8 s, 3 / 0.5 s | Invulnerable rat, blocks projectiles | assigned icon |
+
+### Skeleton (3)
+
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Flail | `mangual` | +2 attack | Flat attack bonus | assigned icon |
+| Vengeance | `venganza` | 20 s, 20 % crit | Opens at 0 stamina, closes above 75 % | assigned icon |
+| Skull | `craneo` | -20 max health, 5 % current health | Reflects damage on every hit taken | assigned icon |
+
+### Ghost (2 passives + 2 consumables)
+
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Trickster's Codex | `codice_bromista` | 3 jumps, 5 % attack per projectile | Projectiles on next attack, 25 % push | assigned icon |
+| Wandering Soul | `alma_pena` | +10 % damage | Against targets with any DOT | assigned icon |
+| Cloak of Invisibility | `capa_inv` | 2 s | The next hit received is ignored | assigned icon |
+| Teleport | `teleport` | 96 px, 0.6 s cast | Moves forward, stops before a wall | assigned icon |
+
+### Demon (2 passives + 1 consumable)
+
+| Name | `.tres` | Stats | Passive / effect | State |
+| --- | --- | --- | --- | --- |
+| Ashes of Suffering | `cenizas_sufrimiento` | 5 % attack/s, 5 s, max 5 | Every hit applies a burn | assigned icon |
+| Sorrow | `pena` | +25 % special burn | Triggers above 3 normal burns, outside the limit | assigned icon |
+| Life Sentence | `cadena_perpetua` | 20 s armed | Burns next attacker; immobilizes if already burning | assigned icon |
 
 ## Other passives (19)
 
@@ -155,9 +195,23 @@ and `Wolf Claws` use `Icon34.png` and `Icon12.png`.
 - **Single item roll**: probabilities are added together (30 % + 10 % = 40 % chance that something drops) and, if it does, **one** item is chosen weighted by its probability. Two different items from the same enemy cannot drop.
 - **Coins always separate**: `coin_drop_chance` (45 %) + `coin_drop_amount` (1, more than one allowed) go in their own roll, independent of items.
 - There are no shared pools or presets: a new variant copies or rebuilds its table. The 2 coins per chunk from the generator are independent pickups.
-- The archer, the skeleton and the flyers have no entries until they are added.
+- The archer, the skeleton, the ghost and the demon now have their own entries.
 - The drop is parented first and then receives `global_position`; assigning it before made the chunk offset add up twice.
 - Physics (`item_pickup.gd`): gravity 900, bounce 0.45 until <35 px/s, sway 1.5 px, `z_index` 1. Pickup with a 32 px icon, `HALF_HEIGHT` 16 and radius 16. Tooltip at 40 px.
+
+## New item icons (2026-11-17)
+
+All are unique and none repeats an icon already used by another `.tres`.
+
+| Item | Icon | Item | Icon |
+| --- | --- | --- | --- |
+| Basic Bow | `item1` | Hunter's Cloak | `item240` |
+| Ranged Mastery | `item8` | Forest's Might | `item541` |
+| Flail | `item195` | Vengeance | `item688` |
+| Skull | `item1167` | Cloak of Invisibility | `item241` |
+| Teleport | `iconos/swirlW` | Trickster's Codex | `item663` |
+| Wandering Soul | `item1169` | Life Sentence | `item1197` |
+| Ashes of Suffering | `iconos/fireW` | Sorrow | `item1179` |
 
 ## Debug (temporary, `scenes/inventory/inventory.gd`)
 
@@ -174,6 +228,7 @@ and `Wolf Claws` use `Icon34.png` and `Icon12.png`.
 
 - Final art pass: the assigned `item###.png` sprites can still be replaced.
 - Assign the 19 passives without a drop to the appropriate enemies.
+- Fragmento remains undefined and was not created.
 - Swapping with a full bar (today it stays on the ground).
 - Legacy root `player.tscn` without `Inventory`/`PlayerPassives` (unused, T-0004).
 - `max_stack` and `value` are stored but unused.
