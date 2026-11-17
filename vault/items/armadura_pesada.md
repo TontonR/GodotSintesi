@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Heavy Armor** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/item250.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item226.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/armadura_pesada.tres` |
 | Script | `res://scripts/collectables/DamageReductionPassive.gd` |
 | Lo suelta | — (sin drop) |

@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Second Wind** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/boostW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item780.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/segundo_aliento.tres` |
 | Script | `res://scripts/collectables/SecondWindPassive.gd` |
 | Lo suelta | — (sin drop) |

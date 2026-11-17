@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="RegenPassive" format=3 uid="uid://c2h4ub5a8oh7i"]
 
 [ext_resource type="Script" uid="uid://j123g7qvbjf8" path="res://scripts/collectables/RegenPassive.gd" id="1_regn"]
-[ext_resource type="Texture2D" uid="uid://db8bh3xp12gro" path="res://assets/items/item467.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://2loqlhb0deay" path="res://assets/items/item872.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_regn")

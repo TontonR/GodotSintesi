@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Iron Heart** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/healthW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item199.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/corazon_hierro.tres` |
 | Script | `res://scripts/collectables/IronHeartPassive.gd` |
 | Lo suelta | — (sin drop) |

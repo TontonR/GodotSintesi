@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Wolf Pelt** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/shieldW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item202.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/piel_lobo.tres` |
 | Script | `res://scripts/collectables/StatBonusPassive.gd` |
 | Lo suelta | [Lobo](../enemies/lobo.md) · 10 % |

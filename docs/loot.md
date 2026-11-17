@@ -46,7 +46,7 @@ _2026-11-09 · 2026-11-12 · 2026-11-13_
 | Orc | Loincloth 10 %, Mace 10 %, Ogre Nail 10 %, Iron Pendant 10 %, Gold Stone 2 % | 42 % |
 | Werewolf | Wolf Pelt 10 %, Wolf Fang 10 %, Wolf Claws 10 %, Werewolf DNA 2 % | 32 % |
 | Mutant toad | Frog Saliva 10 %, Frog Tongue 10 %, Frog Bubble 10 %, Skin Tubercles 2 % | 32 % |
-| Slime | Mucus 10 %, Mucus Potion 10 %, Compact Mucus 10 %, Mucus Heart 2 % | 32 % |
+| Slime | Mucus 10 %, Mucus Potion 10 %, Compact Mucus 10 %, Mucus Essence 2 % | 32 % |
 | Skeleton, archer, ghost, demon | — (no `item_drops`) | 0 |
 
 The items themselves (stats, effects, quality) are catalogued in

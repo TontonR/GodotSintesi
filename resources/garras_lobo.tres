@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="LowHealthAttackPassive" format=3]
 
 [ext_resource type="Script" path="res://scripts/collectables/LowHealthAttackPassive.gd" id="1_low"]
-[ext_resource type="Texture2D" path="res://assets/items/iconos/fireW.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/items/Icon12.png" id="1_tex"]
 
 [resource]
 script = ExtResource("1_low")

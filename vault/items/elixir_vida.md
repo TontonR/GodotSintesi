@@ -1,14 +1,14 @@
-# Life Elixir
+# Perfect Healing Potion
 
 _Item · consumible · `Normal` · 2026-11-13_
 
 | Campo | Valor |
 |---|---|
-| Nombre en el juego | **Life Elixir** |
+| Nombre en el juego | **Perfect Healing Potion** |
 | Tipo | Consumible — ocupa uno de los 3 slots y se gasta al usarlo |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/potions/potion15.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/potions/potion158.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/elixir_vida.tres` |
 | Script | `res://scripts/collectables/consumable.gd` |
 | Lo suelta | — (sin drop) |

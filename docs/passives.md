@@ -76,7 +76,7 @@ texture" note is obsolete).
 |---|---|---|
 | Mucus | +1 mucus level permanently (5 particles and +0.5 defense per level) | Normal |
 | Compact Mucus | +3 mucus levels | Normal |
-| Mucus Heart | Doubles the current mucus level | Rare |
+| Mucus Essence | Doubles the current mucus level | Rare |
 | Mucus Potion | **Consumable** (slots 1–3): jump ×1.3 for 60 s and +1 permanent mucus level | Normal |
 
 The emitter is `MocoEmitter` (`scripts/collectables/moco_emitter.gd`), a `CPUParticles2D`
@@ -92,7 +92,7 @@ They are in the debug list (`KP2`) and can be added to any `item_drops`.
 | Attack Amulet | +6 damage |
 | Fury Amulet | +12 damage |
 | Critical Amulet | 20 % chance of ×1.8 damage |
-| Vampiric Pulse | +2 health per hit |
+| Sanguine Ruby | +2 health per hit |
 | Light Armor | −25 % damage taken |
 | Heavy Armor | −40 % damage taken |
 | Regeneration Talisman | +1 health/s |
@@ -102,7 +102,7 @@ They are in the debug list (`KP2`) and can be added to any `item_drops`.
 | Thorns | Returns 20 % of damage taken, max 15, 2 s cooldown |
 | Gauntlet | Every 5th attack deals ×2 |
 | Guardian's Wrath | Blocking grants +30 % damage for 10 s |
-| Hunter | +20 % damage to enemies below 30 % health |
+| Hunter's Faith | +20 % damage to enemies below 30 % health |
 | Greed | +1 coin per kill |
 | Light Feet | +10 % move speed |
 | Vampirism | +2 health per kill |

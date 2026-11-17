@@ -26,7 +26,7 @@ Punto de entrada a los enemigos. Cada fila enlaza a su ficha completa en [`enemi
 | Enemigo | Drops (prob.) | Stats | Mecánicas | Estado | Ficha |
 |---|---|---|---|---|---|
 | **Orco** (ogre) | Root Grabbers 10 %, Mace 10 %, Ogre Nail 10 %, Iron Pendant 10 %, Gold Stone 2 % · **42 %** | 50 → 67.5 HP · 15 → 18.75 dmg · 75 spd · cd 2.0 s | Melee simple; se para a atacar, golpea a los 0.66 s y la animación dura 2.5 s | `por revisar` | [orco](enemies/orco.md) |
-| **Slime** | Mucus 10 %, Mucus Potion 10 %, Compact Mucus 10 %, Mucus Heart 2 % · **32 %** | 20 → 27 HP · 6 → 7.5 dmg · 35 spd · cd 1.8 s | Melee lento y corto; escala ×1.2 (el más pequeño) | `por revisar` | [slime](enemies/slime.md) |
+| **Slime** | Mucus 10 %, Mucus Potion 10 %, Compact Mucus 10 %, Mucus Essence 2 % · **32 %** | 20 → 27 HP · 6 → 7.5 dmg · 35 spd · cd 1.8 s | Melee lento y corto; escala ×1.2 (el más pequeño) | `por revisar` | [slime](enemies/slime.md) |
 | **Esqueleto** | — · **0 %** | 40 → 54 HP · 10 → 12.5 dmg · 50 spd · cd 2.0 s | Melee; el **primer golpe que recibe hace 0** (solo destello) | `por revisar` | [esqueleto](enemies/esqueleto.md) |
 | **Arquero** | — · **0 %** | 30 → 40.5 HP · 8 → 10 dmg · 55 spd · cd 2.2 s | A distancia: flecha a 240 px/s, se detiene dentro de su rango y apunta mientras te ve | `por revisar` | [arquero](enemies/arquero.md) |
 | **Lobo** (hombre lobo) | Wolf Pelt 10 %, Wolf Fang 10 %, Wolf Claws 10 %, Werewolf DNA 2 % · **32 %** | 60 → 81 HP · 10 → 12.5 dmg · 75 andar / 140 embestida | Vaga, embiste con 0.25 s de aviso y 1.5 s de recuperación; cada 2 embestidas salta (×2 daño, 40 px); el parry perfecto lo aturde 0.8 s y al salir elige embestida o salto (50/50) | `por revisar` | [lobo](enemies/lobo.md) |

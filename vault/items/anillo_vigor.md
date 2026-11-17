@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Vigor Ring** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/item888.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item892.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/anillo_vigor.tres` |
 | Script | `res://scripts/collectables/RegenPassive.gd` |
 | Lo suelta | — (sin drop) |

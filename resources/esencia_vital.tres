@@ -7,8 +7,8 @@
 script = ExtResource("1_csbl")
 heal_amount = 40
 stamina_amount = 40
-id = "esencia_vital"
-item_name = "Vital Essence"
+id = "vigorizing_pie"
+item_name = "Vigorizing Pie"
 description = "Restores 40 health and 40 stamina."
 icon = ExtResource("1_tex")
 value = 90

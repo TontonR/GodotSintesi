@@ -7,8 +7,8 @@ _Item · pasiva · `Rare` · 2026-11-13_
 | Nombre en el juego | **Werewolf DNA** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Rare` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/neuronW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item735.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/adn_hombre_lobo.tres` |
 | Script | `res://scripts/collectables/NightBonusPassive.gd` |
 | Lo suelta | [Lobo](../enemies/lobo.md) · 2 % |

@@ -7,8 +7,8 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Nombre en el juego | **Frog Tongue** |
 | Tipo | Pasiva — no ocupa slot, se equipa al tocarla |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/weakenW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/item1094.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/lengua_rana.tres` |
 | Script | `res://scripts/collectables/SlowOnHitPassive.gd` |
 | Lo suelta | [Rana](../enemies/rana.md) · 10 % |

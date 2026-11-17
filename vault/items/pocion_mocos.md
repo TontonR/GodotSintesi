@@ -7,8 +7,8 @@ _Item · consumible · `Normal` · 2026-11-13_
 | Nombre en el juego | **Mucus Potion** |
 | Tipo | Consumible — ocupa uno de los 3 slots y se gasta al usarlo |
 | Calidad | `Normal` |
-| Estado | `por asignar textura` |
-| Textura en el juego | `res://assets/items/iconos/bombPotionW.png` — aplicada, **provisional** |
+| Estado | `icono asignado` |
+| Textura en el juego | `res://assets/items/Icon19.png` — aplicada, puede cambiar el arte |
 | Recurso | `res://resources/pocion_mocos.tres` |
 | Script | `res://scripts/collectables/MocoPotion.gd` |
 | Lo suelta | [Slime](../enemies/slime.md) · 10 % |
