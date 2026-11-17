@@ -28,6 +28,8 @@ ITEMS_DIR = "vault/items"
 CATALOG = "vault/items.md"
 PENDING = "Aplicar los cambios de esta ficha en el `.tres` y en el juego."
 PENDING_STATE = "en proceso"
+# Subir al cambiar el front: la pagina avisa si el servidor en marcha es viejo.
+VERSION = 5
 
 
 def _field(text: str, label: str) -> str:
@@ -318,6 +320,7 @@ class Handler(SimpleHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=False).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -356,7 +359,12 @@ class Handler(SimpleHTTPRequestHandler):
             items.extend(rows.values())
             items.sort(key=lambda i: i.get("name", "").casefold())
             return self._json(
-                {"states": catalog_states(cat), "items": items, "drops": catalog_summary(cat)}
+                {
+                    "version": VERSION,
+                    "states": catalog_states(cat),
+                    "items": items,
+                    "drops": catalog_summary(cat),
+                }
             )
         return self._json({"error": "not found"}, 404)
 
@@ -416,6 +424,7 @@ class Handler(SimpleHTTPRequestHandler):
         body = path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", self.MIME.get(path.suffix.lower(), "application/octet-stream"))
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -435,6 +444,7 @@ class Handler(SimpleHTTPRequestHandler):
         body = path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", ctype)
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)

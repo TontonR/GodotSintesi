@@ -49,6 +49,12 @@ ver los 44 de un vistazo ni de saber qué está pendiente de pasar al juego.
   `?slug=` y un visor del `.md` guardado, y el `estado` del formulario arranca en
   `en proceso` para que guardar marque pendiente sin querer.
 - UI revisada con Chrome headless: 44 objetos, 44 iconos en 200, CSS `text/css`.
+- **Cuarta revisión (2026-11-17)**: Ruben guarda Iron Pendant y "no carga ni se guarda".
+  Causa: el navegador servía un `app.js` cacheado y/o el proceso del servidor era de antes
+  de los arreglos (la ficha quedó a medias: catálogo `icono asignado`, ficha `en proceso`).
+  Ahora el servidor manda `Cache-Control: no-store`, la página pide `?v=5` y compara la
+  versión del API con la suya: si el servidor en marcha es viejo, sale un aviso para
+  reiniciarlo.
 - **Tercera revisión (2026-11-17)**: el estado vuelve a ser editable (se carga el real;
   si cambias contenido y lo dejas igual, se guarda `en proceso`), se pueden **crear** y
   **borrar** objetos (ficha + fila de catálogo, nunca el `.tres`) y se añade

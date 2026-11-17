@@ -2,6 +2,14 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-17 · `opencode-jorge` · Editor: caché y servidor viejo (T-0073)
+
+- `Cache-Control: no-store` en HTML/CSS/JS/API, `?v=5` en las URLs y comprobación de
+  versión: si el servidor en marcha es antiguo, la página avisa de que hay que reiniciarlo.
+- La ficha `colgante_hierro` quedó a medias por un guardado con el servidor viejo (el
+  catálogo decía `icono asignado` y la ficha `en proceso`); se deja `en proceso` en los dos
+  para que `pendientes.py` la siga listando.
+
 ## 2026-11-17 · `opencode-jorge` · Editor: alta, borrado y estado editable + `pendientes.py` (T-0073)
 
 - Estado editable otra vez, cargando el real de la ficha; si cambias contenido y no tocas

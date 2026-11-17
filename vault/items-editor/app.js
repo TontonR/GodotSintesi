@@ -1,4 +1,5 @@
 const PENDING_STATE = "en proceso";
+const VERSION = 5;
 
 const state = {
   items: [],
@@ -38,6 +39,9 @@ async function load() {
     return;
   }
   const data = await res.json();
+  if (data.version !== VERSION) {
+    banner(`El servidor en marcha es antiguo (v${data.version ?? "?"} / página v${VERSION}). Para el proceso y vuelve a lanzar: python3 vault/items-editor/server.py`);
+  }
   state.items = data.items;
   state.states = data.states;
   state.drops = data.drops;

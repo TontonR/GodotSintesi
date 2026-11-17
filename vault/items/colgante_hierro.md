@@ -8,7 +8,7 @@ _Item · pasiva · `Normal` · 2026-11-13_
 | Tipo                | Pasiva — no ocupa slot, se equipa al tocarla                                        |
 | Calidad             | `Normal`                                                                            |
 | Estado              | `en proceso`                                                                        |
-| Textura en el juego | `res://assets/items/item890.png` — aplicada, puede cambiar el arte                  |
+| Textura en el juego | `res://assets/items/item890.png` — aplicada, puede cambiar el arte |
 | Recurso             | `res://resources/colgante_hierro.tres`                                              |
 | Script              | `res://scripts/collectables/StatBonusPassive.gd`                                    |
 | Lo suelta           | [Orco](../enemies/orco.md) · 10 %                                                   |
