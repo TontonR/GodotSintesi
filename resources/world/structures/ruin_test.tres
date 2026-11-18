@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="WorldStructure" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WorldStructure" format=3 uid="uid://cbmt45ad7vpnx"]
 
-[ext_resource type="Script" path="res://scripts/world/structure.gd" id="1_structure"]
-[ext_resource type="Texture2D" path="res://assets/map/structures/ruin_test.png" id="2_texture"]
+[ext_resource type="Script" uid="uid://dh7ehkt02lonj" path="res://scripts/world/structure.gd" id="1_structure"]
+[ext_resource type="Texture2D" uid="uid://ckijgshkpursb" path="res://assets/map/structures/ruin_test.png" id="2_texture"]
 
 [resource]
 script = ExtResource("1_structure")
 display_name = "Test Ruin"
 texture = ExtResource("2_texture")
 pixel_size = 16
-size_tiles = 4
-margin_tiles = 2
 z_index = -1

@@ -15,7 +15,7 @@ var _camera: Camera2D
 var _shake_time := 0.0
 var _shake_duration := 0.01
 var _shake_strength := 0.0
-## Camera's own framing (the player's brings (60, -70)); shake
+## Camera's own framing (the player's brings (60, -102)); shake
 ## is added on top and this value is restored at the end, not zero.
 var _camera_base_offset := Vector2.ZERO
 var _flash: ColorRect
