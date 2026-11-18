@@ -2,6 +2,17 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-18 · `opencode-jorge` · Estructuras por chunk (T-0074)
+
+- `WorldStructure` (`scripts/world/structure.gd`) y 2 `.tres` de prueba con PNG
+  placeholder: el bioma decide cuántas y cuáles, el generador las coloca por chunk con la
+  semilla, apoyadas en el suelo, con márgenes y sin pisar la X de los enemigos.
+- Sin colisión ni parallax; detrás del decor y de `Solid`/`GrassPaint`.
+- Ficheros: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/`, `assets/map/structures/`,
+  `resources/world/biomes/{pradera,bosque_rojo}.tres`, `docs/world.md`, `docs/biomes.md`.
+- Pendiente de F5 (rama `feat/estructuras-chunk`).
+
 ## 2026-11-17 · `buffy` · Merge de T-0054 y limpieza de ramas
 
 | Qué | Dónde | Ticket |

@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · branch `main`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · branch `feat/estructuras-chunk`_
 
 ## What it does and where it lives
 
@@ -77,6 +77,33 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   (the red forest is mostly red, with some orange and yellow); rocks and the dead tree are
   not tinted. Bushes bend and drop a few leaves when the player walks through them.
   Full reference: [`docs/decor.md`](decor.md).
+
+## Structures (2026-11-18, T-0074)
+
+- `scripts/world/structure.gd` (`class_name WorldStructure`, `Resource`): `display_name`,
+  optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width,
+  0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `weight`,
+  `min_distance_tiles` and `biomes` (by `Biome.display_name`; empty = all).
+- Two test resources in `resources/world/structures/` (`tower_test.tres`,
+  `ruin_test.tres`) with 16×16 magenta/cyan placeholder PNGs in `assets/map/structures/`.
+  The generator preloads both in `WorldGenerator.structures`.
+- **The biome decides**: `structure_kinds` (the structures' `display_name`) and
+  `structure_chances` (same order). **Each structure rolls on its own per chunk**, so a
+  chunk can get none, some or all of them, but never two of the same; a chance of 0 or an
+  absent kind means it never appears. Meadow: tower 0.15 / ruin 0.25, red forest: ruin 0.30,
+  snow: none.
+- Rolled **after** enemies, coins and decor with the same chunk RNG, so their positions
+  never shift; a chance is consumed for every kind even when it fails. A chunk's X is tried
+  up to 8 times to keep `size_tiles` clear of the chunk edges (`margin_tiles`), of the other
+  structures (`structure_min_gap_tiles`) and of the enemies' X. The base sits on the
+  **lowest** column of its span: on a hill it is partially hidden behind `Solid`, but it
+  never floats.
+- Each one is a chunk child moved to index 0 (behind `Solid`/`GrassPaint` and behind the
+  decor), no collision, no parallax. The sprite keeps the texture scale from
+  `size_tiles`/`pixel_size`. Stable id `s:x:y:index` (node metadata) but **not persisted**:
+  nothing destroys structures, so a reload rebuilds the same ones from the seed.
+- To add one: create the `.tres`, add it to `WorldGenerator.structures`, name it in a
+  biome's `structure_kinds`.
 
 ## Ambient per biome (2026-11-05)
 

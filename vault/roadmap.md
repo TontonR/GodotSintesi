@@ -8,6 +8,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
+| [T-0074](tickets/T-0074-estructuras-por-chunk.md) | mundo | Estructuras por chunk: un `.tres` por tipo y una tirada independiente por estructura (probabilidad por bioma) | `revision` |
 | [T-0073](tickets/T-0073-editor-web-de-objetos.md) | vault | Editor web local de objetos: lista, filtros por estado y edición de fichas | `revision` |
 | [T-0072](tickets/T-0072-inventario-texto-y-slots.md) | inventario | Texto del inventario más pequeño, slots de tamaño fijo y fichas de items al día | `revision` |
 | [T-0069](tickets/T-0069-iconos-consumibles-y-pociones.md) | inventario | Iconos de consumibles y tiers de poción 20/50/100 | `revision` |
@@ -16,9 +17,22 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 
 ## P1 — Huecos funcionales del juego
 
+**Estructuras y tienda al 2026-12-11**: calendario, tipos, estimaciones y reparto en
+[`planning-estructuras.md`](planning-estructuras.md). Tickets previstos T-0075…T-0085.
+
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
-| [T-0074](tickets/T-0074-estructuras-por-chunk.md) | mundo | Estructuras colocables por chunk, definidas como `.tres` y decididas por semilla (placeholder de prueba) | `en-curso` |
+| `T-0075` | mundo | Estampar patrones de estructura por bloques (previsto, sin abrir) | `abierto` |
+| `T-0076` | mundo | Bloques rompibles con drop y estado persistido (previsto) | `abierto` |
+| `T-0077` | mundo | Enemigos exclusivos y loot table por estructura simple (previsto) | `abierto` |
+| `T-0078` | mundo/UI | Tienda: zona segura, stock, precios y UI (previsto; bloqueado por decisiones) | `bloqueado` |
+| `T-0079` | mundo | Interior explorable: entrada, pisos y salida (previsto) | `abierto` |
+| `T-0080` | guardado | Persistencia y reglas por piso (previsto) | `abierto` |
+| `T-0081` | enemigos | Boss, arena y loot exclusivo (previsto) | `abierto` |
+| `T-0082` | docs | F5 en bloque y documentación (previsto) | `abierto` |
+| `T-0083` | enemigos | Enemigos exclusivos de estructura y boss (Jorge; previsto) | `abierto` |
+| `T-0084` | objetos | Objetos exclusivos/rotos de estructuras (Jorge; previsto) | `abierto` |
+| `T-0085` | assets | Texturas de estructuras y sonidos (Jorge; previsto) | `abierto` |
 | [T-0003](tickets/T-0003-inventario-lleno-intercambio.md) | inventario | Intercambio/rechazo cuando la barra está llena (hoy el drop se queda en el suelo) | `abierto` |
 | [T-0007](tickets/T-0007-pulido-enemigos-nuevos.md) | enemigos | Balance, capas y muerte de los enemigos integrados | `abierto` |
 

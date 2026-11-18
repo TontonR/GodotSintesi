@@ -174,6 +174,14 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Radius where a bush starts to bend and drop leaves (px).
 @export var decor_sway_radius_px: float = 48.0
 
+@export_group("Structures")
+## Structures the biomes can name in `Biome.structure_kinds` (by `display_name`).
+@export var structures: Array[WorldStructure] = [
+	preload("res://resources/world/structures/tower_test.tres"),
+	preload("res://resources/world/structures/ruin_test.tres")
+]
+## Minimum gap in tiles between two structures of the same chunk.
+@export var structure_min_gap_tiles: int = 3
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -205,6 +213,8 @@ var _last_biome_tile: int = -999999
 var _biome_runs: Array[Dictionary] = []
 ## Decor name → index in the generator's parallel arrays.
 var _decor_lookup: Dictionary = {}
+## Structure `display_name` → index in `structures`.
+var _structure_lookup: Dictionary = {}
 ## Tinted foliage textures, keyed by source path and tint (one per biome color).
 var _decor_tint_cache: Dictionary = {}
 ## Mountain painted left of tile 0, left to right; chunk 0 only.
@@ -857,7 +867,11 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# one processed ends up painted first (rocks), then trees, then bushes.
 	decor.sort_custom(_decor_draws_before)
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "biome": biome, "tints": biome_data["tints"]}
+	# Rolled last so enemies, coins and decor keep their positions. The biome
+	# decides the count; a chunk of a biome with 0 places nothing.
+	var structures_here := _roll_structures(coord, biome, heights, enemies, rng)
+
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "structures": structures_here, "biome": biome, "tints": biome_data["tints"]}
 
 
 ## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
@@ -983,6 +997,95 @@ func _apply_dead_tree_ratio(biome: Biome, decor: Array[Dictionary], rng: RandomN
 		decor[candidates[i]]["tint"] = Color.WHITE
 
 
+## Structures of one chunk: one independent roll per structure the biome lists,
+## so a chunk can get none or all of them, never two of the same. Deterministic
+## with `rng`; each one lands on free ground away from the edges and enemies.
+func _roll_structures(
+		coord: Vector2i,
+		biome: Biome,
+		heights: PackedInt32Array,
+		enemies: Array[Dictionary],
+		rng: RandomNumberGenerator
+) -> Array[Dictionary]:
+	var placed: Array[Dictionary] = []
+	if biome == null or biome.structure_kinds.is_empty() or structures.is_empty():
+		return placed
+	var last_x := chunk_width_tiles - 1
+	for i in range(biome.structure_kinds.size()):
+		var chance := biome.structure_chances[i] if i < biome.structure_chances.size() else 0.0
+		# Always consume the roll, so tuning one chance never shifts the rest.
+		if rng.randf() >= chance:
+			continue
+		var index := _structure_index_of(biome.structure_kinds[i])
+		if index < 0:
+			continue
+		var structure := structures[index]
+		if not _structure_allowed(structure, biome, coord.x * chunk_width_tiles):
+			continue
+		var half := maxi(floori(float(structure.size_tiles) * 0.5), 0)
+		var margin := maxi(structure.margin_tiles, half)
+		if margin > last_x - margin:
+			continue
+		var local_x := -1
+		# A few tries to dodge enemies and the previous structures; it is a
+		# decoration, so giving up is better than searching forever.
+		for _attempt in range(8):
+			var candidate := rng.randi_range(margin, last_x - margin)
+			if _structure_x_free(candidate, half, placed, enemies):
+				local_x = candidate
+				break
+		if local_x < 0:
+			continue
+		# Base on the lowest column of its span (the biggest row): sunk into a
+		# hill it is hidden behind `Solid`, but it never floats.
+		var bottom := heights[local_x]
+		for dx in range(-half, half + 1):
+			bottom = maxi(bottom, heights[clampi(local_x + dx, 0, last_x)])
+		placed.append({
+			"id": "s:%d:%d:%d" % [coord.x, coord.y, i],
+			"structure": structure,
+			"x": local_x,
+			"y": bottom
+		})
+	return placed
+
+
+## Whether the structure can appear here: it has art, the chunk is far enough
+## and the biome is in its `biomes` filter.
+func _structure_allowed(structure: WorldStructure, biome: Biome, tile_x: int) -> bool:
+	if structure.texture == null and structure.scene == null:
+		return false
+	if tile_x < structure.min_distance_tiles:
+		return false
+	return structure.biomes.is_empty() or structure.biomes.has(biome.display_name)
+
+
+func _structure_x_free(
+		local_x: int,
+		half: int,
+		placed: Array[Dictionary],
+		enemies: Array[Dictionary]
+) -> bool:
+	for entry in placed:
+		var other: WorldStructure = entry["structure"]
+		var gap := half + maxi(floori(float(other.size_tiles) * 0.5), 0) + structure_min_gap_tiles
+		if absi(int(entry["x"]) - local_x) < gap:
+			return false
+	for enemy in enemies:
+		var enemy_x := roundi(float(enemy["position"].x) / float(TILE_SIZE))
+		if absi(enemy_x - local_x) <= half + 1:
+			return false
+	return true
+
+
+## Structure index by `display_name`; -1 for unknown names.
+func _structure_index_of(structure_name: String) -> int:
+	if _structure_lookup.is_empty():
+		for i in structures.size():
+			_structure_lookup[structures[i].display_name] = i
+	return int(_structure_lookup.get(structure_name, -1))
+
+
 ## Texture for a decor kind and tint. Untinted kinds use the original; foliage
 ## gets a cached copy with only the leaf pixels recolored, so the brown trunk
 ## survives the biome tint.
@@ -1103,6 +1206,40 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		)
 		chunk.add_child(sprite)
 		chunk.move_child(sprite, 0)
+
+	# Structures go behind the decor (moved to index 0 after it): big ruins that
+	# read as background. No collision and no parallax in this prototype.
+	var structures_here: Array = data.get("structures", [])
+	for i in range(structures_here.size()):
+		var entry: Dictionary = structures_here[i]
+		var structure: WorldStructure = entry["structure"]
+		var node: Node2D
+		if structure.scene != null:
+			node = structure.scene.instantiate() as Node2D
+		else:
+			var sprite := Sprite2D.new()
+			sprite.texture = structure.texture
+			sprite.centered = false
+			# The offset keeps the origin at the bottom center, like the decor.
+			sprite.offset = Vector2(
+				-structure.texture.get_width() * 0.5,
+				-structure.texture.get_height()
+			)
+			var native := float(structure.pixel_size if structure.pixel_size > 0 else structure.texture.get_width())
+			var factor := float(structure.size_tiles * TILE_SIZE) / maxf(native, 1.0)
+			sprite.scale = Vector2.ONE * factor
+			node = sprite
+		if node == null:
+			continue
+		node.name = "Structure_%d" % i
+		node.z_index = structure.z_index
+		node.position = Vector2(
+			int(entry["x"]) * TILE_SIZE + TILE_SIZE * 0.5,
+			int(entry["y"]) * TILE_SIZE
+		)
+		node.set_meta("spawn_id", entry["id"])
+		chunk.add_child(node)
+		chunk.move_child(node, 0)
 
 	for entry in data["enemies"]:
 		var spawn_id: String = entry["id"]

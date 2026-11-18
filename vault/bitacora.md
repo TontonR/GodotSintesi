@@ -690,3 +690,42 @@ Formato de entrada:
   `scripts/world/biome.gd`, `resources/world/structures/`, `docs/world.md`, `docs/biomes.md`.
 - Dudas en el ticket: colisión (no en el prototipo), textura vs escena y estructuras que
   crucen chunks (fuera de alcance).
+
+---
+
+## 2026-11-18 · `opencode-jorge` · T-0074: estructuras por chunk implementadas
+
+- Continúo el [T-0074](tickets/T-0074-estructuras-por-chunk.md) abierto por `buffy` a
+  petición de Ruben: `WorldStructure` + 2 `.tres` de prueba con placeholder, roll por chunk
+  con la semilla, colocación con márgenes/separación y el bioma decidiendo cuántas y cuáles.
+- Ficheros: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/*.tres`,
+  `assets/map/structures/*.png`, `resources/world/biomes/pradera.tres` y `bosque_rojo.tres`,
+  `docs/world.md`, `docs/biomes.md`.
+- Desvío: el número por chunk vive solo en el bioma (no en el recurso). Ticket en `revision`,
+  pendiente de F5; sin commit todavía.
+
+## 2026-11-18 · `opencode-jorge` · T-0074: una tirada por estructura (decisión de Ruben)
+
+- Ruben cambia el modelo: **no** una estructura por chunk, sino una tirada
+  independiente por estructura y chunk, con probabilidad por bioma. Un chunk puede no
+  tener ninguna o tener todas, nunca dos de la misma.
+- `Biome`: fuera `structures_per_chunk` y `structure_weights`, entra `structure_chances`.
+  `WorldStructure` pierde `weight` (el bioma es la única fuente de probabilidades).
+- Pradera torre 15 % / ruina 25 %, bosque rojo ruina 30 %, nieve nada.
+- Se documentan en `vault/ideas.md` § 5.1 los tres tipos de estructura (sprite único,
+  generación a bloques y explorable) con dificultad y estimación en horas.
+- Ficheros: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/structure.gd`,
+  `resources/world/biomes/{pradera,bosque_rojo}.tres`, `resources/world/structures/*.tres`,
+  `docs/world.md`, `docs/biomes.md`, ticket T-0074.
+
+## 2026-11-18 · `opencode-jorge` · Super planning de estructuras y tienda al 2026-12-11
+
+- Ruben recalibra estimaciones (sprite ~1 h, bloques 4–8 h, explorable 15–30 h) y fija el
+  orden práctico: **tipo 2 (bloques) primero**, el tipo 1 cae de paso y el 3 se apoya en el 2.
+- Reparto: **Rubén** estructuras y tienda; **Jorge** enemigos/objetos nuevos y arte
+  (texturas y sonidos); agentes por ticket.
+- Nuevo [`planning-estructuras.md`](planning-estructuras.md): tipos, calendario con hitos
+  24 nov / 1 dic / 8 dic / 11 dic, backlog T-0075…T-0085 con estimaciones, ruta crítica,
+  decisiones pendientes (tienda), recortes y definición de "hecho".
+- Roadmap P1 lista los tickets previstos sin abrir; se crean al arrancar cada fase.

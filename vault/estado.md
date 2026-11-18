@@ -1,23 +1,24 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-17 por `buffy`_
+_Actualizado 2026-11-18 por `opencode-jorge`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `main` `ccbae38` (T-0054 mergeado por PR #8, cierre en PR #9) y la nueva `feat/estructuras-chunk` con el T-0074 |
-| Árbol | Limpio. Ramas viejas borradas en local y en `origin` tras el merge. `.obsidian/` en `.gitignore` |
-| Fase | T-0074 abierto (solo ticket y rama, sin código). Todo lo construido está verificado en F5 (Ruben, 2026-11-17): 52 tickets cerrados en bloque. T-0054 entra sin F5 y los objetos nuevos ya tienen icono |
-| Siguiente paso | T-0074 (estructuras por chunk), F5 de T-0054 (arco, 14 objetos, DOT, rata e invulnerabilidad) y del inventario (T-0072); luego T-0003 y los coleccionables del arquero |
-| Bloqueos | Ninguno técnico. Decisiones de diseño abiertas en `vault/ideas.md` §7 |
+| Rama | `feat/estructuras-chunk` con T-0074 (código hecho, sin commit) sobre `main` `ccbae38` |
+| Árbol | T-0074 sin commitear: estructura + biomas + docs + vault. `.obsidian/` en `.gitignore` |
+| Fase | T-0074 en `revision`, pendiente de F5: ver torre/ruina en pradera y bosque rojo, nieve sin estructuras y repetir semilla. Cerrado el super planning de estructuras y tienda con fecha **2026-12-11** |
+| Siguiente paso | Commit + PR de T-0074; luego T-0075/T-0076 (bloques), T-0078 (tienda) y T-0079–T-0081 (explorable) según [`planning-estructuras.md`](planning-estructuras.md). En paralelo, F5 de T-0054 y del inventario (T-0072) |
+| Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `opencode-jorge` | T-0054 mergeado en `main`, pendiente de F5 | ya integrado: `scripts/collectables/*.gd`, `resources/*.tres`, `scenes/enemies/*.tscn` |
-| `buffy` | T-0074: estructuras por chunk decididas por semilla | `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/structures/`, `docs/world.md`, `docs/biomes.md` |
+| `humano-ruben` | Estructuras (bloques y explorable) y tienda, con F5 | `scripts/world/*`, `scenes/world/*`, `scripts/world_generator.gd`, `docs/world.md`, `docs/biomes.md` |
+| `opencode-jorge` | Enemigos y objetos nuevos de estructura, y arte (texturas y sonidos) | `scenes/enemies/*`, `scripts/enemies/*`, `resources/*.tres`, `assets/` |
+| `buffy` | T-0074 código terminado por `opencode-jorge`, pendiente de F5 | `scripts/world/structure.gd`, `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/structures/`, `assets/map/structures/`, `docs/world.md`, `docs/biomes.md` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 
@@ -43,5 +44,6 @@ _Actualizado 2026-11-17 por `buffy`_
 - La montaña de la izquierda (T-0052) no pasa por `_build_clamped_heights()`: si entra en la cadena, el tope la vuelve escalable y deja el vacío a la vista.
 - El editor abierto reserializa escenas: borra `node_paths` (el script lo tolera con `get_node_or_null`) y añade `unique_id`. Revisar `git status` antes de commitear.
 - Los iconos son definitivos, pero el arte puede cambiar: `docs/items.md` los marca `assigned icon` y `vault/items.md` `icono asignado`.
+- Las estructuras son placeholders: `assets/map/structures/*.png` se importan como textura (`.import` versionado) y el bioma las elige por `display_name`, así que renombrar una en su `.tres` rompe el `structure_kinds`.
 - 16 enemigos por chunk maduro: si baja el rendimiento, `enemy_ramp_max_multiplier` y `decor_per_chunk` son las palancas.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y `DISABLED_ENEMY_SCENES`.
