@@ -366,6 +366,43 @@ func _keep_player_inside_world() -> void:
 		player.velocity.x = maxf(player.velocity.x, 0.0)
 
 
+## Chunk index (x) containing `world_x`; chunks only grow to the right.
+func chunk_at_world_x(world_x: float) -> int:
+	return maxi(floori(world_x / float(chunk_width_tiles * TILE_SIZE)), 0)
+
+
+## Next structure to the right of `world_x`: its center X in pixels, or -1 when
+## `search_chunks` chunks ahead have none. Generates the chunk data it looks at.
+func next_structure_x(world_x: float, search_chunks: int = 64) -> float:
+	var first := chunk_at_world_x(world_x)
+	for i in range(search_chunks):
+		var coord := Vector2i(first + i, 0)
+		if not _chunk_data.has(coord):
+			_chunk_data[coord] = _generate_chunk(coord)
+		for entry in _chunk_data[coord]["structures"]:
+			var x := (coord.x * chunk_width_tiles + int(entry["x"])) * TILE_SIZE + TILE_SIZE * 0.5
+			if x > world_x + 1.0:
+				return x
+	return -1.0
+
+
+## Start X (pixels) of the next biome run to the right of `world_x`, or -1 when
+## there are no biomes.
+func next_biome_start_x(world_x: float) -> float:
+	if biomes.is_empty():
+		return -1.0
+	var tile := maxi(floori(world_x / float(TILE_SIZE)), 0)
+	_ensure_biome_runs(tile)
+	var last: Dictionary = _biome_runs.back()
+	# The runs only exist up to the player: append one more to have a next one.
+	_ensure_biome_runs(int(last["start"]) + int(last["length"]))
+	for run in _biome_runs:
+		var start := int(run["start"]) * TILE_SIZE
+		if start > world_x + 1.0:
+			return float(start)
+	return -1.0
+
+
 ## Ground Y in pixels at `world_x`, i.e. the top row of that column. Used by the
 ## debug quick travel to leave the player a bit above the terrain.
 func ground_y_at(world_x: float) -> float:
