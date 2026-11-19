@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="WorldStructure" format=3 uid="uid://cbmt45ad7vpnx"]
+[gd_resource type="Resource" script_class="WorldStructure" format=3 uid="uid://bmp0a88dmeb8g"]
 
 [ext_resource type="Script" uid="uid://dh7ehkt02lonj" path="res://scripts/world/structure.gd" id="1_structure"]
-[ext_resource type="Texture2D" uid="uid://ckijgshkpursb" path="res://assets/map/structures/ruin_test.png" id="2_texture"]
+[ext_resource type="TileSet" path="res://resources/world/structures/ruin_tileset.tres" id="2_tileset"]
 
 [resource]
 script = ExtResource("1_structure")
 display_name = "Test Ruin"
-texture = ExtResource("2_texture")
-pixel_size = 16
+size_tiles = 8
 z_index = -1
+pattern = Array[String](["##   ###", "###  ## ", "##### # ", "##### ##", "###### #"])
+tileset = ExtResource("2_tileset")
+min_length_tiles = 20
+max_length_tiles = 50

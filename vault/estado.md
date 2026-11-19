@@ -8,8 +8,8 @@ _Actualizado 2026-11-18 por `opencode-jorge`_
 |---|---|
 | Rama | `feat/estructuras-chunk` con T-0074 (código hecho, sin commit) sobre `main` `ccbae38` |
 | Árbol | T-0074 sin commitear: estructura + biomas + docs + vault. `.obsidian/` en `.gitignore` |
-| Fase | T-0074 en `revision`, pendiente de F5: ver torre/ruina en pradera y bosque rojo, nieve sin estructuras y repetir semilla. Cerrado el super planning de estructuras y tienda con fecha **2026-12-11** |
-| Siguiente paso | Commit + PR de T-0074; luego T-0075/T-0076 (bloques), T-0078 (tienda) y T-0079–T-0081 (explorable) según [`planning-estructuras.md`](planning-estructuras.md). En paralelo, F5 de T-0054 y del inventario (T-0072) |
+| Fase | T-0074 en `revision` y T-0075 (estructuras por bloques con bloque gris de prueba) en `revision`; falta F5 de ambos. Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5 de T-0074/T-0075; commit + PR; después T-0076 (bloques rompibles), T-0078 (tienda) y T-0079–T-0081 (explorable) según [`planning-estructuras.md`](planning-estructuras.md) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente

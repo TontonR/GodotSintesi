@@ -22,3 +22,26 @@ extends Resource
 @export var min_distance_tiles: int = 0
 ## Biome `display_name`s where it can appear; empty = all.
 @export var biomes: Array[String] = []
+
+## Type 2: block pattern, one string per row from top to bottom; `#` is a block
+## and any other character is empty. Overrides the texture while it is set.
+@export var pattern: Array[String] = []
+## Tileset for the pattern: source 0 = dark wall (no physics), source 1 = light
+## stones, whose collision comes from the TileSet itself.
+@export var tileset: TileSet
+## Chance (0-1) that a bottom-row wall block becomes a stone in front (solid).
+@export var front_chance: float = 0.25
+## Chance (0-1) that a niche under the wall is filled with a support beam.
+@export var support_chance: float = 0.6
+## Pattern columns the structure repeats (0 = exactly one pattern width).
+@export var min_length_tiles: int = 0
+## Max columns after repeating the pattern (0 = exactly one pattern width).
+@export var max_length_tiles: int = 0
+
+
+## Width the structure occupies in tiles: the pattern's when it has one.
+func block_width() -> int:
+	var width := size_tiles
+	for row in pattern:
+		width = maxi(width, row.length())
+	return width

@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · branch `feat/estructuras-chunk`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · branch `feat/estructuras-chunk`_
 
 ## What it does and where it lives
 
@@ -84,9 +84,11 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width,
   0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `weight`,
   `min_distance_tiles` and `biomes` (by `Biome.display_name`; empty = all).
-- Two test resources in `resources/world/structures/` (`tower_test.tres`,
-  `ruin_test.tres`) with 16×16 magenta/cyan placeholder PNGs in `assets/map/structures/`.
-  The generator preloads both in `WorldGenerator.structures`.
+- Three kinds of structure, decided by the resource's fields: `scene` (a full scene), `texture` (one sprite) or **`pattern`** (type 2, blocks). The pattern is one string per row from top to bottom, `#` = block; any other character is empty. It repeats horizontally to a random length between `min_length_tiles` and `max_length_tiles` (20–50 for the ruin), and each column rests on **its own** ground row, so the wall follows the terrain.
+- **TileSet, not code** (2026-11-19): the pattern is painted by `scripts/world/block_structure.gd`, a `TileMapLayer` using `WorldStructure.tileset` (`resources/world/structures/ruin_tileset.tres`), so the atlas, the tiles and their collision are edited in the TileSet editor like the ground. Two sources: `0` dark atlas = background wall (`z_index` behind `Solid`/`GrassPaint` and the decor, moved to child index 0), `1` light atlas = the solid ground stones. The background is **bricks only**: stone tiles (8-13) are reserved for the front layer (kept in the atlas for reuse).
+- **Collision only on the ground**: source `1` paints just the bottom pattern row. Two sources, both at ground level so nothing floats: a bottom wall block becomes a stone with `front_chance` (0.25), and an empty bottom column with wall above gets a support beam with `support_chance` (0.6). No collidable block is ever above the first row, so all of them can be jumped over/onto. They are one node in front of the wall, `z_index` 0; the collision is the TileSet's physics layer (tiles 8, 9, 11 and 12), not a `StaticBody2D` built by code.
+- Atlases: `assets/map/structures/ruin_tiles.png` (light) and `ruin_tiles_dark.png` (same layout, darker), 8×2 tiles of 16 px, matte: near-black bricks with teal grout (6 bright, 7 dim) and chunky slate blocks in big/long/small × light/dark, plus the mossy set. 14-15 are the mossy brick tops. `scripts/world/block_structure.gd`: `WALL_TILES` (bricks) with a hash of the cell so a reload picks the same, `TOP_TILES` when the tile above is empty, `STONE_TILES`/`SUPPORT_TILES` for the solid ground layer (the only user of `cell_tiles`; `-1` means "pick from the wall pool"). To retune the look or the hitboxes, edit `ruin_tileset.tres` in Godot: the dark source has no physics, the light one has a polygon on 8/9/11/12.
+- The test resources live in `resources/world/structures/`: `tower_test.tres` is still a 16×16 sprite, and `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`). The generator preloads both in `WorldGenerator.structures`.
 - **The biome decides**: `structure_kinds` (the structures' `display_name`) and
   `structure_chances` (same order). **Each structure rolls on its own per chunk**, so a
   chunk can get none, some or all of them, but never two of the same; a chance of 0 or an
@@ -94,13 +96,15 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   snow: none.
 - Rolled **after** enemies, coins and decor with the same chunk RNG, so their positions
   never shift; a chance is consumed for every kind even when it fails. A chunk's X is tried
-  up to 8 times to keep `size_tiles` clear of the chunk edges (`margin_tiles`), of the other
-  structures (`structure_min_gap_tiles`) and of the enemies' X. The base sits on the
-  **lowest** column of its span: on a hill it is partially hidden behind `Solid`, but it
-  never floats.
-- Each one is a chunk child moved to index 0 (behind `Solid`/`GrassPaint` and behind the
-  decor), no collision, no parallax. The sprite keeps the texture scale from
-  `size_tiles`/`pixel_size`. Stable id `s:x:y:index` (node metadata) but **not persisted**:
+  up to 8 times to keep `block_width()` clear of the chunk edges (`margin_tiles`), of the
+  other structures (`structure_min_gap_tiles`) and of the enemies' X. Sprites sit on the
+  **lowest** column of their span (on a hill they are partly hidden behind `Solid`, but
+  never float); patterns use each column's ground.
+- **Decor and tint** (2026-11-19): a decor entry whose tile falls inside a structure span (`x ± half`) is dropped, so nothing grows out of a ruin. Each structure gets a `tint` from `_decor_tint_at()` (the biome's `decor_colors`, same as the foliage) and its atlases are recolored with `_tinted_texture(source, tint, 24, 12)`: only pixels clearly greener than red/blue change, so the teal brick grout stays teal and only the moss takes the biome hue. Cached in `_decor_tint_cache`.
+- Each one is a chunk child, no parallax. Sprites keep the texture scale from
+  `size_tiles`/`pixel_size` and sit on the **lowest** column of their span (on a hill they
+  are partly hidden behind `Solid`, but never float); patterns use each column's ground.
+  Stable id `s:x:y:index` (node metadata) but **not persisted**:
   nothing destroys structures, so a reload rebuilds the same ones from the seed.
 - To add one: create the `.tres`, add it to `WorldGenerator.structures`, name it in a
   biome's `structure_kinds`.
