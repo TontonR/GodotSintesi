@@ -872,3 +872,12 @@ Formato de entrada:
   (`ruin_tiles_dark.png`) y suelo de piedra (`ruin_tiles.png`), del mismo atlas 8×2 que las
   estructuras; física de cuadro completo en suelo/muros y `Back` sin colisión.
 - Pendiente F5 de Ruben; no hay Godot CLI en la sesión.
+
+## 2026-11-24 · `buffy` · Bugs de la fusión (T-0088)
+
+- `DungeonLayer` solo ocultaba/pausaba `map`, pero la colisión de los `TileMapLayer` sigue
+  activa; la mazmorra pasa a `WORLD_OFFSET` (y −10000) y el jugador se teletransporta allí.
+- `ruin_tileset.tres`: la piedra clara 8 (0:1) ya tiene cuadro completo de colisión, así que
+  las piedras del frente son sólidas. `_structure_allowed()` descarta patrones sin `tileset`
+  y las piedras del frente se mueven al índice 0 (detrás del decor).
+- `docs/world.md`/`docs/dungeon.md` corregidos; F5 pendiente (sin Godot CLI).

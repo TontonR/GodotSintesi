@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `feat/bloques-rompibles`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `test/fusion-structure`_
 
 ## What it does and where it lives
 
@@ -78,17 +78,20 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   not tinted. Bushes bend and drop a few leaves when the player walks through them.
   Full reference: [`docs/decor.md`](decor.md).
 
-## Structures (2026-11-18, T-0074)
+## Structures (2026-11-18 · 2026-11-24, T-0074/T-0088)
 
 - `scripts/world/structure.gd` (`class_name WorldStructure`, `Resource`): `display_name`,
   optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width,
-  0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `weight`,
-  `min_distance_tiles` and `biomes` (by `Biome.display_name`; empty = all).
+  0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `min_distance_tiles`
+  and `biomes` (by `Biome.display_name`; empty = all).
 - Three kinds of structure, decided by the resource's fields: `scene` (a full scene), `texture` (one sprite) or **`pattern`** (type 2, blocks). The pattern is one string per row from top to bottom, `#` = block; any other character is empty. It repeats horizontally to a random length between `min_length_tiles` and `max_length_tiles` (20–50 for the ruin), and each column rests on **its own** ground row, so the wall follows the terrain.
-- **TileSet, not code** (2026-11-19): the pattern is painted by `scripts/world/block_structure.gd`, a `TileMapLayer` using `WorldStructure.tileset` (`resources/world/structures/ruin_tileset.tres`), so the atlas, the tiles and their collision are edited in the TileSet editor like the ground. Two sources: `0` dark atlas = background wall (`z_index` behind `Solid`/`GrassPaint` and the decor, moved to child index 0), `1` light atlas = the solid ground stones. The background is **bricks only**: stone tiles (8-13) are reserved for the front layer (kept in the atlas for reuse).
-- **Collision only on the ground**: source `1` paints just the bottom pattern row. Two sources, both at ground level so nothing floats: a bottom wall block becomes a stone with `front_chance` (0.25), and an empty bottom column with wall above gets a support beam with `support_chance` (0.6). No collidable block is ever above the first row, so all of them can be jumped over/onto. They are one node in front of the wall, `z_index` 0; the collision is the TileSet's physics layer (tiles 8, 9, 11 and 12), not a `StaticBody2D` built by code.
-- Atlases: `assets/map/structures/ruin_tiles.png` (light) and `ruin_tiles_dark.png` (same layout, darker), 8×2 tiles of 16 px, matte: near-black bricks with teal grout (6 bright, 7 dim) and chunky slate blocks in big/long/small × light/dark, plus the mossy set. 14-15 are the mossy brick tops. `scripts/world/block_structure.gd`: `WALL_TILES` (bricks) with a hash of the cell so a reload picks the same, `TOP_TILES` when the tile above is empty, `STONE_TILES`/`SUPPORT_TILES` for the solid ground layer (the only user of `cell_tiles`; `-1` means "pick from the wall pool"). To retune the look or the hitboxes, edit `ruin_tileset.tres` in Godot: the dark source has no physics, the light one has a polygon on 8/9/11/12.
-- The test resources live in `resources/world/structures/`: `tower_test.tres` is still a 16×16 sprite, and `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`). The generator preloads both in `WorldGenerator.structures`.
+- **TileSet, not code** (2026-11-19): the pattern is painted by `scripts/world/block_structure.gd`, a `TileMapLayer` using `WorldStructure.tileset` (`resources/world/structures/ruin_tileset.tres`), so the atlas, the tiles and their collision are edited in the TileSet editor like the ground. Two sources: `0` dark atlas = background wall
+  (tiles 6/7, no physics; its 0-2 polygons are reserved for reuse), `1` light atlas =
+  the solid ground stones. The background is **bricks only**: stone tiles (8-13) are
+  reserved for the front layer (kept in the atlas for reuse).
+- **Collision only on the ground** (2026-11-24): source `1` paints just the bottom pattern row; the big stone 8 gets a full-square polygon, not just the two lower-half slabs. Two rules, both at ground level so nothing floats: a bottom wall block becomes a stone with `front_chance` (0.25), and an empty bottom column with wall above gets a support beam with `support_chance` (0.6). No collidable block is ever above the first row, so all of them can be jumped over/onto. They are one node in front of the wall (moved to child index 0 so decor draws over it), `z_index` 0; the collision is the TileSet's physics layer (8 and 11 full squares, 9 and 12 lower halves), not a `StaticBody2D` built by code.
+- Atlases: `assets/map/structures/ruin_tiles.png` (light) and `ruin_tiles_dark.png` (same layout, darker), 8×2 tiles of 16 px, matte: near-black bricks with teal grout (6 bright, 7 dim) and chunky slate blocks in big/long/small × light/dark, plus the mossy set. 14-15 are the mossy brick tops. `scripts/world/block_structure.gd`: `WALL_TILES` (bricks) with a hash of the cell so a reload picks the same, `TOP_TILES` when the tile above is empty, `STONE_TILES`/`SUPPORT_TILES` for the solid ground layer (the only user of `cell_tiles`; `-1` means "pick from the wall pool"). To retune the look or the hitboxes, edit `ruin_tileset.tres` in Godot: the dark wall tiles 6/7 have no physics, the light source has polygons on 8 (full), 9 (lower half), 11 (full) and 12 (lower half).
+- The test resources live in `resources/world/structures/`: `tower_test.tres` is still a 16×16 sprite, and `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`). The generator preloads both in `WorldGenerator.structures`. Pattern resources require a `tileset`; `_structure_allowed()` drops a kind that has a pattern but no TileSet instead of instancing a tilemap without physics.
 - **The biome decides**: `structure_kinds` (the structures' `display_name`) and
   `structure_chances` (same order). **Each structure rolls on its own per chunk**, so a
   chunk can get none, some or all of them, but never two of the same; a chance of 0 or an

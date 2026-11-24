@@ -2,9 +2,14 @@ class_name DungeonLayer
 extends Node2D
 ## Swaps the chunked world for an explorable dungeon without changing scenes:
 ## the world stays loaded but hidden and paused, so health, coins, inventory and
-## run seed survive the trip. `exit_requested` brings the player back.
+## run seed survive the trip. The dungeon is built at `WORLD_OFFSET`, far below
+## the world, because pausing a node does not disable its TileMapLayer collision.
+## `exit_requested` brings the player back.
 
 const DUNGEON_SCENE := preload("res://scenes/structures/dungeon.tscn")
+## Far enough below the world that hidden chunks can never collide with the
+## dungeon, even under the tallest mountain. The camera follows the player.
+const WORLD_OFFSET := Vector2(0, -10000)
 
 var _dungeon: DungeonGenerator
 var _world_position := Vector2.ZERO
@@ -29,9 +34,14 @@ func enter(entrance: DungeonEntrance) -> void:
 	if _ambient != null:
 		_ambient.visible = false
 	_dungeon = DUNGEON_SCENE.instantiate() as DungeonGenerator
+	_dungeon.position = WORLD_OFFSET
 	add_child(_dungeon)
 	_dungeon.exit_requested.connect(_leave)
 	_dungeon.start(entrance.dungeon_seed, 0)
+	if _dungeon.spawn_point == null:
+		push_error("DungeonLayer: dungeon has no spawn_point.")
+		_leave()
+		return
 	_teleport(_dungeon.spawn_point.global_position)
 
 

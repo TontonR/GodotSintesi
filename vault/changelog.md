@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Bugs de la fusión (T-0088)
+
+- `DungeonLayer` coloca la mazmorra en `WORLD_OFFSET` (y −10000): ocultar/pausar `map` no desactiva la colisión de sus tiles y una montaña podía atrapar al jugador.
+- `ruin_tileset.tres`: la piedra clara 8 ya tiene polígono de cuadro completo, así que las piedras del frente son sólidas; un patrón sin `tileset` se descarta y las piedras del frente se dibujan detrás del decor.
+- `docs/world.md`/`docs/dungeon.md` corregidos (campo `weight` inexistente, física real del atlas, offset).
+
 ## 2026-11-24 · `buffy` · Fusión de estructuras + arte de la mazmorra (T-0088)
 
 - `test/fusion-structure`: merge de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y

@@ -1262,6 +1262,10 @@ func _decor_outside_structures(
 func _structure_allowed(structure: WorldStructure, biome: Biome, tile_x: int) -> bool:
 	if structure.texture == null and structure.scene == null and structure.pattern.is_empty():
 		return false
+	# A pattern without a TileSet would instantiate a tilemap with no tiles and
+	# no physics; drop the kind instead of failing at spawn time.
+	if not structure.pattern.is_empty() and structure.tileset == null:
+		return false
 	if tile_x < structure.min_distance_tiles:
 		return false
 	return structure.biomes.is_empty() or structure.biomes.has(biome.display_name)
@@ -1471,7 +1475,8 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 			for cell in entry["cells"]:
 				blocks.cells.append(cell)
 			node = blocks
-			# The few ground stones go in front of the wall and are solid.
+			# The few ground stones go in front of the wall and are solid; the node
+			# is moved behind the decor so a tree can cover the rubble.
 			var front_cells: Array = entry["front"]
 			var front_tiles: Array = entry["front_tiles"]
 			if not front_cells.is_empty():
@@ -1487,6 +1492,7 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 					if k < front_tiles.size():
 						light.cell_tiles.append(front_tiles[k])
 				chunk.add_child(light)
+				chunk.move_child(light, 0)
 		else:
 			var sprite := Sprite2D.new()
 			sprite.texture = structure.texture

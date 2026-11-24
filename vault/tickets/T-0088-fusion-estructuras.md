@@ -36,6 +36,18 @@ interior de la mazmorra usaba `ground_tile.png` tintado y no encajaba con el art
 - [ ] F5 de Ruben: ruinas y cajas en el mundo, puerta con F, interior de ruinas y salida.
 - [x] Docs y vault actualizados.
 
+## Bugs encontrados y arreglados
+
+- `DungeonLayer` solo ocultaba y pausaba `map`: la colisión de los `TileMapLayer` sigue
+  activa, así que una montaña podía atrapar al jugador dentro de la mazmorra. La
+  mazmorra se instancia en `WORLD_OFFSET` (y −10000) y el jugador se teletransporta allí.
+- La piedra clara 8 del tileset de ruinas no tenía polígono; ahora tiene cuadro completo
+  y las piedras del frente son sólidas.
+- Un `WorldStructure` con `pattern` pero sin `tileset` instanciaba un `BlockStructure`
+  sin TileSet; `_structure_allowed()` ahora descarta ese kind.
+- Las piedras del frente se añadían después del decor y lo tapaban; el nodo se mueve al
+  índice 0 del chunk.
+
 ## Resultado
 
 Hecho el 2026-11-24 (`buffy`) en `test/fusion-structure`.
