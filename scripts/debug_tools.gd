@@ -8,7 +8,7 @@ extends Node
 # x1; 4/6 make a quick
 # trip left/right + a bit upward, to avoid getting stuck
 # inside a mountain while testing, 5 toggles player immortality, 3 jumps to the
-# next structure on the right and 0 to the next biome start on the right.
+# next structure or dungeon door on the right and 0 to the next biome start.
 # Test items (KP1/KP2) remain in `scenes/inventory/inventory.gd`, which
 # belongs to the inventory.
 # The bottom-left label always shows the speed, immortality, the player
@@ -16,7 +16,7 @@ extends Node
 # be reproduced from the menu's seed dialog.
 
 const TILE_SIZE := 16
-const HINT := "speed %s · immortal %s · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal · KP3 next structure · KP0 next biome"
+const HINT := "speed %s · immortal %s · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal · KP3 next structure/door · KP0 next biome"
 const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 ## Floor for KP7: halving never reaches x0, which would freeze the game.
 const MIN_SPEED := 0.001

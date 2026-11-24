@@ -39,6 +39,11 @@ _2026-11-09 · 2026-11-12 · 2026-11-13_
 - Luck is added **again** to the item roll (`minf(total + luck, 1)`), even though the
   probabilities are already summed.
 
+## Crates
+
+- `scripts/world/breakable_block.gd` (`BreakableBlock`, the ruins' crates) drops `coin_min`–`coin_max` coins (1–3) and makes **one extra roll** with `item_drop_chance` (**0.3**) for a consumable, independent from the coins like the enemies' two rolls.
+- The consumable comes from `item_pool` when the scene sets it; otherwise the built-in `CONSUMABLE_PATHS` list loads the 9 potions/tonics. The pickup is the legacy root `item_pickup.tscn`, with `item` assigned **before** `add_child` so `_ready()` paints the icon.
+
 ## Current tables (scene `item_drops`)
 
 | Enemy | Entries (chance) | Total |

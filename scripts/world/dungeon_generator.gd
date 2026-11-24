@@ -3,52 +3,68 @@ extends Node2D
 ## Explorable structure MVP (type 3): a two-floor side-view room-and-door
 ## dungeon generated from a seed, independent from the chunked world.
 ##
-## The dungeon paints its own tiles with the ruin atlas and owns its exit, but it
-## never instantiates nor keeps the player: the caller places it on `spawn_point`
-## and reacts to `exit_requested`. Switching floors is a fresh `start()`, so the
-## world hook can regenerate without rebuilding the node.
+## The dungeon paints its own tiles with the castle atlas of the map pack and
+## owns its exit, but it never instantiates nor keeps the player: the caller
+## places it on `spawn_point` and reacts to `exit_requested`. Switching floors is
+## a fresh `start()`, so the world hook can regenerate without rebuilding the node.
 
 ## Emitted once per `start()` when the player steps on the floor exit.
 signal exit_requested
 
-const TILE_SIZE := 16
+## Castle pack atlas: 8 columns x 6 rows of 32 px tiles. The player is ~54 px
+## tall, so a 32 px grid keeps the same proportions as the 16 px world tiles.
+const TILE_SIZE := 32
 ## Physics layer of the world; the player's `collision_mask` is 1.
 const WALL_LAYER := 1
 ## Dark cells painted around the dungeon so the camera never shows the sky.
-const MARGIN_TILES := 40
+const MARGIN_TILES := 24
 ## Ground rows painted under the walkable floor, to read as solid ground.
-const FLOOR_THICKNESS := 3
+const FLOOR_THICKNESS := 2
 ## Rows of the ceiling band.
 const CEILING_THICKNESS := 2
 ## The player's origin is ~27 px above its feet; 30 leaves a 3 px fall.
 const SPAWN_ABOVE_PX := 30.0
-## Ruin atlas used by the chunk structures: source 0 = dark bricks (background
-## and walls), source 1 = light stones (walkable floor).
-const DARK_TEXTURE := preload("res://assets/map/structures/ruin_tiles_dark.png")
-const LIGHT_TEXTURE := preload("res://assets/map/structures/ruin_tiles.png")
-## The ruin atlases are 8 columns x 2 rows of 16 px tiles.
+## Castle atlas (`assets/map/structures/castle_tiles.png`): row 0 = windows,
+## row 1 = banners, rows 2-3 = orange brick wall, rows 4-5 = stone slabs.
+const CASTLE_TEXTURE := preload("res://assets/map/structures/castle_tiles.png")
+## The castle atlas is 8 columns x 6 rows of 32 px tiles.
 const ATLAS_COLUMNS := 8
-## Plain brick variants for the back wall and the solid walls (source 0).
-const BRICK_TILES := [6, 7]
-## Stone variants for the floor surface (source 1) and its fill (source 0).
-const FLOOR_TILES := [8, 8, 11, 3]
-const FLOOR_FILL_TILES := [0, 3, 8]
+## Stone slabs of the backdrop: 31 is the pack's own `Background_walls` body
+## (7,3); the rest are variants from rows 4-5.
+const BACK_TILES := [31, 31, 32, 33, 34, 35]
+const BACK_FILL_TILES := [31, 40, 41, 42, 43]
+## Brick wall: 20 is the pack's capped top (4,2) and 25 its body (1,3).
+const WALL_TOP_TILES := [20]
+const WALL_TILES := [25, 25, 25, 26, 30]
+## Stone floor: surface on row 4 and darker fill on row 5.
+const FLOOR_TILES := [32, 33, 34, 35, 36, 37]
+const FLOOR_FILL_TILES := [40, 41, 42, 43]
+## Window pairs, as top-left, top-right, bottom-left, bottom-right.
+const WINDOW_VARIANTS := [[0, 1, 2, 3], [4, 5, 6, 7]]
+## Banner column, from its top tile down (row 1 of the atlas).
+const BANNER_TILES := [8, 9, 10]
 
 @export_group("Layout")
-## Dungeon width in tiles.
-@export var width_tiles: int = 150
+## Dungeon width in tiles (75 x 32 = 2400 px, the same span as before).
+@export var width_tiles: int = 75
 ## Row of the walkable floor.
-@export var floor_row: int = 40
+@export var floor_row: int = 34
 ## Rows between the floor and the ceiling band (minimum 3).
-@export var interior_height_tiles: int = 12
-## Doorway clearance above the floor, in tiles (minimum 4: the player is ~3.4).
-@export var door_height_tiles: int = 6
+@export var interior_height_tiles: int = 6
+## Doorway clearance above the floor, in tiles (minimum 2: the player is ~1.7).
+@export var door_height_tiles: int = 4
 ## Rooms per floor: the array size is the number of floors.
 @export var rooms_per_floor: Array[int] = [7, 9]
 ## Narrowest room, in tiles (narrow ones read as corridors).
-@export var room_width_min: int = 8
+@export var room_width_min: int = 4
 ## Widest room, in tiles; the last room may take the remainder.
-@export var room_width_max: int = 22
+@export var room_width_max: int = 11
+
+@export_group("Decoration")
+## Chance per room of a window on the backdrop wall (0 = none).
+@export var window_chance: float = 0.6
+## Chance per room of a hanging banner on the backdrop wall (0 = none).
+@export var banner_chance: float = 0.35
 
 @export_group("Test")
 ## Seed used when the scene is opened on its own; 0 = wait for `start()`.
@@ -62,6 +78,7 @@ var spawn_point: Marker2D
 var _floor_layer: TileMapLayer
 var _wall_layer: TileMapLayer
 var _back_layer: TileMapLayer
+var _decor_layer: TileMapLayer
 var _exit_area: Area2D
 var _rng := RandomNumberGenerator.new()
 var _rooms: Array[Rect2i] = []
@@ -162,45 +179,110 @@ func _paint() -> void:
 	_floor_layer.tile_set = solid
 	_wall_layer.tile_set = solid
 	_back_layer.tile_set = plain
+	if _decor_layer != null:
+		_decor_layer.tile_set = plain
 	var ceiling_row := _ceiling_row()
 	var door := _door_height()
-	# Ruin bricks behind everything: dark atlas, no collision.
+	# Stone slabs behind everything: no collision, darkened by the node.
 	for y in range(-MARGIN_TILES, floor_row + MARGIN_TILES):
 		for x in range(-MARGIN_TILES, width_tiles + MARGIN_TILES):
 			var back_cell := Vector2i(x, y)
-			_back_layer.set_cell(back_cell, 0, _atlas_tile(_pick(BRICK_TILES, back_cell, 5)))
-	# Floor: light ruin stones on top (source 1) and darker stone fill below
-	# (source 0). Every tile collides, so there is no pit to fall into.
+			var pool := BACK_TILES if ((x + y) & 1) == 0 else BACK_FILL_TILES
+			_back_layer.set_cell(back_cell, 0, _atlas_tile(_pick(pool, back_cell, 5)))
+	# Floor: stone slabs on top and darker fill below. Every tile collides, so
+	# there is no pit to fall into.
 	for x in range(width_tiles):
 		var surface := Vector2i(x, floor_row)
-		_floor_layer.set_cell(surface, 1, _atlas_tile(_pick(FLOOR_TILES, surface, 1)))
+		_floor_layer.set_cell(surface, 0, _atlas_tile(_pick(FLOOR_TILES, surface, 1)))
 		for row in range(1, FLOOR_THICKNESS):
 			var fill := Vector2i(x, floor_row + row)
 			_floor_layer.set_cell(fill, 0, _atlas_tile(_pick(FLOOR_FILL_TILES, fill, 2)))
+		# The ceiling's upper row carries the tan cap of the atlas.
 		for row in CEILING_THICKNESS:
 			var ceiling_cell := Vector2i(x, ceiling_row - row)
-			_wall_layer.set_cell(ceiling_cell, 0, _atlas_tile(_pick(BRICK_TILES, ceiling_cell, 0)))
-	# Side walls close the hall with the same dark bricks.
+			var pool := WALL_TILES if row == 0 else WALL_TOP_TILES
+			_wall_layer.set_cell(ceiling_cell, 0, _atlas_tile(_pick(pool, ceiling_cell, 0)))
+	# Side walls close the hall with the same bricks.
 	for y in range(ceiling_row - CEILING_THICKNESS + 1, floor_row + FLOOR_THICKNESS):
-		var left := Vector2i(0, y)
-		_wall_layer.set_cell(left, 0, _atlas_tile(_pick(BRICK_TILES, left, 0)))
-		var right := Vector2i(width_tiles - 1, y)
-		_wall_layer.set_cell(right, 0, _atlas_tile(_pick(BRICK_TILES, right, 0)))
+		_paint_wall_cell(Vector2i(0, y), ceiling_row)
+		_paint_wall_cell(Vector2i(width_tiles - 1, y), ceiling_row)
 	# One partition per room after the first, with a doorway at the bottom.
 	for i in range(1, _rooms.size()):
 		var column_x := _rooms[i].position.x
 		for y in range(ceiling_row, floor_row - door):
-			var wall_cell := Vector2i(column_x, y)
-			_wall_layer.set_cell(wall_cell, 0, _atlas_tile(_pick(BRICK_TILES, wall_cell, 0)))
+			_paint_wall_cell(Vector2i(column_x, y), ceiling_row)
+	_paint_windows()
+	_paint_banners()
+
+
+## One brick column: the tile touching the ceiling uses the capped row.
+func _paint_wall_cell(cell: Vector2i, ceiling_row: int) -> void:
+	var pool := WALL_TOP_TILES if cell.y <= ceiling_row else WALL_TILES
+	_wall_layer.set_cell(cell, 0, _atlas_tile(_pick(pool, cell, 0)))
+
+
+## 2x2 windows scattered on the backdrop wall, aligned to the tile grid.
+func _paint_windows() -> void:
+	if _decor_layer == null:
+		return
+	var top_min := _ceiling_row() + 1
+	var top_max := floor_row - 3
+	if top_max < top_min:
+		return
+	for i in _rooms.size():
+		if _rng.randf() > window_chance:
+			continue
+		var room := _rooms[i]
+		var min_x := room.position.x + 1
+		var max_x := room.position.x + room.size.x - 2
+		if max_x < min_x:
+			continue
+		var x := _rng.randi_range(min_x, max_x)
+		var top := _rng.randi_range(top_min, top_max)
+		var window: Array = WINDOW_VARIANTS[_rng.randi_range(0, WINDOW_VARIANTS.size() - 1)]
+		if not _decor_free(x, top, 2, 2):
+			continue
+		for row in 2:
+			_decor_layer.set_cell(Vector2i(x, top + row), 0, _atlas_tile(int(window[row * 2])))
+			_decor_layer.set_cell(
+				Vector2i(x + 1, top + row), 0, _atlas_tile(int(window[row * 2 + 1]))
+			)
+
+
+## Hanging banners from the ceiling band, like the pack's `Banner` layer.
+func _paint_banners() -> void:
+	if _decor_layer == null:
+		return
+	var top := _ceiling_row() + 1
+	if top + BANNER_TILES.size() > floor_row:
+		return
+	for i in _rooms.size():
+		if _rng.randf() > banner_chance:
+			continue
+		var room := _rooms[i]
+		var x := _rng.randi_range(room.position.x + 1, room.position.x + room.size.x - 2)
+		if not _decor_free(x, top, 1, BANNER_TILES.size()):
+			continue
+		for row in BANNER_TILES.size():
+			_decor_layer.set_cell(Vector2i(x, top + row), 0, _atlas_tile(int(BANNER_TILES[row])))
+
+
+## True when the decoration layer has no tile in that rectangle yet.
+func _decor_free(x: int, y: int, width: int, height: int) -> bool:
+	for row in height:
+		for column in width:
+			if _decor_layer.get_cell_source_id(Vector2i(x + column, y + row)) >= 0:
+				return false
+	return true
 
 
 func _ceiling_row() -> int:
 	return floor_row - maxi(interior_height_tiles, 3)
 
 
-## The player is ~3.4 tiles tall, so a shorter doorway would block the floor.
+## The player is ~1.7 tiles tall, so a shorter doorway would block the floor.
 func _door_height() -> int:
-	return clampi(door_height_tiles, 4, maxi(4, interior_height_tiles - 2))
+	return clampi(door_height_tiles, 2, maxi(2, interior_height_tiles - 2))
 
 
 ## Stable hash instead of an RNG: a rebuild paints the same tile on every cell.
@@ -213,20 +295,36 @@ func _atlas_tile(index: int) -> Vector2i:
 	return Vector2i(index % ATLAS_COLUMNS, floori(float(index) / ATLAS_COLUMNS))
 
 
-## TileSet built in code from the ruin atlases. The backdrop copy only needs the
-## dark bricks; the solid copy adds full-square collision to every wall and floor
-## tile, so the physics belongs to the dungeon, not to the ruin structure.
+## TileSet built in code from the castle atlas. The backdrop copy only needs the
+## stone, brick, window and banner tiles; the solid copy adds full-square
+## collision to every wall and floor tile, so the physics belongs to the dungeon.
 func _build_tileset(with_collision: bool) -> TileSet:
 	var tile_set := TileSet.new()
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	if with_collision:
 		tile_set.add_physics_layer()
 		tile_set.set_physics_layer_collision_layer(0, WALL_LAYER)
-		_add_tiles(tile_set, 0, DARK_TEXTURE, [0, 3, 6, 7, 8], true)
-		_add_tiles(tile_set, 1, LIGHT_TEXTURE, [3, 8, 11], true)
+		var solid_tiles := _unique(
+			WALL_TOP_TILES + WALL_TILES + FLOOR_TILES + FLOOR_FILL_TILES
+		)
+		_add_tiles(tile_set, 0, CASTLE_TEXTURE, solid_tiles, true)
 	else:
-		_add_tiles(tile_set, 0, DARK_TEXTURE, BRICK_TILES, false)
+		var backdrop: Array = []
+		backdrop.append_array(BACK_TILES + BACK_FILL_TILES)
+		backdrop.append_array(WINDOW_VARIANTS[0])
+		backdrop.append_array(WINDOW_VARIANTS[1])
+		backdrop.append_array(BANNER_TILES)
+		_add_tiles(tile_set, 0, CASTLE_TEXTURE, _unique(backdrop), false)
 	return tile_set
+
+
+## Tile index list without repeats (the atlas only creates each tile once).
+func _unique(indices: Array) -> Array:
+	var result: Array = []
+	for index in indices:
+		if not result.has(index):
+			result.append(index)
+	return result
 
 
 ## Creates the requested 16 px atlas tiles on `source_id`, with a full-square
@@ -288,6 +386,7 @@ func _bind_nodes() -> void:
 	_floor_layer = get_node_or_null("Floor") as TileMapLayer
 	_wall_layer = get_node_or_null("Walls") as TileMapLayer
 	_back_layer = get_node_or_null("Back") as TileMapLayer
+	_decor_layer = get_node_or_null("Decor") as TileMapLayer
 	_exit_area = get_node_or_null("Exit") as Area2D
 	spawn_point = get_node_or_null("spawn_point") as Marker2D
 	if (

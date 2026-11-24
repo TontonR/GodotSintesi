@@ -10,6 +10,9 @@ extends Resource
 @export var scene: PackedScene
 ## Texture when there is no scene; the node origin is its bottom center.
 @export var texture: Texture2D
+## Extra textures for that sprite: one is picked per placement (stable for the
+## seed), so several colors of the same structure need a single resource.
+@export var textures: Array[Texture2D] = []
 ## Native width of `texture` in px (0 = the texture's own width). Only used to scale.
 @export var pixel_size: int = 0
 ## Width the structure occupies, in tiles: spacing, margins and enemy avoidance.
@@ -20,6 +23,11 @@ extends Resource
 @export var z_index: int = 0
 ## Distance from tile 0 before it can appear.
 @export var min_distance_tiles: int = 0
+## Vertical offset of the sprite in px; positive sinks it into the ground.
+@export var y_offset_px: int = 0
+## Levels the ground under the structure's span, so a hill never buries it nor
+## leaves it floating (tents, houses). Sprite structures only.
+@export var flatten_ground: bool = false
 ## Biome `display_name`s where it can appear; empty = all.
 @export var biomes: Array[String] = []
 

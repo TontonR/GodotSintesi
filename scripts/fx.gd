@@ -116,6 +116,22 @@ func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> vo
 	_burst(world_position, color, amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
 
 
+## Crate hit: wood splinters from the impact point plus a little dust, so a
+## sword hit reads even without a damage number.
+func crate_hit(world_position: Vector2) -> void:
+	_burst(world_position, Color(0.72, 0.52, 0.3), 6, 85.0, 0.35, 0.85, 420.0, 2.5, 140.0, true)
+	_burst(world_position, Color(0.9, 0.84, 0.7, 0.7), 3, 35.0, 0.3, 1.0, 200.0, 3.0)
+
+
+## Crate broken: explosion of planks (aligned to their velocity), a dust cloud,
+## a few golden chips and a short camera shake.
+func crate_break(world_position: Vector2) -> void:
+	_burst(world_position, Color(0.68, 0.47, 0.26), 26, 260.0, 0.85, 1.5, 620.0, 6.0, 180.0, true)
+	_burst(world_position, Color(0.9, 0.82, 0.66, 0.85), 14, 65.0, 0.6, 2.2, 80.0, 8.0)
+	_burst(world_position, Color(1.0, 0.92, 0.62), 8, 150.0, 0.3, 0.7, 340.0, 2.5)
+	shake(1.2, 0.09)
+
+
 ## Leaves shaken off a bush the player walks through: short, slow burst that
 ## falls with its own gravity.
 func leaves(world_position: Vector2, color: Color, amount: int = 7) -> void:

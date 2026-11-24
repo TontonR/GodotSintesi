@@ -881,3 +881,16 @@ Formato de entrada:
   las piedras del frente son sólidas. `_structure_allowed()` descarta patrones sin `tileset`
   y las piedras del frente se mueven al índice 0 (detrás del decor).
 - `docs/world.md`/`docs/dungeon.md` corregidos; F5 pendiente (sin Godot CLI).
+
+## 2026-11-24 · `buffy` · Interior de castillo y salida de la mazmorra (T-0089, T-0090)
+
+- T-0090: `assets/map/structures/castle_tiles.png` (atlas 8×6 de 32 px del `map.zip`)
+  repinta el interior: piedra en `Back`, ladrillo en `Walls`/techo, piedra en `Floor` y
+  ventanas/estandartes en la capa nueva `Decor`. `TILE_SIZE` 32, 75×6 tiles, puerta de 4
+  tiles y pad de 32×64 px. El `.tres` del pack no trae colisión: el TileSet se sigue
+  construyendo en código y todas las celdas sólidas la reciben.
+- T-0089: la salida calculaba los chunks con la cámara suavizada, que sigue en la
+  mazmorra tras el teletransporte. `_update_chunks()` pasa a usar la X del jugador en ese
+  caso. Medido en headless a 200 000 px: 49 chunks (0..48) → 5 (140 ms).
+- Comprobado en headless: 0 tiles de muro/suelo sin colisión, 42 celdas de decor y 9 ms
+  por las dos plantas. Falta F5/F6 de Ruben: aspecto del castillo y salida lejana.

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckijgshkpursb"
-path="res://.godot/imported/ruin_test.png-409ca526d0536300390a9b4a91b6ceaf.ctex"
+uid="uid://cdcgfh7hdkcq1"
+path="res://.godot/imported/castle_tiles.png-24b034a791ea7abffe4a009354f690e0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/structures/ruin_test.png"
-dest_files=["res://.godot/imported/ruin_test.png-409ca526d0536300390a9b4a91b6ceaf.ctex"]
+source_file="res://assets/map/structures/castle_tiles.png"
+dest_files=["res://.godot/imported/castle_tiles.png-24b034a791ea7abffe4a009354f690e0.ctex"]
 
 [params]
 

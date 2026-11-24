@@ -7,18 +7,18 @@ _Actualizado 2026-11-24 por `buffy`_
 | Campo | Valor |
 |---|---|
 | Rama | `test/fusion-structure` (T-0088): fusión de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087), sobre `main` `ccbae38` |
-| Árbol | Todo en `revision` tras el merge: estructuras/ruinas, cajas rompibles y mazmorra con su entrada; el interior usa el tileset de ruinas. F5 pendiente |
-| Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | PR de `test/fusion-structure` a `main` (ya pusheada); F5 de la fusión (ruinas + cajas + puerta/mazmorra); después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
+| Árbol | `revision` tras T-0089/T-0090: estructuras/ruinas, cajas rompibles, mazmorra con entrada, interior de castillo (atlas 32 px de `map.zip`) y salida sin regenerar el mapa. F5 pendiente |
+| Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión/castillo) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5 de Ruben (ruinas, cajas, puerta/mazmorra, aspecto del castillo y salida lejana) y PR de `test/fusion-structure` a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `humano-ruben` | F5 de la fusión; decisiones de diseño | — |
+| `humano-ruben` | F5 de la fusión y del castillo; decisiones de diseño | — |
 | `opencode-jorge` | T-0076 cajas rompibles (hecho, pendiente F5) + testeo headless | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` |
-| `buffy` | T-0079/T-0087 mazmorra, entrada y fusión de ramas | `scenes/structures/`, `scripts/world/dungeon_*.gd`, `scripts/world_generator.gd`, `scenes/game.tscn`, `docs/dungeon.md` |
+| `buffy` | T-0089/T-0090 salida y arte del castillo; mazmorra y fusión | `scenes/structures/`, `scripts/world/dungeon_*.gd`, `scripts/world_generator.gd`, `docs/dungeon.md`, `docs/world.md` |
 | `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -27,6 +27,8 @@ _Actualizado 2026-11-24 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-24 | T-0090 | Interior del castillo con el atlas 8×6 de 32 px de `map.zip`: piedra, ladrillo, ventanas y estandartes; F5 pendiente |
+| 2026-11-24 | T-0089 | Salida de la mazmorra: la cámara suavizada ya no arrastra el rango de chunks (49 → 5 chunks medidos); F5 pendiente |
 | 2026-11-24 | T-0076 | Cajas rompibles en las ruinas: 40 de vida, 1–3 monedas, "ya roto" en `world/broken`; F5 pendiente |
 | 2026-11-17 | T-0054 | 14 objetos de arquero, esqueleto, fantasma y demonio: arco cargado, invulnerabilidad, teleport, rata invulnerable, DOT de quemadura y loot en cuatro enemigos |
 | 2026-11-17 | T-0073 | Editor web local de `vault/items`: landing con filtros por estado y edición de nombre, textura, habilidad y valores |
@@ -50,5 +52,6 @@ _Actualizado 2026-11-24 por `buffy`_
 - 16 enemigos por chunk maduro: si baja el rendimiento, `enemy_ramp_max_multiplier` y `decor_per_chunk` son las palancas.
 - Las cajas rompibles son sólidas y solo salen en las ruinas y a partir del chunk 1: el chunk 0 (spawn) se queda sin cajas para no encerrar al jugador. Si se mueve el spawn, revisar `_crate_tiles()`.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y `DISABLED_ENEMY_SCENES`.
-- La mazmorra (T-0079/T-0087) es autónoma: `DungeonLayer` oculta y pausa `map`, pero guardar dentro sigue apuntando a coordenadas de mazmorra; la persistencia por piso es T-0080.
-- La mazmorra vive en `DungeonLayer.WORLD_OFFSET` (y −10000): ocultar/pausar `map` no desactiva la colisión de sus tiles; no la devuelvas al mundo sin cambiar eso.
+- La mazmorra es autónoma: `DungeonLayer` vacía los chunks con `unload_chunks()` y pausa `map`, pero guardar dentro sigue apuntando a coordenadas de mazmorra; la persistencia por piso es T-0080.
+- La mazmorra usa celdas de **32 px** (atlas del castillo), no de 16: `dungeon.tscn` y el pad de salida (32×64) van con ella. El atlas `.tres` del pack no trae colisión, se construye en código.
+- `WorldGenerator._update_chunks()` ignora la cámara si está a más de media vista + margen del jugador: sin esa guarda, salir de la mazmorra o un teletransporte del debug generan todos los chunks intermedios.

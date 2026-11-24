@@ -139,13 +139,6 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Height above the ground where coins spawn: they then fall, bounce and
 ## settle with their own gravity (`scripts/collectables/coin.gd`).
 @export var coin_spawn_height: float = 40.0
-## Dungeon door scene placed in the world; F inside its area enters the dungeon.
-@export var dungeon_entrance_scene: PackedScene = preload("res://scenes/structures/dungeon_entrance.tscn")
-## Chance of an extra door per chunk after chunk 0 (0 = only the guaranteed one).
-@export var dungeon_entrance_chance: float = 0.2
-## Tiles after `safe_start_tiles` where the first door always appears (chunk 0).
-@export var first_dungeon_entrance_offset_tiles: int = 8
-
 @export_group("Decor")
 ## Decor names the biomes use in `Biome.decor_kinds` (same order as the arrays below).
 @export var decor_names: Array[String] = [
@@ -184,7 +177,8 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Structures the biomes can name in `Biome.structure_kinds` (by `display_name`).
 @export var structures: Array[WorldStructure] = [
 	preload("res://resources/world/structures/tower_test.tres"),
-	preload("res://resources/world/structures/ruin_test.tres")
+	preload("res://resources/world/structures/ruin_test.tres"),
+	preload("res://resources/world/structures/tent_test.tres")
 ]
 ## Minimum gap in tiles between two structures of the same chunk.
 @export var structure_min_gap_tiles: int = 3
@@ -386,17 +380,23 @@ func chunk_at_world_x(world_x: float) -> int:
 
 
 ## Next structure to the right of `world_x`: its center X in pixels, or -1 when
-## `search_chunks` chunks ahead have none. Generates the chunk data it looks at.
+## `search_chunks` chunks ahead have none. Dungeon doors are structures, so they
+## count here too. Generates the chunk data it looks at.
 func next_structure_x(world_x: float, search_chunks: int = 64) -> float:
 	var first := chunk_at_world_x(world_x)
 	for i in range(search_chunks):
 		var coord := Vector2i(first + i, 0)
 		if not _chunk_data.has(coord):
 			_chunk_data[coord] = _generate_chunk(coord)
+		# Nearest one to the right inside this chunk: structures and doors roll
+		# in no X order, so the first match is not necessarily the closest.
+		var nearest := -1.0
 		for entry in _chunk_data[coord]["structures"]:
 			var x := (coord.x * chunk_width_tiles + int(entry["x"])) * TILE_SIZE + TILE_SIZE * 0.5
-			if x > world_x + 1.0:
-				return x
+			if x > world_x + 1.0 and (nearest < 0.0 or x < nearest):
+				nearest = x
+		if nearest >= 0.0:
+			return nearest
 	return -1.0
 
 
@@ -484,6 +484,11 @@ func _update_chunks(force: bool) -> void:
 		center_x = _camera.get_screen_center_position().x
 		zoom_x = _camera.zoom.x
 	var half_width := get_viewport().get_visible_rect().size.x / zoom_x * 0.5
+	# A teleport (dungeon exit, debug quick travel) moves the player before the
+	# smoothed camera reaches it. Following that stale view would put `first`
+	# back at the old spot and generate every chunk in between in one frame.
+	if absf(center_x - player.global_position.x) > half_width + load_margin_px:
+		center_x = player.global_position.x
 	var chunk_width_px := float(chunk_width_tiles * TILE_SIZE)
 	var first := floori((center_x - half_width - load_margin_px) / chunk_width_px)
 	var last := floori((center_x + half_width + load_margin_px) / chunk_width_px)
@@ -924,27 +929,26 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# Structures are rolled last so enemies, coins and decor keep their positions.
 	# The biome decides the count; a chunk of a biome with 0 places nothing.
 	var structures_here := _roll_structures(coord, biome, heights, enemies, rng)
+	# Level the footprint of the structures that ask for it (tents): the span goes
+	# flat at its highest column before the chunk is painted, so the sprite is
+	# never buried by a slope. Enemies and coins inside move up with the ground.
+	for entry in structures_here:
+		if not bool(entry.get("flatten", false)):
+			continue
+		var span_half := int(entry["half"])
+		var flat := int(entry["y"])
+		for dx in range(-span_half, span_half + 1):
+			var tile := clampi(int(entry["x"]) + dx, 0, chunk_width_tiles - 1)
+			flat = mini(flat, int(heights[tile]))
+		for dx in range(-span_half, span_half + 1):
+			heights[clampi(int(entry["x"]) + dx, 0, chunk_width_tiles - 1)] = flat
+		entry["y"] = flat
+		_level_entities(enemies, coins, int(entry["x"]), span_half, flat)
 	# Nothing grows inside a ruin: decor under its span is dropped.
 	if not structures_here.is_empty():
 		decor = _decor_outside_structures(decor, structures_here)
 
-	# Dungeon doors are rolled after the structures too, so neither moves.
-	var entrances: Array[Dictionary] = []
-	var entrance_x := -1
-	if coord.x == 0:
-		entrance_x = clampi(
-			safe_start_tiles + first_dungeon_entrance_offset_tiles, min_x, max_x
-		)
-	elif rng.randf() < dungeon_entrance_chance:
-		entrance_x = rng.randi_range(min_x, max_x)
-	if entrance_x >= 0 and dungeon_entrance_scene != null:
-		var global_tile := coord.x * chunk_width_tiles + entrance_x
-		entrances.append({
-			"position": Vector2(entrance_x * TILE_SIZE + TILE_SIZE * 0.5, heights[entrance_x] * TILE_SIZE),
-			"seed": int(_seed) ^ (global_tile * 7919),
-		})
-
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "structures": structures_here, "entrances": entrances, "biome": biome, "tints": biome_data["tints"]}
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "structures": structures_here, "biome": biome, "tints": biome_data["tints"]}
 
 
 ## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
@@ -1133,9 +1137,16 @@ func _roll_structures(
 			"cells": [],
 			"front": [],
 			"front_tiles": [],
+			# Tents and houses level their footprint before the chunk is painted.
+			"flatten": structure.flatten_ground,
 			# Same palette as the decor: the moss takes the biome hue.
 			"tint": _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
 		}
+		# Sprite structures can carry several textures (tents): a stable hash of
+		# the position picks the same one on every rebuild without touching `rng`.
+		if not structure.textures.is_empty():
+			var global_tile := coord.x * chunk_width_tiles + local_x
+			entry["texture"] = structure.textures[absi(global_tile * 2654435761) % structure.textures.size()]
 		if not structure.pattern.is_empty():
 			var built := _blocks_cells(structure, local_x - half, width, heights, rng)
 			entry["cells"] = built["cells"]
@@ -1225,6 +1236,32 @@ func _crate_tiles(
 			tiles.append({"id": "b:%d:%d:%d" % [coord.x, coord.y, tile_x], "x": tile_x})
 			break
 	return tiles
+
+
+## Keeps the enemies and coins whose column a footprint leveled standing on the
+## new surface instead of floating or sinking into it.
+func _level_entities(
+		enemies: Array[Dictionary],
+		coins: Array[Dictionary],
+		center: int,
+		half: int,
+		ground_row: int
+) -> void:
+	var ground_y := float(ground_row * TILE_SIZE)
+	for enemy in enemies:
+		var tile := floori(float(enemy["position"].x) / float(TILE_SIZE))
+		if absi(tile - center) > half:
+			continue
+		var pos: Vector2 = enemy["position"]
+		pos.y = ground_y
+		enemy["position"] = pos
+	for coin in coins:
+		var tile := floori(float(coin["position"].x) / float(TILE_SIZE))
+		if absi(tile - center) > half:
+			continue
+		var pos: Vector2 = coin["position"]
+		pos.y = ground_y - float(coin_spawn_height)
+		coin["position"] = pos
 
 
 func _pattern_at(structure: WorldStructure, row: int, col: int, mark: String) -> bool:
@@ -1419,6 +1456,20 @@ func _unload_chunk(coord: Vector2i) -> void:
 	_loaded_chunks.erase(coord)
 
 
+## Frees every loaded chunk but keeps the run (seed, `_chunk_data`, defeated,
+## collected and broken ids), so `refresh_chunks()` rebuilds the same world.
+## Removing first and freeing after makes the terrain and its collision vanish
+## this same frame: the dungeon scene is placed at the origin while the world is
+## unloaded, so nothing can catch the player there.
+func unload_chunks() -> void:
+	for coord in _loaded_chunks.keys():
+		var chunk := _loaded_chunks.get(coord) as WorldChunk
+		_loaded_chunks.erase(coord)
+		if is_instance_valid(chunk):
+			remove_child(chunk)
+			chunk.queue_free()
+
+
 func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 	# Decor first: sprites are moved to index 0, so they stay behind Solid and
 	# GrassPaint. Their bottom edge rests on the surface row (same height as the
@@ -1494,15 +1545,19 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 				chunk.add_child(light)
 				chunk.move_child(light, 0)
 		else:
+			# One variant texture per placement when the resource lists several.
+			var texture: Texture2D = entry.get("texture", structure.texture)
+			if texture == null:
+				continue
 			var sprite := Sprite2D.new()
-			sprite.texture = structure.texture
+			sprite.texture = texture
 			sprite.centered = false
 			# The offset keeps the origin at the bottom center, like the decor.
 			sprite.offset = Vector2(
-				-structure.texture.get_width() * 0.5,
-				-structure.texture.get_height()
+				-texture.get_width() * 0.5,
+				-texture.get_height()
 			)
-			var native := float(structure.pixel_size if structure.pixel_size > 0 else structure.texture.get_width())
+			var native := float(structure.pixel_size if structure.pixel_size > 0 else texture.get_width())
 			var factor := float(structure.size_tiles * TILE_SIZE) / maxf(native, 1.0)
 			sprite.scale = Vector2.ONE * factor
 			node = sprite
@@ -1516,7 +1571,7 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		else:
 			node.position = Vector2(
 				int(entry["x"]) * TILE_SIZE + TILE_SIZE * 0.5,
-				int(entry["y"]) * TILE_SIZE
+				int(entry["y"]) * TILE_SIZE + float(structure.y_offset_px)
 			)
 		node.set_meta("spawn_id", entry["id"])
 		chunk.add_child(node)
@@ -1571,14 +1626,6 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		chunk.entities.add_child(coin)
 		if coin.has_signal("collected"):
 			coin.connect("collected", _on_coin_collected.bind(spawn_id))
-
-	for entry in data.get("entrances", []):
-		var entrance := dungeon_entrance_scene.instantiate() as DungeonEntrance
-		if entrance == null:
-			continue
-		entrance.position = entry["position"]
-		entrance.dungeon_seed = int(entry["seed"])
-		chunk.entities.add_child(entrance)
 
 
 ## Distance from the origin to the body collider base (to rest it on the ground).

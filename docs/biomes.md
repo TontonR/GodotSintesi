@@ -74,8 +74,8 @@ one or several of them, never two of the same.
 
 | Biome | Kinds (chance per chunk) |
 |---|---|
-| Meadow | Test Tower 15 %, Test Ruin 25 % |
-| Red Forest | Test Ruin 30 % |
+| Meadow | Test Tower 100 %, Test Ruin 25 %, Test Tent 20 % |
+| Red Forest | Test Tower 100 %, Test Ruin 30 %, Test Tent 20 % |
 | Snow | — |
 
 The kinds are the `display_name`s of `WorldGenerator.structures`; an unknown name is

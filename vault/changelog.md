@@ -2,6 +2,17 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Interior de castillo y salida sin tirón (T-0089, T-0090)
+
+- T-0090: el interior explorable usa `assets/map/structures/castle_tiles.png` (atlas 8×6
+  de 32 px de `map.zip`): losas de piedra en `Back`, ladrillo naranja en `Walls`/techo,
+  piedra en `Floor` y ventanas/estandartes en la nueva capa `Decor`. Celdas de 32 px,
+  salas de 75×6 tiles, puerta de 4 tiles y pad de salida de 32×64 px.
+- T-0089: `WorldGenerator._update_chunks()` usa la X del jugador si la cámara suavizada
+  está a más de media vista + margen; la salida de la mazmorra ya no genera todos los
+  chunks hasta el origen (medido a 200 000 px: 49 chunks → 5, 140 ms).
+- `docs/dungeon.md` y `docs/world.md` actualizados; validado en headless, falta F5/F6.
+
 ## 2026-11-24 · `buffy` · Bugs de la fusión (T-0088)
 
 - `DungeonLayer` coloca la mazmorra en `WORLD_OFFSET` (y −10000): ocultar/pausar `map` no desactiva la colisión de sus tiles y una montaña podía atrapar al jugador.
