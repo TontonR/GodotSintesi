@@ -3,10 +3,10 @@ extends Node2D
 ## Explorable structure MVP (type 3): a two-floor side-view room-and-door
 ## dungeon generated from a seed, independent from the chunked world.
 ##
-## The dungeon paints its own tiles and owns its exit, but it never instantiates
-## nor keeps the player: the caller places it on `spawn_point` and reacts to
-## `exit_requested`. Switching floors is a fresh `start()`, so the world hook can
-## regenerate without rebuilding the node.
+## The dungeon paints its own tiles with the ruin atlas and owns its exit, but it
+## never instantiates nor keeps the player: the caller places it on `spawn_point`
+## and reacts to `exit_requested`. Switching floors is a fresh `start()`, so the
+## world hook can regenerate without rebuilding the node.
 
 ## Emitted once per `start()` when the player steps on the floor exit.
 signal exit_requested
@@ -22,7 +22,17 @@ const FLOOR_THICKNESS := 3
 const CEILING_THICKNESS := 2
 ## The player's origin is ~27 px above its feet; 30 leaves a 3 px fall.
 const SPAWN_ABOVE_PX := 30.0
-const GROUND_TEXTURE := preload("res://assets/map/tile/ground_tile.png")
+## Ruin atlas used by the chunk structures: source 0 = dark bricks (background
+## and walls), source 1 = light stones (walkable floor).
+const DARK_TEXTURE := preload("res://assets/map/structures/ruin_tiles_dark.png")
+const LIGHT_TEXTURE := preload("res://assets/map/structures/ruin_tiles.png")
+## The ruin atlases are 8 columns x 2 rows of 16 px tiles.
+const ATLAS_COLUMNS := 8
+## Plain brick variants for the back wall and the solid walls (source 0).
+const BRICK_TILES := [6, 7]
+## Stone variants for the floor surface (source 1) and its fill (source 0).
+const FLOOR_TILES := [8, 8, 11, 3]
+const FLOOR_FILL_TILES := [0, 3, 8]
 
 @export_group("Layout")
 ## Dungeon width in tiles.
@@ -154,30 +164,34 @@ func _paint() -> void:
 	_back_layer.tile_set = plain
 	var ceiling_row := _ceiling_row()
 	var door := _door_height()
-	# Dark fill first: everything behind the floor, the ceiling and the walls.
+	# Ruin bricks behind everything: dark atlas, no collision.
 	for y in range(-MARGIN_TILES, floor_row + MARGIN_TILES):
 		for x in range(-MARGIN_TILES, width_tiles + MARGIN_TILES):
 			var back_cell := Vector2i(x, y)
-			_back_layer.set_cell(back_cell, 0, _tile_for(back_cell, 5))
-	# Ground: solid full-square tiles, so there is no pit to fall into.
+			_back_layer.set_cell(back_cell, 0, _atlas_tile(_pick(BRICK_TILES, back_cell, 5)))
+	# Floor: light ruin stones on top (source 1) and darker stone fill below
+	# (source 0). Every tile collides, so there is no pit to fall into.
 	for x in range(width_tiles):
-		for row in FLOOR_THICKNESS:
-			var ground_cell := Vector2i(x, floor_row + row)
-			_floor_layer.set_cell(ground_cell, 0, _tile_for(ground_cell, 0))
+		var surface := Vector2i(x, floor_row)
+		_floor_layer.set_cell(surface, 1, _atlas_tile(_pick(FLOOR_TILES, surface, 1)))
+		for row in range(1, FLOOR_THICKNESS):
+			var fill := Vector2i(x, floor_row + row)
+			_floor_layer.set_cell(fill, 0, _atlas_tile(_pick(FLOOR_FILL_TILES, fill, 2)))
 		for row in CEILING_THICKNESS:
 			var ceiling_cell := Vector2i(x, ceiling_row - row)
-			_wall_layer.set_cell(ceiling_cell, 0, _tile_for(ceiling_cell, 2))
-	# Side walls close the hall.
+			_wall_layer.set_cell(ceiling_cell, 0, _atlas_tile(_pick(BRICK_TILES, ceiling_cell, 0)))
+	# Side walls close the hall with the same dark bricks.
 	for y in range(ceiling_row - CEILING_THICKNESS + 1, floor_row + FLOOR_THICKNESS):
-		_wall_layer.set_cell(Vector2i(0, y), 0, _tile_for(Vector2i(0, y), 3))
+		var left := Vector2i(0, y)
+		_wall_layer.set_cell(left, 0, _atlas_tile(_pick(BRICK_TILES, left, 0)))
 		var right := Vector2i(width_tiles - 1, y)
-		_wall_layer.set_cell(right, 0, _tile_for(right, 3))
+		_wall_layer.set_cell(right, 0, _atlas_tile(_pick(BRICK_TILES, right, 0)))
 	# One partition per room after the first, with a doorway at the bottom.
 	for i in range(1, _rooms.size()):
 		var column_x := _rooms[i].position.x
 		for y in range(ceiling_row, floor_row - door):
 			var wall_cell := Vector2i(column_x, y)
-			_wall_layer.set_cell(wall_cell, 0, _tile_for(wall_cell, 4))
+			_wall_layer.set_cell(wall_cell, 0, _atlas_tile(_pick(BRICK_TILES, wall_cell, 0)))
 
 
 func _ceiling_row() -> int:
@@ -189,23 +203,45 @@ func _door_height() -> int:
 	return clampi(door_height_tiles, 4, maxi(4, interior_height_tiles - 2))
 
 
-## Hash instead of an RNG, so a rebuild paints the same tile on every cell.
-func _tile_for(cell: Vector2i, salt: int) -> Vector2i:
-	return Vector2i(absi(cell.x * 31 + cell.y * 17 + salt * 13) % 3, 1)
+## Stable hash instead of an RNG: a rebuild paints the same tile on every cell.
+func _pick(indices: Array, cell: Vector2i, salt: int) -> int:
+	return int(indices[absi(cell.x * 31 + cell.y * 17 + salt * 13) % indices.size()])
 
 
-## TileSet built in code from the current ground texture: the fill row of the
-## 3x4 atlas, with a full-square collision only when `with_collision` is true.
+## Atlas coordinate of a 16 px tile index in the 8-column ruin atlas.
+func _atlas_tile(index: int) -> Vector2i:
+	return Vector2i(index % ATLAS_COLUMNS, floori(float(index) / ATLAS_COLUMNS))
+
+
+## TileSet built in code from the ruin atlases. The backdrop copy only needs the
+## dark bricks; the solid copy adds full-square collision to every wall and floor
+## tile, so the physics belongs to the dungeon, not to the ruin structure.
 func _build_tileset(with_collision: bool) -> TileSet:
 	var tile_set := TileSet.new()
 	tile_set.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 	if with_collision:
 		tile_set.add_physics_layer()
 		tile_set.set_physics_layer_collision_layer(0, WALL_LAYER)
+		_add_tiles(tile_set, 0, DARK_TEXTURE, [0, 3, 6, 7, 8], true)
+		_add_tiles(tile_set, 1, LIGHT_TEXTURE, [3, 8, 11], true)
+	else:
+		_add_tiles(tile_set, 0, DARK_TEXTURE, BRICK_TILES, false)
+	return tile_set
+
+
+## Creates the requested 16 px atlas tiles on `source_id`, with a full-square
+## collision when `with_collision` is true.
+func _add_tiles(
+	tile_set: TileSet,
+	source_id: int,
+	texture: Texture2D,
+	indices: Array,
+	with_collision: bool
+) -> void:
 	var source := TileSetAtlasSource.new()
-	source.texture = GROUND_TEXTURE
+	source.texture = texture
 	source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
-	tile_set.add_source(source, 0)
+	tile_set.add_source(source, source_id)
 	var half := TILE_SIZE / 2.0
 	var square := PackedVector2Array([
 		Vector2(-half, -half),
@@ -213,15 +249,14 @@ func _build_tileset(with_collision: bool) -> TileSet:
 		Vector2(half, half),
 		Vector2(-half, half),
 	])
-	for column in 3:
-		var coords := Vector2i(column, 1)
+	for index in indices:
+		var coords := _atlas_tile(int(index))
 		source.create_tile(coords)
 		if not with_collision:
 			continue
 		var data := source.get_tile_data(coords, 0)
 		data.add_collision_polygon(0)
 		data.set_collision_polygon_points(0, 0, square)
-	return tile_set
 
 
 func _place_spawn(room: Rect2i) -> void:

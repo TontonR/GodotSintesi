@@ -10,11 +10,10 @@ script = ExtResource("1_dungeon")
 
 [node name="Back" type="TileMapLayer" parent="."]
 z_index = -4
-modulate = Color(0.32, 0.32, 0.38, 1)
+modulate = Color(0.72, 0.72, 0.8, 1)
 
 [node name="Walls" type="TileMapLayer" parent="."]
 z_index = -3
-modulate = Color(0.55, 0.55, 0.62, 1)
 
 [node name="Floor" type="TileMapLayer" parent="."]
 z_index = -2

@@ -6,7 +6,7 @@ _Actualizado 2026-11-24 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `test/fusion-structure`: fusión de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087), sobre `main` `ccbae38` |
+| Rama | `test/fusion-structure` (T-0088): fusión de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087), sobre `main` `ccbae38` |
 | Árbol | Todo en `revision` tras el merge: estructuras/ruinas, cajas rompibles y mazmorra con su entrada; el interior usa el tileset de ruinas. F5 pendiente |
 | Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
 | Siguiente paso | F5 de la rama de fusión (ruinas + cajas + puerta/mazmorra), PR único a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |

@@ -24,7 +24,7 @@ posterior. Boss, enemigos, loot y tienda están fuera de alcance.
    (`RandomNumberGenerator` propio, nunca `randi()`), salas de anchos variables separadas por
    muros con puerta, suelo y techo sólidos.
 2. `scenes/structures/dungeon.tscn`: capas `Back`/`Walls`/`Floor` (TileSet construido en
-   código desde `ground_tile.png`), `Exit` (`Area2D` + panel ámbar) y `spawn_point`.
+   código desde el atlas de ruinas), `Exit` (`Area2D` + panel ámbar) y `spawn_point`.
 3. `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd`: harness de F6;
    coloca `player.tscn` en `spawn_point`, teclas 1/2 cambian de piso y la salida imprime.
 4. `save_state()` / `load_state()` puros (`{seed, floor}`); sin tocar `scripts/save_game.gd`.
@@ -49,12 +49,14 @@ Hecho el 2026-11-24 (`buffy`) en `feat/estructura-explorable`; queda F5/F6 de Ru
 - `scripts/world/dungeon_generator.gd`: 2 pisos (`rooms_per_floor` = [7, 9]), salas de
   8–22 tiles separadas por muros con puerta de 6 tiles, RNG `seed ^ (floor * 7919)`.
 - `scenes/structures/dungeon.tscn`: `Back`/`Walls`/`Floor` con TileSet de código
-  (`ground_tile.png`, física de cuadro completo en suelo y muros, capa 1), `Exit` y
-  `spawn_point` (30 px sobre el suelo de la primera sala).
+  (atlas de ruinas `ruin_tiles_dark.png`/`ruin_tiles.png`, física de cuadro completo en
+  suelo y muros, capa 1), `Exit` y `spawn_point` (30 px sobre el suelo de la primera sala).
 - `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd`: F6, teclas 1/2,
   imprime `Dungeon: exit requested on floor N.`.
 - `save_state()`/`load_state()`: `{seed, floor}`; sin tocar `save_game.gd`.
 - La puerta mundo→mazmorra se hizo en T-0087 (misma rama y PR); el estado por piso
   sigue pendiente (T-0080).
+- **2026-11-24 (T-0088)**: tras el F5, el interior deja `ground_tile.png`; fondo, techo y
+  muros usan ladrillo oscuro y el suelo piedra clara del atlas de ruinas.
 - **No hay Godot CLI en la sesión**: no se pudo ejecutar F6 ni comparar layouts; el repaso
   fue de código. F6/F5 pendiente de Ruben.

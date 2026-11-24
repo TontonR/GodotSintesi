@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Fusión de estructuras + arte de la mazmorra (T-0088)
+
+- `test/fusion-structure`: merge de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y
+  `feat/estructura-explorable` (T-0079/T-0087); se conservan estructuras, cajas y puertas.
+- La mazmorra deja `ground_tile.png` y pinta con el atlas de ruinas: ladrillo oscuro
+  (`ruin_tiles_dark.png`) en fondo, techo y muros; piedra clara (`ruin_tiles.png`) en el
+  suelo, con relleno oscuro debajo y física de cuadro completo.
+- `docs/dungeon.md`, T-0079 y T-0088 actualizados.
+
 ## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
 
 - `scenes/structures/dungeon_entrance.tscn` + `scripts/world/dungeon_entrance.gd`:
@@ -14,12 +23,12 @@ _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 ## 2026-11-24 · `buffy` · Interior explorable MVP (T-0079)
 
 - `scenes/structures/dungeon.tscn` + `scripts/world/dungeon_generator.gd`: mazmorra de 2
-  pisos con semilla, salas separadas por muros con puerta, sin arte nuevo (tiles de
-  `ground_tile.png`),
+  pisos con semilla, salas separadas por muros con puerta, arte de ruinas
+  (`ruin_tiles_dark.png` para fondo/muros y `ruin_tiles.png` para el suelo),
   `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros.
 - `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd` (F6; teclas 1/2).
 - `docs/dungeon.md` nuevo + fila en el índice de `AGENTS.md`. Pendiente F6 de Ruben.
-- Sin tocar `world_generator.gd`: la puerta desde el mundo queda para T-0080.
+- La puerta desde el mundo se añadió en T-0087; el estado por piso sigue en T-0080.
 
 ## 2026-11-24 · `feat/bloques-rompibles` — cajas rompibles en las ruinas
 

@@ -862,3 +862,13 @@ Formato de entrada:
   `scenes/structures/dungeon_entrance.tscn`, `scripts/world_generator.gd`,
   `scenes/game.tscn`, `docs/dungeon.md`, `vault/tickets/T-0087-entrada-mazmorra.md`.
 - Pendiente F5/F6 de Ruben; guardar dentro de la mazmorra sigue siendo T-0080.
+
+## 2026-11-24 · `buffy` · Fusión de estructuras y arte de la mazmorra (T-0088)
+
+- Creada `test/fusion-structure` desde `main`: merge `--no-ff` de `feat/bloques-rompibles`
+  (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087); conflictos en
+  `world_generator.gd` (se conservan estructuras, cajas y puertas) y en bitácora/changelog/estado.
+- La mazmorra abandona `ground_tile.png`: fondo, techo y muros con ladrillo de ruinas
+  (`ruin_tiles_dark.png`) y suelo de piedra (`ruin_tiles.png`), del mismo atlas 8×2 que las
+  estructuras; física de cuadro completo en suelo/muros y `Back` sin colisión.
+- Pendiente F5 de Ruben; no hay Godot CLI en la sesión.
