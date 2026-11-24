@@ -56,7 +56,7 @@ func _set_world_visible(is_visible: bool) -> void:
 		return
 	for child in _world.get_children():
 		if child is CanvasItem:
-			child.visible = is_visible
+			(child as CanvasItem).visible = is_visible
 
 
 ## The player's debug teleport also cuts inertia, the step offset and the cached
