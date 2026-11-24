@@ -6,11 +6,11 @@ _Actualizado 2026-11-24 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/estructura-explorable` (T-0079) desde `main` `ccbae38`; `feat/bloques-rompibles` (T-0076) sigue aparte, sin mergear |
-| Árbol | T-0079 en `revision`: mazmorra explorable + docs + vault. T-0076 en curso en su rama |
-| Fase | Reparto en 3 agentes: opencode (T-0076 cajas rompibles + testeo), Freebuff (T-0079 explorable) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5/F6 de T-0079 (`scenes/structures/dungeon_test.tscn`); PR de ambas ramas; después la puerta mundo→mazmorra (T-0080), T-0081 y T-0078 (tienda) según [`planning-estructuras.md`](planning-estructuras.md) |
-| Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7); la puerta desde el mundo no toca `world_generator.gd` todavía |
+| Rama | `feat/estructura-explorable` (T-0079 + T-0087) desde `main` `ccbae38`; `feat/bloques-rompibles` (T-0076) sigue aparte, sin mergear |
+| Árbol | T-0079 y T-0087 en `revision`: mazmorra + puerta negra en el mundo + docs + vault. T-0076 commiteado en su rama (F5 pendiente) |
+| Fase | Reparto en 3 agentes: opencode (T-0076 cajas rompibles + testeo), Freebuff (T-0079/T-0087 explorable + entrada) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5/F6 de T-0079/T-0087 (puerta al lado del spawn, F para entrar, salida al mundo); PR de las ramas; después persistencia por piso (T-0080), T-0081 y T-0078 (tienda) |
+| Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
 
@@ -18,7 +18,7 @@ _Actualizado 2026-11-24 por `buffy`_
 |---|---|---|
 | `humano-ruben` | F5 y merge; decisiones de diseño | — |
 | `opencode-jorge` | T-0076 cajas rompibles y testeo de PRs | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `docs/world.md` |
-| `buffy` | T-0079 interior explorable (MVP) | `scenes/structures/`, `scripts/world/dungeon_generator.gd`, `scripts/world/dungeon_test.gd`, `docs/dungeon.md`, `AGENTS.md` |
+| `buffy` | T-0079 interior explorable + T-0087 entrada desde el mundo | `scenes/structures/`, `scripts/world/dungeon_*.gd`, `scripts/world_generator.gd`, `scenes/game.tscn`, `docs/dungeon.md`, `AGENTS.md` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 
@@ -47,4 +47,4 @@ _Actualizado 2026-11-24 por `buffy`_
 - Las estructuras son placeholders: `assets/map/structures/*.png` se importan como textura (`.import` versionado) y el bioma las elige por `display_name`, así que renombrar una en su `.tres` rompe el `structure_kinds`.
 - 16 enemigos por chunk maduro: si baja el rendimiento, `enemy_ramp_max_multiplier` y `decor_per_chunk` son las palancas.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y `DISABLED_ENEMY_SCENES`.
-- La mazmorra (T-0079) es autónoma: no comparte TileSet ni persistencia con el mundo; la puerta y el estado por piso llegan en T-0080.
+- La mazmorra (T-0079/T-0087) es autónoma: `DungeonLayer` oculta y pausa `map`, pero guardar dentro sigue apuntando a coordenadas de mazmorra; la persistencia por piso es T-0080.

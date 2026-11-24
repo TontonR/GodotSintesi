@@ -690,3 +690,16 @@ Formato de entrada:
   `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/T-0079-interior-explorable.md`.
 - Pendiente: la puerta mundo→mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
   el estado por piso, para T-0080. F6 de Ruben sobre `dungeon_test.tscn`.
+
+## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
+
+- Puerta negra placeholder (`scenes/structures/dungeon_entrance.tscn`) repartida por
+  `WorldGenerator`: una fija junto al spawn del chunk 0 y una tirada por chunk (0.2),
+  después de enemigos, monedas y decor para no mover sus posiciones.
+- F sobre el área entra: `DungeonLayer` (`scenes/game.tscn`) oculta y pausa `map`,
+  instancia `dungeon.tscn` y la salida devuelve al jugador al mismo punto, sin recargar
+  la escena (vida, monedas, inventario y semilla se conservan).
+- Ficheros: `scripts/world/dungeon_entrance.gd`, `scripts/world/dungeon_layer.gd`,
+  `scenes/structures/dungeon_entrance.tscn`, `scripts/world_generator.gd`,
+  `scenes/game.tscn`, `docs/dungeon.md`, `vault/tickets/T-0087-entrada-mazmorra.md`.
+- Pendiente F5/F6 de Ruben; guardar dentro de la mazmorra sigue siendo T-0080.

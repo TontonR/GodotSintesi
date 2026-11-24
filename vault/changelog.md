@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
+
+- `scenes/structures/dungeon_entrance.tscn` + `scripts/world/dungeon_entrance.gd`:
+  bloque negro placeholder con `Area2D`; F entra en la mazmorra.
+- `WorldGenerator` coloca una puerta fija en el chunk 0 y una tirada por chunk, sin
+  mover enemigos, monedas ni decor; `DungeonLayer` (`scenes/game.tscn`) oculta y pausa
+  el mundo, instancia `dungeon.tscn` y la salida devuelve al jugador al mismo punto.
+- `docs/dungeon.md`; pendiente F5 de Ruben y la persistencia por piso (T-0080).
+
 ## 2026-11-24 · `buffy` · Interior explorable MVP (T-0079)
 
 - `scenes/structures/dungeon.tscn` + `scripts/world/dungeon_generator.gd`: mazmorra de 2

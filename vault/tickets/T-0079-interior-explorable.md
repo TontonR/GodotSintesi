@@ -54,7 +54,7 @@ Hecho el 2026-11-24 (`buffy`) en `feat/estructura-explorable`; queda F5/F6 de Ru
 - `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd`: F6, teclas 1/2,
   imprime `Dungeon: exit requested on floor N.`.
 - `save_state()`/`load_state()`: `{seed, floor}`; sin tocar `save_game.gd`.
-- No se toca `world_generator.gd`: la puerta mundo→mazmorra y la persistencia por piso
-  quedan para T-0080 (hija + mundo oculto, o `change_scene` + autoload).
+- La puerta mundo→mazmorra se hizo en T-0087 (misma rama y PR); el estado por piso
+  sigue pendiente (T-0080).
 - **No hay Godot CLI en la sesión**: no se pudo ejecutar F6 ni comparar layouts; el repaso
   fue de código. F6/F5 pendiente de Ruben.

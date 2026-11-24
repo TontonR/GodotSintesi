@@ -139,6 +139,12 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Height above the ground where coins spawn: they then fall, bounce and
 ## settle with their own gravity (`scripts/collectables/coin.gd`).
 @export var coin_spawn_height: float = 40.0
+## Dungeon door scene placed in the world; F inside its area enters the dungeon.
+@export var dungeon_entrance_scene: PackedScene = preload("res://scenes/structures/dungeon_entrance.tscn")
+## Chance of an extra door per chunk after chunk 0 (0 = only the guaranteed one).
+@export var dungeon_entrance_chance: float = 0.2
+## Tiles after `safe_start_tiles` where the first door always appears (chunk 0).
+@export var first_dungeon_entrance_offset_tiles: int = 8
 
 @export_group("Decor")
 ## Decor names the biomes use in `Biome.decor_kinds` (same order as the arrays below).
@@ -857,7 +863,24 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# one processed ends up painted first (rocks), then trees, then bushes.
 	decor.sort_custom(_decor_draws_before)
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "biome": biome, "tints": biome_data["tints"]}
+	# Dungeon doors are rolled last, after enemies, coins and decor, so their
+	# positions never change (same reason as the coins).
+	var entrances: Array[Dictionary] = []
+	var entrance_x := -1
+	if coord.x == 0:
+		entrance_x = clampi(
+			safe_start_tiles + first_dungeon_entrance_offset_tiles, min_x, max_x
+		)
+	elif rng.randf() < dungeon_entrance_chance:
+		entrance_x = rng.randi_range(min_x, max_x)
+	if entrance_x >= 0 and dungeon_entrance_scene != null:
+		var global_tile := coord.x * chunk_width_tiles + entrance_x
+		entrances.append({
+			"position": Vector2(entrance_x * TILE_SIZE + TILE_SIZE * 0.5, heights[entrance_x] * TILE_SIZE),
+			"seed": int(_seed) ^ (global_tile * 7919),
+		})
+
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "entrances": entrances, "biome": biome, "tints": biome_data["tints"]}
 
 
 ## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
@@ -1132,6 +1155,14 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		chunk.entities.add_child(coin)
 		if coin.has_signal("collected"):
 			coin.connect("collected", _on_coin_collected.bind(spawn_id))
+
+	for entry in data.get("entrances", []):
+		var entrance := dungeon_entrance_scene.instantiate() as DungeonEntrance
+		if entrance == null:
+			continue
+		entrance.position = entry["position"]
+		entrance.dungeon_seed = int(entry["seed"])
+		chunk.entities.add_child(entrance)
 
 
 ## Distance from the origin to the body collider base (to rest it on the ground).
