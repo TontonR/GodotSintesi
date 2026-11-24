@@ -835,3 +835,30 @@ Formato de entrada:
   `scenes/game.tscn` arranca 180 frames sin errores.
 - Abierto **T-0086** para las texturas de caja de PixelForge; el prompt va aparte y el PNG
   entra por mí. F5 pendiente.
+
+## 2026-11-24 · `buffy` · T-0079 interior explorable (MVP)
+
+- Abierto T-0079 y rama `feat/estructura-explorable` desde `main` `ccbae38` en un worktree
+  aparte: el checkout compartido tiene T-0076 de `opencode-jorge` sin commitear y no se ha
+  tocado.
+- Mazmorra autónoma nueva: 2 pisos con semilla, salas de anchos variables separadas por
+  muros con puerta,
+  `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros (`{seed, floor}`).
+- Ficheros: `scripts/world/dungeon_generator.gd`, `scripts/world/dungeon_test.gd`,
+  `scenes/structures/dungeon.tscn`, `scenes/structures/dungeon_test.tscn`,
+  `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/T-0079-interior-explorable.md`.
+- Pendiente: la puerta mundo→mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
+  el estado por piso, para T-0080. F6 de Ruben sobre `dungeon_test.tscn`.
+
+## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
+
+- Puerta negra placeholder (`scenes/structures/dungeon_entrance.tscn`) repartida por
+  `WorldGenerator`: una fija junto al spawn del chunk 0 y una tirada por chunk (0.2),
+  después de enemigos, monedas y decor para no mover sus posiciones.
+- F sobre el área entra: `DungeonLayer` (`scenes/game.tscn`) oculta y pausa `map`,
+  instancia `dungeon.tscn` y la salida devuelve al jugador al mismo punto, sin recargar
+  la escena (vida, monedas, inventario y semilla se conservan).
+- Ficheros: `scripts/world/dungeon_entrance.gd`, `scripts/world/dungeon_layer.gd`,
+  `scenes/structures/dungeon_entrance.tscn`, `scripts/world_generator.gd`,
+  `scenes/game.tscn`, `docs/dungeon.md`, `vault/tickets/T-0087-entrada-mazmorra.md`.
+- Pendiente F5/F6 de Ruben; guardar dentro de la mazmorra sigue siendo T-0080.

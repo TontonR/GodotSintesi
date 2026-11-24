@@ -1,25 +1,25 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-24 por `opencode-jorge`_
+_Actualizado 2026-11-24 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/bloques-rompibles` (T-0076) encima de `feat/estructuras-chunk` (`bcf1e2a`), que aún no está en `main` |
-| Árbol | T-0076 en `revision` (caja rompible + guardado + docs); `feat/estructuras-chunk` también en `revision` (F5 de T-0074/T-0075) |
-| Fase | Reparto en 3 agentes: opencode (planning + testeo + cajas rompibles), Freebuff (estructura explorable) y PixelForge (arte). Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de T-0074/T-0075/T-0076; T-0079 explorable (Freebuff) y T-0086 texturas de caja (PixelForge); luego T-0078 (tienda) según [`planning-estructuras.md`](planning-estructuras.md) |
+| Rama | `test/fusion-structure`: fusión de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087), sobre `main` `ccbae38` |
+| Árbol | Todo en `revision` tras el merge: estructuras/ruinas, cajas rompibles y mazmorra con su entrada; el interior usa el tileset de ruinas. F5 pendiente |
+| Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5 de la rama de fusión (ruinas + cajas + puerta/mazmorra), PR único a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `humano-ruben` | F5 y merge; decisiones de diseño | — |
-| `opencode-jorge` | T-0076 cajas rompibles (hecho, pendiente F5) + testeo headless de los PRs | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` |
-| `buffy` | T-0079 interior explorable (MVP) | `scenes/structures/`, `scripts/world/dungeon_generator.gd`, `docs/dungeon.md` |
-| `pixelforge` | T-0086 texturas de caja rompible (local, entrega vía Ruben) | `assets/map/structures/crate_*.png` |
+| `humano-ruben` | F5 de la fusión; decisiones de diseño | — |
+| `opencode-jorge` | T-0076 cajas rompibles (hecho, pendiente F5) + testeo headless | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` |
+| `buffy` | T-0079/T-0087 mazmorra, entrada y fusión de ramas | `scenes/structures/`, `scripts/world/dungeon_*.gd`, `scripts/world_generator.gd`, `scenes/game.tscn`, `docs/dungeon.md` |
+| `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 
@@ -50,3 +50,4 @@ _Actualizado 2026-11-24 por `opencode-jorge`_
 - 16 enemigos por chunk maduro: si baja el rendimiento, `enemy_ramp_max_multiplier` y `decor_per_chunk` son las palancas.
 - Las cajas rompibles son sólidas y solo salen en las ruinas y a partir del chunk 1: el chunk 0 (spawn) se queda sin cajas para no encerrar al jugador. Si se mueve el spawn, revisar `_crate_tiles()`.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y `DISABLED_ENEMY_SCENES`.
+- La mazmorra (T-0079/T-0087) es autónoma: `DungeonLayer` oculta y pausa `map`, pero guardar dentro sigue apuntando a coordenadas de mazmorra; la persistencia por piso es T-0080.

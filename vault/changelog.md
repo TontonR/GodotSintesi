@@ -2,6 +2,25 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
+
+- `scenes/structures/dungeon_entrance.tscn` + `scripts/world/dungeon_entrance.gd`:
+  bloque negro placeholder con `Area2D`; F entra en la mazmorra.
+- `WorldGenerator` coloca una puerta fija en el chunk 0 y una tirada por chunk, sin
+  mover enemigos, monedas ni decor; `DungeonLayer` (`scenes/game.tscn`) oculta y pausa
+  el mundo, instancia `dungeon.tscn` y la salida devuelve al jugador al mismo punto.
+- `docs/dungeon.md`; pendiente F5 de Ruben y la persistencia por piso (T-0080).
+
+## 2026-11-24 · `buffy` · Interior explorable MVP (T-0079)
+
+- `scenes/structures/dungeon.tscn` + `scripts/world/dungeon_generator.gd`: mazmorra de 2
+  pisos con semilla, salas separadas por muros con puerta, sin arte nuevo (tiles de
+  `ground_tile.png`),
+  `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros.
+- `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd` (F6; teclas 1/2).
+- `docs/dungeon.md` nuevo + fila en el índice de `AGENTS.md`. Pendiente F6 de Ruben.
+- Sin tocar `world_generator.gd`: la puerta desde el mundo queda para T-0080.
+
 ## 2026-11-24 · `feat/bloques-rompibles` — cajas rompibles en las ruinas
 
 | Qué | Dónde | Ticket |
