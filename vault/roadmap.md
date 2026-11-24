@@ -23,6 +23,8 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
 | [T-0075](tickets/T-0075-estructuras-bloques.md) | mundo | Estructuras por bloques (tipo 2) con bloque gris de prueba: patrón en el `.tres` y ruina de prueba | `revision` |
+| [T-0091](tickets/T-0091-arreglar-tilemap-castillo.md) | mundo | Arreglar el tilemap del interior del castillo: remates, salas, ventanas y vigas del pack | `abierto` |
+| [T-0092](tickets/T-0092-investigar-sprite-fusion.md) | docs | Investigar Sprite Fusion: export a Godot, MCP/API de pixel art, coste y claves | `abierto` |
 | `T-0076` | mundo | Bloques rompibles con drop y estado persistido (previsto) | `abierto` |
 | `T-0077` | mundo | Enemigos exclusivos y loot table por estructura simple (previsto) | `abierto` |
 | `T-0078` | mundo/UI | Tienda: zona segura, stock, precios y UI (previsto; bloqueado por decisiones) | `bloqueado` |
