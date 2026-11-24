@@ -2,6 +2,16 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `buffy` · Interior explorable MVP (T-0079)
+
+- `scenes/structures/dungeon.tscn` + `scripts/world/dungeon_generator.gd`: mazmorra de 2
+  pisos con semilla, salas separadas por muros con puerta, sin arte nuevo (tiles de
+  `ground_tile.png`),
+  `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros.
+- `scenes/structures/dungeon_test.tscn` + `scripts/world/dungeon_test.gd` (F6; teclas 1/2).
+- `docs/dungeon.md` nuevo + fila en el índice de `AGENTS.md`. Pendiente F6 de Ruben.
+- Sin tocar `world_generator.gd`: la puerta desde el mundo queda para T-0080.
+
 ## 2026-11-17 · `buffy` · Merge de T-0054 y limpieza de ramas
 
 | Qué | Dónde | Ticket |

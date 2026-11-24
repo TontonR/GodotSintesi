@@ -676,3 +676,17 @@ Formato de entrada:
 - Se crean los 14 objetos de arquero, esqueleto, fantasma y demonio, con sistemas nuevos para arco, invulnerabilidad, teleport, saltos, rata y DOT.
 - Se añaden al `item_drops` de `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
 - Ficheros: `scripts/collectables/*.gd`, `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, escenas de enemigos y docs.
+
+## 2026-11-24 · `buffy` · T-0079 interior explorable (MVP)
+
+- Abierto T-0079 y rama `feat/estructura-explorable` desde `main` `ccbae38` en un worktree
+  aparte: el checkout compartido tiene T-0076 de `opencode-jorge` sin commitear y no se ha
+  tocado.
+- Mazmorra autónoma nueva: 2 pisos con semilla, salas de anchos variables separadas por
+  muros con puerta,
+  `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros (`{seed, floor}`).
+- Ficheros: `scripts/world/dungeon_generator.gd`, `scripts/world/dungeon_test.gd`,
+  `scenes/structures/dungeon.tscn`, `scenes/structures/dungeon_test.tscn`,
+  `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/T-0079-interior-explorable.md`.
+- Pendiente: la puerta mundo→mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
+  el estado por piso, para T-0080. F6 de Ruben sobre `dungeon_test.tscn`.
