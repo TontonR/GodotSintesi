@@ -813,3 +813,25 @@ Formato de entrada:
   `tileset`; `ruin_test.tres` apunta al nuevo recurso.
 - El tintado del musgo se aplica duplicando el TileSet (`_structure_tileset()`), así que
   los polígonos de colisión se conservan.
+
+## 2026-11-24 · `opencode-jorge` · Reparto de agentes y T-0076 (cajas rompibles)
+
+- Ruben reparte el trabajo: opencode (planning + testeo + cajas rompibles), Freebuff
+  (estructura explorable, T-0079) y PixelForge (arte, T-0086). Yo dirijo a PixelForge.
+- Reclamo **T-0076** (fase A del planning): cajas de madera dentro de las ruinas con
+  vida, drop de monedas y estado "ya roto" persistido.
+- Ficheros: `scripts/world/breakable_block.gd` (nuevo),
+  `scenes/world/breakable_block.tscn` (nuevo), `scripts/world_generator.gd`,
+  `docs/world.md`.
+- Arte definitivo: PixelForge (T-0086); de momento un placeholder de 16×16.
+
+## 2026-11-24 · `opencode-jorge` · T-0076 hecho (revision) y prompt para PixelForge
+
+- Cajas rompibles en las ruinas: `BreakableBlock` (40 de vida, 1–3 monedas, señal
+  `broken`), colocadas por `_crate_tiles()` (chunk 0 fuera) y persistidas en
+  `world/broken` (`save_game.gd` guarda y carga la clave).
+- Comprobado en headless (semilla 775344231, chunks 1–40): 18 cajas en 10 ruinas, 0 mal
+  colocadas; la ruta real de spawn monta la caja en su fila de suelo (chunk 4);
+  `scenes/game.tscn` arranca 180 frames sin errores.
+- Abierto **T-0086** para las texturas de caja de PixelForge; el prompt va aparte y el PNG
+  entra por mí. F5 pendiente.

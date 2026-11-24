@@ -1,24 +1,25 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-18 por `opencode-jorge`_
+_Actualizado 2026-11-24 por `opencode-jorge`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/estructuras-chunk` con T-0074 (código hecho, sin commit) sobre `main` `ccbae38` |
-| Árbol | T-0074 sin commitear: estructura + biomas + docs + vault. `.obsidian/` en `.gitignore` |
-| Fase | T-0074 en `revision` y T-0075 (estructuras por bloques con bloque gris de prueba) en `revision`; falta F5 de ambos. Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de T-0074/T-0075; commit + PR; después T-0076 (bloques rompibles), T-0078 (tienda) y T-0079–T-0081 (explorable) según [`planning-estructuras.md`](planning-estructuras.md) |
+| Rama | `feat/bloques-rompibles` (T-0076) encima de `feat/estructuras-chunk` (`bcf1e2a`), que aún no está en `main` |
+| Árbol | T-0076 en `revision` (caja rompible + guardado + docs); `feat/estructuras-chunk` también en `revision` (F5 de T-0074/T-0075) |
+| Fase | Reparto en 3 agentes: opencode (planning + testeo + cajas rompibles), Freebuff (estructura explorable) y PixelForge (arte). Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5 de T-0074/T-0075/T-0076; T-0079 explorable (Freebuff) y T-0086 texturas de caja (PixelForge); luego T-0078 (tienda) según [`planning-estructuras.md`](planning-estructuras.md) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
 
 | Agente | Trabajando en | Ficheros que toca |
 |---|---|---|
-| `humano-ruben` | Estructuras (bloques y explorable) y tienda, con F5 | `scripts/world/*`, `scenes/world/*`, `scripts/world_generator.gd`, `docs/world.md`, `docs/biomes.md` |
-| `opencode-jorge` | Enemigos y objetos nuevos de estructura, y arte (texturas y sonidos) | `scenes/enemies/*`, `scripts/enemies/*`, `resources/*.tres`, `assets/` |
-| `buffy` | T-0074 código terminado por `opencode-jorge`, pendiente de F5 | `scripts/world/structure.gd`, `scripts/world_generator.gd`, `scripts/world/biome.gd`, `resources/world/structures/`, `assets/map/structures/`, `docs/world.md`, `docs/biomes.md` |
+| `humano-ruben` | F5 y merge; decisiones de diseño | — |
+| `opencode-jorge` | T-0076 cajas rompibles (hecho, pendiente F5) + testeo headless de los PRs | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` |
+| `buffy` | T-0079 interior explorable (MVP) | `scenes/structures/`, `scripts/world/dungeon_generator.gd`, `docs/dungeon.md` |
+| `pixelforge` | T-0086 texturas de caja rompible (local, entrega vía Ruben) | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
 
@@ -26,6 +27,7 @@ _Actualizado 2026-11-18 por `opencode-jorge`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-24 | T-0076 | Cajas rompibles en las ruinas: 40 de vida, 1–3 monedas, "ya roto" en `world/broken`; F5 pendiente |
 | 2026-11-17 | T-0054 | 14 objetos de arquero, esqueleto, fantasma y demonio: arco cargado, invulnerabilidad, teleport, rata invulnerable, DOT de quemadura y loot en cuatro enemigos |
 | 2026-11-17 | T-0073 | Editor web local de `vault/items`: landing con filtros por estado y edición de nombre, textura, habilidad y valores |
 | 2026-11-17 | T-0072 | Inventario: fuentes más pequeñas, descripción que no estira la ventana y slots de tamaño fijo con el icono adaptado |
@@ -46,4 +48,5 @@ _Actualizado 2026-11-18 por `opencode-jorge`_
 - Los iconos son definitivos, pero el arte puede cambiar: `docs/items.md` los marca `assigned icon` y `vault/items.md` `icono asignado`.
 - Las estructuras son placeholders: `assets/map/structures/*.png` se importan como textura (`.import` versionado) y el bioma las elige por `display_name`, así que renombrar una en su `.tres` rompe el `structure_kinds`.
 - 16 enemigos por chunk maduro: si baja el rendimiento, `enemy_ramp_max_multiplier` y `decor_per_chunk` son las palancas.
+- Las cajas rompibles son sólidas y solo salen en las ruinas y a partir del chunk 1: el chunk 0 (spawn) se queda sin cajas para no encerrar al jugador. Si se mueve el spawn, revisar `_crate_tiles()`.
 - Volver a meter fantasma/demonio exige tocar a la vez `enemy_scenes` y `enemy_counts_per_chunk` (mismo orden) y `DISABLED_ENEMY_SCENES`.

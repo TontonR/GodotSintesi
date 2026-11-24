@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · branch `feat/estructuras-chunk`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `feat/bloques-rompibles`_
 
 ## What it does and where it lives
 
@@ -108,6 +108,25 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   nothing destroys structures, so a reload rebuilds the same ones from the seed.
 - To add one: create the `.tres`, add it to `WorldGenerator.structures`, name it in a
   biome's `structure_kinds`.
+
+## Breakable blocks (2026-11-24, T-0076)
+
+- `scripts/world/breakable_block.gd` (`BreakableBlock`, `StaticBody2D`) +
+  `scenes/world/breakable_block.tscn`: the wooden crate. Origin at its bottom-left, 16×16
+  sprite and box, `collision_layer = 5` (world + enemies) so the player's sword hitbox
+  (mask 12) reaches it, `collision_mask = 0` so it never pushes anything.
+- `WorldGenerator.crate_scene` and `crates_per_ruin` (2): `_crate_tiles()` rolls free
+  columns inside each type 2 ruin, on the ground row, skipping the solid front stones,
+  the tiles next to them (a crate must not seal a gap), the enemies' X and chunk 0 (the
+  spawn). Same chunk RNG as the layout, so a seed rebuilds the same crates.
+- `take_damage()` is the entry point the player already uses for non-enemy targets:
+  40 HP, so two 20-damage hits; each hit flashes it and puffs dust. Breaking it drops
+  1–3 coins (the enemies' `coin.tscn`) and emits `broken(id)`.
+- Persistence: stable id `b:chunk_x:chunk_y:tile_x` in `_broken_blocks`, saved as
+  `broken` next to `defeated`/`collected`; a broken crate is skipped when the chunk is
+  rebuilt. Coins dropped at runtime are not persisted, like the enemies' drops.
+- Texture: `assets/map/structures/crate.png`, a 16×16 placeholder. The final art comes
+  from PixelForge (T-0086) and only swaps that PNG.
 
 ## Ambient per biome (2026-11-05)
 

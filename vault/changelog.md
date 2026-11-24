@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `feat/bloques-rompibles` — cajas rompibles en las ruinas
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `BreakableBlock` (40 de vida, 1–3 monedas al romperse, "ya roto" persistido) colocado por `crates_per_ruin` dentro de las ruinas; clave `world/broken` en el guardado | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` | [T-0076](tickets/T-0076-bloques-rompibles.md) |
+
 ## 2026-11-18 · `opencode-jorge` · Estructuras por chunk (T-0074)
 
 - `WorldStructure` (`scripts/world/structure.gd`) y 2 `.tres` de prueba con PNG

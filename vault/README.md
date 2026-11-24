@@ -37,6 +37,7 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 |---|---|
 | `buffy` | Buffy, agente de Freebuff |
 | `opencode-jorge` | opencode del compañero (Jorge) |
+| `pixelforge` | PixelForge, agente local de arte (Ollama/ComfyUI) |
 | `humano-ruben` | Ruben, decisiones de diseño y merge |
 
 ## Estados de un ticket

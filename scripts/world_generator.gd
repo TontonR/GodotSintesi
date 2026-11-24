@@ -182,6 +182,12 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ]
 ## Minimum gap in tiles between two structures of the same chunk.
 @export var structure_min_gap_tiles: int = 3
+
+@export_group("Breakables")
+## Crate scene spawned inside the type 2 ruins (T-0076).
+@export var crate_scene: PackedScene = preload("res://scenes/world/breakable_block.tscn")
+## Crates rolled per ruin; 0 disables them.
+@export var crates_per_ruin: int = 2
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -202,6 +208,8 @@ var _clamped_heights: Dictionary = {}
 var _clamped_last: Dictionary = {}
 var _defeated_spawns: Dictionary = {}
 var _collected_spawns: Dictionary = {}
+## Crates already broken, by stable id (`b:chunk_x:chunk_y:tile_x`).
+var _broken_blocks: Dictionary = {}
 var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
@@ -546,6 +554,7 @@ func save_persistent_state() -> Dictionary:
 	return {
 		"defeated": PackedStringArray(_defeated_spawns.keys()),
 		"collected": PackedStringArray(_collected_spawns.keys()),
+		"broken": PackedStringArray(_broken_blocks.keys()),
 	}
 
 
@@ -554,6 +563,8 @@ func _restore_persistent_state() -> void:
 		_defeated_spawns[String(id)] = true
 	for id in SaveGame.data.get("collected", []):
 		_collected_spawns[String(id)] = true
+	for id in SaveGame.data.get("broken", []):
+		_broken_blocks[String(id)] = true
 
 
 ## Biome index of a block. The first run is the safe zone with the first biome.
@@ -1108,6 +1119,9 @@ func _roll_structures(
 			entry["cells"] = built["cells"]
 			entry["front"] = built["front"]
 			entry["front_tiles"] = built["front_tiles"]
+			entry["crates"] = _crate_tiles(
+				coord, local_x - half, width, built["front"], enemies, rng
+			)
 		placed.append(entry)
 	return placed
 
@@ -1154,6 +1168,41 @@ func _blocks_cells(
 					front.append(Vector2(tile_x * TILE_SIZE, (ground_row - 1) * TILE_SIZE))
 					front_tiles.append(_pick_tile(BlockStructure.SUPPORT_TILES, rng))
 	return {"cells": cells, "front": front, "front_tiles": front_tiles}
+
+
+## Free ground columns inside a ruin for the breakable crates: never on a solid
+## front stone, right next to one (a crate would seal the gap) or on an enemy,
+## and never in chunk 0, which holds the spawn.
+func _crate_tiles(
+		coord: Vector2i,
+		left: int,
+		length: int,
+		front: Array,
+		enemies: Array[Dictionary],
+		rng: RandomNumberGenerator
+) -> Array:
+	var tiles: Array = []
+	if crates_per_ruin <= 0 or coord.x == 0 or length <= 0:
+		return tiles
+	var blocked := {}
+	for cell in front:
+		blocked[floori(cell.x / float(TILE_SIZE))] = true
+	for enemy in enemies:
+		blocked[roundi(float(enemy["position"].x) / float(TILE_SIZE))] = true
+	var used := {}
+	for _i in range(crates_per_ruin):
+		for _attempt in range(6):
+			var tile_x := left + rng.randi_range(0, length - 1)
+			if tile_x < 0 or tile_x >= chunk_width_tiles:
+				continue
+			if used.has(tile_x) or blocked.has(tile_x):
+				continue
+			if blocked.has(tile_x - 1) or blocked.has(tile_x + 1):
+				continue
+			used[tile_x] = true
+			tiles.append({"id": "b:%d:%d:%d" % [coord.x, coord.y, tile_x], "x": tile_x})
+			break
+	return tiles
 
 
 func _pattern_at(structure: WorldStructure, row: int, col: int, mark: String) -> bool:
@@ -1445,6 +1494,27 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		chunk.add_child(node)
 		chunk.move_child(node, 0)
 
+	# Breakable crates of the ruins (T-0076): on the ground row, in front of the
+	# dark wall. Broken ones are skipped through their persisted id.
+	if crate_scene != null:
+		for entry in structures_here:
+			for crate_entry in entry.get("crates", []):
+				var crate_id: String = crate_entry["id"]
+				if _broken_blocks.has(crate_id):
+					continue
+				var crate := crate_scene.instantiate() as BreakableBlock
+				if crate == null:
+					continue
+				var tile_x := int(crate_entry["x"])
+				crate.name = "Crate_%s" % crate_id.replace(":", "_")
+				crate.spawn_id = crate_id
+				crate.position = Vector2(
+					tile_x * TILE_SIZE,
+					int(data["heights"][tile_x]) * TILE_SIZE
+				)
+				chunk.entities.add_child(crate)
+				crate.broken.connect(_on_crate_broken)
+
 	for entry in data["enemies"]:
 		var spawn_id: String = entry["id"]
 		if _defeated_spawns.has(spawn_id):
@@ -1494,3 +1564,8 @@ func _on_enemy_died(spawn_id: String) -> void:
 
 func _on_coin_collected(spawn_id: String) -> void:
 	_collected_spawns[spawn_id] = true
+
+
+## A broken crate stays broken for the rest of the run, like a defeated enemy.
+func _on_crate_broken(spawn_id: String) -> void:
+	_broken_blocks[spawn_id] = true

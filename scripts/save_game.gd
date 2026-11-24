@@ -138,6 +138,7 @@ static func save_run(world: Node, player: Node) -> bool:
 	var state: Dictionary = world.call("save_persistent_state")
 	config.set_value("world", "defeated", state.get("defeated", PackedStringArray()))
 	config.set_value("world", "collected", state.get("collected", PackedStringArray()))
+	config.set_value("world", "broken", state.get("broken", PackedStringArray()))
 	return config.save(slot_path(current_slot)) == OK
 
 
@@ -159,6 +160,7 @@ static func request_load(slot: int) -> bool:
 		"passives": Array(config.get_value("passives", "items", PackedStringArray())),
 		"defeated": Array(config.get_value("world", "defeated", PackedStringArray())),
 		"collected": Array(config.get_value("world", "collected", PackedStringArray())),
+		"broken": Array(config.get_value("world", "broken", PackedStringArray())),
 	}
 	pending_load = true
 	return true
