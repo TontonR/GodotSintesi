@@ -1,6 +1,6 @@
 # Biomes — resources, runs and tinting
 
-_2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13_
+_2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18_
 
 ## What it does and where it lives
 
@@ -25,6 +25,8 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13_
 | `decor_per_chunk` | Decor sprites per chunk (0 = generator fallback, 16) |
 | `decor_kinds` | Decor names from `WorldGenerator.decor_names` |
 | `decor_weights` | Weight per kind (same order; empty = all 1) |
+| `structure_kinds` | Structure `display_name`s from `WorldGenerator.structures` |
+| `structure_chances` | Chance per chunk of each kind (same order; each one rolls alone) |
 | `ambient` | `"none"`, `"leaves"` or `"snow"` |
 | `spawn_weight` | Relative weight for the order roll |
 | `min_distance_tiles` | Distance from tile 0 before the biome can appear |
@@ -63,6 +65,22 @@ canopy almost twice as thick per chunk. Full reference: [`decor.md`](decor.md).
 `bosque_rojo.tres` still has `enemy_counts = [1, 1, 1, 2]` with only two scenes; the loop
 stops at `scenes.size()`, so the last two counts are ignored. If the demon/slimes are meant
 to come back, their scenes must be added first.
+
+## Structures per biome (2026-11-18, T-0074)
+
+Like decor, the biome decides which structures its chunks can get. Unlike decor, **each
+structure rolls independently**: one roll per chunk and kind, so a chunk may get none,
+one or several of them, never two of the same.
+
+| Biome | Kinds (chance per chunk) |
+|---|---|
+| Meadow | Test Tower 15 %, Test Ruin 25 % |
+| Red Forest | Test Ruin 30 % |
+| Snow | — |
+
+The kinds are the `display_name`s of `WorldGenerator.structures`; an unknown name is
+skipped. A biome that lists nothing places nothing. Full reference:
+[`world.md`](world.md) § Structures.
 
 ## How runs are decided
 

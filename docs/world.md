@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · branch `main`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `feat/bloques-rompibles`_
 
 ## What it does and where it lives
 
@@ -77,6 +77,56 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   (the red forest is mostly red, with some orange and yellow); rocks and the dead tree are
   not tinted. Bushes bend and drop a few leaves when the player walks through them.
   Full reference: [`docs/decor.md`](decor.md).
+
+## Structures (2026-11-18, T-0074)
+
+- `scripts/world/structure.gd` (`class_name WorldStructure`, `Resource`): `display_name`,
+  optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width,
+  0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `weight`,
+  `min_distance_tiles` and `biomes` (by `Biome.display_name`; empty = all).
+- Three kinds of structure, decided by the resource's fields: `scene` (a full scene), `texture` (one sprite) or **`pattern`** (type 2, blocks). The pattern is one string per row from top to bottom, `#` = block; any other character is empty. It repeats horizontally to a random length between `min_length_tiles` and `max_length_tiles` (20–50 for the ruin), and each column rests on **its own** ground row, so the wall follows the terrain.
+- **TileSet, not code** (2026-11-19): the pattern is painted by `scripts/world/block_structure.gd`, a `TileMapLayer` using `WorldStructure.tileset` (`resources/world/structures/ruin_tileset.tres`), so the atlas, the tiles and their collision are edited in the TileSet editor like the ground. Two sources: `0` dark atlas = background wall (`z_index` behind `Solid`/`GrassPaint` and the decor, moved to child index 0), `1` light atlas = the solid ground stones. The background is **bricks only**: stone tiles (8-13) are reserved for the front layer (kept in the atlas for reuse).
+- **Collision only on the ground**: source `1` paints just the bottom pattern row. Two sources, both at ground level so nothing floats: a bottom wall block becomes a stone with `front_chance` (0.25), and an empty bottom column with wall above gets a support beam with `support_chance` (0.6). No collidable block is ever above the first row, so all of them can be jumped over/onto. They are one node in front of the wall, `z_index` 0; the collision is the TileSet's physics layer (tiles 8, 9, 11 and 12), not a `StaticBody2D` built by code.
+- Atlases: `assets/map/structures/ruin_tiles.png` (light) and `ruin_tiles_dark.png` (same layout, darker), 8×2 tiles of 16 px, matte: near-black bricks with teal grout (6 bright, 7 dim) and chunky slate blocks in big/long/small × light/dark, plus the mossy set. 14-15 are the mossy brick tops. `scripts/world/block_structure.gd`: `WALL_TILES` (bricks) with a hash of the cell so a reload picks the same, `TOP_TILES` when the tile above is empty, `STONE_TILES`/`SUPPORT_TILES` for the solid ground layer (the only user of `cell_tiles`; `-1` means "pick from the wall pool"). To retune the look or the hitboxes, edit `ruin_tileset.tres` in Godot: the dark source has no physics, the light one has a polygon on 8/9/11/12.
+- The test resources live in `resources/world/structures/`: `tower_test.tres` is still a 16×16 sprite, and `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`). The generator preloads both in `WorldGenerator.structures`.
+- **The biome decides**: `structure_kinds` (the structures' `display_name`) and
+  `structure_chances` (same order). **Each structure rolls on its own per chunk**, so a
+  chunk can get none, some or all of them, but never two of the same; a chance of 0 or an
+  absent kind means it never appears. Meadow: tower 0.15 / ruin 0.25, red forest: ruin 0.30,
+  snow: none.
+- Rolled **after** enemies, coins and decor with the same chunk RNG, so their positions
+  never shift; a chance is consumed for every kind even when it fails. A chunk's X is tried
+  up to 8 times to keep `block_width()` clear of the chunk edges (`margin_tiles`), of the
+  other structures (`structure_min_gap_tiles`) and of the enemies' X. Sprites sit on the
+  **lowest** column of their span (on a hill they are partly hidden behind `Solid`, but
+  never float); patterns use each column's ground.
+- **Decor and tint** (2026-11-19): a decor entry whose tile falls inside a structure span (`x ± half`) is dropped, so nothing grows out of a ruin. Each structure gets a `tint` from `_decor_tint_at()` (the biome's `decor_colors`, same as the foliage) and its atlases are recolored with `_tinted_texture(source, tint, 24, 12)`: only pixels clearly greener than red/blue change, so the teal brick grout stays teal and only the moss takes the biome hue. Cached in `_decor_tint_cache`.
+- Each one is a chunk child, no parallax. Sprites keep the texture scale from
+  `size_tiles`/`pixel_size` and sit on the **lowest** column of their span (on a hill they
+  are partly hidden behind `Solid`, but never float); patterns use each column's ground.
+  Stable id `s:x:y:index` (node metadata) but **not persisted**:
+  nothing destroys structures, so a reload rebuilds the same ones from the seed.
+- To add one: create the `.tres`, add it to `WorldGenerator.structures`, name it in a
+  biome's `structure_kinds`.
+
+## Breakable blocks (2026-11-24, T-0076)
+
+- `scripts/world/breakable_block.gd` (`BreakableBlock`, `StaticBody2D`) +
+  `scenes/world/breakable_block.tscn`: the wooden crate. Origin at its bottom-left, 16×16
+  sprite and box, `collision_layer = 5` (world + enemies) so the player's sword hitbox
+  (mask 12) reaches it, `collision_mask = 0` so it never pushes anything.
+- `WorldGenerator.crate_scene` and `crates_per_ruin` (2): `_crate_tiles()` rolls free
+  columns inside each type 2 ruin, on the ground row, skipping the solid front stones,
+  the tiles next to them (a crate must not seal a gap), the enemies' X and chunk 0 (the
+  spawn). Same chunk RNG as the layout, so a seed rebuilds the same crates.
+- `take_damage()` is the entry point the player already uses for non-enemy targets:
+  40 HP, so two 20-damage hits; each hit flashes it and puffs dust. Breaking it drops
+  1–3 coins (the enemies' `coin.tscn`) and emits `broken(id)`.
+- Persistence: stable id `b:chunk_x:chunk_y:tile_x` in `_broken_blocks`, saved as
+  `broken` next to `defeated`/`collected`; a broken crate is skipped when the chunk is
+  rebuilt. Coins dropped at runtime are not persisted, like the enemies' drops.
+- Texture: `assets/map/structures/crate.png`, a 16×16 placeholder. The final art comes
+  from PixelForge (T-0086) and only swaps that PNG.
 
 ## Ambient per biome (2026-11-05)
 

@@ -2,6 +2,23 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-24 · `feat/bloques-rompibles` — cajas rompibles en las ruinas
+
+| Qué | Dónde | Ticket |
+|---|---|---|
+| `BreakableBlock` (40 de vida, 1–3 monedas al romperse, "ya roto" persistido) colocado por `crates_per_ruin` dentro de las ruinas; clave `world/broken` en el guardado | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` | [T-0076](tickets/T-0076-bloques-rompibles.md) |
+
+## 2026-11-18 · `opencode-jorge` · Estructuras por chunk (T-0074)
+
+- `WorldStructure` (`scripts/world/structure.gd`) y 2 `.tres` de prueba con PNG
+  placeholder: el bioma decide cuántas y cuáles, el generador las coloca por chunk con la
+  semilla, apoyadas en el suelo, con márgenes y sin pisar la X de los enemigos.
+- Sin colisión ni parallax; detrás del decor y de `Solid`/`GrassPaint`.
+- Ficheros: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/`, `assets/map/structures/`,
+  `resources/world/biomes/{pradera,bosque_rojo}.tres`, `docs/world.md`, `docs/biomes.md`.
+- Pendiente de F5 (rama `feat/estructuras-chunk`).
+
 ## 2026-11-17 · `buffy` · Merge de T-0054 y limpieza de ramas
 
 | Qué | Dónde | Ticket |

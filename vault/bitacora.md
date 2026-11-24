@@ -676,3 +676,162 @@ Formato de entrada:
 - Se crean los 14 objetos de arquero, esqueleto, fantasma y demonio, con sistemas nuevos para arco, invulnerabilidad, teleport, saltos, rata y DOT.
 - Se añaden al `item_drops` de `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
 - Ficheros: `scripts/collectables/*.gd`, `scripts/player.gd`, `scripts/enemies/enemy_base.gd`, `resources/*.tres`, `scenes/collectables/player_arrow.tscn`, escenas de enemigos y docs.
+
+---
+
+## 2026-11-17 · `buffy` · Abierto T-0074: estructuras por chunk
+
+- Abierto [T-0074](tickets/T-0074-estructuras-por-chunk.md) a petición de Ruben: que se
+  puedan **añadir estructuras** (como recurso `.tres` o escena) a un bioma y que el
+  generador decida por chunk si salen, **con la semilla** como fuente del reparto.
+- Rama `feat/estructuras-chunk` sale de `main`; de momento **solo el ticket**, sin código
+  ni arte: el prototipo usará un placeholder cantoso.
+- Ficheros previstos: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/`, `docs/world.md`, `docs/biomes.md`.
+- Dudas en el ticket: colisión (no en el prototipo), textura vs escena y estructuras que
+  crucen chunks (fuera de alcance).
+
+---
+
+## 2026-11-18 · `opencode-jorge` · T-0074: estructuras por chunk implementadas
+
+- Continúo el [T-0074](tickets/T-0074-estructuras-por-chunk.md) abierto por `buffy` a
+  petición de Ruben: `WorldStructure` + 2 `.tres` de prueba con placeholder, roll por chunk
+  con la semilla, colocación con márgenes/separación y el bioma decidiendo cuántas y cuáles.
+- Ficheros: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
+  `scripts/world/biome.gd`, `resources/world/structures/*.tres`,
+  `assets/map/structures/*.png`, `resources/world/biomes/pradera.tres` y `bosque_rojo.tres`,
+  `docs/world.md`, `docs/biomes.md`.
+- Desvío: el número por chunk vive solo en el bioma (no en el recurso). Ticket en `revision`,
+  pendiente de F5; sin commit todavía.
+
+## 2026-11-18 · `opencode-jorge` · T-0074: una tirada por estructura (decisión de Ruben)
+
+- Ruben cambia el modelo: **no** una estructura por chunk, sino una tirada
+  independiente por estructura y chunk, con probabilidad por bioma. Un chunk puede no
+  tener ninguna o tener todas, nunca dos de la misma.
+- `Biome`: fuera `structures_per_chunk` y `structure_weights`, entra `structure_chances`.
+  `WorldStructure` pierde `weight` (el bioma es la única fuente de probabilidades).
+- Pradera torre 15 % / ruina 25 %, bosque rojo ruina 30 %, nieve nada.
+- Se documentan en `vault/ideas.md` § 5.1 los tres tipos de estructura (sprite único,
+  generación a bloques y explorable) con dificultad y estimación en horas.
+- Ficheros: `scripts/world_generator.gd`, `scripts/world/biome.gd`, `scripts/world/structure.gd`,
+  `resources/world/biomes/{pradera,bosque_rojo}.tres`, `resources/world/structures/*.tres`,
+  `docs/world.md`, `docs/biomes.md`, ticket T-0074.
+
+## 2026-11-18 · `opencode-jorge` · Super planning de estructuras y tienda al 2026-12-11
+
+- Ruben recalibra estimaciones (sprite ~1 h, bloques 4–8 h, explorable 15–30 h) y fija el
+  orden práctico: **tipo 2 (bloques) primero**, el tipo 1 cae de paso y el 3 se apoya en el 2.
+- Reparto: **Rubén** estructuras y tienda; **Jorge** enemigos/objetos nuevos y arte
+  (texturas y sonidos); agentes por ticket.
+- Nuevo [`planning-estructuras.md`](planning-estructuras.md): tipos, calendario con hitos
+  24 nov / 1 dic / 8 dic / 11 dic, backlog T-0075…T-0085 con estimaciones, ruta crítica,
+  decisiones pendientes (tienda), recortes y definición de "hecho".
+- Roadmap P1 lista los tickets previstos sin abrir; se crean al arrancar cada fase.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: estructuras por bloques (tipo 2)
+
+- Primera prueba del tipo 2: `WorldStructure.pattern` (rejilla de `#`) pintada como
+  bloques grises de prueba de 16 px, sin colisión, detrás del decor.
+- `ruin_test.tres` pasa a patrón 8×5; cada columna apoya en su propio suelo, así que la
+  ruina sigue el relieve en vez de flotar.
+- Ficheros: `scripts/world/structure.gd`, `scripts/world/block_structure.gd` (nuevo),
+  `scripts/world_generator.gd`, `resources/world/structures/ruin_test.tres`,
+  `docs/world.md`. Ticket T-0075 en `revision`, sin commit.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: atlas claro/oscuro y bloques sólidos
+
+- Arte propio en `assets/map/structures/ruin_tiles.png` (claro) y `ruin_tiles_dark.png`
+  (oscuro, derivado ×0.38/0.44/0.52): 8×2 tiles de 16 px con variedad de tono y musgo.
+- La ruina son dos capas: muro oscuro de fondo (`back_texture`, z −1, índice 0 del chunk)
+  y pocos bloques claros delante (`tile_texture`, z 0, `front_chance` 0.12 en las 2 filas
+  bajas) con `StaticBody2D` en la capa 1, una caja por tramo horizontal.
+- `BlockStructure` pinta del atlas con índice por hash de celda (mismo en cada recarga) y
+  usa tiles con musgo cuando no hay bloque encima. `block_color` queda de reserva.
+- Generador: `vault/estructuras/make_tiles.py` (escribe los dos PNG y el preview).
+- Sin commit; falta F5.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: texturas mate y sólidos solo en el suelo
+
+- Texturas rehechas: mismo estilo de bloques + ladrillos que funcionaba, pero **mate**
+  (fuera la línea de brillo) y con más color (piedra gris/fría/cálida/verde, ladrillo
+  gris/cálido/frío/oscuro/con musgo, coronación de ladrillo con musgo). La pared usa
+  sobre todo ladrillo; la piedra queda de acento.
+- Generación: los bloques con hitbox ya no están en las 2 filas bajas al azar. Solo hay
+  dos casos, ambos en la fila de suelo: piedras sueltas sobre un bloque de pared
+  (`front_chance` 0.25) y vigas de soporte que rellenan los huecos bajo el muro
+  (`support_chance` 0.6). Nada flota y todo se puede saltar.
+- `BlockStructure.cell_tiles` permite fijar el tile por celda (la capa de delante elige
+  entre piedra y viga); el muro sigue con hash de la celda y coronación con musgo.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: texturas según la referencia
+
+- Atlases rehechos al estilo de la referencia: ladrillo teal muy oscuro con junta verde
+  (dos variantes) y bloques de pizarra chunky en grande/largo/pequeño, claro/oscuro y con
+  musgo. Sigue siendo mate.
+- La pared es solo ladrillo; la fila de suelo del muro pinta piedra con musgo
+  (`FOUNDATION_TILES`), como la franja de la referencia. Los sólidos de delante usan
+  `STONE_TILES` y los soportes `SUPPORT_TILES`.
+- `BlockStructure.cell_tiles` acepta -1 = elegir ladrillo por hash.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: fondo solo de ladrillo
+
+- La pared de fondo ya no pinta piedra: todas las celdas son ladrillo (`WALL_TILES`);
+  los bloques 8-13 (piedra grande/larga/pequeña, clara y oscura, con musgo) se quedan en
+  el atlas y solo los usa la capa de delante con colisión.
+- `_blocks_cells()` deja de devolver `cell_tiles` para el fondo; `FOUNDATION_TILES`
+  eliminado. `BlockStructure.cell_tiles` sigue para la capa sólida.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: fuera decor dentro de ruinas y musgo por bioma
+
+- `_decor_outside_structures()` descarta el decor que cae dentro de `x ± half` de
+  cualquier estructura del chunk (se aplica después de tirar las estructuras).
+- Cada estructura guarda un `tint` de `_decor_tint_at()` y pinta sus atlas con
+  `_tinted_texture(source, tint, 24, 12)`; `_tint_foliage()` gana umbrales opcionales
+  para no teñir la junta teal del ladrillo y dejar el musgo con el color del bioma.
+  Resultado cacheado en `_decor_tint_cache`.
+
+## 2026-11-19 · `opencode-jorge` · crash al abrir el mundo (game.tscn con exports null)
+
+- `scenes/game.tscn` había quedado reserializado por el editor con **todas** las
+  propiedades del `map` (y de los demás nodos con script) a `null`, incluido
+  `chunk_scene = null`, así que `_load_chunk()` llamaba `instantiate()` sobre null.
+  El diff era solo líneas `= null`: restaurado con `git checkout -- scenes/game.tscn`.
+- Comprobado en headless (`godot --headless --path . res://scenes/game.tscn`) sin
+  errores, y otra pasada forzando `pradera` a 100 % de ruina (después revertido) para
+  ejecutar el camino de estructuras y el tintado del musgo.
+
+## 2026-11-19 · `opencode-jorge` · T-0075: ruinas como TileSet editable
+
+- `BlockStructure` pasa de `Node2D` con `_draw()` a **`TileMapLayer`**: la textura y la
+  colisión ya no se calculan por código, se editan en el editor.
+- Nuevo `resources/world/structures/ruin_tileset.tres` con dos fuentes: 0 = atlas oscuro
+  (muro, sin física) y 1 = atlas claro (piedras del suelo). La física de la fuente 1 está
+  en los tiles 8, 9, 11 y 12 (capa 1); el resto no tiene hitbox.
+- `WorldStructure` cambia `tile_texture`/`back_texture`/`block_color` por un único
+  `tileset`; `ruin_test.tres` apunta al nuevo recurso.
+- El tintado del musgo se aplica duplicando el TileSet (`_structure_tileset()`), así que
+  los polígonos de colisión se conservan.
+
+## 2026-11-24 · `opencode-jorge` · Reparto de agentes y T-0076 (cajas rompibles)
+
+- Ruben reparte el trabajo: opencode (planning + testeo + cajas rompibles), Freebuff
+  (estructura explorable, T-0079) y PixelForge (arte, T-0086). Yo dirijo a PixelForge.
+- Reclamo **T-0076** (fase A del planning): cajas de madera dentro de las ruinas con
+  vida, drop de monedas y estado "ya roto" persistido.
+- Ficheros: `scripts/world/breakable_block.gd` (nuevo),
+  `scenes/world/breakable_block.tscn` (nuevo), `scripts/world_generator.gd`,
+  `docs/world.md`.
+- Arte definitivo: PixelForge (T-0086); de momento un placeholder de 16×16.
+
+## 2026-11-24 · `opencode-jorge` · T-0076 hecho (revision) y prompt para PixelForge
+
+- Cajas rompibles en las ruinas: `BreakableBlock` (40 de vida, 1–3 monedas, señal
+  `broken`), colocadas por `_crate_tiles()` (chunk 0 fuera) y persistidas en
+  `world/broken` (`save_game.gd` guarda y carga la clave).
+- Comprobado en headless (semilla 775344231, chunks 1–40): 18 cajas en 10 ruinas, 0 mal
+  colocadas; la ruta real de spawn monta la caja en su fila de suelo (chunk 4);
+  `scenes/game.tscn` arranca 180 frames sin errores.
+- Abierto **T-0086** para las texturas de caja de PixelForge; el prompt va aparte y el PNG
+  entra por mí. F5 pendiente.

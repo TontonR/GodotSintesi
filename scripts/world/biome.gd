@@ -28,6 +28,11 @@ extends Resource
 @export var decor_weights: Array[int] = []
 ## Share of the living trees that come out dead, applied per chunk (0 = none).
 @export_range(0.0, 1.0, 0.05) var decor_dead_tree_ratio: float = 0.0
+## Structures this biome can place, by `display_name` from `WorldGenerator.structures`.
+@export var structure_kinds: Array[String] = []
+## Chance per chunk of each `structure_kinds` (same order; each one rolls alone,
+## so a chunk can get none, some or all, never two of the same).
+@export var structure_chances: Array[float] = []
 ## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
 ## Relative weight in the world's biome distribution.

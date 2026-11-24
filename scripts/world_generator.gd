@@ -174,6 +174,20 @@ const MOUNTAIN_BASE_DARKENING := 0.35
 ## Radius where a bush starts to bend and drop leaves (px).
 @export var decor_sway_radius_px: float = 48.0
 
+@export_group("Structures")
+## Structures the biomes can name in `Biome.structure_kinds` (by `display_name`).
+@export var structures: Array[WorldStructure] = [
+	preload("res://resources/world/structures/tower_test.tres"),
+	preload("res://resources/world/structures/ruin_test.tres")
+]
+## Minimum gap in tiles between two structures of the same chunk.
+@export var structure_min_gap_tiles: int = 3
+
+@export_group("Breakables")
+## Crate scene spawned inside the type 2 ruins (T-0076).
+@export var crate_scene: PackedScene = preload("res://scenes/world/breakable_block.tscn")
+## Crates rolled per ruin; 0 disables them.
+@export var crates_per_ruin: int = 2
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -194,6 +208,8 @@ var _clamped_heights: Dictionary = {}
 var _clamped_last: Dictionary = {}
 var _defeated_spawns: Dictionary = {}
 var _collected_spawns: Dictionary = {}
+## Crates already broken, by stable id (`b:chunk_x:chunk_y:tile_x`).
+var _broken_blocks: Dictionary = {}
 var _last_first: int = 999999
 var _last_last: int = -999999
 var _forest_tint_nodes: Array[CanvasItem] = []
@@ -205,6 +221,8 @@ var _last_biome_tile: int = -999999
 var _biome_runs: Array[Dictionary] = []
 ## Decor name → index in the generator's parallel arrays.
 var _decor_lookup: Dictionary = {}
+## Structure `display_name` → index in `structures`.
+var _structure_lookup: Dictionary = {}
 ## Tinted foliage textures, keyed by source path and tint (one per biome color).
 var _decor_tint_cache: Dictionary = {}
 ## Mountain painted left of tile 0, left to right; chunk 0 only.
@@ -356,6 +374,43 @@ func _keep_player_inside_world() -> void:
 		player.velocity.x = maxf(player.velocity.x, 0.0)
 
 
+## Chunk index (x) containing `world_x`; chunks only grow to the right.
+func chunk_at_world_x(world_x: float) -> int:
+	return maxi(floori(world_x / float(chunk_width_tiles * TILE_SIZE)), 0)
+
+
+## Next structure to the right of `world_x`: its center X in pixels, or -1 when
+## `search_chunks` chunks ahead have none. Generates the chunk data it looks at.
+func next_structure_x(world_x: float, search_chunks: int = 64) -> float:
+	var first := chunk_at_world_x(world_x)
+	for i in range(search_chunks):
+		var coord := Vector2i(first + i, 0)
+		if not _chunk_data.has(coord):
+			_chunk_data[coord] = _generate_chunk(coord)
+		for entry in _chunk_data[coord]["structures"]:
+			var x := (coord.x * chunk_width_tiles + int(entry["x"])) * TILE_SIZE + TILE_SIZE * 0.5
+			if x > world_x + 1.0:
+				return x
+	return -1.0
+
+
+## Start X (pixels) of the next biome run to the right of `world_x`, or -1 when
+## there are no biomes.
+func next_biome_start_x(world_x: float) -> float:
+	if biomes.is_empty():
+		return -1.0
+	var tile := maxi(floori(world_x / float(TILE_SIZE)), 0)
+	_ensure_biome_runs(tile)
+	var last: Dictionary = _biome_runs.back()
+	# The runs only exist up to the player: append one more to have a next one.
+	_ensure_biome_runs(int(last["start"]) + int(last["length"]))
+	for run in _biome_runs:
+		var start := int(run["start"]) * TILE_SIZE
+		if start > world_x + 1.0:
+			return float(start)
+	return -1.0
+
+
 ## Ground Y in pixels at `world_x`, i.e. the top row of that column. Used by the
 ## debug quick travel to leave the player a bit above the terrain.
 func ground_y_at(world_x: float) -> float:
@@ -499,6 +554,7 @@ func save_persistent_state() -> Dictionary:
 	return {
 		"defeated": PackedStringArray(_defeated_spawns.keys()),
 		"collected": PackedStringArray(_collected_spawns.keys()),
+		"broken": PackedStringArray(_broken_blocks.keys()),
 	}
 
 
@@ -507,6 +563,8 @@ func _restore_persistent_state() -> void:
 		_defeated_spawns[String(id)] = true
 	for id in SaveGame.data.get("collected", []):
 		_collected_spawns[String(id)] = true
+	for id in SaveGame.data.get("broken", []):
+		_broken_blocks[String(id)] = true
 
 
 ## Biome index of a block. The first run is the safe zone with the first biome.
@@ -857,7 +915,14 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	# one processed ends up painted first (rocks), then trees, then bushes.
 	decor.sort_custom(_decor_draws_before)
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "biome": biome, "tints": biome_data["tints"]}
+	# Rolled last so enemies, coins and decor keep their positions. The biome
+	# decides the count; a chunk of a biome with 0 places nothing.
+	var structures_here := _roll_structures(coord, biome, heights, enemies, rng)
+	# Nothing grows inside a ruin: decor under its span is dropped.
+	if not structures_here.is_empty():
+		decor = _decor_outside_structures(decor, structures_here)
+
+	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "structures": structures_here, "biome": biome, "tints": biome_data["tints"]}
 
 
 ## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
@@ -983,6 +1048,229 @@ func _apply_dead_tree_ratio(biome: Biome, decor: Array[Dictionary], rng: RandomN
 		decor[candidates[i]]["tint"] = Color.WHITE
 
 
+## Structures of one chunk: one independent roll per structure the biome lists,
+## so a chunk can get none or all of them, never two of the same. Deterministic
+## with `rng`; each one lands on free ground away from the edges and enemies.
+func _roll_structures(
+		coord: Vector2i,
+		biome: Biome,
+		heights: PackedInt32Array,
+		enemies: Array[Dictionary],
+		rng: RandomNumberGenerator
+) -> Array[Dictionary]:
+	var placed: Array[Dictionary] = []
+	if biome == null or biome.structure_kinds.is_empty() or structures.is_empty():
+		return placed
+	var last_x := chunk_width_tiles - 1
+	for i in range(biome.structure_kinds.size()):
+		var chance := biome.structure_chances[i] if i < biome.structure_chances.size() else 0.0
+		# Always consume the roll, so tuning one chance never shifts the rest.
+		if rng.randf() >= chance:
+			continue
+		var index := _structure_index_of(biome.structure_kinds[i])
+		if index < 0:
+			continue
+		var structure := structures[index]
+		if not _structure_allowed(structure, biome, coord.x * chunk_width_tiles):
+			continue
+		# Type 2 ruins get a random length by repeating their pattern.
+		var width := structure.block_width()
+		if not structure.pattern.is_empty() and structure.max_length_tiles > 0:
+			width = rng.randi_range(
+				maxi(structure.min_length_tiles, 1),
+				maxi(structure.max_length_tiles, 1)
+			)
+		var half := maxi(floori(float(width) * 0.5), 0)
+		var margin := maxi(structure.margin_tiles, half)
+		if margin > last_x - margin:
+			continue
+		var local_x := -1
+		# A few tries to dodge enemies and the previous structures; it is a
+		# decoration, so giving up is better than searching forever.
+		for _attempt in range(8):
+			var candidate := rng.randi_range(margin, last_x - margin)
+			# Long block ruins only dodging the enemies at their center: clearing
+			# the whole 20–50 tiles span of X would almost never fit.
+			var enemy_half := 1 if not structure.pattern.is_empty() else half + 1
+			if _structure_x_free(candidate, half, enemy_half, placed, enemies):
+				local_x = candidate
+				break
+		if local_x < 0:
+			continue
+		# Base on the lowest column of its span (the biggest row): sunk into a
+		# hill it is hidden behind `Solid`, but it never floats.
+		var bottom := heights[local_x]
+		for dx in range(-half, half + 1):
+			bottom = maxi(bottom, heights[clampi(local_x + dx, 0, last_x)])
+		var entry := {
+			"id": "s:%d:%d:%d" % [coord.x, coord.y, i],
+			"structure": structure,
+			"x": local_x,
+			"y": bottom,
+			"half": half,
+			"cells": [],
+			"front": [],
+			"front_tiles": [],
+			# Same palette as the decor: the moss takes the biome hue.
+			"tint": _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
+		}
+		if not structure.pattern.is_empty():
+			var built := _blocks_cells(structure, local_x - half, width, heights, rng)
+			entry["cells"] = built["cells"]
+			entry["front"] = built["front"]
+			entry["front_tiles"] = built["front_tiles"]
+			entry["crates"] = _crate_tiles(
+				coord, local_x - half, width, built["front"], enemies, rng
+			)
+		placed.append(entry)
+	return placed
+
+
+## Cells of a type 2 structure, in chunk-local px. The wall is the whole pattern
+## repeated to `length` columns, each column on its own ground row. The `front`
+## layer only ever sits on the ground (bottom pattern row): a few stones you can
+## jump over, plus beams that fill the niches under the wall (supports).
+func _blocks_cells(
+		structure: WorldStructure,
+		left: int,
+		length: int,
+		heights: PackedInt32Array,
+		rng: RandomNumberGenerator
+) -> Dictionary:
+	var cells: Array[Vector2] = []
+	var front: Array[Vector2] = []
+	var front_tiles: Array[int] = []
+	var rows := structure.pattern.size()
+	var unit := maxi(structure.block_width(), 1)
+	var bottom := rows - 1
+	for col in length:
+		var tile_x := left + col
+		if tile_x < 0 or tile_x >= chunk_width_tiles:
+			continue
+		var unit_col := col % unit
+		var ground_row := int(heights[tile_x])
+		for row in rows:
+			if not _pattern_at(structure, row, unit_col, "#"):
+				continue
+			var pos := Vector2(
+				tile_x * TILE_SIZE,
+				(ground_row - (rows - row)) * TILE_SIZE
+			)
+			cells.append(pos)
+			# Ground stones: the only thing with collision besides the supports.
+			if row == bottom and rng.randf() < structure.front_chance:
+				front.append(pos)
+				front_tiles.append(_pick_tile(BlockStructure.STONE_TILES, rng))
+		# Niche under the wall (empty bottom column): a beam carrying it.
+		if bottom >= 1 and not _pattern_at(structure, bottom, unit_col, "#"):
+			if _pattern_at(structure, bottom - 1, unit_col, "#"):
+				if rng.randf() < structure.support_chance:
+					front.append(Vector2(tile_x * TILE_SIZE, (ground_row - 1) * TILE_SIZE))
+					front_tiles.append(_pick_tile(BlockStructure.SUPPORT_TILES, rng))
+	return {"cells": cells, "front": front, "front_tiles": front_tiles}
+
+
+## Free ground columns inside a ruin for the breakable crates: never on a solid
+## front stone, right next to one (a crate would seal the gap) or on an enemy,
+## and never in chunk 0, which holds the spawn.
+func _crate_tiles(
+		coord: Vector2i,
+		left: int,
+		length: int,
+		front: Array,
+		enemies: Array[Dictionary],
+		rng: RandomNumberGenerator
+) -> Array:
+	var tiles: Array = []
+	if crates_per_ruin <= 0 or coord.x == 0 or length <= 0:
+		return tiles
+	var blocked := {}
+	for cell in front:
+		blocked[floori(cell.x / float(TILE_SIZE))] = true
+	for enemy in enemies:
+		blocked[roundi(float(enemy["position"].x) / float(TILE_SIZE))] = true
+	var used := {}
+	for _i in range(crates_per_ruin):
+		for _attempt in range(6):
+			var tile_x := left + rng.randi_range(0, length - 1)
+			if tile_x < 0 or tile_x >= chunk_width_tiles:
+				continue
+			if used.has(tile_x) or blocked.has(tile_x):
+				continue
+			if blocked.has(tile_x - 1) or blocked.has(tile_x + 1):
+				continue
+			used[tile_x] = true
+			tiles.append({"id": "b:%d:%d:%d" % [coord.x, coord.y, tile_x], "x": tile_x})
+			break
+	return tiles
+
+
+func _pattern_at(structure: WorldStructure, row: int, col: int, mark: String) -> bool:
+	if row < 0 or row >= structure.pattern.size():
+		return false
+	if col >= structure.pattern[row].length():
+		return false
+	return structure.pattern[row][col] == mark
+
+
+func _pick_tile(pool: Array, rng: RandomNumberGenerator) -> int:
+	return pool[rng.randi_range(0, pool.size() - 1)]
+
+
+## Decor entries whose tile falls inside a structure span are dropped, so no
+## bush or rock grows out of the ruins.
+func _decor_outside_structures(
+		decor: Array[Dictionary],
+		structures_here: Array[Dictionary]
+) -> Array[Dictionary]:
+	var kept: Array[Dictionary] = []
+	for entry in decor:
+		var inside := false
+		for structure in structures_here:
+			if absi(int(structure["x"]) - int(entry["x"])) <= int(structure["half"]):
+				inside = true
+				break
+		if not inside:
+			kept.append(entry)
+	return kept
+
+
+## Whether the structure can appear here: it has art, the chunk is far enough
+## and the biome is in its `biomes` filter.
+func _structure_allowed(structure: WorldStructure, biome: Biome, tile_x: int) -> bool:
+	if structure.texture == null and structure.scene == null and structure.pattern.is_empty():
+		return false
+	if tile_x < structure.min_distance_tiles:
+		return false
+	return structure.biomes.is_empty() or structure.biomes.has(biome.display_name)
+
+
+func _structure_x_free(
+		local_x: int,
+		half: int,
+		enemy_half: int,
+		placed: Array[Dictionary],
+		enemies: Array[Dictionary]
+) -> bool:
+	for entry in placed:
+		var gap := half + int(entry["half"]) + structure_min_gap_tiles
+		if absi(int(entry["x"]) - local_x) < gap:
+			return false
+	for enemy in enemies:
+		var enemy_x := roundi(float(enemy["position"].x) / float(TILE_SIZE))
+		if absi(enemy_x - local_x) <= enemy_half:
+			return false
+	return true
+
+
+## Structure index by `display_name`; -1 for unknown names.
+func _structure_index_of(structure_name: String) -> int:
+	if _structure_lookup.is_empty():
+		for i in structures.size():
+			_structure_lookup[structures[i].display_name] = i
+	return int(_structure_lookup.get(structure_name, -1))
+
+
 ## Texture for a decor kind and tint. Untinted kinds use the original; foliage
 ## gets a cached copy with only the leaf pixels recolored, so the brown trunk
 ## survives the biome tint.
@@ -990,16 +1278,47 @@ func _decor_texture(kind: int, tint: Color) -> Texture2D:
 	var source: Texture2D = decor_textures[kind]
 	if source == null or kind >= decor_tinted.size() or not decor_tinted[kind]:
 		return source
-	if tint == Color.WHITE or source.resource_path.is_empty():
+	return _tinted_texture(source, tint)
+
+
+## Cached copy of the structure TileSet with its moss recolored to `tint`: the
+## atlas textures are tinted, the tile physics is untouched.
+func _structure_tileset(tile_set: TileSet, tint: Color) -> TileSet:
+	if tile_set == null or tint == Color.WHITE or tile_set.resource_path.is_empty():
+		return tile_set
+	var key := "tileset|%s|%s" % [tile_set.resource_path, tint.to_html(false)]
+	var cached: TileSet = _decor_tint_cache.get(key)
+	if cached:
+		return cached
+	var copy := tile_set.duplicate(true) as TileSet
+	for i in copy.get_source_count():
+		var source := copy.get_source(copy.get_source_id(i)) as TileSetAtlasSource
+		if source != null:
+			source.texture = _tinted_texture(source.texture, tint, 24, 12)
+	_decor_tint_cache[key] = copy
+	return copy
+
+
+## Cached copy of `source` with its green pixels recolored to `tint`. The
+## thresholds keep teal brick grout out of the structure tint.
+func _tinted_texture(
+		source: Texture2D,
+		tint: Color,
+		green_over_red: int = 0,
+		green_over_blue: int = 0
+) -> Texture2D:
+	if source == null or tint == Color.WHITE or source.resource_path.is_empty():
 		return source
-	var key := "%s|%s" % [source.resource_path, tint.to_html(false)]
+	var key := "%s|%s|%d|%d" % [
+		source.resource_path, tint.to_html(false), green_over_red, green_over_blue
+	]
 	var cached: Texture2D = _decor_tint_cache.get(key)
 	if cached:
 		return cached
 	var image := source.get_image()
 	if image == null:
 		return source
-	var tinted := _tint_foliage(image, tint)
+	var tinted := _tint_foliage(image, tint, green_over_red, green_over_blue)
 	if tinted == null:
 		return source
 	var texture := ImageTexture.create_from_image(tinted)
@@ -1009,7 +1328,12 @@ func _decor_texture(kind: int, tint: Color) -> Texture2D:
 
 ## Copy of `image` where only the green-dominant pixels (the leaves) take
 ## `tint * their own brightness`. Trunks, outlines and grey pixels are untouched.
-func _tint_foliage(image: Image, tint: Color) -> Image:
+func _tint_foliage(
+		image: Image,
+		tint: Color,
+		green_over_red: int = 0,
+		green_over_blue: int = 0
+) -> Image:
 	var out := image.duplicate() as Image
 	if out.is_compressed():
 		out.decompress()
@@ -1020,7 +1344,9 @@ func _tint_foliage(image: Image, tint: Color) -> Image:
 			if pixel.a <= 0.0:
 				continue
 			# Leaves are the only green-dominant pixels of these sprites.
-			if pixel.g <= pixel.r or pixel.g <= pixel.b:
+			if (pixel.g - pixel.r) * 255.0 <= float(green_over_red):
+				continue
+			if (pixel.g - pixel.b) * 255.0 <= float(green_over_blue):
 				continue
 			var shade := maxf(pixel.r, maxf(pixel.g, pixel.b))
 			out.set_pixel(x, y, Color(tint.r * shade, tint.g * shade, tint.b * shade, pixel.a))
@@ -1104,6 +1430,91 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		chunk.add_child(sprite)
 		chunk.move_child(sprite, 0)
 
+	# Structures go behind the decor (moved to index 0 after it): big ruins that
+	# read as background. Type 2 ruins also put a few light, solid blocks in
+	# front of the dark wall, so the player can climb on the rubble.
+	var structures_here: Array = data.get("structures", [])
+	for i in range(structures_here.size()):
+		var entry: Dictionary = structures_here[i]
+		var structure: WorldStructure = entry["structure"]
+		var node: Node2D
+		if structure.scene != null:
+			node = structure.scene.instantiate() as Node2D
+		elif not structure.pattern.is_empty():
+			var tint: Color = entry["tint"]
+			var tile_set := _structure_tileset(structure.tileset, tint)
+			var blocks := BlockStructure.new()
+			blocks.tile_set = tile_set
+			blocks.source_id = 0
+			for cell in entry["cells"]:
+				blocks.cells.append(cell)
+			node = blocks
+			# The few ground stones go in front of the wall and are solid.
+			var front_cells: Array = entry["front"]
+			var front_tiles: Array = entry["front_tiles"]
+			if not front_cells.is_empty():
+				var light := BlockStructure.new()
+				light.name = "Structure_%d_front" % i
+				light.tile_set = tile_set
+				light.source_id = 1
+				light.position = Vector2.ZERO
+				# z 0: in front of the dark wall (z_index -1), behind the big decor.
+				light.z_index = 0
+				for k in front_cells.size():
+					light.cells.append(front_cells[k])
+					if k < front_tiles.size():
+						light.cell_tiles.append(front_tiles[k])
+				chunk.add_child(light)
+		else:
+			var sprite := Sprite2D.new()
+			sprite.texture = structure.texture
+			sprite.centered = false
+			# The offset keeps the origin at the bottom center, like the decor.
+			sprite.offset = Vector2(
+				-structure.texture.get_width() * 0.5,
+				-structure.texture.get_height()
+			)
+			var native := float(structure.pixel_size if structure.pixel_size > 0 else structure.texture.get_width())
+			var factor := float(structure.size_tiles * TILE_SIZE) / maxf(native, 1.0)
+			sprite.scale = Vector2.ONE * factor
+			node = sprite
+		if node == null:
+			continue
+		node.name = "Structure_%d" % i
+		node.z_index = structure.z_index
+		# Pattern cells are already in chunk-local px; sprites/scenes use the anchor.
+		if node is BlockStructure:
+			node.position = Vector2.ZERO
+		else:
+			node.position = Vector2(
+				int(entry["x"]) * TILE_SIZE + TILE_SIZE * 0.5,
+				int(entry["y"]) * TILE_SIZE
+			)
+		node.set_meta("spawn_id", entry["id"])
+		chunk.add_child(node)
+		chunk.move_child(node, 0)
+
+	# Breakable crates of the ruins (T-0076): on the ground row, in front of the
+	# dark wall. Broken ones are skipped through their persisted id.
+	if crate_scene != null:
+		for entry in structures_here:
+			for crate_entry in entry.get("crates", []):
+				var crate_id: String = crate_entry["id"]
+				if _broken_blocks.has(crate_id):
+					continue
+				var crate := crate_scene.instantiate() as BreakableBlock
+				if crate == null:
+					continue
+				var tile_x := int(crate_entry["x"])
+				crate.name = "Crate_%s" % crate_id.replace(":", "_")
+				crate.spawn_id = crate_id
+				crate.position = Vector2(
+					tile_x * TILE_SIZE,
+					int(data["heights"][tile_x]) * TILE_SIZE
+				)
+				chunk.entities.add_child(crate)
+				crate.broken.connect(_on_crate_broken)
+
 	for entry in data["enemies"]:
 		var spawn_id: String = entry["id"]
 		if _defeated_spawns.has(spawn_id):
@@ -1153,3 +1564,8 @@ func _on_enemy_died(spawn_id: String) -> void:
 
 func _on_coin_collected(spawn_id: String) -> void:
 	_collected_spawns[spawn_id] = true
+
+
+## A broken crate stays broken for the rest of the run, like a defeated enemy.
+func _on_crate_broken(spawn_id: String) -> void:
+	_broken_blocks[spawn_id] = true
