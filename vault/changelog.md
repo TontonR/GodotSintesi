@@ -2,6 +2,12 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-25 · `test/fusion-structure` — pasillo procedural continuo, autotiling 8-vecinos y salida diferida (T-0093)
+
+- `DungeonGenerator._on_exit_body_entered()` emite `exit_requested.emit.call_deferred()` para evitar el error de físicas (`flushing queries`) al reconstruir chunks al salir.
+- `CastleTiles` añade `SOLID_FILL` (`25`, `#423a51`) a `build_walls()`; `CastlePainter._paint_solid_grid()` construye un grid booleano `solid[x, y]` (marco + bloques) y resuelve bordes, esquinas exteriores e interiores (`27`–`30`) por sus 8 vecinos, eliminando huecos, bordes dobles y recortes negros.
+- `CastleLayout` amplía el hall a `64` tiles, baja el techo (`TOP_ROW = 6`) con ventanas/estandartes en `y = 8`, sustituye las fosas por un suelo continuo escalonado (alternando escalones de piedra y subidas de 2–3 tiles con plataformas mínimas) y verifica alcanzabilidad por BFS (`tested_layouts=20 failed=0`).
+
 ## 2026-11-25 · `opencode-jorge` · T-0080 guardado y carga dentro de la mazmorra
 
 - `DungeonLayer.save_state()` (`{}` en el mundo o `{seed, floor, position,

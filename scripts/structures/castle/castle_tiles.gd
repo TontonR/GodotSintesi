@@ -14,6 +14,7 @@ const ATLAS_COLUMNS := 8
 const TILE_SIZE := 32
 
 const STONE_BODY := 41
+const SOLID_FILL := 25
 
 ## Hall frame border: the light trim faces the interior, unlike the floor blocks.
 ## The 27–30 pieces are the inner-corner caps that close the four frame turns.
@@ -57,6 +58,7 @@ static func build_walls() -> TileSet:
 	var source := _new_source(tile_set)
 	_add_tiles(source, _unique([
 		STONE_BODY,
+		SOLID_FILL,
 		FRAME_TOP, FRAME_BOTTOM, FRAME_LEFT, FRAME_RIGHT,
 		FRAME_TOP_LEFT, FRAME_TOP_RIGHT, FRAME_BOTTOM_LEFT, FRAME_BOTTOM_RIGHT,
 		FLOOR_TOP, FLOOR_BOTTOM, FLOOR_LEFT, FLOOR_RIGHT,

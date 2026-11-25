@@ -11,10 +11,13 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 
 ## Hall composition
 
-- 34 × 22 tiles of 32 px: three floor blocks (rows 12–17), two 3-tile pits with a wooden recovery platform and step, eight 2×2 windows and two banners.
-- Floor blocks: body `41`, border `20/24/19/22`, corners `18/21/26/23` (trim outside). Frame: border `24/20/22/19`, inner corners `28/29/27/30` (trim inside).
-- `Back` paints stone `41` inside the frame only; pits and outside show `DungeonVoid` (`Polygon2D`, z = -5, the atlas purple `#423a51`), above the world parallax (z = -100) and below `Back` (z = -4).
-- `Walls` is solid (full-square collision on layer 1). `Platforms` (wood `11–14`) is one-way, collision on the top 10 px only. `Back`/`Decor` are physics-free.
+- 64 × 22 tiles of 32 px (`TOP_ROW = 6`, `FLOOR_BOTTOM = 20`), with ceiling visible on screen, windows (`y = 8`) and banners (`x = 11, 26, 41...`, `y = 8`).
+- Continuous stepped stone floor (`MIN_BLOCK_TOP = 11` .. `MAX_BLOCK_TOP = 17`, no pits): alternates 1-tile stone steps, gentle descents (1–2 tiles) and 2–3 tile climbs with minimal one-way wooden `Platforms` (`11–14`) placed strictly for ascending.
+- Reachability is verified via BFS (`_ensure_reachable()`) from `spawn_cell` to `exit_cell` within the player's jump limits (1 tile / 32 px up, ≤ 2 tiles across).
+- `CastlePainter._paint_solid_grid()` builds a boolean `solid[x, y]` grid (frame + floor blocks) and autotiles every cell from its 8 neighbors using `SOLID_FILL` (`25`, `#423a51`), borders `20/24/19/22`, outer corners `18/21/26/23` and inner corners `28/29/27/30`.
+- `Back` paints stone `41` inside the frame; outside shows `DungeonVoid` (`Polygon2D`, z = -5, `#423a51`), above world parallax (z = -100) and below `Back` (z = -4).
+- `Walls` is solid (full-square collision on layer 1). `Platforms` is one-way (top 10 px only). `Back`/`Decor` are physics-free.
+- `DungeonGenerator._on_exit_body_entered()` emits `exit_requested.emit.call_deferred()` so world chunk/physics rebuilds run outside the `Area2D` physics query flush.
 
 ## Save and load (T-0080)
 

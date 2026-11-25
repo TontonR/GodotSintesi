@@ -1,9 +1,9 @@
 class_name CastlePainter
 extends RefCounted
-## Paints a CastleLayout on the four TileMapLayers. Borders use the atlas corner
-## pieces so an edge turns into a side instead of ending in a disconnected tile.
-## The atlas' own dark background is left intact; the dungeon backdrop uses the
-## same purple, so brick edges end against it without a cutout or color fade.
+## Paints a CastleLayout on the four TileMapLayers.
+## Solid terrain (outer frame + all floor blocks) is built as a pure boolean
+## grid first, then autotiled by inspecting 4 cardinal + 4 diagonal neighbors
+## so every border, outer corner and inner corner merges cleanly without seams.
 
 const Tiles := preload("res://scripts/structures/castle/castle_tiles.gd")
 
@@ -16,12 +16,7 @@ static func paint(
 	layout: Dictionary
 ) -> void:
 	_paint_backdrop(back, layout)
-	_paint_frame(walls, layout)
-	for block in layout["blocks"]:
-		_paint_block(walls, block)
-	for gap in layout["gaps"]:
-		_cut_void(back, gap, layout)
-		_paint_recovery(platforms, gap)
+	_paint_solid_grid(walls, layout)
 	for platform in layout["platforms"]:
 		_paint_wood_platform(platforms, platform)
 	if decor != null:
@@ -29,8 +24,7 @@ static func paint(
 		_paint_banners(decor, layout)
 
 
-## Stone wall behind the whole interior. Outside the frame there are no cells:
-## the dark CanvasLayer behind the dungeon shows through as the outside void.
+## Stone wall behind the interior (from ceiling + 1 down to floor_bottom).
 static func _paint_backdrop(back: TileMapLayer, layout: Dictionary) -> void:
 	var width: int = layout["width"]
 	var top: int = layout["top_row"]
@@ -40,69 +34,87 @@ static func _paint_backdrop(back: TileMapLayer, layout: Dictionary) -> void:
 			back.set_cell(Vector2i(x, y), 0, Tiles.atlas_tile(Tiles.STONE_BODY))
 
 
-## Outer frame with the light trim facing the interior. Its four corners use the
-## inner-corner caps 27–30 so the trim turns without running past the frame.
-static func _paint_frame(walls: TileMapLayer, layout: Dictionary) -> void:
+## Builds a boolean solid grid (frame + floor blocks) and resolves every tile
+## from its 8 neighbors so walls, steps and corners fuse seamlessly.
+static func _paint_solid_grid(walls: TileMapLayer, layout: Dictionary) -> void:
 	var width: int = layout["width"]
-	var top: int = layout["top_row"]
-	var bottom: int = layout["bottom_row"]
-	for x in range(1, width - 1):
-		walls.set_cell(Vector2i(x, top), 0, Tiles.atlas_tile(Tiles.FRAME_TOP))
-		walls.set_cell(Vector2i(x, bottom), 0, Tiles.atlas_tile(Tiles.FRAME_BOTTOM))
-	for y in range(top + 1, bottom):
-		walls.set_cell(Vector2i(0, y), 0, Tiles.atlas_tile(Tiles.FRAME_LEFT))
-		walls.set_cell(Vector2i(width - 1, y), 0, Tiles.atlas_tile(Tiles.FRAME_RIGHT))
-	walls.set_cell(Vector2i(0, top), 0, Tiles.atlas_tile(Tiles.FRAME_TOP_LEFT))
-	walls.set_cell(Vector2i(width - 1, top), 0, Tiles.atlas_tile(Tiles.FRAME_TOP_RIGHT))
-	walls.set_cell(Vector2i(0, bottom), 0, Tiles.atlas_tile(Tiles.FRAME_BOTTOM_LEFT))
-	walls.set_cell(Vector2i(width - 1, bottom), 0, Tiles.atlas_tile(Tiles.FRAME_BOTTOM_RIGHT))
+	var top_row: int = layout["top_row"]
+	var bottom_row: int = layout["bottom_row"]
+
+	var solid := {}
+	# Outer frame (ceiling, floor base, left & right walls)
+	for x in width:
+		solid[Vector2i(x, top_row)] = true
+		solid[Vector2i(x, bottom_row)] = true
+	for y in range(top_row, bottom_row + 1):
+		solid[Vector2i(0, y)] = true
+		solid[Vector2i(width - 1, y)] = true
+
+	# Floor blocks
+	for block in layout["blocks"]:
+		var rect: Rect2i = block["rect"]
+		for y in range(rect.position.y, bottom_row + 1):
+			for x in range(rect.position.x, rect.end.x):
+				solid[Vector2i(x, y)] = true
+
+	# Autotile every solid cell based on air neighbors.
+	for cell in solid.keys():
+		var x: int = cell.x
+		var y: int = cell.y
+		var n := _is_solid(solid, x, y - 1, width, top_row, bottom_row)
+		var s := _is_solid(solid, x, y + 1, width, top_row, bottom_row)
+		var w := _is_solid(solid, x - 1, y, width, top_row, bottom_row)
+		var e := _is_solid(solid, x + 1, y, width, top_row, bottom_row)
+
+		var tile := Tiles.SOLID_FILL
+		if not n and not w:
+			tile = Tiles.FLOOR_TOP_LEFT
+		elif not n and not e:
+			tile = Tiles.FLOOR_TOP_RIGHT
+		elif not s and not w:
+			tile = Tiles.FLOOR_BOTTOM_LEFT
+		elif not s and not e:
+			tile = Tiles.FLOOR_BOTTOM_RIGHT
+		elif not n:
+			tile = Tiles.FLOOR_TOP
+		elif not s:
+			tile = Tiles.FLOOR_BOTTOM
+		elif not w:
+			tile = Tiles.FLOOR_LEFT
+		elif not e:
+			tile = Tiles.FLOOR_RIGHT
+		else:
+			var nw := _is_solid(solid, x - 1, y - 1, width, top_row, bottom_row)
+			var ne := _is_solid(solid, x + 1, y - 1, width, top_row, bottom_row)
+			var sw := _is_solid(solid, x - 1, y + 1, width, top_row, bottom_row)
+			var se := _is_solid(solid, x + 1, y + 1, width, top_row, bottom_row)
+			if not se:
+				tile = Tiles.FRAME_TOP_LEFT
+			elif not sw:
+				tile = Tiles.FRAME_TOP_RIGHT
+			elif not ne:
+				tile = Tiles.FRAME_BOTTOM_LEFT
+			elif not nw:
+				tile = Tiles.FRAME_BOTTOM_RIGHT
+
+		walls.set_cell(cell, 0, Tiles.atlas_tile(tile))
 
 
-## Solid floor block with a complete brick border on all four sides. The stone
-## fill is painted first, but the original border art keeps its own dark inner
-## edge, so the inside of the brick reads like the map border.
-static func _paint_block(walls: TileMapLayer, block: Dictionary) -> void:
-	var rect: Rect2i = block["rect"]
-	var x0 := rect.position.x
-	var x1 := rect.end.x - 1
-	var top := rect.position.y
-	var bottom := rect.end.y - 1
-	for y in range(top, bottom + 1):
-		for x in range(x0, x1 + 1):
-			walls.set_cell(Vector2i(x, y), 0, Tiles.atlas_tile(Tiles.STONE_BODY))
-	for x in range(x0 + 1, x1):
-		walls.set_cell(Vector2i(x, top), 0, Tiles.atlas_tile(Tiles.FLOOR_TOP))
-		walls.set_cell(Vector2i(x, bottom), 0, Tiles.atlas_tile(Tiles.FLOOR_BOTTOM))
-	for y in range(top + 1, bottom):
-		walls.set_cell(Vector2i(x0, y), 0, Tiles.atlas_tile(Tiles.FLOOR_LEFT))
-		walls.set_cell(Vector2i(x1, y), 0, Tiles.atlas_tile(Tiles.FLOOR_RIGHT))
-	walls.set_cell(Vector2i(x0, top), 0, Tiles.atlas_tile(Tiles.FLOOR_TOP_LEFT))
-	walls.set_cell(Vector2i(x1, top), 0, Tiles.atlas_tile(Tiles.FLOOR_TOP_RIGHT))
-	walls.set_cell(Vector2i(x0, bottom), 0, Tiles.atlas_tile(Tiles.FLOOR_BOTTOM_LEFT))
-	walls.set_cell(Vector2i(x1, bottom), 0, Tiles.atlas_tile(Tiles.FLOOR_BOTTOM_RIGHT))
+## Out-of-bounds is treated as solid so the outer edge of the hall stays dark.
+static func _is_solid(
+	solid: Dictionary,
+	x: int,
+	y: int,
+	width: int,
+	top_row: int,
+	bottom_row: int
+) -> bool:
+	if x < 0 or x >= width or y < top_row or y > bottom_row:
+		return true
+	return solid.has(Vector2i(x, y))
 
 
-## Reopens the stone backdrop as a pit. The dark background layer shows through
-## the removed cells instead of a purple tile.
-static func _cut_void(back: TileMapLayer, gap: Dictionary, layout: Dictionary) -> void:
-	var x: int = gap["x"]
-	var width: int = gap["width"]
-	var top: int = mini(int(gap["from_row"]), int(gap["to_row"])) + 1
-	var bottom: int = layout["floor_bottom"]
-	for y in range(top, bottom + 1):
-		for column in width:
-			back.erase_cell(Vector2i(x + column, y))
-
-
-## Wooden platform and one step inside each pit, so a missed jump can climb back
-## without turning the pit into a staircase.
-static func _paint_recovery(platforms: TileMapLayer, gap: Dictionary) -> void:
-	_paint_wood_platform(platforms, Rect2i(gap["x"], gap["lower"], gap["width"], 1))
-	_paint_wood_platform(platforms, Rect2i(gap["x"], gap["step"], 1, 1))
-
-
-## Wooden strip from the atlas: left cap, repeated middle and right cap. The
-## thin one-way collision is defined by CastleTiles.build_platforms().
+## Wooden strip from the atlas: left cap, repeated middle and right cap.
 static func _paint_wood_platform(platforms: TileMapLayer, rect: Rect2i) -> void:
 	var width := rect.size.x
 	for i in width:

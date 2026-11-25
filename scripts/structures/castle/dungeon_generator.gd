@@ -18,8 +18,8 @@ const TILE_SIZE := 32
 const SPAWN_ABOVE_PX := 30.0
 
 @export_group("Layout")
-## Hall width in tiles (34 x 32 = 1088 px).
-@export var width_tiles: int = 34
+## Hall width in tiles (64 x 32 = 2048 px).
+@export var width_tiles: int = 64
 ## Number of floors; the same seed and floor rebuild the same hall.
 @export var floors: int = 2
 
@@ -127,7 +127,7 @@ func _build_void_backdrop() -> void:
 	if _void_backdrop != null:
 		return
 	var pad := 4096.0
-	var right := width_tiles * TILE_SIZE + pad
+	var right := maxi(width_tiles, LayoutScript.HALL_WIDTH) * TILE_SIZE + pad
 	var bottom := LayoutScript.HALL_HEIGHT * TILE_SIZE + pad
 	_void_backdrop = Polygon2D.new()
 	_void_backdrop.name = "DungeonVoid"
@@ -160,7 +160,9 @@ func _on_exit_body_entered(body: Node2D) -> void:
 	if _exit_emitted or not body.is_in_group("player"):
 		return
 	_exit_emitted = true
-	exit_requested.emit()
+	# Deferred so leaving the dungeon (and rebuilding world chunks/physics)
+	# happens outside the Area2D physics query flush.
+	exit_requested.emit.call_deferred()
 
 
 func _bind_nodes() -> void:

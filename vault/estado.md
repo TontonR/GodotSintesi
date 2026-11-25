@@ -7,7 +7,7 @@ _Actualizado 2026-11-25 por `opencode-jorge`_
 | Campo | Valor |
 |---|---|
 | Rama | `test/fusion-structure`: fusión de estructuras y castillo (T-0074/T-0075/T-0076/T-0079/T-0080/T-0087/T-0088/T-0091/T-0093), sobre `main` `ccbae38` |
-| Árbol | `revision` tras T-0080: hall de referencia 34 × 22 verificado en headless (colisión, plataformas one-way, semilla por planta) y guardado dentro de la mazmorra con planta, posición y punto de vuelta. F5 pendiente |
+| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas. F5 pendiente |
 | Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
 | Siguiente paso | F5 de Ruben (hall T-0093, guardado dentro del castillo T-0080, ruinas, cajas, puerta y salida lejana) y PR de `test/fusion-structure` a `main`; después T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
