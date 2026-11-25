@@ -905,3 +905,15 @@ Formato de entrada:
   los ZIP públicos (MIT) de `falling-leaves` y `snow`, que traen la receta en un `.ts`.
 - Port a `Sprite2D` en pantalla: 80 hojas y 440 copos, fundido de 0,4 s y precarga al
   activar. Headless: ambos emisores se mueven y generan texturas válidas. Falta F5.
+
+## 2026-11-25 · `buffy` · VFX: suelo, tamaño y crossfade (T-0093)
+
+- Ruben vio tres fallos: no se posaban en el suelo, eran grandes y no había transición.
+  Se añade `WorldGenerator.ambient_weight_at_world_x()` (ventana de ±32 tiles) y
+  `SpriteFusionAmbient.set_strength()`; `pixel_scale` baja a 1.
+- El suelo se muestrea con `ground_y_at()` a través de `get_canvas_transform()` cada
+  0,1 s; hojas y capas cercanas de nieve descansan 1–5 s con fundido. Sin generador
+  (mazmorra) el fondo de pantalla hace de suelo.
+- Ficheros: `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`,
+  `scripts/world_generator.gd`, `docs/fx.md`, `docs/biomes.md`, `docs/world.md`.
+  Headless: reposo medido a la altura de un stub de suelo y pesos 0..1. Falta F5.

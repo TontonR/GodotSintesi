@@ -10,17 +10,19 @@ extends Node2D
 # Shapes, palettes and motion constants come from the downloaded .ts recipes
 # (assets/vfx/spritefusion/). Each particle is a Sprite2D and the ambient layer
 # is a CanvasLayer, so positions are screen pixels and the camera never moves
-# them. The recipes settle on a `ground` line; this layer has no terrain, so
-# particles fall through and respawn at the top instead of leaving litter/drift.
+# them. `WorldGenerator.ground_y_at()` is sampled through the camera transform
+# so leaves and flakes land and rest on the surface like the web recipes do.
 
-const PX := 2.0
-const FADE_SECONDS := 0.4
+const FADE_SECONDS := 0.5
 const LEAF_DRIFT := 12.0
 const LEAF_COUNT := 80
 const SNOW_WIND := 14.0
 const SNOW_COUNTS := [260, 150, 30]
 const SNOW_FALL := [26.0, 52.0, 86.0]
 const SNOW_SWAY := [8.0, 16.0, 30.0]
+## Screen pixels between two ground samples, refreshed every 0.1 s.
+const GROUND_STEP := 8.0
+const GROUND_REFRESH_SECONDS := 0.1
 
 ## 3 leaf silhouettes from falling-leaves.ts; L/B/S/D/R/T are palette slots.
 const LEAF_SHAPES: Array = [
@@ -49,6 +51,8 @@ const SNOW_CRYSTALS: Array = [
 @export_enum("leaves", "snow") var effect: String = "leaves"
 ## Multiplies the recipe's particle count; 1.0 is the library default.
 @export_range(0.1, 3.0, 0.05) var density: float = 1.0
+## Screen pixels per art pixel. The library recipe uses 2; 1 halves the sizes.
+@export_range(0.5, 2.0, 0.25) var pixel_scale: float = 1.0
 ## Seed for the initial scatter, so the same run reproduces the same cloud.
 @export var rng_seed: int = 1
 
@@ -66,6 +70,7 @@ class Leaf:
 	var palette := 0
 	var near := false
 	var angle := 0.0
+	var rest := -1.0
 
 
 class Flake:
@@ -78,13 +83,19 @@ class Flake:
 	var ph := 0.0
 	var layer := 0
 	var kind := 0
+	var rest := -1.0
 
 
+var _px := 1.0
 var _view := Vector2.ZERO
 var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _active := false
+var _strength := -1.0
 var _tween: Tween
+var _world: Node
+var _ground_screen := PackedFloat32Array()
+var _ground_timer := 0.0
 
 var _leaves: Array[Leaf] = []
 var _leaf_textures: Array[ImageTexture] = []
@@ -95,6 +106,7 @@ var _snow_crystals: Array[ImageTexture] = []
 
 
 func _ready() -> void:
+	_px = pixel_scale
 	_view = get_viewport_rect().size
 	_rng.seed = rng_seed
 	modulate.a = 0.0
@@ -106,26 +118,38 @@ func _ready() -> void:
 		_build_snow()
 
 
-## Turns the effect on or off with the same 0.4 s fade the old emitters used.
-func set_active(enabled: bool) -> void:
-	if enabled == _active:
+## Sets the effect opacity from the biome blend (0 = off, 1 = full).
+func set_strength(strength: float) -> void:
+	strength = clampf(strength, 0.0, 1.0)
+	if is_equal_approx(strength, _strength):
 		return
-	_active = enabled
-	if _tween:
-		_tween.kill()
-	if enabled:
+	_strength = strength
+	var enabled := strength > 0.01
+	if enabled and not _active:
 		_scatter()
 		visible = true
 		set_process(true)
+	_active = enabled
+	if _tween:
+		_tween.kill()
 	_tween = create_tween()
-	_tween.tween_property(self, "modulate:a", 1.0 if enabled else 0.0, FADE_SECONDS)
+	_tween.tween_property(self, "modulate:a", strength, FADE_SECONDS)
 	if not enabled:
 		_tween.tween_callback(func() -> void:
 			set_process(false)
 			visible = false)
 
 
+## Turns the effect fully on or off; kept for callers that only toggle.
+func set_active(enabled: bool) -> void:
+	set_strength(1.0 if enabled else 0.0)
+
+
 func _process(delta: float) -> void:
+	_ground_timer -= delta
+	if _ground_timer <= 0.0:
+		_ground_timer = GROUND_REFRESH_SECONDS
+		_refresh_ground()
 	if effect == "leaves":
 		_update_leaves(delta)
 	else:
@@ -134,6 +158,7 @@ func _process(delta: float) -> void:
 
 ## Fills the screen on activation, so the weather never starts as drops.
 func _scatter() -> void:
+	_ground_timer = 0.0
 	if effect == "leaves":
 		for leaf in _leaves:
 			_reset_leaf(leaf, false)
@@ -141,6 +166,39 @@ func _scatter() -> void:
 		_time = 0.0
 		for flake in _flakes:
 			_reset_flake(flake, false)
+
+
+# --- Ground -----------------------------------------------------------------
+
+## Samples the terrain under every screen column and stores it in screen pixels.
+func _refresh_ground() -> void:
+	var columns := int(ceil(_view.x / GROUND_STEP)) + 1
+	if _ground_screen.size() != columns:
+		_ground_screen.resize(columns)
+	if _world == null:
+		_world = get_tree().get_first_node_in_group("world_generator")
+	if _world == null or not _world.has_method("ground_y_at"):
+		# Dungeon or no generator: the bottom of the screen acts as the ground.
+		_ground_screen.fill(_view.y)
+		return
+	var canvas := get_viewport().get_canvas_transform()
+	var inverse := canvas.affine_inverse()
+	for i in columns:
+		var screen_x := minf(i * GROUND_STEP, _view.x)
+		var world_x := (inverse * Vector2(screen_x, 0.0)).x
+		var ground_world_y: float = _world.call("ground_y_at", world_x)
+		var ground_screen_y := (canvas * Vector2(world_x, ground_world_y)).y
+		_ground_screen[i] = clampf(ground_screen_y, 0.0, _view.y)
+
+
+## Ground Y in screen pixels under `screen_x`, interpolated between samples.
+func _ground_at(screen_x: float) -> float:
+	var last := _ground_screen.size() - 1
+	if last <= 0:
+		return _view.y
+	var t := clampf(screen_x / GROUND_STEP, 0.0, float(last))
+	var i := mini(int(t), last - 1)
+	return lerpf(_ground_screen[i], _ground_screen[i + 1], t - float(i))
 
 
 # --- Leaves -----------------------------------------------------------------
@@ -182,14 +240,24 @@ func _reset_leaf(leaf: Leaf, top: bool) -> void:
 	leaf.shape = _rng.randi_range(0, LEAF_SHAPES.size() - 1)
 	leaf.palette = _rng.randi_range(0, LEAF_PALETTES.size() - 1)
 	leaf.angle = 0.0
+	leaf.rest = -1.0
 	leaf.x = leaf.x0
 	leaf.sprite.texture = _leaf_textures[leaf.shape * LEAF_PALETTES.size() + leaf.palette]
 	leaf.sprite.z_index = 1 if leaf.near else 0
+	leaf.sprite.modulate.a = 1.0
 	_place_leaf(leaf)
 
 
 func _update_leaves(delta: float) -> void:
 	for leaf in _leaves:
+		if leaf.rest >= 0.0:
+			leaf.rest -= delta
+			if leaf.rest < 0.0:
+				_reset_leaf(leaf, true)
+				continue
+			leaf.sprite.modulate.a = minf(1.0, leaf.rest)
+			leaf.sprite.position = Vector2(leaf.x, _resting_leaf_y(leaf))
+			continue
 		leaf.ph += leaf.w * delta
 		leaf.x0 += LEAF_DRIFT * delta
 		leaf.x = leaf.x0 + sin(leaf.ph) * leaf.amp
@@ -197,18 +265,28 @@ func _update_leaves(delta: float) -> void:
 		leaf.angle = cos(leaf.ph) * 0.75 + (0.0 if leaf.near else 0.3)
 		var flip_speed := 6.0 if _hash(floori(leaf.ph / PI), floori(leaf.x0)) < 0.25 else 0.4
 		leaf.flip += flip_speed * delta
-		if leaf.y >= _view.y + 16.0:
-			_reset_leaf(leaf, true)
-			continue
 		if leaf.x > _view.x + 60.0:
 			leaf.x0 -= _view.x + 120.0
+		if leaf.y >= _resting_leaf_y(leaf):
+			leaf.rest = _rng.randf_range(2.5, 5.0)
+			leaf.angle *= 0.3
+			leaf.sprite.modulate.a = 1.0
+			leaf.sprite.rotation = leaf.angle
+			leaf.sprite.scale = Vector2(_px, _px)
+			leaf.sprite.position = Vector2(leaf.x, _resting_leaf_y(leaf))
+			continue
 		_place_leaf(leaf)
 
 
 func _place_leaf(leaf: Leaf) -> void:
 	leaf.sprite.position = Vector2(leaf.x, leaf.y)
 	leaf.sprite.rotation = leaf.angle
-	leaf.sprite.scale = Vector2(PX * (0.35 + 0.65 * absf(cos(leaf.flip))), PX)
+	leaf.sprite.scale = Vector2(_px * (0.35 + 0.65 * absf(cos(leaf.flip))), _px)
+
+
+## Center of a leaf lying on the surface: its bottom overlaps the grass line.
+func _resting_leaf_y(leaf: Leaf) -> float:
+	return _ground_at(leaf.x) - leaf.sprite.texture.get_height() * _px * 0.5 + _px
 
 
 # --- Snow -------------------------------------------------------------------
@@ -242,12 +320,14 @@ func _reset_flake(flake: Flake, top: bool) -> void:
 	flake.f = _rng.randf_range(0.8, 1.8)
 	flake.ph = _rng.randf_range(0.0, TAU)
 	flake.kind = _rng.randi_range(0, 2)
+	flake.rest = -1.0
 	if flake.layer == 0:
 		flake.sprite.texture = _snow_dots[flake.kind & 1]
 	elif flake.layer == 1:
 		flake.sprite.texture = _snow_flake
 	else:
 		flake.sprite.texture = _snow_crystals[flake.kind]
+	flake.sprite.modulate.a = 1.0
 	_place_flake(flake)
 
 
@@ -255,12 +335,27 @@ func _update_snow(delta: float) -> void:
 	_time += delta
 	var wind := SNOW_WIND + 16.0 * _noise(_time * 0.3, 5)
 	for flake in _flakes:
+		if flake.rest >= 0.0:
+			flake.rest -= delta
+			if flake.rest < 0.0:
+				_reset_flake(flake, true)
+				continue
+			flake.sprite.modulate.a = minf(1.0, flake.rest / 0.8)
+			flake.sprite.position = Vector2(roundf(flake.x), roundf(_resting_flake_y(flake)))
+			continue
 		flake.y += flake.vy * delta
 		flake.x += (wind * (0.5 + flake.layer * 0.4) + cos(_time * flake.f + flake.ph) * flake.sway) * delta
-		if flake.y >= _view.y + 8.0:
-			_reset_flake(flake, true)
 		if flake.x > _view.x + 40.0:
 			flake.x -= _view.x + 100.0
+		if flake.y >= _resting_flake_y(flake):
+			# Background flakes vanish on contact; the two near layers settle.
+			if flake.layer == 0:
+				_reset_flake(flake, true)
+				continue
+			flake.rest = _rng.randf_range(1.0, 2.6)
+			flake.sprite.modulate.a = 1.0
+			flake.sprite.position = Vector2(roundf(flake.x), roundf(_resting_flake_y(flake)))
+			continue
 		_place_flake(flake)
 		if flake.layer == 2:
 			var frame := int(floorf(_time * 3.0 + flake.ph)) & 1
@@ -273,6 +368,10 @@ func _place_flake(flake: Flake) -> void:
 	flake.sprite.position = Vector2(roundf(flake.x), roundf(flake.y))
 
 
+func _resting_flake_y(flake: Flake) -> float:
+	return _ground_at(flake.x) - flake.sprite.texture.get_height() * _px * 0.5
+
+
 # --- Texture building -------------------------------------------------------
 
 func _new_sprite(texture: Texture2D, layer_index: int) -> Sprite2D:
@@ -280,7 +379,7 @@ func _new_sprite(texture: Texture2D, layer_index: int) -> Sprite2D:
 	sprite.texture = texture
 	sprite.centered = true
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sprite.scale = Vector2(PX, PX)
+	sprite.scale = Vector2(_px, _px)
 	sprite.z_index = layer_index
 	add_child(sprite)
 	return sprite

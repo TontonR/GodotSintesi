@@ -134,12 +134,13 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 - Texture: `assets/map/structures/crate.png`, a 16×16 placeholder. The final art comes
   from PixelForge (T-0086) and only swaps that PNG.
 
-## Ambient per biome (2026-11-05)
+## Ambient per biome (2026-11-05 · 2026-11-25, T-0093)
 
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
-- `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) creates two full-screen `CPUParticles2D` with pixel textures generated in code. Every 0.25 s it asks `WorldGenerator.biome_at_world_x()` at the player's X and turns on the emitter for the biome's `ambient`; when turning it off, live particles finish their lifetime.
-- Horizontal coverage (2026-11-05): the emission rectangle measures `view.x × 1.2` on each side of the center (before `0.6`), i.e. twice as wide, and there are twice as many particles (56 leaves, 440 flakes). That way the sideways wind doesn't reveal empty areas at the edges.
-- Leaves: 56 particles, slow fall with rotation. Snow: 440 flakes, even slower fall. When the emitter activates the screen is already full (`preprocess`), and it enters/leaves with a 0.4 s fade and sideways wind.
+- `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) owns two `SpriteFusionAmbient` effects (see `fx.md`). Every 0.25 s it asks `ambient_weight_at_world_x()` for the share of the biome blend around the player and sets that opacity; no more binary on/off.
+- **`ambient_weight_at_world_x(world_x, ambient)`** (2026-11-25): share (0..1) of the ±`AMBIENT_BLEND_TILES` (32) window whose biome uses that ambient. It makes leaves and snow crossfade over ~64 tiles; a meadow or a dungeon still returns 0.
+- **`ground_y_at(world_x)`**: already existed for debug travel; the VFX samples it through the camera transform every 0.1 s and uses the result as the landing line, so particles rest on hills instead of the screen bottom.
+- Counts and sizes are the library's (`falling-leaves` 80, `snow` 260/150/30) at 1 px per art pixel. The screen is pre-filled when an effect fades in.
 
 ## Spawns and persistence
 
