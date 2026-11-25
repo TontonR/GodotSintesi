@@ -20,8 +20,11 @@ const SPAWN_ABOVE_PX := 30.0
 @export_group("Layout")
 ## Hall width in tiles (64 x 32 = 2048 px).
 @export var width_tiles: int = 64
-## Number of floors; the same seed and floor rebuild the same hall.
-@export var floors: int = 2
+## Minimum guaranteed floors.  The actual count is derived from the seed
+## via a cascade of 50 % rolls (see `_compute_floor_count`).
+@export var min_floors: int = 3
+## Hard cap on floors (cascade stops here).
+@export var max_floors: int = 6
 
 @export_group("Test")
 ## Seed used when the scene is opened on its own; 0 = wait for `start()`.
@@ -65,9 +68,26 @@ func start(seed: int, floor: int = 0) -> void:
 	_generate()
 
 
-## Number of floors (at least 1).
+## Number of floors (at least 1), computed deterministically from the seed.
+## Always at least `min_floors`; then each extra floor up to `max_floors`
+## requires an independent 50 % roll (cascade: 4 needs roll1, 5 needs
+## roll1 AND roll2, …).  Uses its own RNG so the layout RNG is unaffected.
 func floor_count() -> int:
-	return maxi(1, floors)
+	return _compute_floor_count(_dungeon_seed)
+
+
+## Compute floor count from a seed without touching the global RNG.
+func _compute_floor_count(seed: int) -> int:
+	var rng := RandomNumberGenerator.new()
+	# Use a distinct salt so this doesn't collide with per-floor layout seeds.
+	rng.seed = seed ^ 0xDEAD_F100R
+	var count := min_floors
+	while count < max_floors:
+		if rng.randf() < 0.5:
+			count += 1
+		else:
+			break
+	return count
 
 
 ## Seed of the current layout.

@@ -8,6 +8,7 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 - Split: `CastleLayout` (pure data), `CastleTiles` (atlas + collision), `CastlePainter` (layers), `DungeonGenerator` (lifecycle, seed/floor, spawn, exit). `WorldGenerator`, `WorldStructure` and `BlockStructure` stay untouched.
 - `DungeonLayer`/`DungeonEntrance` are the world side: door detection, fade, unload/rebuild of the chunks.
 - Two floors (`floors` = 2): `start(seed, floor)` rebuilds the hall (`seed ^ (floor * 7919)`, never the global RNG); `save_state()` is `{seed, floor}`.
+- **Floor count is seed-derived**: always at least 3 (`min_floors`), then each extra floor up to 6 (`max_floors`) requires an independent 50 % roll in a cascade (floor 4 needs roll1, floor 5 needs roll1 AND roll2, etc.). Same seed → same floor count always. `_compute_floor_count(seed)` uses salt `0xDEAD_F100R` so it doesn't collide with per-floor layout seeds.
 
 ## Hall composition
 

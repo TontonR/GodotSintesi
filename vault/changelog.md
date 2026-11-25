@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-25 · `test/fusion-structure` — pisos aleatorios por semilla (T-0093)
+
+- `DungeonGenerator` reemplaza `@export var floors` por `min_floors` (3) y `max_floors` (6) como exports.
+- `floor_count()` es ahora determinista y derivado de la semilla: garantiza `min_floors` y luego intenta añadir pisos con una tirada del 50 % encadenada (cada piso extra requiere que el anterior también saliera exitoso) hasta `max_floors`.
+- `_compute_floor_count(seed)` usa salt `0xDEAD_F100R` para no colisionar con las semillas por planta.
+- La identidad seed → número de pisos es reproducible: la misma semilla siempre produce el mismo castillo con el mismo número de plantas.
+
 ## 2026-11-25 · `test/fusion-structure` — pasillo procedural continuo, autotiling 8-vecinos y salida diferida (T-0093)
 
 - `DungeonGenerator._on_exit_body_entered()` emite `exit_requested.emit.call_deferred()` para evitar el error de físicas (`flushing queries`) al reconstruir chunks al salir.
