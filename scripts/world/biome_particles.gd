@@ -3,10 +3,12 @@ extends CanvasLayer
 # ==============================================================================
 # AMBIENT PARTICLES PER BIOME
 # ==============================================================================
-# Two on-screen emitters: autumn leaves (red forest) and snow (snow biome), both
-# ported from Sprite Fusion's free MIT VFX library (T-0093). The generator is
-# polled every POLL_SECONDS and gives each effect the share of the biome blend
-# around the player, so they crossfade over ~64 tiles instead of popping.
+# Two world-space emitters: autumn leaves (red forest) and snow (snow biome),
+# both ported from Sprite Fusion's free MIT VFX library (T-0093). The layer
+# copies the camera transform every frame, so the effects scroll with the world
+# instead of following the player. The generator is polled every POLL_SECONDS
+# and gives each effect the share of the biome blend around the player, so they
+# crossfade over ~64 tiles instead of popping.
 
 ## How often the biome under the player is checked (s).
 const POLL_SECONDS := 0.25
@@ -25,6 +27,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# World-space layer: children use world coordinates (T-0093 round 3).
+	transform = get_viewport().get_canvas_transform()
 	_elapsed += delta
 	if _elapsed < POLL_SECONDS:
 		return

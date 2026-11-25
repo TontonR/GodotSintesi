@@ -7,7 +7,7 @@ _Actualizado 2026-11-25 por `buffy`_
 | Campo | Valor |
 |---|---|
 | Rama | `feat/vfx-ambiente-spritefusion` (T-0093) desde `test/fusion-structure`; la fusión sigue en `test/fusion-structure` (T-0088), sobre `main` `ccbae38` |
-| Árbol | `revision` tras T-0089/T-0090: estructuras/ruinas, cajas rompibles, mazmorra con entrada, interior de castillo (atlas 32 px de `map.zip`), salida sin regenerar el mapa y VFX ambientales con reposo en el suelo y crossfade por bioma (T-0093). F5 pendiente |
+| Árbol | `revision` tras T-0089/T-0090: estructuras/ruinas, cajas rompibles, mazmorra con entrada, interior de castillo (atlas 32 px de `map.zip`), salida sin regenerar el mapa y VFX ambientales anclados al mundo, con litter/ventisquero y crossfade por bioma (T-0093). F5 pendiente |
 | Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión/castillo) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
 | Siguiente paso | F5 de Ruben (ruinas, cajas, puerta/mazmorra, aspecto del castillo, salida lejana y densidad de hojas/nieve) y PR de `test/fusion-structure` y de `feat/vfx-ambiente-spritefusion` a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |

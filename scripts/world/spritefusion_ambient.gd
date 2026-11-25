@@ -2,27 +2,30 @@ class_name SpriteFusionAmbient
 extends Node2D
 
 # ==============================================================================
-# SPRITE FUSION AMBIENT VFX
+# SPRITE FUSION AMBIENT VFX (WORLD SPACE)
 # ==============================================================================
-# Screen-space port of two free (MIT) effects from Sprite Fusion's VFX library:
+# Port of two free (MIT) effects from Sprite Fusion's VFX library:
 #   - falling-leaves: https://www.spritefusion.com/pixel-art-vfx/falling-leaves
 #   - snow:           https://www.spritefusion.com/pixel-art-vfx/snow
 # Shapes, palettes and motion constants come from the downloaded .ts recipes
-# (assets/vfx/spritefusion/). Each particle is a Sprite2D and the ambient layer
-# is a CanvasLayer, so positions are screen pixels and the camera never moves
-# them. `WorldGenerator.ground_y_at()` is sampled through the camera transform
-# so leaves and flakes land and rest on the surface like the web recipes do.
+# (assets/vfx/spritefusion/). Particles live in WORLD coordinates: the parent
+# CanvasLayer copies the camera transform every frame, and this node spawns and
+# recycles around the visible world rect. Walking therefore scrolls them instead
+# of dragging them along, and they land on `WorldGenerator.ground_y_at()`.
+# The recipes' ground layers are also ported: leaf litter and the snow drift.
 
 const FADE_SECONDS := 0.5
 const LEAF_DRIFT := 12.0
 const LEAF_COUNT := 80
+const LITTER_SPACING := 18.0
 const SNOW_WIND := 14.0
 const SNOW_COUNTS := [260, 150, 30]
 const SNOW_FALL := [26.0, 52.0, 86.0]
 const SNOW_SWAY := [8.0, 16.0, 30.0]
-## Screen pixels between two ground samples, refreshed every 0.1 s.
+## World pixels between two ground samples, refreshed every 0.1 s.
 const GROUND_STEP := 8.0
 const GROUND_REFRESH_SECONDS := 0.1
+const OFFSCREEN_MARGIN := 80.0
 
 ## 3 leaf silhouettes from falling-leaves.ts; L/B/S/D/R/T are palette slots.
 const LEAF_SHAPES: Array = [
@@ -45,6 +48,9 @@ const SNOW_CRYSTALS: Array = [
 	["b..b..b", ".b.w.b.", "..wWw..", "bwWWWwb", "..wWw..", ".b.w.b.", "b..b..b"],
 	["..b..", ".bwb.", "bwWwb", ".bwb.", "..b.."],
 ]
+
+## Drift colours from snow.ts.
+const DRIFT_HEX := ["e9f0ff", "c3cff0", "8e9ccc"]
 
 @export_group("Effect")
 ## Ambient effect to draw: leaves for the red forest, snow for the snow biome.
@@ -88,26 +94,31 @@ class Flake:
 
 var _px := 1.0
 var _view := Vector2.ZERO
+var _area := Rect2()
 var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _active := false
 var _strength := -1.0
 var _tween: Tween
 var _world: Node
-var _ground_screen := PackedFloat32Array()
+var _ground_world := PackedFloat32Array()
+var _ground_origin := 0.0
 var _ground_timer := 0.0
 
 var _leaves: Array[Leaf] = []
 var _leaf_textures: Array[ImageTexture] = []
+var _litter: Array[Sprite2D] = []
 var _flakes: Array[Flake] = []
 var _snow_dots: Array[ImageTexture] = []
 var _snow_flake: ImageTexture
 var _snow_crystals: Array[ImageTexture] = []
+var _drift_colors: Array[Color] = []
 
 
 func _ready() -> void:
 	_px = pixel_scale
 	_view = get_viewport_rect().size
+	_refresh_area()
 	_rng.seed = rng_seed
 	modulate.a = 0.0
 	visible = false
@@ -156,9 +167,11 @@ func _process(delta: float) -> void:
 		_update_snow(delta)
 
 
-## Fills the screen on activation, so the weather never starts as drops.
+## Fills the visible area on activation, so the weather never starts as drops.
 func _scatter() -> void:
 	_ground_timer = 0.0
+	if _ground_world.is_empty():
+		_refresh_ground()
 	if effect == "leaves":
 		for leaf in _leaves:
 			_reset_leaf(leaf, false)
@@ -168,37 +181,56 @@ func _scatter() -> void:
 			_reset_flake(flake, false)
 
 
-# --- Ground -----------------------------------------------------------------
+# --- Visible world rect and ground -----------------------------------------
 
-## Samples the terrain under every screen column and stores it in screen pixels.
+## The parent CanvasLayer copies the camera transform, so `_area` is the visible
+## slice of the world; spawning follows the camera, not the player node.
+func _refresh_area() -> void:
+	var canvas := get_viewport().get_canvas_transform()
+	var inverse := canvas.affine_inverse()
+	var top_left := inverse * Vector2.ZERO
+	var bottom_right := inverse * _view
+	_area = Rect2(top_left, bottom_right - top_left)
+
+
+## Samples the terrain under the visible columns, in world pixels.
 func _refresh_ground() -> void:
-	var columns := int(ceil(_view.x / GROUND_STEP)) + 1
-	if _ground_screen.size() != columns:
-		_ground_screen.resize(columns)
+	_refresh_area()
+	var origin_x := _area.position.x - 48.0
+	var end_x := _area.end.x + 48.0
+	var columns := int(ceil((end_x - origin_x) / GROUND_STEP)) + 1
+	if _ground_world.size() != columns:
+		_ground_world.resize(columns)
 	if _world == null:
 		_world = get_tree().get_first_node_in_group("world_generator")
 	if _world == null or not _world.has_method("ground_y_at"):
-		# Dungeon or no generator: the bottom of the screen acts as the ground.
-		_ground_screen.fill(_view.y)
-		return
-	var canvas := get_viewport().get_canvas_transform()
-	var inverse := canvas.affine_inverse()
-	for i in columns:
-		var screen_x := minf(i * GROUND_STEP, _view.x)
-		var world_x := (inverse * Vector2(screen_x, 0.0)).x
-		var ground_world_y: float = _world.call("ground_y_at", world_x)
-		var ground_screen_y := (canvas * Vector2(world_x, ground_world_y)).y
-		_ground_screen[i] = clampf(ground_screen_y, 0.0, _view.y)
+		# Dungeon or no generator: the bottom of the view acts as the ground.
+		_ground_world.fill(_area.end.y)
+	else:
+		_ground_origin = origin_x
+		for i in columns:
+			var world_x := origin_x + i * GROUND_STEP
+			_ground_world[i] = float(_world.call("ground_y_at", world_x))
+	_place_litter()
+	queue_redraw()
 
 
-## Ground Y in screen pixels under `screen_x`, interpolated between samples.
-func _ground_at(screen_x: float) -> float:
-	var last := _ground_screen.size() - 1
+## Ground Y in world pixels under `world_x`, interpolated between samples.
+func _ground_at(world_x: float) -> float:
+	var last := _ground_world.size() - 1
 	if last <= 0:
-		return _view.y
-	var t := clampf(screen_x / GROUND_STEP, 0.0, float(last))
+		return _area.end.y
+	var t := clampf((world_x - _ground_origin) / GROUND_STEP, 0.0, float(last))
 	var i := mini(int(t), last - 1)
-	return lerpf(_ground_screen[i], _ground_screen[i + 1], t - float(i))
+	return lerpf(_ground_world[i], _ground_world[i + 1], t - float(i))
+
+
+func _out_of_area(x: float, y: float) -> bool:
+	return (
+		x < _area.position.x - OFFSCREEN_MARGIN
+		or x > _area.end.x + OFFSCREEN_MARGIN
+		or y > _area.end.y + 40.0
+	)
 
 
 # --- Leaves -----------------------------------------------------------------
@@ -207,12 +239,36 @@ func _build_leaves() -> void:
 	for shape in LEAF_SHAPES:
 		for palette in LEAF_PALETTES:
 			_leaf_textures.append(_make_texture(shape, _leaf_colors(palette)))
+	_build_litter()
 	var count := int(round(LEAF_COUNT * density))
 	for i in count:
 		var leaf := Leaf.new()
 		leaf.sprite = _new_sprite(_leaf_textures[0], 0)
 		_leaves.append(leaf)
 		_reset_leaf(leaf, false)
+
+
+## Litter is deterministic per world slot, so it never slides with the camera.
+func _build_litter() -> void:
+	var count := int(ceil((_area.size.x + 160.0) / LITTER_SPACING)) + 2
+	for i in count:
+		_litter.append(_new_sprite(_leaf_textures[0], -1))
+
+
+func _place_litter() -> void:
+	if effect != "leaves" or _litter.is_empty():
+		return
+	var start_slot := floori((_area.position.x - 60.0) / LITTER_SPACING)
+	for i in _litter.size():
+		var slot := start_slot + i
+		var x := float(slot) * LITTER_SPACING + _hash(slot, 1) * LITTER_SPACING
+		var shape := int(_hash(slot, 2) * float(LEAF_SHAPES.size())) % LEAF_SHAPES.size()
+		var palette := int(_hash(slot, 4) * float(LEAF_PALETTES.size())) % LEAF_PALETTES.size()
+		var sprite := _litter[i]
+		sprite.texture = _leaf_textures[shape * LEAF_PALETTES.size() + palette]
+		sprite.position = Vector2(x, _resting_y(x, sprite.texture.get_height()))
+		sprite.rotation = (_hash(slot, 5) - 0.5) * 0.6
+		sprite.scale = Vector2(_px, _px)
 
 
 func _leaf_colors(palette: Array) -> Dictionary:
@@ -229,8 +285,13 @@ func _leaf_colors(palette: Array) -> Dictionary:
 
 
 func _reset_leaf(leaf: Leaf, top: bool) -> void:
-	leaf.x0 = _rng.randf_range(-40.0, _view.x)
-	leaf.y = -_rng.randf_range(0.0, 40.0) if top else _rng.randf_range(0.0, maxf(_view.y - 20.0, 1.0))
+	var x := _rng.randf_range(_area.position.x - 40.0, _area.end.x)
+	leaf.x0 = x
+	if top:
+		leaf.y = _area.position.y - _rng.randf_range(0.0, 40.0)
+	else:
+		var bottom := clampf(_ground_at(x) - 20.0, _area.position.y, _area.end.y - 20.0)
+		leaf.y = _rng.randf_range(_area.position.y, maxf(bottom, _area.position.y))
 	leaf.vy = _rng.randf_range(34.0, 56.0)
 	leaf.amp = _rng.randf_range(14.0, 34.0)
 	leaf.w = _rng.randf_range(1.8, 2.8)
@@ -250,6 +311,9 @@ func _reset_leaf(leaf: Leaf, top: bool) -> void:
 
 func _update_leaves(delta: float) -> void:
 	for leaf in _leaves:
+		if _out_of_area(leaf.x, leaf.y):
+			_reset_leaf(leaf, true)
+			continue
 		if leaf.rest >= 0.0:
 			leaf.rest -= delta
 			if leaf.rest < 0.0:
@@ -265,8 +329,6 @@ func _update_leaves(delta: float) -> void:
 		leaf.angle = cos(leaf.ph) * 0.75 + (0.0 if leaf.near else 0.3)
 		var flip_speed := 6.0 if _hash(floori(leaf.ph / PI), floori(leaf.x0)) < 0.25 else 0.4
 		leaf.flip += flip_speed * delta
-		if leaf.x > _view.x + 60.0:
-			leaf.x0 -= _view.x + 120.0
 		if leaf.y >= _resting_leaf_y(leaf):
 			leaf.rest = _rng.randf_range(2.5, 5.0)
 			leaf.angle *= 0.3
@@ -286,7 +348,11 @@ func _place_leaf(leaf: Leaf) -> void:
 
 ## Center of a leaf lying on the surface: its bottom overlaps the grass line.
 func _resting_leaf_y(leaf: Leaf) -> float:
-	return _ground_at(leaf.x) - leaf.sprite.texture.get_height() * _px * 0.5 + _px
+	return _resting_y(leaf.x, leaf.sprite.texture.get_height())
+
+
+func _resting_y(x: float, height: float) -> float:
+	return _ground_at(x) - height * _px * 0.5 + _px
 
 
 # --- Snow -------------------------------------------------------------------
@@ -302,6 +368,8 @@ func _build_snow() -> void:
 	_snow_flake = _make_texture(["Ww", "wb"], colors)
 	for crystal in SNOW_CRYSTALS:
 		_snow_crystals.append(_make_texture(crystal, colors))
+	for hex in DRIFT_HEX:
+		_drift_colors.append(Color(hex))
 	for layer in SNOW_COUNTS.size():
 		var count := int(round(SNOW_COUNTS[layer] * density))
 		for i in count:
@@ -313,8 +381,13 @@ func _build_snow() -> void:
 
 
 func _reset_flake(flake: Flake, top: bool) -> void:
-	flake.x = _rng.randf_range(-60.0, _view.x)
-	flake.y = -_rng.randf_range(0.0, 40.0) if top else _rng.randf_range(0.0, _view.y)
+	var x := _rng.randf_range(_area.position.x - 60.0, _area.end.x)
+	flake.x = x
+	if top:
+		flake.y = _area.position.y - _rng.randf_range(0.0, 40.0)
+	else:
+		var bottom := clampf(_ground_at(x), _area.position.y, _area.end.y)
+		flake.y = _rng.randf_range(_area.position.y, maxf(bottom, _area.position.y))
 	flake.vy = SNOW_FALL[flake.layer] * _rng.randf_range(0.75, 1.25)
 	flake.sway = SNOW_SWAY[flake.layer] * _rng.randf_range(0.6, 1.2)
 	flake.f = _rng.randf_range(0.8, 1.8)
@@ -335,6 +408,9 @@ func _update_snow(delta: float) -> void:
 	_time += delta
 	var wind := SNOW_WIND + 16.0 * _noise(_time * 0.3, 5)
 	for flake in _flakes:
+		if _out_of_area(flake.x, flake.y):
+			_reset_flake(flake, true)
+			continue
 		if flake.rest >= 0.0:
 			flake.rest -= delta
 			if flake.rest < 0.0:
@@ -345,10 +421,8 @@ func _update_snow(delta: float) -> void:
 			continue
 		flake.y += flake.vy * delta
 		flake.x += (wind * (0.5 + flake.layer * 0.4) + cos(_time * flake.f + flake.ph) * flake.sway) * delta
-		if flake.x > _view.x + 40.0:
-			flake.x -= _view.x + 100.0
 		if flake.y >= _resting_flake_y(flake):
-			# Background flakes vanish on contact; the two near layers settle.
+			# Background flakes vanish on contact; the two near layers melt.
 			if flake.layer == 0:
 				_reset_flake(flake, true)
 				continue
@@ -370,6 +444,25 @@ func _place_flake(flake: Flake) -> void:
 
 func _resting_flake_y(flake: Flake) -> float:
 	return _ground_at(flake.x) - flake.sprite.texture.get_height() * _px * 0.5
+
+
+## Snow drift along the ground, from the recipe's per-column noise.
+func _draw() -> void:
+	if effect != "snow" or _strength <= 0.01 or _drift_colors.is_empty():
+		return
+	var left := floorf(_area.position.x - 16.0)
+	var right := _area.end.x + 16.0
+	var x := left
+	while x <= right:
+		var ground := _ground_at(x)
+		var height := 1 + roundi(1.6 + _noise(x * 0.09, 11) * 1.4 + _noise(x * 0.31, 12) * 0.6)
+		for r in height:
+			var color: Color = _drift_colors[0] if r == height - 1 else _drift_colors[1]
+			draw_rect(Rect2(x, ground - 1.0 - r, 1.0, 1.0), color)
+		draw_rect(Rect2(x, ground, 1.0, 1.0), _drift_colors[2])
+		if _hash(floori(x), 13) < 0.3:
+			draw_rect(Rect2(x, ground + 1.0, 1.0, 1.0), _drift_colors[2])
+		x += 1.0
 
 
 # --- Texture building -------------------------------------------------------

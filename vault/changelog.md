@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-25 · `buffy` · VFX anclados al mundo con litter y ventisquero (T-0093)
+
+- La capa de ambiente copia la transformada de cámara: las partículas pasan a
+  coordenadas de mundo y se generan/reciclan alrededor del rect visible, no del jugador.
+  Al caminar hacen scroll con el terreno en vez de moverse con él.
+- Portados los suelos de las recetas: litter de hojas determinista cada 18 px y
+  ventisquero de nieve por ruido; los copos cercanos se derriten con fundido.
+- `ground_y_at()` por columna de mundo cada 0,1 s; en mazmorra se usa el fondo de vista.
+
 ## 2026-11-25 · `buffy` · VFX: escala, suelo y crossfade (T-0093)
 
 - Partículas a 1 px por píxel de arte (`pixel_scale`), la mitad de tamaño.

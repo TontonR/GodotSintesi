@@ -139,8 +139,9 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
 - `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) owns two `SpriteFusionAmbient` effects (see `fx.md`). Every 0.25 s it asks `ambient_weight_at_world_x()` for the share of the biome blend around the player and sets that opacity; no more binary on/off.
 - **`ambient_weight_at_world_x(world_x, ambient)`** (2026-11-25): share (0..1) of the ±`AMBIENT_BLEND_TILES` (32) window whose biome uses that ambient. It makes leaves and snow crossfade over ~64 tiles; a meadow or a dungeon still returns 0.
-- **`ground_y_at(world_x)`**: already existed for debug travel; the VFX samples it through the camera transform every 0.1 s and uses the result as the landing line, so particles rest on hills instead of the screen bottom.
-- Counts and sizes are the library's (`falling-leaves` 80, `snow` 260/150/30) at 1 px per art pixel. The screen is pre-filled when an effect fades in.
+- **`ground_y_at(world_x)`**: already existed for debug travel; the VFX sample it per world column every 0.1 s and rest particles on it, so they land on hills instead of the screen bottom.
+- **World space** (T-0093 round 3): `biome_particles.gd` copies the camera transform into the `CanvasLayer` every frame, and the effects spawn/recycle around the visible world rect. Particles are anchored to the world and scroll with it; the leaf litter is hashed per 18 px world slot and the snow drift is drawn from per-column noise.
+- Counts and sizes are the library's (`falling-leaves` 80, `snow` 260/150/30) at 1 px per art pixel. The view is pre-filled when an effect fades in.
 
 ## Spawns and persistence
 

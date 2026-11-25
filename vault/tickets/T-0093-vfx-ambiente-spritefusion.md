@@ -67,3 +67,18 @@ y `biome_particles.gd` lo alimenta con el peso del blend de biomas.
   texturas válidas y el peso de bioma queda en 0..1. Falta F5 para densidad/contraste.
 - Pendiente menor: las recetas dibujan litter de hojas y ventisquero de nieve; no se
   portaron para no ensuciar la capa de pantalla cuando la cámara se mueve.
+
+### Ronda 3 (2026-11-25): anclaje al mundo, litter y ventisquero
+
+- `biome_particles.gd` copia `get_canvas_transform()` en `CanvasLayer.transform` cada
+  frame: las partículas viven en coordenadas de mundo. Se generan y reciclan alrededor
+  del rect visible de la cámara (no del jugador), así que al caminar hacen scroll con
+  el terreno en vez de perseguir al jugador.
+- Se porta el suelo de las recetas: litter de hojas determinista por ranura de 18 px
+  (forma/paleta/ángulo por hash, no se desliza) y ventisquero de nieve dibujado con
+  `_draw()` a partir del ruido y los colores de `snow.ts`. Los copos cercanos se
+  derriten con fundido; el fondo desaparece al tocar.
+- El suelo sale de `ground_y_at()` por columna de mundo cada 0,1 s; en mazmorra se
+  limita al fondo de la vista.
+- Headless: 80 hojas + litter, 440 copos, reposo y litter sobre el stub de suelo, sin
+  partículas por debajo. Falta F5.

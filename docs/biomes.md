@@ -124,8 +124,9 @@ skipped. A biome that lists nothing places nothing. Full reference:
   `WorldGenerator.ambient_weight_at_world_x()` for the leaves/snow share of the biome
   blend (±32 tiles) every 0.25 s; both effects follow it with a 0.5 s alpha tween, so
   they crossfade over ~64 tiles. Both come from Sprite Fusion's MIT VFX library
-  (`falling-leaves`: 80 leaves; `snow`: 260/150/30 flakes by depth) and rest on the
-  terrain via `ground_y_at()`; see `fx.md`.
+  (`falling-leaves`: 80 leaves + litter; `snow`: 260/150/30 flakes + drift) and live in
+  world space: the layer copies the camera transform, so they scroll with the terrain
+  and rest on `ground_y_at()`; see `fx.md`.
 
 ## Adding a biome
 

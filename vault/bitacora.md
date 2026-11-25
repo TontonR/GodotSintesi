@@ -917,3 +917,12 @@ Formato de entrada:
 - Ficheros: `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`,
   `scripts/world_generator.gd`, `docs/fx.md`, `docs/biomes.md`, `docs/world.md`.
   Headless: reposo medido a la altura de un stub de suelo y pesos 0..1. Falta F5.
+
+## 2026-11-25 · `buffy` · VFX anclados al mundo (T-0093, ronda 3)
+
+- Ruben: el reposo no era como la web y las partículas debían cargarse del mundo, no del
+  jugador. `biome_particles.gd` copia la transformada de cámara en `CanvasLayer.transform`
+  y el efecto usa coordenadas de mundo, generando/reciclando en el rect visible.
+- Portados los suelos de las recetas: litter determinista de hojas (18 px) y ventisquero
+  de nieve por ruido; `_draw()` para el drift.
+- Headless: 80 hojas + litter y 440 copos, reposo/litter sobre el stub, 0 bajo el suelo.
