@@ -1,19 +1,14 @@
 extends Node
-
-# ==============================================================================
-# PROCEDURAL WORLD BY CHUNKS
-# ==============================================================================
+## Procedural world by chunks. Owns the terrain height chain, the chunk
+## streaming loop and the public API. Biome logic lives in WorldBiomeManager,
+## decor selection/tinting in WorldDecorManager and entity spawning in
+## WorldSpawner — each managed as a RefCounted, instantiated in _ready.
 
 ## Tile size in pixels. The only place where it is defined.
 const TILE_SIZE := 16
 ## Extra chunks kept loaded on each side: enemies do not
 ## disappear when crossing a seam (only chunks 2 further back are freed).
 const KEEP_CHUNKS_SIDE := 2
-## The mountain base band darkens the biome's forest color by this factor
-## (the meadow's `#283D43` comes out of `forest_color` darkened 0.35).
-const MOUNTAIN_BASE_DARKENING := 0.35
-## Tiles on each side over which the ambient VFX crossfade between biomes.
-const AMBIENT_BLEND_TILES := 32
 
 @export_group("World")
 ## World seed; 0 = random per run.
@@ -44,8 +39,7 @@ const AMBIENT_BLEND_TILES := 32
 @export var min_height: int = 5
 ## Maximum ground row (deepest valley).
 @export var max_height: int = 110
-## Maximum rise/drop between two neighboring columns, in tiles. Without it the
-## noise (and the red forest's x1.35) chains 3-4 tile walls that need a jump potion.
+## Maximum rise/drop between two neighboring columns, in tiles.
 @export var max_step_tiles: int = 1
 
 @export_group("Tiles")
@@ -60,13 +54,11 @@ const AMBIENT_BLEND_TILES := 32
 @export var swap_left_right: bool = false
 
 @export_group("Left wall")
-## Columns painted left of tile 0 as a mountain. It hides the world's left edge
-## (there is no chunk to the left) instead of showing a flat cut into the void.
+## Columns painted left of tile 0 as a mountain.
 @export var left_wall_tiles: int = 56
-## First columns of the wall you can climb (1 tile each) before it turns steep.
+## First columns of the wall you can climb (1 tile each).
 @export var left_wall_climb_tiles: int = 2
-## Rows each wall column rises after that stretch. Above 2 it cannot be jumped
-## (the jump is ~2.6 tiles), which is what makes the wall a barrier.
+## Rows each wall column rises after the climbable stretch.
 @export var left_wall_step_rows: int = 4
 
 @export_group("Enemies")
@@ -89,34 +81,33 @@ const AMBIENT_BLEND_TILES := 32
 	preload("res://resources/world/biomes/bosque_rojo.tres"),
 	preload("res://resources/world/biomes/nieve.tres")
 ]
-## Frequency of the noise that distributes biomes (per chunk); lower = bigger biomes.
+## Frequency of the noise that distributes biomes (per chunk).
 @export var biome_frequency: float = 0.12
 ## Biome noise contrast; higher = extremes more frequent.
 @export var biome_contrast: float = 2.0
 ## Lengths of the biome runs are rounded to this many tiles (0 = one chunk).
 @export var biome_sector_tiles: int = 0
-## Shortest a biome can last before it may change (avoids micro-biomes).
+## Shortest a biome can last before it may change.
 @export var min_biome_tiles: int = 512
-## Longest a biome can last before it has to change (avoids endless ones).
+## Longest a biome can last before it must change.
 @export var max_biome_tiles: int = 2048
 ## Blocks the color transition between biomes lasts (0 = one full chunk).
 @export var biome_transition_tiles: int = 0
-## Nodes (Sprite2D) of the forests and the mountain's green layer tinted by the biome.
+## Nodes (Sprite2D) of the forests and the mountain's green layer.
 @export var forest_tint_paths: Array[NodePath] = [
 	^"../far_forest/Sprite2D",
 	^"../near_forest/Sprite2D",
 	^"../mountains/Sprite2DGreen",
 ]
-## Nodes (Sprite2D) of the mountain rock, which use the biome's `rock_color`.
+## Nodes (Sprite2D) of the mountain rock.
 @export var rock_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2D",
 ]
-## Nodes (Sprite2D) of the mountain snow cap, which use the biome's `snow_color`.
+## Nodes (Sprite2D) of the mountain snow cap.
 @export var snow_tint_paths: Array[NodePath] = [
 	^"../mountains/Sprite2DSnow",
 ]
-## Nodes (ColorRect) of the band under the mountains: they take a dark
-## shade of the biome's `forest_color`.
+## Nodes (ColorRect) of the band under the mountains.
 @export var base_tint_paths: Array[NodePath] = [
 	^"../mountains/MountainBase",
 ]
@@ -126,9 +117,9 @@ const AMBIENT_BLEND_TILES := 32
 @export var enemy_spawn_margin_tiles: int = 2
 ## Safe margin tiles after the player spawn before the first enemy.
 @export var enemy_safe_gap_tiles: int = 20
-## Initial chunks with fewer enemies (base count × multiplier).
+## Initial chunks with fewer enemies.
 @export var enemy_ramp_first_chunks: int = 2
-## Enemy multiplier in those first chunks.
+## Enemy multiplier in the first chunks.
 @export var enemy_ramp_first_multiplier: float = 0.5
 ## Multiplier increase per chunk beyond the initial stretch.
 @export var enemy_ramp_per_chunk: float = 0.2
@@ -138,16 +129,15 @@ const AMBIENT_BLEND_TILES := 32
 @export_group("Coins")
 @export var coin_scene: PackedScene = preload("res://scenes/collectables/coin.tscn")
 @export var coins_per_chunk: int = 2
-## Height above the ground where coins spawn: they then fall, bounce and
-## settle with their own gravity (`scripts/collectables/coin.gd`).
+## Height above the ground where coins spawn.
 @export var coin_spawn_height: float = 40.0
+
 @export_group("Decor")
-## Decor names the biomes use in `Biome.decor_kinds` (same order as the arrays below).
+## Decor names the biomes use in `Biome.decor_kinds` (same order as arrays below).
 @export var decor_names: Array[String] = [
 	"bush_1", "bush_2", "tree", "tree_dead", "rock_1", "rock_2"
 ]
-## Textures in `assets/map/decor`. Foliage ones get a runtime copy where only
-## the leaf pixels take the biome tint, so the trunks keep their own browns.
+## Textures in `assets/map/decor`.
 @export var decor_textures: Array[Texture2D] = [
 	preload("res://assets/map/decor/Bush/bush_1.png"),
 	preload("res://assets/map/decor/Bush/bush_2.png"),
@@ -156,15 +146,15 @@ const AMBIENT_BLEND_TILES := 32
 	preload("res://assets/map/decor/Rock/rock_1.png"),
 	preload("res://assets/map/decor/Rock/rock_2.png"),
 ]
-## Whether each texture takes the biome's `decor_colors` tint (same order).
+## Whether each texture takes the biome tint (same order).
 @export var decor_tinted: Array[bool] = [true, true, true, false, false, false]
-## Sprite scale (same order): decoration is big and never scaled by depth.
+## Sprite scale (same order).
 @export var decor_scales: Array[float] = [1.9, 1.9, 1.8, 1.8, 1.7, 1.7]
-## Draw order inside the chunk: negative values go behind the grass row.
+## Draw order inside the chunk; negative values go behind the grass row.
 @export var decor_z_index: Array[int] = [0, 0, 0, 0, -1, -1]
 ## Bushes wobble and drop leaves while the player walks through them.
 @export var decor_sways: Array[bool] = [true, true, false, false, false, false]
-## Fallback weights for biomes without `decor_kinds` (same order as `decor_names`).
+## Fallback weights for biomes without `decor_kinds`.
 @export var decor_weights: Array[int] = [4, 4, 1, 1, 2, 2]
 ## Fallback decor per chunk for biomes without `decor_per_chunk`.
 @export var decor_per_chunk: int = 16
@@ -190,6 +180,7 @@ const AMBIENT_BLEND_TILES := 32
 @export var crate_scene: PackedScene = preload("res://scenes/world/breakable_block.tscn")
 ## Crates rolled per ruin; 0 disables them.
 @export var crates_per_ruin: int = 2
+
 @export_group("Chunks")
 @export var chunk_scene: PackedScene = preload("res://scenes/world/chunk.tscn")
 
@@ -198,90 +189,57 @@ const AMBIENT_BLEND_TILES := 32
 @onready var _template_grass: TileMapLayer = get_node_or_null("grass_map_layer")
 
 var _noise := FastNoiseLite.new()
-var _biome_noise := FastNoiseLite.new()
 var _seed: int = 0
 var _camera: Camera2D
 var _loaded_chunks: Dictionary = {}
 var _chunk_data: Dictionary = {}
-## Slope-limited heights per chunk: index 0 is the column before the chunk,
-## 1..width its own and width+1 the first of the next.
+## Slope-limited heights per chunk.
 var _clamped_heights: Dictionary = {}
-## Clamped height of each chunk's last column, to chain the next chunk.
 var _clamped_last: Dictionary = {}
-var _defeated_spawns: Dictionary = {}
-var _collected_spawns: Dictionary = {}
-## Crates already broken, by stable id (`b:chunk_x:chunk_y:tile_x`).
-var _broken_blocks: Dictionary = {}
 var _last_first: int = 999999
 var _last_last: int = -999999
-var _forest_tint_nodes: Array[CanvasItem] = []
-var _rock_tint_nodes: Array[CanvasItem] = []
-var _snow_tint_nodes: Array[CanvasItem] = []
-var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
-## Biome runs already decided, in order: {start, index, length} in tiles.
-var _biome_runs: Array[Dictionary] = []
-## Decor name → index in the generator's parallel arrays.
-var _decor_lookup: Dictionary = {}
-## Structure `display_name` → index in `structures`.
-var _structure_lookup: Dictionary = {}
-## Tinted foliage textures, keyed by source path and tint (one per biome color).
-var _decor_tint_cache: Dictionary = {}
-## Mountain painted left of tile 0, left to right; chunk 0 only.
+## Mountain left of tile 0, left to right; chunk 0 only.
 var _left_wall: PackedInt32Array = PackedInt32Array()
+
+## Sub-managers (RefCounted, rebuilt per run).
+var _biome: WorldBiomeManager
+var _decor: WorldDecorManager
+var _spawner: WorldSpawner
 
 
 func _ready() -> void:
-	# Enemies find it by group to read the world configuration.
 	add_to_group("world_generator")
-	# The old layer stays in game.tscn as a TileSet template.
 	if solid_tile_set == null and _template_solid:
 		solid_tile_set = _template_solid.tile_set
 	if grass_tile_set == null and _template_grass:
 		grass_tile_set = _template_grass.tile_set
 
 	_seed = world_seed if world_seed != 0 else randi()
-	# New Game: the seed typed in the menu (0 = the random one above).
 	if SaveGame.pending_seed != 0:
 		_seed = SaveGame.pending_seed
 		SaveGame.pending_seed = 0
-	# Continue: same world and spawn state as the saved run.
 	if SaveGame.pending_load:
 		_seed = int(SaveGame.data.get("seed", _seed))
-		_restore_persistent_state()
+
 	_noise.seed = _seed
 	_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	_noise.frequency = noise_frequency
 	_noise.fractal_octaves = noise_octaves
 	_noise.fractal_gain = noise_gain
 
-	_biome_noise.seed = _seed + 1000
-	_biome_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	# Biome is decided per block: the exported frequency is still per chunk.
-	_biome_noise.frequency = biome_frequency / float(maxi(chunk_width_tiles, 1))
+	_build_biome_manager()
+	_build_decor_manager()
+	_build_spawner()
+
+	if SaveGame.pending_load:
+		_spawner.restore_state(SaveGame.data)
 
 	if player:
 		_camera = player.get_node_or_null("Camera2D") as Camera2D
 		var spawn_x := safe_start_tiles * TILE_SIZE + TILE_SIZE / 2
 		var spawn_y := _height_at(safe_start_tiles) * TILE_SIZE - player_spawn_height_tiles * TILE_SIZE
 		player.position = Vector2(spawn_x, spawn_y)
-
-	for path in forest_tint_paths:
-		var node := get_node_or_null(path) as CanvasItem
-		if node:
-			_forest_tint_nodes.append(node)
-	for path in rock_tint_paths:
-		var node := get_node_or_null(path) as CanvasItem
-		if node:
-			_rock_tint_nodes.append(node)
-	for path in snow_tint_paths:
-		var node := get_node_or_null(path) as CanvasItem
-		if node:
-			_snow_tint_nodes.append(node)
-	for path in base_tint_paths:
-		var node := get_node_or_null(path) as ColorRect
-		if node:
-			_base_tint_nodes.append(node)
 
 	_update_chunks(true)
 	_update_biome_tint(true)
@@ -295,12 +253,77 @@ func _process(_delta: float) -> void:
 
 
 # ==============================================================================
+# MANAGERS SETUP
+# ==============================================================================
+
+func _build_biome_manager() -> void:
+	_biome = WorldBiomeManager.new()
+	_biome.biomes = biomes
+	_biome.chunk_width_tiles = chunk_width_tiles
+	_biome.transition_tiles = biome_transition_tiles
+	_biome.min_biome_tiles = min_biome_tiles
+	_biome.max_biome_tiles = max_biome_tiles
+	_biome.biome_sector_tiles = biome_sector_tiles
+	_biome.biome_contrast = biome_contrast
+	_biome.setup(_seed, biome_frequency)
+	for path in forest_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_biome.forest_tint_nodes.append(node)
+	for path in rock_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_biome.rock_tint_nodes.append(node)
+	for path in snow_tint_paths:
+		var node := get_node_or_null(path) as CanvasItem
+		if node:
+			_biome.snow_tint_nodes.append(node)
+	for path in base_tint_paths:
+		var node := get_node_or_null(path) as ColorRect
+		if node:
+			_biome.base_tint_nodes.append(node)
+
+
+func _build_decor_manager() -> void:
+	_decor = WorldDecorManager.new()
+	_decor.decor_names = decor_names
+	_decor.decor_textures = decor_textures
+	_decor.decor_tinted = decor_tinted
+	_decor.decor_scales = decor_scales
+	_decor.decor_z_index = decor_z_index
+	_decor.decor_sways = decor_sways
+	_decor.decor_weights = decor_weights
+	_decor.biome_manager = _biome
+
+
+func _build_spawner() -> void:
+	_spawner = WorldSpawner.new()
+	_spawner.enemy_scenes = enemy_scenes
+	_spawner.enemy_counts_per_chunk = enemy_counts_per_chunk
+	_spawner.coin_scene = coin_scene
+	_spawner.crate_scene = crate_scene
+	_spawner.structures = structures
+	_spawner.chunk_width_tiles = chunk_width_tiles
+	_spawner.enemy_spawn_margin_tiles = enemy_spawn_margin_tiles
+	_spawner.enemy_safe_gap_tiles = enemy_safe_gap_tiles
+	_spawner.enemy_ramp_first_chunks = enemy_ramp_first_chunks
+	_spawner.enemy_ramp_first_multiplier = enemy_ramp_first_multiplier
+	_spawner.enemy_ramp_per_chunk = enemy_ramp_per_chunk
+	_spawner.enemy_ramp_max_multiplier = enemy_ramp_max_multiplier
+	_spawner.coins_per_chunk = coins_per_chunk
+	_spawner.coin_spawn_height = coin_spawn_height
+	_spawner.crates_per_ruin = crates_per_ruin
+	_spawner.structure_min_gap_tiles = structure_min_gap_tiles
+	_spawner.decor_sway_radius_px = decor_sway_radius_px
+	_spawner.decor_manager = _decor
+
+
+# ==============================================================================
 # TERRAIN HEIGHT
 # ==============================================================================
+
 func _height_at(tile_x: int) -> int:
 	if tile_x < 0:
-		# Left of tile 0 there is only the mountain painted by chunk 0; without it
-		# the ground the player came from stays flat.
 		if left_wall_tiles <= 0:
 			return base_height
 		return _left_wall_height_at(clampi(tile_x, -left_wall_tiles, -1))
@@ -309,8 +332,6 @@ func _height_at(tile_x: int) -> int:
 	return _clamped_heights_for(chunk_x)[local + 1]
 
 
-## Clamped heights of a chunk. A chunk needs the previous column, so the missing
-## chunks to its left are built first (normally none: chunks load left to right).
 func _clamped_heights_for(chunk_x: int) -> PackedInt32Array:
 	if _clamped_heights.has(chunk_x):
 		return _clamped_heights[chunk_x]
@@ -326,23 +347,18 @@ func _clamped_heights_for(chunk_x: int) -> PackedInt32Array:
 	return _clamped_heights[chunk_x]
 
 
-## Builds a chunk's heights limiting each column to `max_step_tiles` from the
-## previous one. Same seed = same chain, so chunk seams keep matching.
 func _build_clamped_heights(chunk_x: int) -> void:
 	var start_x := chunk_x * chunk_width_tiles
-	var biome_data := _chunk_biome_data(chunk_x)
+	var biome_data := _biome.chunk_biome_data(chunk_x)
 	var amplitudes: PackedFloat64Array = biome_data["amplitude"]
 	var frequencies: PackedFloat64Array = biome_data["frequency"]
 	var heights := PackedInt32Array()
 	heights.resize(chunk_width_tiles + 2)
-	# Index 0 is the column before the chunk: take it from the previous chunk
-	# instead of recomputing it, or a different biome modifier would break the seam.
 	var prev := base_height
 	if chunk_x > 0:
 		prev = int(_clamped_last[chunk_x - 1])
 	heights[0] = prev
 	for i in range(1, chunk_width_tiles + 2):
-		# Biome modifiers are per column; the last one is the next chunk's first.
 		var j := mini(i - 1, chunk_width_tiles)
 		var h := _height_at_with(start_x + i - 1, amplitudes[j], frequencies[j])
 		h = clampi(h, prev - max_step_tiles, prev + max_step_tiles)
@@ -352,9 +368,7 @@ func _build_clamped_heights(chunk_x: int) -> void:
 	_clamped_last[chunk_x] = heights[chunk_width_tiles]
 
 
-## Height with biome modifiers already mixed (passed by the chunk).
 func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
-	# Nothing exists left of the start: flat ground, so chunk 0's left edge matches.
 	if tile_x < safe_start_tiles:
 		return base_height
 	var h := _noise_height(tile_x, amplitude, frequency)
@@ -364,68 +378,14 @@ func _height_at_with(tile_x: int, amplitude: float, frequency: float) -> int:
 	return h
 
 
-## The world only grows to the right. Left of tile 0 there is no chunk, only the
-## painted mountain, so the last column of the wall is the hard stop: the player
-## can climb its foot but never walks off the painted terrain.
-func _keep_player_inside_world() -> void:
-	var min_x := TILE_SIZE
-	if left_wall_tiles > 0:
-		min_x = -maxi(left_wall_tiles - 1, 0) * TILE_SIZE
-	if player.global_position.x < min_x:
-		player.global_position = Vector2(min_x, player.global_position.y)
-		player.velocity.x = maxf(player.velocity.x, 0.0)
+func _noise_height(tile_x: int, amplitude: float = 1.0, frequency: float = 1.0) -> int:
+	var value := 0.0
+	for offset in range(-1, 2):
+		value += _noise.get_noise_1d(float(tile_x + offset) * frequency)
+	value /= 3.0
+	return clampi(roundi(base_height + value * height_amplitude * amplitude), min_height, max_height)
 
 
-## Chunk index (x) containing `world_x`; chunks only grow to the right.
-func chunk_at_world_x(world_x: float) -> int:
-	return maxi(floori(world_x / float(chunk_width_tiles * TILE_SIZE)), 0)
-
-
-## Next structure to the right of `world_x`: its center X in pixels, or -1 when
-## `search_chunks` chunks ahead have none. Dungeon doors are structures, so they
-## count here too. Generates the chunk data it looks at.
-func next_structure_x(world_x: float, search_chunks: int = 64) -> float:
-	var first := chunk_at_world_x(world_x)
-	for i in range(search_chunks):
-		var coord := Vector2i(first + i, 0)
-		if not _chunk_data.has(coord):
-			_chunk_data[coord] = _generate_chunk(coord)
-		# Nearest one to the right inside this chunk: structures and doors roll
-		# in no X order, so the first match is not necessarily the closest.
-		var nearest := -1.0
-		for entry in _chunk_data[coord]["structures"]:
-			var x := (coord.x * chunk_width_tiles + int(entry["x"])) * TILE_SIZE + TILE_SIZE * 0.5
-			if x > world_x + 1.0 and (nearest < 0.0 or x < nearest):
-				nearest = x
-		if nearest >= 0.0:
-			return nearest
-	return -1.0
-
-
-## Start X (pixels) of the next biome run to the right of `world_x`, or -1 when
-## there are no biomes.
-func next_biome_start_x(world_x: float) -> float:
-	if biomes.is_empty():
-		return -1.0
-	var tile := maxi(floori(world_x / float(TILE_SIZE)), 0)
-	_ensure_biome_runs(tile)
-	var last: Dictionary = _biome_runs.back()
-	# The runs only exist up to the player: append one more to have a next one.
-	_ensure_biome_runs(int(last["start"]) + int(last["length"]))
-	for run in _biome_runs:
-		var start := int(run["start"]) * TILE_SIZE
-		if start > world_x + 1.0:
-			return float(start)
-	return -1.0
-
-
-## Ground Y in pixels at `world_x`, i.e. the top row of that column. Used by the
-## debug quick travel to leave the player a bit above the terrain.
-func ground_y_at(world_x: float) -> float:
-	return float(_height_at(floori(world_x / float(TILE_SIZE))) * TILE_SIZE)
-
-
-## Wall height at a negative tile (clamped to the painted range).
 func _left_wall_height_at(tile_x: int) -> int:
 	var count := maxi(left_wall_tiles, 0)
 	if count <= 0:
@@ -435,11 +395,6 @@ func _left_wall_height_at(tile_x: int) -> int:
 	return _left_wall[clampi(tile_x + count, 0, count - 1)]
 
 
-## Heights of the mountain left of tile 0, left to right. It starts at the
-## ground the player reaches (one 1-tile step per column, climbable) and then
-## rises `left_wall_step_rows` per column up to `min_height`, where it stays: a
-## massif too tall to climb, so the barrier is hidden as terrain. Not part of
-## the clamped chain, because it is a barrier, not generated ground.
 func _left_wall_heights() -> PackedInt32Array:
 	var count := maxi(left_wall_tiles, 0)
 	var heights := PackedInt32Array()
@@ -454,375 +409,68 @@ func _left_wall_heights() -> PackedInt32Array:
 	return heights
 
 
-## Fewer enemies in the first chunks and many more the further away.
-func _enemy_count_multiplier(chunk_x: int) -> float:
-	if chunk_x < enemy_ramp_first_chunks:
-		return enemy_ramp_first_multiplier
-	var steps := float(chunk_x - enemy_ramp_first_chunks) + 1.0
-	return minf(1.0 + enemy_ramp_per_chunk * steps, enemy_ramp_max_multiplier)
-
-
-func _noise_height(tile_x: int, amplitude: float = 1.0, frequency: float = 1.0) -> int:
-	# 3 samples for some smoothing without flattening too much.
-	var value := 0.0
-	for offset in range(-1, 2):
-		value += _noise.get_noise_1d(float(tile_x + offset) * frequency)
-	value /= 3.0
-	return clampi(roundi(base_height + value * height_amplitude * amplitude), min_height, max_height)
+func _keep_player_inside_world() -> void:
+	var min_x := TILE_SIZE
+	if left_wall_tiles > 0:
+		min_x = -maxi(left_wall_tiles - 1, 0) * TILE_SIZE
+	if player.global_position.x < min_x:
+		player.global_position = Vector2(min_x, player.global_position.y)
+		player.velocity.x = maxf(player.velocity.x, 0.0)
 
 
 # ==============================================================================
-# CHUNK LOAD / UNLOAD
+# CHUNK STREAMING
 # ==============================================================================
+
 func _update_chunks(force: bool) -> void:
 	if not player:
 		return
-
-	# Real view center (respects smoothing, drag and limits) and visible
-	# width in world coordinates (viewport / zoom).
 	var center_x := player.global_position.x
 	var zoom_x := 1.0
 	if _camera:
 		center_x = _camera.get_screen_center_position().x
 		zoom_x = _camera.zoom.x
 	var half_width := get_viewport().get_visible_rect().size.x / zoom_x * 0.5
-	# A teleport (dungeon exit, debug quick travel) moves the player before the
-	# smoothed camera reaches it. Following that stale view would put `first`
-	# back at the old spot and generate every chunk in between in one frame.
 	if absf(center_x - player.global_position.x) > half_width + load_margin_px:
 		center_x = player.global_position.x
 	var chunk_width_px := float(chunk_width_tiles * TILE_SIZE)
 	var first := floori((center_x - half_width - load_margin_px) / chunk_width_px)
 	var last := floori((center_x + half_width + load_margin_px) / chunk_width_px)
-
-	# The player's chunk is never unloaded.
 	var current := floori(player.global_position.x / chunk_width_px)
 	first = mini(first, current)
 	last = maxi(last, current)
-	# Keep neighboring chunks loaded even if the view no longer touches them.
 	first -= KEEP_CHUNKS_SIDE
 	last += KEEP_CHUNKS_SIDE
-	# No chunk is generated to the left of the start: the world only grows
-	# to the right, so nothing is spent on terrain the player never sees.
 	first = maxi(first, 0)
 	last = maxi(last, 0)
-
 	if not force and first == _last_first and last == _last_last:
 		return
 	_last_first = first
 	_last_last = last
-
-	# Data first (only the visible ones + 1 to the right to anticipate).
 	for x in range(first, last + 2):
 		var coord := Vector2i(x, 0)
 		if not _chunk_data.has(coord):
 			_chunk_data[coord] = _generate_chunk(coord)
-
 	for x in range(first, last + 1):
 		var coord := Vector2i(x, 0)
 		if not _loaded_chunks.has(coord):
 			_load_chunk(coord)
-
 	for coord in _loaded_chunks.keys():
 		if coord.x < first or coord.x > last:
 			_unload_chunk(coord)
-
-	# Free data of chunks that are far away (outside first..last+1).
 	for coord in _chunk_data.keys():
 		if coord.x < first or coord.x > last + 1:
 			_chunk_data.erase(coord)
-	# Idem for the clamped heights; `_clamped_last` (one int per chunk) stays
-	# so the slope chain can be rebuilt without walking from the start.
 	for chunk_x in _clamped_heights.keys():
 		if chunk_x < first or chunk_x > last + 1:
 			_clamped_heights.erase(chunk_x)
 
 
-## True when the chunk containing `world_x` is already instantiated. Used by the
-## initial fall: without world below, the fall cannot end.
-func is_ready_at(world_x: float) -> bool:
-	var coord_x := floori(world_x / float(chunk_width_tiles * TILE_SIZE))
-	return _loaded_chunks.has(Vector2i(coord_x, 0))
-
-
-## Loads the chunks around the player right now. The game root calls it after
-## restoring a saved position, so the ground exists on the next frame.
-func refresh_chunks() -> void:
-	_update_chunks(true)
-
-
-## Seed of this run; the save stores it to rebuild the same world.
-## Blocks (tiles) traveled from the spawn point; negative behind it.
-func meters_at(world_x: float) -> int:
-	var spawn_x := float(safe_start_tiles) * float(TILE_SIZE) + float(TILE_SIZE) * 0.5
-	return floori((world_x - spawn_x) / float(TILE_SIZE))
-
-
-func current_seed() -> int:
-	return _seed
-
-
-## Spawn ids that must survive a save/load (killed enemies, taken coins).
-func save_persistent_state() -> Dictionary:
-	return {
-		"defeated": PackedStringArray(_defeated_spawns.keys()),
-		"collected": PackedStringArray(_collected_spawns.keys()),
-		"broken": PackedStringArray(_broken_blocks.keys()),
-	}
-
-
-func _restore_persistent_state() -> void:
-	for id in SaveGame.data.get("defeated", []):
-		_defeated_spawns[String(id)] = true
-	for id in SaveGame.data.get("collected", []):
-		_collected_spawns[String(id)] = true
-	for id in SaveGame.data.get("broken", []):
-		_broken_blocks[String(id)] = true
-
-
-## Biome index of a block. The first run is the safe zone with the first biome.
-## Runs are decided left to right and cached, so any block is cheap to query.
-func _biome_index_at_tile(tile_x: int) -> int:
-	if biomes.is_empty():
-		return -1
-	if tile_x < 0:
-		tile_x = 0
-	_ensure_biome_runs(tile_x)
-	var index := int(_biome_runs[0]["index"])
-	for run in _biome_runs:
-		if tile_x < int(run["start"]):
-			break
-		index = int(run["index"])
-	return index
-
-
-## Decides new runs until the one containing `tile_x` exists.
-func _ensure_biome_runs(tile_x: int) -> void:
-	if _biome_runs.is_empty():
-		_biome_runs.append(_make_biome_run(0, -1))
-	while tile_x >= int(_biome_runs.back()["start"]) + int(_biome_runs.back()["length"]):
-		var previous: Dictionary = _biome_runs.back()
-		var start := int(previous["start"]) + int(previous["length"])
-		_biome_runs.append(_make_biome_run(start, int(previous["index"])))
-
-
-## A biome run: its biome never repeats the previous one and must already be
-## unlocked at that distance. The length is rolled between `min_biome_tiles`
-## and `max_biome_tiles`, so there are no micro-biomes and no endless stretches.
-func _make_biome_run(start_tile: int, previous_index: int) -> Dictionary:
-	var index := 0 if previous_index < 0 else _roll_biome_at(start_tile, previous_index)
-	var sector := biome_sector_tiles if biome_sector_tiles > 0 else chunk_width_tiles
-	var shortest := maxi(min_biome_tiles, sector)
-	var longest := maxi(max_biome_tiles, shortest)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("%d:biome:%d" % [_seed, start_tile])
-	var length := shortest + rng.randi_range(0, (longest - shortest) / sector) * sector
-	return {"start": start_tile, "index": index, "length": length}
-
-
-## Weighted pick among the biomes unlocked at `tile_x`, never the previous one:
-## the noise decides the order, not how long a biome lasts.
-func _roll_biome_at(tile_x: int, previous_index: int) -> int:
-	var allowed: Array[int] = []
-	var total := 0.0
-	for i in biomes.size():
-		if i == previous_index:
-			continue
-		if biomes[i].min_distance_tiles > tile_x:
-			continue
-		var weight := maxf(biomes[i].spawn_weight, 0.0)
-		if weight <= 0.0:
-			continue
-		allowed.append(i)
-		total += weight
-	if allowed.is_empty():
-		return previous_index if previous_index >= 0 else 0
-	var roll := clampf(_biome_noise.get_noise_1d(float(tile_x)) * biome_contrast + 0.5, 0.0, 1.0) * total
-	for i in allowed:
-		roll -= maxf(biomes[i].spawn_weight, 0.0)
-		if roll <= 0.0:
-			return i
-	return allowed.back()
-
-
-## Biome of the block containing `world_x`; used by ambient particles.
-func biome_at_world_x(world_x: float) -> Biome:
-	var index := _biome_index_at_tile(floori(world_x / float(TILE_SIZE)))
-	if index < 0:
-		return null
-	return biomes[index]
-
-
-## Share (0..1) of the ±`AMBIENT_BLEND_TILES` window around `world_x` whose
-## biome uses `ambient`. The ambient VFX chase this so leaves and snow fade
-## into each other over ~64 tiles, like the biome tint does.
-func ambient_weight_at_world_x(world_x: float, ambient: String) -> float:
-	if biomes.is_empty():
-		return 0.0
-	var tile_x := floori(world_x / float(TILE_SIZE))
-	var counts: Dictionary = {}
-	for i in range(-AMBIENT_BLEND_TILES, AMBIENT_BLEND_TILES + 1):
-		_add_biome_count(counts, tile_x + i)
-	var samples := 0
-	var matching := 0
-	for index in counts:
-		var count := int(counts[index])
-		samples += count
-		if index >= 0 and index < biomes.size() and biomes[index].ambient == ambient:
-			matching += count
-	if samples <= 0:
-		return 0.0
-	return float(matching) / float(samples)
-
-
-## Chunk biome for enemies and counts: the one at the central block.
-func _biome_for_chunk(chunk_x: int) -> Biome:
-	var index := _biome_index_at_tile(chunk_x * chunk_width_tiles + chunk_width_tiles / 2)
-	if index < 0:
-		return null
-	return biomes[index]
-
-
-## Blocks the transition between two biomes lasts (0 = one full chunk).
-func _transition_tiles() -> int:
-	return biome_transition_tiles if biome_transition_tiles > 0 else chunk_width_tiles
-
-
-func _transition_half_tiles() -> int:
-	return maxi(_transition_tiles() / 2, 0)
-
-
-## Biome counts in the transition window of a block.
-func _biome_counts_at_tile(tile_x: int) -> Dictionary:
-	var half := _transition_half_tiles()
-	var counts: Dictionary = {}
-	for i in range(-half, half + 1):
-		_add_biome_count(counts, tile_x + i)
-	return counts
-
-
-func _add_biome_count(counts: Dictionary, tile_x: int) -> void:
-	var index := _biome_index_at_tile(tile_x)
-	if index >= 0:
-		counts[index] = int(counts.get(index, 0)) + 1
-
-
-func _remove_biome_count(counts: Dictionary, tile_x: int) -> void:
-	var index := _biome_index_at_tile(tile_x)
-	if index < 0:
-		return
-	var remaining := int(counts.get(index, 0)) - 1
-	if remaining <= 0:
-		counts.erase(index)
-	else:
-		counts[index] = remaining
-
-
-## Biome channel tint at a block ("grass", "forest", "rock" or "snow").
-func _biome_color_at_tile(tile_x: int, channel: String) -> Color:
-	if biomes.is_empty():
-		return Color.WHITE
-	return _mixed_biome_color(_biome_counts_at_tile(tile_x), channel)
-
-
-## Average of the biome colors counted in the window. Each biome can
-## give a different color for grass, forests and mountain rock.
-func _mixed_biome_color(counts: Dictionary, channel: String = "grass") -> Color:
-	var samples := 0
-	for index in range(biomes.size()):
-		samples += int(counts.get(index, 0))
-	if samples <= 0:
-		return Color.WHITE
-	var total := Color(0.0, 0.0, 0.0, 0.0)
-	for index in range(biomes.size()):
-		var biome := biomes[index]
-		var color := biome.grass_color
-		match channel:
-			"forest":
-				color = biome.forest_color
-			"rock":
-				color = biome.rock_color
-			"snow":
-				color = biome.snow_color
-		total += color * float(counts.get(index, 0))
-	return total / float(samples)
-
-
-## Average of the window's terrain modifiers. Fixed order by index
-## so two chunks compute exactly the same float at their seam.
-func _mixed_terrain(counts: Dictionary) -> Dictionary:
-	var samples := 0
-	var amplitude := 0.0
-	var frequency := 0.0
-	for index in range(biomes.size()):
-		var weight := float(counts.get(index, 0))
-		if weight <= 0.0:
-			continue
-		samples += int(weight)
-		amplitude += biomes[index].terrain_amplitude_multiplier * weight
-		frequency += biomes[index].terrain_frequency_multiplier * weight
-	if samples <= 0:
-		return {"amplitude": 1.0, "frequency": 1.0}
-	return {
-		"amplitude": amplitude / float(samples),
-		"frequency": frequency / float(samples),
-	}
-
-
-## Chunk biome data (plus the extra column): grass colors and
-## terrain modifiers in a single sliding-window pass.
-func _chunk_biome_data(chunk_x: int) -> Dictionary:
-	var width := chunk_width_tiles
-	var tints := PackedColorArray()
-	var amplitudes := PackedFloat64Array()
-	var frequencies := PackedFloat64Array()
-	tints.resize(width + 1)
-	amplitudes.resize(width + 1)
-	frequencies.resize(width + 1)
-	if biomes.is_empty():
-		tints.fill(Color.WHITE)
-		amplitudes.fill(1.0)
-		frequencies.fill(1.0)
-		return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
-	var half := _transition_half_tiles()
-	var start_x := chunk_x * width
-	var counts: Dictionary = {}
-	for tile_x in range(start_x - half, start_x + half + 1):
-		_add_biome_count(counts, tile_x)
-	for i in range(width + 1):
-		tints[i] = _mixed_biome_color(counts)
-		var terrain := _mixed_terrain(counts)
-		amplitudes[i] = float(terrain["amplitude"])
-		frequencies[i] = float(terrain["frequency"])
-		_remove_biome_count(counts, start_x + i - half)
-		_add_biome_count(counts, start_x + i + half + 1)
-	return {"tints": tints, "amplitude": amplitudes, "frequency": frequencies}
-
-
-## Applies the current biome tint to the background forests, the mountain
-## stone and the band under the mountains. Updated when the block changes,
-## not the chunk, so the change is continuous.
 func _update_biome_tint(force: bool) -> void:
-	if (_forest_tint_nodes.is_empty() and _rock_tint_nodes.is_empty() and _snow_tint_nodes.is_empty() and _base_tint_nodes.is_empty()) or not player:
+	if not player:
 		return
 	var tile_x := floori(player.global_position.x / float(TILE_SIZE))
-	if not force and tile_x == _last_biome_tile:
-		return
-	_last_biome_tile = tile_x
-	var forest := _biome_color_at_tile(tile_x, "forest")
-	var rock := _biome_color_at_tile(tile_x, "rock")
-	var snow := _biome_color_at_tile(tile_x, "snow")
-	for node in _forest_tint_nodes:
-		node.modulate = forest
-	for node in _rock_tint_nodes:
-		node.modulate = rock
-	# Snow cap: can be brighter than white (values above 1) so a snowy peak
-	# reads as snow instead of as tinted rock.
-	for node in _snow_tint_nodes:
-		node.modulate = snow
-	var base := forest.darkened(MOUNTAIN_BASE_DARKENING)
-	for node in _base_tint_nodes:
-		node.color = base
+	_last_biome_tile = _biome.update_biome_tint(tile_x, force, _last_biome_tile)
 
 
 func _generate_chunk(coord: Vector2i) -> Dictionary:
@@ -831,131 +479,52 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 	heights.resize(chunk_width_tiles)
 	for i in range(chunk_width_tiles):
 		heights[i] = clamped[i + 1]
-	# Grass colors for the tint pass (the terrain modifiers are already
-	# baked into the clamped heights).
-	var biome_data := _chunk_biome_data(coord.x)
-	# Neighbor heights to choose the left/right edge tiles.
+	var biome_data := _biome.chunk_biome_data(coord.x)
 	var edge_left := clamped[0]
 	var edge_right := clamped[chunk_width_tiles + 1]
-	# Height of the next column: the chunk paints an extra column to
-	# cover the 1 px gap between two chunks' layers.
 	var edge_right_next := _height_at(coord.x * chunk_width_tiles + chunk_width_tiles + 1)
-
-	# Same seed + same chunk = same spawns.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash("%d:%d:%d" % [_seed, coord.x, coord.y])
+	var biome := _biome.biome_for_chunk(coord.x)
 
-	var min_x := enemy_spawn_margin_tiles
-	var max_x := chunk_width_tiles - enemy_spawn_margin_tiles - 1
-	# In the spawn chunk enemies start a bit beyond the player,
-	# not in the next chunk (before you had to walk over half a screen).
-	var enemy_min_x := min_x
-	if coord.x == 0:
-		enemy_min_x = maxi(enemy_min_x, safe_start_tiles + enemy_safe_gap_tiles)
+	# Enemies and coins
+	var spawn_data := _spawner.roll_chunk_data(coord, biome, heights, rng)
+	var enemies: Array[Dictionary] = spawn_data["enemies"]
+	var coins: Array[Dictionary] = spawn_data["coins"]
 
-	# Biome enemies; if it does not define any, those from the general list.
-	var biome := _biome_for_chunk(coord.x)
-	var scenes: Array[PackedScene] = enemy_scenes
-	var counts: Array[int] = enemy_counts_per_chunk
-	if biome and not biome.enemy_scenes.is_empty():
-		scenes = biome.enemy_scenes
-		counts = biome.enemy_counts
-
-	# Chunk types before distributing X positions (one per enemy).
-	var spawn_scenes: Array[PackedScene] = []
-	# The first chunks go at 50% and from there each chunk adds more.
-	var count_multiplier := _enemy_count_multiplier(coord.x)
-	for idx in range(scenes.size()):
-		var count := 0
-		if idx < counts.size():
-			count = maxi(floori(float(counts[idx]) * count_multiplier), 0)
-		for i in range(count):
-			spawn_scenes.append(scenes[idx])
-
-	# Uniform distribution: one slot per enemy across the chunk, with some
-	# noise so they don't line up. Before, each enemy rolled its X at random and
-	# they all bunched up in the same chunk area.
-	var enemies: Array[Dictionary] = []
-	var total := spawn_scenes.size()
-	var slot_width := float(maxi(max_x - enemy_min_x + 1, 1)) / float(maxi(total, 1))
-	var jitter := maxi(floori(slot_width * 0.25), 0)
-	for k in range(total):
-		var spawn_id := "e:%d:%d:%d" % [coord.x, coord.y, k]
-		# Always consume the RNG so positions don't change when kills persist.
-		var offset_px := rng.randi_range(-jitter, jitter) if jitter > 0 else 0
-		var local_x := clampi(
-			enemy_min_x + floori((float(k) + 0.5) * slot_width) + offset_px,
-			enemy_min_x,
-			max_x
-		)
-		if _defeated_spawns.has(spawn_id) or spawn_scenes[k] == null:
-			continue
-		enemies.append({
-			"id": spawn_id,
-			"scene": spawn_scenes[k],
-			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE)
-		})
-
-	var coins: Array[Dictionary] = []
-	for i in range(coins_per_chunk):
-		var spawn_id := "c:%d:%d:%d" % [coord.x, coord.y, i]
-		# Same reason as with enemies: do not alter the RNG order.
-		var local_x := rng.randi_range(min_x, max_x)
-		if _collected_spawns.has(spawn_id):
-			continue
-		coins.append({
-			"id": spawn_id,
-			"position": Vector2(local_x * TILE_SIZE, heights[local_x] * TILE_SIZE - coin_spawn_height)
-		})
-
-	# Decor is rolled after enemies and coins so their positions never change.
-	# The biome decides how much and which kinds; the generator values are only
-	# the fallback for biomes that do not configure decor.
+	# Decor
 	var decor_min_x := clampi(decor_margin_tiles, 0, chunk_width_tiles - 1)
-	var decor_max_x := clampi(
-		chunk_width_tiles - decor_margin_tiles - 1, decor_min_x, chunk_width_tiles - 1
-	)
+	var decor_max_x := clampi(chunk_width_tiles - decor_margin_tiles - 1, decor_min_x, chunk_width_tiles - 1)
 	var decor_count := decor_per_chunk
 	if biome and biome.decor_per_chunk > 0:
 		decor_count = biome.decor_per_chunk
 	var decor: Array[Dictionary] = []
 	var decor_span := decor_max_x - decor_min_x + 1
-	# One prop per slot instead of a free roll: the chunk stays evenly covered
-	# (no clumps, no long empty stretches) while `decor_min_gap_tiles` holds.
 	var decor_slot := float(decor_span) / float(maxi(decor_count, 1))
 	var decor_jitter := mini(floori(decor_slot * 0.3), maxi(decor_min_gap_tiles - 1, 0))
 	var last_decor_x := -999999
 	for i in range(maxi(decor_count, 0)):
-		# Both rolls are consumed even if the kind fails, so tuning the weights
-		# never shifts the positions of the rest of the decor.
-		var kind := _pick_decor_kind(biome, rng)
+		var kind := _decor.pick_decor_kind(biome, rng)
 		var center := decor_min_x + floori((float(i) + 0.5) * decor_slot)
 		var local_x := clampi(
 			center + rng.randi_range(-decor_jitter, decor_jitter), decor_min_x, decor_max_x
 		)
 		if kind < 0:
 			continue
-		# Jitter can bring two neighbors too close: snap back to the slot.
 		if local_x - last_decor_x < decor_min_gap_tiles:
 			local_x = center
 			if local_x - last_decor_x < decor_min_gap_tiles:
 				continue
 		var tint := Color.WHITE
 		if kind < decor_tinted.size() and decor_tinted[kind]:
-			tint = _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
+			tint = _decor.tint_at(coord.x * chunk_width_tiles + local_x, rng)
 		decor.append({"kind": kind, "tint": tint, "x": local_x})
 		last_decor_x = local_x
-	_apply_dead_tree_ratio(biome, decor, rng)
-	# Front to back: the spawn loop pushes each sprite to index 0, so the last
-	# one processed ends up painted first (rocks), then trees, then bushes.
-	decor.sort_custom(_decor_draws_before)
+	_decor.apply_dead_tree_ratio(biome, decor, rng)
+	decor.sort_custom(_decor.draws_before)
 
-	# Structures are rolled last so enemies, coins and decor keep their positions.
-	# The biome decides the count; a chunk of a biome with 0 places nothing.
-	var structures_here := _roll_structures(coord, biome, heights, enemies, rng)
-	# Level the footprint of the structures that ask for it (tents): the span goes
-	# flat at its highest column before the chunk is painted, so the sprite is
-	# never buried by a slope. Enemies and coins inside move up with the ground.
+	# Structures
+	var structures_here := _spawner.roll_structures(coord, biome, heights, enemies, rng)
 	for entry in structures_here:
 		if not bool(entry.get("flatten", false)):
 			continue
@@ -967,484 +536,28 @@ func _generate_chunk(coord: Vector2i) -> Dictionary:
 		for dx in range(-span_half, span_half + 1):
 			heights[clampi(int(entry["x"]) + dx, 0, chunk_width_tiles - 1)] = flat
 		entry["y"] = flat
-		_level_entities(enemies, coins, int(entry["x"]), span_half, flat)
-	# Nothing grows inside a ruin: decor under its span is dropped.
+		_spawner.level_entities(enemies, coins, int(entry["x"]), span_half, flat)
 	if not structures_here.is_empty():
-		decor = _decor_outside_structures(decor, structures_here)
+		decor = _spawner.decor_outside_structures(decor, structures_here)
 
-	return {"heights": heights, "edge_left": edge_left, "edge_right": edge_right, "edge_right_next": edge_right_next, "enemies": enemies, "coins": coins, "decor": decor, "structures": structures_here, "biome": biome, "tints": biome_data["tints"]}
-
-
-## Weighted random decor kind for the biome; -1 when there is nothing to spawn.
-## A biome with `decor_kinds` but no weights gives every kind the same chance.
-func _pick_decor_kind(biome: Biome, rng: RandomNumberGenerator) -> int:
-	if biome and not biome.decor_kinds.is_empty():
-		return _pick_decor_from(biome.decor_kinds, biome.decor_weights, rng)
-	return _pick_decor_from(decor_names, decor_weights, rng)
-
-
-func _pick_decor_from(names: Array[String], weights: Array[int], rng: RandomNumberGenerator) -> int:
-	var total := 0
-	for i in names.size():
-		total += _decor_kind_weight(weights, i)
-	if total <= 0:
-		return -1
-	var roll := rng.randi_range(0, total - 1)
-	for i in names.size():
-		roll -= _decor_kind_weight(weights, i)
-		if roll < 0:
-			return _decor_index_of(names[i])
-	return -1
-
-
-## Missing weights count as 1, so `decor_kinds` alone is a flat distribution.
-func _decor_kind_weight(weights: Array[int], index: int) -> int:
-	return maxi(weights[index], 0) if index < weights.size() else 1
-
-
-## Position of a decor name in the generator arrays; -1 for unknown names, so
-## a biome that names a missing kind skips it instead of failing.
-func _decor_index_of(kind_name: String) -> int:
-	if _decor_lookup.is_empty():
-		for i in decor_names.size():
-			if i < decor_textures.size():
-				_decor_lookup[decor_names[i]] = i
-	return int(_decor_lookup.get(kind_name, -1))
-
-
-## Depth of a kind: 0 rocks (background), 1 trees, 2 bushes (foreground).
-func _decor_draw_layer(kind: int) -> int:
-	if kind < 0 or kind >= decor_names.size():
-		return 2
-	var kind_name := decor_names[kind]
-	if kind_name.begins_with("rock"):
-		return 0
-	if kind_name.begins_with("tree"):
-		return 1
-	return 2
-
-
-func _decor_draws_before(a: Dictionary, b: Dictionary) -> bool:
-	return _decor_draw_layer(int(a["kind"])) > _decor_draw_layer(int(b["kind"]))
-
-
-func _decor_scale(kind: int) -> float:
-	return decor_scales[kind] if kind < decor_scales.size() else 1.0
-
-
-func _decor_z_index(kind: int) -> int:
-	return decor_z_index[kind] if kind < decor_z_index.size() else 0
-
-
-func _decor_sways(kind: int) -> bool:
-	return decor_sways[kind] if kind < decor_sways.size() else false
-
-
-## Random decoration tint of the biome at `tile_x`, weighted by
-## `decor_color_weights`; white when it defines none.
-func _decor_tint_at(tile_x: int, rng: RandomNumberGenerator) -> Color:
-	var index := _biome_index_at_tile(tile_x)
-	if index < 0:
-		return Color.WHITE
-	var biome := biomes[index]
-	if biome.decor_colors.is_empty():
-		return Color.WHITE
-	var total := 0.0
-	for i in biome.decor_colors.size():
-		total += _decor_color_weight(biome, i)
-	if total <= 0.0:
-		return Color.WHITE
-	var roll := rng.randf() * total
-	for i in biome.decor_colors.size():
-		roll -= _decor_color_weight(biome, i)
-		if roll <= 0.0:
-			return biome.decor_colors[i]
-	return biome.decor_colors.back()
-
-
-## Missing color weights count as 1, so `decor_colors` alone is a flat pick.
-func _decor_color_weight(biome: Biome, index: int) -> float:
-	if index < biome.decor_color_weights.size():
-		return maxf(biome.decor_color_weights[index], 0.0)
-	return 1.0
-
-
-## Turns exactly `ratio` of the living trees of the chunk into dead ones, so a
-## biome that wants a fixed share of dead trees gets it instead of drifting
-## with the random weights. Runs after every roll, so positions do not change.
-func _apply_dead_tree_ratio(biome: Biome, decor: Array[Dictionary], rng: RandomNumberGenerator) -> void:
-	if biome == null or biome.decor_dead_tree_ratio <= 0.0 or decor.is_empty():
-		return
-	var tree_kind := _decor_index_of("tree")
-	var dead_kind := _decor_index_of("tree_dead")
-	if tree_kind < 0 or dead_kind < 0:
-		return
-	var candidates: Array[int] = []
-	for i in decor.size():
-		if int(decor[i]["kind"]) == tree_kind:
-			candidates.append(i)
-	if candidates.is_empty():
-		return
-	var dead_count := roundi(float(candidates.size()) * clampf(biome.decor_dead_tree_ratio, 0.0, 1.0))
-	# Fisher-Yates over the candidates only: no RNG needed for the rest of the chunk.
-	for i in range(candidates.size() - 1, 0, -1):
-		var j := rng.randi_range(0, i)
-		var swap := candidates[i]
-		candidates[i] = candidates[j]
-		candidates[j] = swap
-	for i in range(dead_count):
-		decor[candidates[i]]["kind"] = dead_kind
-		# Dead trees are never tinted.
-		decor[candidates[i]]["tint"] = Color.WHITE
-
-
-## Structures of one chunk: one independent roll per structure the biome lists,
-## so a chunk can get none or all of them, never two of the same. Deterministic
-## with `rng`; each one lands on free ground away from the edges and enemies.
-func _roll_structures(
-		coord: Vector2i,
-		biome: Biome,
-		heights: PackedInt32Array,
-		enemies: Array[Dictionary],
-		rng: RandomNumberGenerator
-) -> Array[Dictionary]:
-	var placed: Array[Dictionary] = []
-	if biome == null or biome.structure_kinds.is_empty() or structures.is_empty():
-		return placed
-	var last_x := chunk_width_tiles - 1
-	for i in range(biome.structure_kinds.size()):
-		var chance := biome.structure_chances[i] if i < biome.structure_chances.size() else 0.0
-		# Always consume the roll, so tuning one chance never shifts the rest.
-		if rng.randf() >= chance:
-			continue
-		var index := _structure_index_of(biome.structure_kinds[i])
-		if index < 0:
-			continue
-		var structure := structures[index]
-		if not _structure_allowed(structure, biome, coord.x * chunk_width_tiles):
-			continue
-		# Type 2 ruins get a random length by repeating their pattern.
-		var width := structure.block_width()
-		if not structure.pattern.is_empty() and structure.max_length_tiles > 0:
-			width = rng.randi_range(
-				maxi(structure.min_length_tiles, 1),
-				maxi(structure.max_length_tiles, 1)
-			)
-		var half := maxi(floori(float(width) * 0.5), 0)
-		var margin := maxi(structure.margin_tiles, half)
-		if margin > last_x - margin:
-			continue
-		var local_x := -1
-		# A few tries to dodge enemies and the previous structures; it is a
-		# decoration, so giving up is better than searching forever.
-		for _attempt in range(8):
-			var candidate := rng.randi_range(margin, last_x - margin)
-			# Long block ruins only dodging the enemies at their center: clearing
-			# the whole 20–50 tiles span of X would almost never fit.
-			var enemy_half := 1 if not structure.pattern.is_empty() else half + 1
-			if _structure_x_free(candidate, half, enemy_half, placed, enemies):
-				local_x = candidate
-				break
-		if local_x < 0:
-			continue
-		# Base on the lowest column of its span (the biggest row): sunk into a
-		# hill it is hidden behind `Solid`, but it never floats.
-		var bottom := heights[local_x]
-		for dx in range(-half, half + 1):
-			bottom = maxi(bottom, heights[clampi(local_x + dx, 0, last_x)])
-		var entry := {
-			"id": "s:%d:%d:%d" % [coord.x, coord.y, i],
-			"structure": structure,
-			"x": local_x,
-			"y": bottom,
-			"half": half,
-			"cells": [],
-			"front": [],
-			"front_tiles": [],
-			# Tents and houses level their footprint before the chunk is painted.
-			"flatten": structure.flatten_ground,
-			# Same palette as the decor: the moss takes the biome hue.
-			"tint": _decor_tint_at(coord.x * chunk_width_tiles + local_x, rng)
-		}
-		# Sprite structures can carry several textures (tents): a stable hash of
-		# the position picks the same one on every rebuild without touching `rng`.
-		if not structure.textures.is_empty():
-			var global_tile := coord.x * chunk_width_tiles + local_x
-			entry["texture"] = structure.textures[absi(global_tile * 2654435761) % structure.textures.size()]
-		if not structure.pattern.is_empty():
-			var built := _blocks_cells(structure, local_x - half, width, heights, rng)
-			entry["cells"] = built["cells"]
-			entry["front"] = built["front"]
-			entry["front_tiles"] = built["front_tiles"]
-			entry["crates"] = _crate_tiles(
-				coord, local_x - half, width, built["front"], enemies, rng
-			)
-		placed.append(entry)
-	return placed
-
-
-## Cells of a type 2 structure, in chunk-local px. The wall is the whole pattern
-## repeated to `length` columns, each column on its own ground row. The `front`
-## layer only ever sits on the ground (bottom pattern row): a few stones you can
-## jump over, plus beams that fill the niches under the wall (supports).
-func _blocks_cells(
-		structure: WorldStructure,
-		left: int,
-		length: int,
-		heights: PackedInt32Array,
-		rng: RandomNumberGenerator
-) -> Dictionary:
-	var cells: Array[Vector2] = []
-	var front: Array[Vector2] = []
-	var front_tiles: Array[int] = []
-	var rows := structure.pattern.size()
-	var unit := maxi(structure.block_width(), 1)
-	var bottom := rows - 1
-	for col in length:
-		var tile_x := left + col
-		if tile_x < 0 or tile_x >= chunk_width_tiles:
-			continue
-		var unit_col := col % unit
-		var ground_row := int(heights[tile_x])
-		for row in rows:
-			if not _pattern_at(structure, row, unit_col, "#"):
-				continue
-			var pos := Vector2(
-				tile_x * TILE_SIZE,
-				(ground_row - (rows - row)) * TILE_SIZE
-			)
-			cells.append(pos)
-			# Ground stones: the only thing with collision besides the supports.
-			if row == bottom and rng.randf() < structure.front_chance:
-				front.append(pos)
-				front_tiles.append(_pick_tile(BlockStructure.STONE_TILES, rng))
-		# Niche under the wall (empty bottom column): a beam carrying it.
-		if bottom >= 1 and not _pattern_at(structure, bottom, unit_col, "#"):
-			if _pattern_at(structure, bottom - 1, unit_col, "#"):
-				if rng.randf() < structure.support_chance:
-					front.append(Vector2(tile_x * TILE_SIZE, (ground_row - 1) * TILE_SIZE))
-					front_tiles.append(_pick_tile(BlockStructure.SUPPORT_TILES, rng))
-	return {"cells": cells, "front": front, "front_tiles": front_tiles}
-
-
-## Free ground columns inside a ruin for the breakable crates: never on a solid
-## front stone, right next to one (a crate would seal the gap) or on an enemy,
-## and never in chunk 0, which holds the spawn.
-func _crate_tiles(
-		coord: Vector2i,
-		left: int,
-		length: int,
-		front: Array,
-		enemies: Array[Dictionary],
-		rng: RandomNumberGenerator
-) -> Array:
-	var tiles: Array = []
-	if crates_per_ruin <= 0 or coord.x == 0 or length <= 0:
-		return tiles
-	var blocked := {}
-	for cell in front:
-		blocked[floori(cell.x / float(TILE_SIZE))] = true
-	for enemy in enemies:
-		blocked[roundi(float(enemy["position"].x) / float(TILE_SIZE))] = true
-	var used := {}
-	for _i in range(crates_per_ruin):
-		for _attempt in range(6):
-			var tile_x := left + rng.randi_range(0, length - 1)
-			if tile_x < 0 or tile_x >= chunk_width_tiles:
-				continue
-			if used.has(tile_x) or blocked.has(tile_x):
-				continue
-			if blocked.has(tile_x - 1) or blocked.has(tile_x + 1):
-				continue
-			used[tile_x] = true
-			tiles.append({"id": "b:%d:%d:%d" % [coord.x, coord.y, tile_x], "x": tile_x})
-			break
-	return tiles
-
-
-## Keeps the enemies and coins whose column a footprint leveled standing on the
-## new surface instead of floating or sinking into it.
-func _level_entities(
-		enemies: Array[Dictionary],
-		coins: Array[Dictionary],
-		center: int,
-		half: int,
-		ground_row: int
-) -> void:
-	var ground_y := float(ground_row * TILE_SIZE)
-	for enemy in enemies:
-		var tile := floori(float(enemy["position"].x) / float(TILE_SIZE))
-		if absi(tile - center) > half:
-			continue
-		var pos: Vector2 = enemy["position"]
-		pos.y = ground_y
-		enemy["position"] = pos
-	for coin in coins:
-		var tile := floori(float(coin["position"].x) / float(TILE_SIZE))
-		if absi(tile - center) > half:
-			continue
-		var pos: Vector2 = coin["position"]
-		pos.y = ground_y - float(coin_spawn_height)
-		coin["position"] = pos
-
-
-func _pattern_at(structure: WorldStructure, row: int, col: int, mark: String) -> bool:
-	if row < 0 or row >= structure.pattern.size():
-		return false
-	if col >= structure.pattern[row].length():
-		return false
-	return structure.pattern[row][col] == mark
-
-
-func _pick_tile(pool: Array, rng: RandomNumberGenerator) -> int:
-	return pool[rng.randi_range(0, pool.size() - 1)]
-
-
-## Decor entries whose tile falls inside a structure span are dropped, so no
-## bush or rock grows out of the ruins.
-func _decor_outside_structures(
-		decor: Array[Dictionary],
-		structures_here: Array[Dictionary]
-) -> Array[Dictionary]:
-	var kept: Array[Dictionary] = []
-	for entry in decor:
-		var inside := false
-		for structure in structures_here:
-			if absi(int(structure["x"]) - int(entry["x"])) <= int(structure["half"]):
-				inside = true
-				break
-		if not inside:
-			kept.append(entry)
-	return kept
-
-
-## Whether the structure can appear here: it has art, the chunk is far enough
-## and the biome is in its `biomes` filter.
-func _structure_allowed(structure: WorldStructure, biome: Biome, tile_x: int) -> bool:
-	if structure.texture == null and structure.scene == null and structure.pattern.is_empty():
-		return false
-	# A pattern without a TileSet would instantiate a tilemap with no tiles and
-	# no physics; drop the kind instead of failing at spawn time.
-	if not structure.pattern.is_empty() and structure.tileset == null:
-		return false
-	if tile_x < structure.min_distance_tiles:
-		return false
-	return structure.biomes.is_empty() or structure.biomes.has(biome.display_name)
-
-
-func _structure_x_free(
-		local_x: int,
-		half: int,
-		enemy_half: int,
-		placed: Array[Dictionary],
-		enemies: Array[Dictionary]
-) -> bool:
-	for entry in placed:
-		var gap := half + int(entry["half"]) + structure_min_gap_tiles
-		if absi(int(entry["x"]) - local_x) < gap:
-			return false
-	for enemy in enemies:
-		var enemy_x := roundi(float(enemy["position"].x) / float(TILE_SIZE))
-		if absi(enemy_x - local_x) <= enemy_half:
-			return false
-	return true
-
-
-## Structure index by `display_name`; -1 for unknown names.
-func _structure_index_of(structure_name: String) -> int:
-	if _structure_lookup.is_empty():
-		for i in structures.size():
-			_structure_lookup[structures[i].display_name] = i
-	return int(_structure_lookup.get(structure_name, -1))
-
-
-## Texture for a decor kind and tint. Untinted kinds use the original; foliage
-## gets a cached copy with only the leaf pixels recolored, so the brown trunk
-## survives the biome tint.
-func _decor_texture(kind: int, tint: Color) -> Texture2D:
-	var source: Texture2D = decor_textures[kind]
-	if source == null or kind >= decor_tinted.size() or not decor_tinted[kind]:
-		return source
-	return _tinted_texture(source, tint)
-
-
-## Cached copy of the structure TileSet with its moss recolored to `tint`: the
-## atlas textures are tinted, the tile physics is untouched.
-func _structure_tileset(tile_set: TileSet, tint: Color) -> TileSet:
-	if tile_set == null or tint == Color.WHITE or tile_set.resource_path.is_empty():
-		return tile_set
-	var key := "tileset|%s|%s" % [tile_set.resource_path, tint.to_html(false)]
-	var cached: TileSet = _decor_tint_cache.get(key)
-	if cached:
-		return cached
-	var copy := tile_set.duplicate(true) as TileSet
-	for i in copy.get_source_count():
-		var source := copy.get_source(copy.get_source_id(i)) as TileSetAtlasSource
-		if source != null:
-			source.texture = _tinted_texture(source.texture, tint, 24, 12)
-	_decor_tint_cache[key] = copy
-	return copy
-
-
-## Cached copy of `source` with its green pixels recolored to `tint`. The
-## thresholds keep teal brick grout out of the structure tint.
-func _tinted_texture(
-		source: Texture2D,
-		tint: Color,
-		green_over_red: int = 0,
-		green_over_blue: int = 0
-) -> Texture2D:
-	if source == null or tint == Color.WHITE or source.resource_path.is_empty():
-		return source
-	var key := "%s|%s|%d|%d" % [
-		source.resource_path, tint.to_html(false), green_over_red, green_over_blue
-	]
-	var cached: Texture2D = _decor_tint_cache.get(key)
-	if cached:
-		return cached
-	var image := source.get_image()
-	if image == null:
-		return source
-	var tinted := _tint_foliage(image, tint, green_over_red, green_over_blue)
-	if tinted == null:
-		return source
-	var texture := ImageTexture.create_from_image(tinted)
-	_decor_tint_cache[key] = texture
-	return texture
-
-
-## Copy of `image` where only the green-dominant pixels (the leaves) take
-## `tint * their own brightness`. Trunks, outlines and grey pixels are untouched.
-func _tint_foliage(
-		image: Image,
-		tint: Color,
-		green_over_red: int = 0,
-		green_over_blue: int = 0
-) -> Image:
-	var out := image.duplicate() as Image
-	if out.is_compressed():
-		out.decompress()
-	out.convert(Image.FORMAT_RGBA8)
-	for y in out.get_height():
-		for x in out.get_width():
-			var pixel := out.get_pixel(x, y)
-			if pixel.a <= 0.0:
-				continue
-			# Leaves are the only green-dominant pixels of these sprites.
-			if (pixel.g - pixel.r) * 255.0 <= float(green_over_red):
-				continue
-			if (pixel.g - pixel.b) * 255.0 <= float(green_over_blue):
-				continue
-			var shade := maxf(pixel.r, maxf(pixel.g, pixel.b))
-			out.set_pixel(x, y, Color(tint.r * shade, tint.g * shade, tint.b * shade, pixel.a))
-	return out
+	return {
+		"heights": heights,
+		"edge_left": edge_left,
+		"edge_right": edge_right,
+		"edge_right_next": edge_right_next,
+		"enemies": enemies,
+		"coins": coins,
+		"decor": decor,
+		"structures": structures_here,
+		"biome": biome,
+		"tints": biome_data["tints"]
+	}
 
 
 func _load_chunk(coord: Vector2i) -> void:
 	if not _chunk_data.has(coord):
 		_chunk_data[coord] = _generate_chunk(coord)
 	var data: Dictionary = _chunk_data[coord]
-
 	var tints: PackedColorArray = data.get("tints", PackedColorArray())
 	var chunk: WorldChunk = chunk_scene.instantiate()
 	chunk.name = "Chunk_%d" % coord.x
@@ -1469,7 +582,7 @@ func _load_chunk(coord: Vector2i) -> void:
 		tints,
 		wall
 	)
-	_spawn_chunk_entities(chunk, data)
+	_spawner.spawn_chunk_entities(chunk, data)
 	_loaded_chunks[coord] = chunk
 
 
@@ -1480,11 +593,7 @@ func _unload_chunk(coord: Vector2i) -> void:
 	_loaded_chunks.erase(coord)
 
 
-## Frees every loaded chunk but keeps the run (seed, `_chunk_data`, defeated,
-## collected and broken ids), so `refresh_chunks()` rebuilds the same world.
-## Removing first and freeing after makes the terrain and its collision vanish
-## this same frame: the dungeon scene is placed at the origin while the world is
-## unloaded, so nothing can catch the player there.
+## Frees every loaded chunk but keeps the run seed and persistent ids.
 func unload_chunks() -> void:
 	for coord in _loaded_chunks.keys():
 		var chunk := _loaded_chunks.get(coord) as WorldChunk
@@ -1494,185 +603,75 @@ func unload_chunks() -> void:
 			chunk.queue_free()
 
 
-func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
-	# Decor first: sprites are moved to index 0, so they stay behind Solid and
-	# GrassPaint. Their bottom edge rests on the surface row (same height as the
-	# grass) and they have no collision.
-	var decor: Array = data.get("decor", [])
-	for i in range(decor.size()):
-		var kind: int = decor[i]["kind"]
-		if kind < 0 or kind >= decor_textures.size():
-			continue
-		var tint: Color = decor[i].get("tint", Color.WHITE)
-		var texture: Texture2D = _decor_texture(kind, tint)
-		if texture == null:
-			continue
-		var tile_x: int = decor[i]["x"]
-		var sprite := DecorProp.new()
-		sprite.name = "Decor_%d" % i
-		sprite.texture = texture
-		sprite.centered = false
-		# The offset centers the texture on the node and keeps the origin at the
-		# bottom: scaling never lifts the base off the surface and the sway
-		# rotates around the ground instead of the top-left corner.
-		sprite.offset = Vector2(-texture.get_width() * 0.5, -texture.get_height())
-		sprite.scale = Vector2.ONE * _decor_scale(kind)
-		sprite.z_index = _decor_z_index(kind)
-		# The tint is already baked into the foliage pixels, so the sprite itself
-		# must stay white or the trunk would be tinted too.
-		sprite.modulate = Color.WHITE
-		sprite.tint_color = tint
-		sprite.sways = _decor_sways(kind)
-		sprite.sway_radius_px = decor_sway_radius_px
-		sprite.position = Vector2(
-			tile_x * TILE_SIZE + TILE_SIZE * 0.5,
-			data["heights"][tile_x] * TILE_SIZE
-		)
-		chunk.add_child(sprite)
-		chunk.move_child(sprite, 0)
+# ==============================================================================
+# PUBLIC API
+# ==============================================================================
 
-	# Structures go behind the decor (moved to index 0 after it): big ruins that
-	# read as background. Type 2 ruins also put a few light, solid blocks in
-	# front of the dark wall, so the player can climb on the rubble.
-	var structures_here: Array = data.get("structures", [])
-	for i in range(structures_here.size()):
-		var entry: Dictionary = structures_here[i]
-		var structure: WorldStructure = entry["structure"]
-		var node: Node2D
-		if structure.scene != null:
-			node = structure.scene.instantiate() as Node2D
-		elif not structure.pattern.is_empty():
-			var tint: Color = entry["tint"]
-			var tile_set := _structure_tileset(structure.tileset, tint)
-			var blocks := BlockStructure.new()
-			blocks.tile_set = tile_set
-			blocks.source_id = 0
-			for cell in entry["cells"]:
-				blocks.cells.append(cell)
-			node = blocks
-			# The few ground stones go in front of the wall and are solid; the node
-			# is moved behind the decor so a tree can cover the rubble.
-			var front_cells: Array = entry["front"]
-			var front_tiles: Array = entry["front_tiles"]
-			if not front_cells.is_empty():
-				var light := BlockStructure.new()
-				light.name = "Structure_%d_front" % i
-				light.tile_set = tile_set
-				light.source_id = 1
-				light.position = Vector2.ZERO
-				# z 0: in front of the dark wall (z_index -1), behind the big decor.
-				light.z_index = 0
-				for k in front_cells.size():
-					light.cells.append(front_cells[k])
-					if k < front_tiles.size():
-						light.cell_tiles.append(front_tiles[k])
-				chunk.add_child(light)
-				chunk.move_child(light, 0)
-		else:
-			# One variant texture per placement when the resource lists several.
-			var texture: Texture2D = entry.get("texture", structure.texture)
-			if texture == null:
-				continue
-			var sprite := Sprite2D.new()
-			sprite.texture = texture
-			sprite.centered = false
-			# The offset keeps the origin at the bottom center, like the decor.
-			sprite.offset = Vector2(
-				-texture.get_width() * 0.5,
-				-texture.get_height()
-			)
-			var native := float(structure.pixel_size if structure.pixel_size > 0 else texture.get_width())
-			var factor := float(structure.size_tiles * TILE_SIZE) / maxf(native, 1.0)
-			sprite.scale = Vector2.ONE * factor
-			node = sprite
-		if node == null:
-			continue
-		node.name = "Structure_%d" % i
-		node.z_index = structure.z_index
-		# Pattern cells are already in chunk-local px; sprites/scenes use the anchor.
-		if node is BlockStructure:
-			node.position = Vector2.ZERO
-		else:
-			node.position = Vector2(
-				int(entry["x"]) * TILE_SIZE + TILE_SIZE * 0.5,
-				int(entry["y"]) * TILE_SIZE + float(structure.y_offset_px)
-			)
-		node.set_meta("spawn_id", entry["id"])
-		chunk.add_child(node)
-		chunk.move_child(node, 0)
-
-	# Breakable crates of the ruins (T-0076): on the ground row, in front of the
-	# dark wall. Broken ones are skipped through their persisted id.
-	if crate_scene != null:
-		for entry in structures_here:
-			for crate_entry in entry.get("crates", []):
-				var crate_id: String = crate_entry["id"]
-				if _broken_blocks.has(crate_id):
-					continue
-				var crate := crate_scene.instantiate() as BreakableBlock
-				if crate == null:
-					continue
-				var tile_x := int(crate_entry["x"])
-				crate.name = "Crate_%s" % crate_id.replace(":", "_")
-				crate.spawn_id = crate_id
-				crate.position = Vector2(
-					tile_x * TILE_SIZE,
-					int(data["heights"][tile_x]) * TILE_SIZE
-				)
-				chunk.entities.add_child(crate)
-				crate.broken.connect(_on_crate_broken)
-
-	for entry in data["enemies"]:
-		var spawn_id: String = entry["id"]
-		if _defeated_spawns.has(spawn_id):
-			continue
-		var scene: PackedScene = entry["scene"]
-		var enemy := scene.instantiate() as Node2D
-		if enemy == null:
-			continue
-		# The collider base rests on the ground (the origin is usually higher).
-		# `spawn_y_offset` corrects those whose drawing is lower than the collider.
-		var spawn_pos: Vector2 = entry["position"]
-		var offset: float = enemy.get("spawn_y_offset")
-		enemy.position = spawn_pos - Vector2(0.0, _body_bottom(enemy) + offset)
-		chunk.entities.add_child(enemy)
-		if enemy.has_signal("died"):
-			enemy.connect("died", _on_enemy_died.bind(spawn_id))
-
-	for entry in data["coins"]:
-		var spawn_id: String = entry["id"]
-		if _collected_spawns.has(spawn_id):
-			continue
-		var coin := coin_scene.instantiate() as Node2D
-		if coin == null:
-			continue
-		coin.position = entry["position"]
-		chunk.entities.add_child(coin)
-		if coin.has_signal("collected"):
-			coin.connect("collected", _on_coin_collected.bind(spawn_id))
+## True when the chunk containing `world_x` is already instantiated.
+func is_ready_at(world_x: float) -> bool:
+	var coord_x := floori(world_x / float(chunk_width_tiles * TILE_SIZE))
+	return _loaded_chunks.has(Vector2i(coord_x, 0))
 
 
-## Distance from the origin to the body collider base (to rest it on the ground).
-func _body_bottom(enemy: Node2D) -> float:
-	# shortcut: only direct RectangleShape2D colliders; extend if the shape changes.
-	var bottom := 0.0
-	for child in enemy.get_children():
-		var shape_node := child as CollisionShape2D
-		if shape_node and shape_node.shape is RectangleShape2D:
-			var rect := shape_node.shape as RectangleShape2D
-			var local_bottom: float = shape_node.position.y + rect.size.y * 0.5 * shape_node.scale.y
-			bottom = maxf(bottom, local_bottom * enemy.scale.y)
-	return bottom
+## Forces an immediate chunk rebuild around the player.
+func refresh_chunks() -> void:
+	_update_chunks(true)
 
 
-func _on_enemy_died(spawn_id: String) -> void:
-	_defeated_spawns[spawn_id] = true
+## Tiles traveled from the spawn point.
+func meters_at(world_x: float) -> int:
+	var spawn_x := float(safe_start_tiles) * float(TILE_SIZE) + float(TILE_SIZE) * 0.5
+	return floori((world_x - spawn_x) / float(TILE_SIZE))
 
 
-func _on_coin_collected(spawn_id: String) -> void:
-	_collected_spawns[spawn_id] = true
+## Seed of this run.
+func current_seed() -> int:
+	return _seed
 
 
-## A broken crate stays broken for the rest of the run, like a defeated enemy.
-func _on_crate_broken(spawn_id: String) -> void:
-	_broken_blocks[spawn_id] = true
+## Ground Y in pixels at `world_x`.
+func ground_y_at(world_x: float) -> float:
+	return float(_height_at(floori(world_x / float(TILE_SIZE))) * TILE_SIZE)
+
+
+## Chunk index (x) containing `world_x`.
+func chunk_at_world_x(world_x: float) -> int:
+	return maxi(floori(world_x / float(chunk_width_tiles * TILE_SIZE)), 0)
+
+
+## Biome of the block containing `world_x`.
+func biome_at_world_x(world_x: float) -> Biome:
+	return _biome.biome_at_world_x(world_x, TILE_SIZE)
+
+
+## Share (0..1) of the ambient blend window around `world_x` whose biome uses
+## `ambient`; the ambient VFX chase this so leaves and snow crossfade.
+func ambient_weight_at_world_x(world_x: float, ambient: String) -> float:
+	return _biome.ambient_weight_at_world_x(world_x, TILE_SIZE, ambient)
+
+
+## Start X in pixels of the next biome run to the right of `world_x`.
+func next_biome_start_x(world_x: float) -> float:
+	return _biome.next_biome_start_x(world_x, TILE_SIZE)
+
+
+## Nearest structure X to the right of `world_x`; -1 when none in range.
+func next_structure_x(world_x: float, search_chunks: int = 64) -> float:
+	var first := chunk_at_world_x(world_x)
+	for i in range(search_chunks):
+		var coord := Vector2i(first + i, 0)
+		if not _chunk_data.has(coord):
+			_chunk_data[coord] = _generate_chunk(coord)
+		var nearest := -1.0
+		for entry in _chunk_data[coord]["structures"]:
+			var x := (coord.x * chunk_width_tiles + int(entry["x"])) * TILE_SIZE + TILE_SIZE * 0.5
+			if x > world_x + 1.0 and (nearest < 0.0 or x < nearest):
+				nearest = x
+		if nearest >= 0.0:
+			return nearest
+	return -1.0
+
+
+## Persistent ids for save/load (defeated enemies, coins, broken crates).
+func save_persistent_state() -> Dictionary:
+	return _spawner.save_state()
