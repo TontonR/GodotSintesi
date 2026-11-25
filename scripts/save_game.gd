@@ -124,10 +124,15 @@ static func save_run(world: Node, player: Node) -> bool:
 		current_slot = free if is_valid_slot(free) else 0
 	var config := ConfigFile.new()
 	var position: Vector2 = player.get("global_position")
+	# Inside the dungeon the player is in dungeon coordinates: the slot keeps the
+	# world spot behind the door, so loading and meters stay in world space.
+	var dungeon: Node = player.get_tree().get_first_node_in_group("dungeon_layer")
+	var dungeon_state: Dictionary = dungeon.call("save_state") if dungeon != null else {}
+	var world_position: Vector2 = dungeon_state.get("world_position", position)
 	config.set_value("run", "version", VERSION)
 	config.set_value("run", "seed", int(world.call("current_seed")))
-	config.set_value("run", "position", position)
-	config.set_value("run", "meters", int(world.call("meters_at", position.x)))
+	config.set_value("run", "position", world_position)
+	config.set_value("run", "meters", int(world.call("meters_at", world_position.x)))
 	config.set_value("run", "health", int(player.get("health")))
 	config.set_value("run", "stamina", float(player.get("stamina")))
 	config.set_value("run", "coins", int(player.get("current_coins")))
@@ -139,6 +144,7 @@ static func save_run(world: Node, player: Node) -> bool:
 	config.set_value("world", "defeated", state.get("defeated", PackedStringArray()))
 	config.set_value("world", "collected", state.get("collected", PackedStringArray()))
 	config.set_value("world", "broken", state.get("broken", PackedStringArray()))
+	config.set_value("dungeon", "state", dungeon_state)
 	return config.save(slot_path(current_slot)) == OK
 
 
@@ -161,6 +167,7 @@ static func request_load(slot: int) -> bool:
 		"defeated": Array(config.get_value("world", "defeated", PackedStringArray())),
 		"collected": Array(config.get_value("world", "collected", PackedStringArray())),
 		"broken": Array(config.get_value("world", "broken", PackedStringArray())),
+		"dungeon": config.get_value("dungeon", "state", {}),
 	}
 	pending_load = true
 	return true

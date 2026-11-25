@@ -68,18 +68,26 @@ func enter(entrance: DungeonEntrance) -> void:
 	var dungeon_seed: int = entrance.dungeon_seed
 	# Black on this same frame, so the world never leaks into the dungeon frame.
 	_set_fade(1.0)
-	_unload_world()
-	_dungeon = DUNGEON_SCENE.instantiate() as DungeonGenerator
-	add_child(_dungeon)
-	_dungeon.exit_requested.connect(_leave)
-	_dungeon.start(dungeon_seed, 0)
-	if _dungeon.spawn_point == null:
-		push_error("DungeonLayer: dungeon has no spawn_point.")
-		_close_dungeon()
+	if not _open_dungeon(dungeon_seed, 0):
 		_fade_in()
 		return
 	_teleport(_dungeon.spawn_point.global_position)
 	_fade_in()
+
+
+## Frees the world and raises the dungeon for `layout_seed`/`floor`. False when
+## the scene has no spawn point; the caller then leaves the door usable.
+func _open_dungeon(layout_seed: int, floor: int) -> bool:
+	_unload_world()
+	_dungeon = DUNGEON_SCENE.instantiate() as DungeonGenerator
+	add_child(_dungeon)
+	_dungeon.exit_requested.connect(_leave)
+	_dungeon.start(layout_seed, floor)
+	if _dungeon.spawn_point == null:
+		push_error("DungeonLayer: dungeon has no spawn_point.")
+		_close_dungeon()
+		return false
+	return true
 
 
 ## `exit_requested` from the dungeon scene.
@@ -89,6 +97,29 @@ func _leave() -> void:
 	_set_fade(1.0)
 	_close_dungeon()
 	_fade_in()
+
+
+## Save data: `{}` while the player is in the world, or the dungeon floor, the
+## player's position inside it and the world spot the exit returns to.
+func save_state() -> Dictionary:
+	if _dungeon == null or _player == null:
+		return {}
+	var state := _dungeon.save_state()
+	state["position"] = _player.global_position
+	state["world_position"] = _world_position
+	return state
+
+
+## Rebuilds the dungeon from `save_state()` and drops the player at its saved
+## spot. No fade: this runs while the game scene is still loading.
+func restore_from_save(state: Dictionary) -> void:
+	if _player == null or state.is_empty():
+		return
+	_world_position = state.get("world_position", _world_position)
+	if not _open_dungeon(int(state.get("seed", 0)), int(state.get("floor", 0))):
+		return
+	var target: Vector2 = state.get("position", _dungeon.spawn_point.global_position)
+	_teleport(target)
 
 
 ## Closest door to the player inside `door_radius_px`, or null.

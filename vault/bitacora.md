@@ -894,3 +894,70 @@ Formato de entrada:
   caso. Medido en headless a 200 000 px: 49 chunks (0..48) → 5 (140 ms).
 - Comprobado en headless: 0 tiles de muro/suelo sin colisión, 42 celdas de decor y 9 ms
   por las dos plantas. Falta F5/F6 de Ruben: aspecto del castillo y salida lejana.
+
+## 2026-11-24 · `buffy` · Mazmorra del castillo como hall de plataformas (T-0093)
+
+- `scripts/world/dungeon_generator.gd`: sala plana sustituida por hall de 7/9 tramos en
+  filas 32–34, huecos de 2–3 tiles con repisa y escalón, losas sobre huecos anchos y ruta
+  alta en la sala central; fondo de piedra hasta el marco con fosas de vacío recortadas.
+- El remate del suelo pasa del tile de techo `24` al `18` para que la superficie no
+  muestre la franja de vacío. Ventanas cada 5 tiles y estandartes al 25/50/75 %.
+- Verificado con harness de renderizado (KP3 → F, semilla `20261124`, plantas 0/1) y
+  capturas `vault/estructuras/platform_f0_*.png` / `platform_f1_*.png`; falta F5/F6.
+
+## 2026-11-24 · `buffy` · T-0093 segunda pasada: sala de referencia y responsabilidades
+
+- Rehecha la mazmorra como una sola sala de 34 × 22 (tres bloques de suelo, dos fosas,
+  8 ventanas, 2 estandartes y 3 plataformas de madera), con el fondo de piedra claro.
+- `scripts/structures/castle/`: `CastleLayout` (datos), `CastleTiles` (atlas/colisión),
+  `CastlePainter` (capas) y `DungeonGenerator` (ciclo); `WorldGenerator`/`WorldStructure`
+  intactos. La capa de madera pasa de `Floor` a `Platforms` con colisión fina one-way.
+- Probe headless KP3 → F, semilla `20261124`, plantas 0/1, sin errores de script; capturas
+  `hall_spawn`, `hall_overview`, `hall_left_platform`, `hall_center_floor`, `hall_f1_spawn`.
+  Falta F5/F6 de Ruben.
+
+## 2026-11-24 · `buffy` · T-0093 paredes/suelo del castillo
+
+- Corregidas las esquinas con las piezas reales del atlas: marco y suelo
+  comparten borde `20/24/19/22` y esquinas `18/21/26/23`; el canto claro queda
+  fuera del ladrillo, como en la referencia.
+- `resources/shaders/castle_cutout.gdshader` descarta el púrpura `#423a51`;
+  `Back` deja de pintar el tile `25` y `DungeonVoid` da el negro exterior y de
+  las fosas.
+- Chequeo headless del castillo: marco/esquinas, fosas/exterior y materiales
+  correctos; captura visual del hall completo revisada. F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 corrección de orientación y fondo
+
+- Solo el marco que rodea la sala vuelve al canto interior: borde `24/20/22/19`
+  y esquinas `28/29/27/30`. Los bloques de suelo conservan `20/24/19/22` y
+  `18/21/26/23`.
+- El fondo normal era el `Parallax2D` del mundo (`z = -100`), no generación de
+  chunks: `DungeonLayer` ya los descarga. `DungeonVoid` pasa de CanvasLayer a
+  `Polygon2D` en `z = -5`, encima del parallax y debajo de `Back`.
+- Probe con un fondo falso magenta en `z = -100`: el hall sale con negro y no se
+  ve magenta. Frame IDs y `VOID_BACKDROP` correctos; exit 0. F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 fondo original, sin shader
+
+- El PNG de `castle_tiles.png` no se ha modificado. El degradado/segundo negro
+  venía de `castle_cutout.gdshader`, que convertía el púrpura del atlas en
+  transparencia y dejaba ver otro fondo; se elimina el shader y sus materiales.
+- `DungeonVoid` usa el púrpura original `#423a51` en un `Polygon2D` z=-5. Los
+  bordes de suelo y marco conservan su interior original, como el borde del mapa.
+- Probe con parallax falso magenta: el fondo no se cuela. Sin material en las
+  capas; frame IDs correctos; exit 0. F5/F6 pendientes.
+
+## 2026-11-25 � `opencode-jorge` � Revisi�n de T-0093 y T-0080 persistencia por piso
+
+- T-0093 (de `buffy`): revisada y verificada en headless con Godot 4.7.2 (semilla
+  `20261124`, plantas 0/1): colisi�n completa en `Walls`, `Platforms` one-way, layout
+  determinista y distinto por planta, `game.tscn`/`dungeon_test.tscn` sin errores.
+  Corregidos el comentario muerto del shader y el F6 (`UILayer` en `dungeon_test.tscn`).
+- T-0080 abierto y hecho: `DungeonLayer.save_state()/restore_from_save()`, secci�n
+  `[dungeon] state` en `save_game.gd` y llamada en `game.gd`. Guardar dentro del
+  castillo conserva planta, posici�n y punto de vuelta; `run/position` y metros pasan a
+  ser del mundo. Verificado headless con un probe desechable (slot 3 borrado al acabar).
+  Ficheros: `scripts/world/dungeon_layer.gd`, `scripts/save_game.gd`, `scripts/game.gd`,
+  `scenes/structures/dungeon_test.tscn`, `scripts/structures/castle/castle_tiles.gd`,
+  `docs/dungeon.md` y `vault/`.
