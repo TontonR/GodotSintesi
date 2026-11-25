@@ -80,7 +80,7 @@ func floor_count() -> int:
 func _compute_floor_count(seed: int) -> int:
 	var rng := RandomNumberGenerator.new()
 	# Use a distinct salt so this doesn't collide with per-floor layout seeds.
-	rng.seed = seed ^ 0xDEAD_F100R
+	rng.seed = seed ^ 0xDEADF100
 	var count := min_floors
 	while count < max_floors:
 		if rng.randf() < 0.5:
