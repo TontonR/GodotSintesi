@@ -122,7 +122,8 @@ skipped. A biome that lists nothing places nothing. Full reference:
   (far 116, near 92, mountain 172/211), so the tint doesn't flatten the depth difference.
 - Ambient particles: `scripts/world/biome_particles.gd` samples
   `WorldGenerator.biome_at_world_x()` at the player's X every 0.25 s and turns on leaves
-  (28 particles) or snow (220 flakes); they enter/leave with a 0.4 s fade and sideways wind.
+  or snow; they enter/leave with a 0.4 s fade. Both come from Sprite Fusion's MIT VFX
+  library (`falling-leaves`: 80 leaves; `snow`: 260/150/30 flakes by depth); see `fx.md`.
 
 ## Adding a biome
 

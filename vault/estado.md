@@ -1,15 +1,15 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-24 por `buffy`_
+_Actualizado 2026-11-25 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `test/fusion-structure` (T-0088): fusión de `feat/bloques-rompibles` (T-0074/T-0075/T-0076) y `feat/estructura-explorable` (T-0079/T-0087), sobre `main` `ccbae38` |
-| Árbol | `revision` tras T-0089/T-0090: estructuras/ruinas, cajas rompibles, mazmorra con entrada, interior de castillo (atlas 32 px de `map.zip`) y salida sin regenerar el mapa. F5 pendiente |
+| Rama | `feat/vfx-ambiente-spritefusion` (T-0093) desde `test/fusion-structure`; la fusión sigue en `test/fusion-structure` (T-0088), sobre `main` `ccbae38` |
+| Árbol | `revision` tras T-0089/T-0090: estructuras/ruinas, cajas rompibles, mazmorra con entrada, interior de castillo (atlas 32 px de `map.zip`), salida sin regenerar el mapa y VFX ambientales de Sprite Fusion (T-0093). F5 pendiente |
 | Fase | Reparto en 3 agentes: opencode (T-0076 + testeo), Freebuff (mazmorra/entrada/fusión/castillo) y PixelForge (arte T-0086). Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de Ruben (ruinas, cajas, puerta/mazmorra, aspecto del castillo y salida lejana) y PR de `test/fusion-structure` a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
+| Siguiente paso | F5 de Ruben (ruinas, cajas, puerta/mazmorra, aspecto del castillo, salida lejana y densidad de hojas/nieve) y PR de `test/fusion-structure` y de `feat/vfx-ambiente-spritefusion` a `main`; después T-0080 (persistencia por piso), T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
@@ -18,7 +18,7 @@ _Actualizado 2026-11-24 por `buffy`_
 |---|---|---|
 | `humano-ruben` | F5 de la fusión y del castillo; decisiones de diseño | — |
 | `opencode-jorge` | T-0076 cajas rompibles (hecho, pendiente F5) + testeo headless | `scripts/world/breakable_block.gd`, `scenes/world/breakable_block.tscn`, `scripts/world_generator.gd`, `scripts/save_game.gd`, `docs/world.md` |
-| `buffy` | T-0089/T-0090 salida y arte del castillo; mazmorra y fusión | `scenes/structures/`, `scripts/world/dungeon_*.gd`, `scripts/world_generator.gd`, `docs/dungeon.md`, `docs/world.md` |
+| `buffy` | T-0093 VFX ambientales (hojas y nieve); T-0089/T-0090 salida y arte del castillo | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md` |
 | `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.

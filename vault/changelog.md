@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-25 · `buffy` · VFX ambientales de Sprite Fusion (T-0093)
+
+- `scripts/world/spritefusion_ambient.gd` porta `falling-leaves` y `snow` de la
+  librería VFX gratuita (MIT) de Sprite Fusion: 80 hojas con 3 siluetas y 4 paletas
+  de otoño, y 440 copos en tres profundidades con cristales animados y viento.
+- `biome_particles.gd` cambia sus `CPUParticles2D` por estos emisores `Sprite2D`;
+  el contrato del bioma (`ambient`) y el fundido de 0,4 s no cambian.
+- Fuentes y licencia en `assets/vfx/spritefusion/`; validado en headless, falta F5.
+
 ## 2026-11-24 · `buffy` · Interior de castillo y salida sin tirón (T-0089, T-0090)
 
 - T-0090: el interior explorable usa `assets/map/structures/castle_tiles.png` (atlas 8×6

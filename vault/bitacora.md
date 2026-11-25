@@ -894,3 +894,14 @@ Formato de entrada:
   caso. Medido en headless a 200 000 px: 49 chunks (0..48) → 5 (140 ms).
 - Comprobado en headless: 0 tiles de muro/suelo sin colisión, 42 celdas de decor y 9 ms
   por las dos plantas. Falta F5/F6 de Ruben: aspecto del castillo y salida lejana.
+
+## 2026-11-25 · `buffy` · VFX ambientales de Sprite Fusion (T-0093)
+
+- Rama nueva `feat/vfx-ambiente-spritefusion` desde `test/fusion-structure` (la fusión
+  no se toca). Ficheros: `scripts/world/spritefusion_ambient.gd`,
+  `scripts/world/biome_particles.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`,
+  `docs/biomes.md`.
+- Canal: el MCP de Sprite Fusion pide OAuth y la API bearer token; sin cuenta se usan
+  los ZIP públicos (MIT) de `falling-leaves` y `snow`, que traen la receta en un `.ts`.
+- Port a `Sprite2D` en pantalla: 80 hojas y 440 copos, fundido de 0,4 s y precarga al
+  activar. Headless: ambos emisores se mueven y generan texturas válidas. Falta F5.
