@@ -2,6 +2,15 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-26 · `buffy` · Castillo de 3 a 10 plantas y subida por la puerta (T-0095)
+
+- `DungeonGenerator.max_floors` pasa de 6 a 10: la cascada del 50 % sigue desde la
+  planta 3, así que un castillo puede tener de 3 a 10.
+- La salida es la escalera: pisarla reconstruye el hall una planta más arriba y emite
+  `floor_changed(floor)`; `DungeonLayer` funde a negro, teletransporta al nuevo
+  `spawn_point` y vuelve. Solo la última planta emite `exit_requested` y deja el castillo.
+- El guardado por planta (T-0080) no cambia: se guarda `{seed, floor}`.
+
 ## 2026-11-26 · `buffy` · Hojas: más pequeñas, precargadas y bajo los árboles (T-0093 ronda 5)
 
 - 108 hojas a 0,75 px por píxel de arte (antes 80 a 1 px) y cada una con su propia

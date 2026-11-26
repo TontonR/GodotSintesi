@@ -1024,3 +1024,14 @@ Formato de entrada:
 - `world_generator.gd`: los `tree` vivos entran en el grupo `decor_tree` (el muerto no);
   el ambiente lee corona y `tint_color` para teñir esas hojas como el árbol.
 - Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.
+
+## 2026-11-26 · `buffy` · Castillo de 3 a 10 plantas y subida por la puerta (T-0095)
+
+- Ruben: los castillos van de 3 a 10 plantas y se sube al pasar la puerta, con 50 % por
+  planta desde la 3 mientras exista la anterior.
+- `dungeon_generator.gd`: `max_floors` 10 y `_step_forward()` diferido; la puerta
+  reconstruye la planta siguiente y emite `floor_changed(floor)`; en la última emite
+  `exit_requested` y deja el castillo.
+- `dungeon_layer.gd`: funde a negro, teletransporta al nuevo `spawn_point` y vuelve;
+  `dungeon_test.gd` sube con la puerta en F6. El guardado por planta no cambia.
+- Sin Godot en esta sesión: F5/F6 pendientes de recorrer el castillo completo.

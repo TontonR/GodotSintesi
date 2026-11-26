@@ -1,7 +1,7 @@
 extends Node2D
 ## F6 harness for `dungeon.tscn` (T-0079). Not part of the game: it drops the
-## player on the dungeon spawn point, lets 1/2 switch floors and prints the exit
-## request. The world hook will do this from the world generator in a later ticket.
+## player on the dungeon spawn point, lets 1/2 switch floors, climbs when the
+## player passes the door and prints the exit request on the top floor.
 
 @onready var dungeon: DungeonGenerator = $Dungeon
 @onready var player: CharacterBody2D = $player
@@ -9,6 +9,7 @@ extends Node2D
 
 func _ready() -> void:
 	dungeon.exit_requested.connect(_on_exit_requested)
+	dungeon.floor_changed.connect(_on_floor_changed)
 	_place_player()
 
 
@@ -33,6 +34,11 @@ func _place_player() -> void:
 	var camera := player.get_node_or_null("Camera2D") as Camera2D
 	if camera != null:
 		camera.reset_smoothing()
+
+
+func _on_floor_changed(_floor: int) -> void:
+	_place_player()
+	print("Dungeon: climbed to floor %d." % dungeon.current_floor())
 
 
 func _on_exit_requested() -> void:

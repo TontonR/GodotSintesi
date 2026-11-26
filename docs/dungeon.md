@@ -7,8 +7,8 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 - `scenes/structures/dungeon.tscn` + `scripts/structures/castle/dungeon_generator.gd` (`DungeonGenerator`): one side-view castle hall per floor, built from a seed, independent from the chunked world. It never instantiates nor keeps the player.
 - Split: `CastleLayout` (pure data), `CastleTiles` (atlas + collision), `CastlePainter` (layers), `DungeonGenerator` (lifecycle, seed/floor, spawn, exit). `WorldGenerator`, `WorldStructure` and `BlockStructure` stay untouched.
 - `DungeonLayer`/`DungeonEntrance` are the world side: door detection, fade, unload/rebuild of the chunks.
-- Two floors (`floors` = 2): `start(seed, floor)` rebuilds the hall (`seed ^ (floor * 7919)`, never the global RNG); `save_state()` is `{seed, floor}`.
-- **Floor count is seed-derived**: always at least 3 (`min_floors`), then each extra floor up to 6 (`max_floors`) requires an independent 50 % roll in a cascade (floor 4 needs roll1, floor 5 needs roll1 AND roll2, etc.). Same seed → same floor count always. `_compute_floor_count(seed)` uses salt `0xDEAD_F100R` so it doesn't collide with per-floor layout seeds.
+- `start(seed, floor)` rebuilds the hall (`seed ^ (floor * 7919)`, never the global RNG); `save_state()` is `{seed, floor}`.
+- **Floor count is seed-derived** (3..10): always at least 3 (`min_floors`), then each extra floor up to 10 (`max_floors`) requires an independent 50 % roll in a cascade (floor 4 needs roll1, floor 5 needs roll1 AND roll2, etc.). Same seed → same floor count always. `_compute_floor_count(seed)` uses salt `0xDEAD_F100R` so it doesn't collide with per-floor layout seeds.
 
 ## Hall composition
 
@@ -18,7 +18,7 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 - `CastlePainter._paint_solid_grid()` builds a boolean `solid[x, y]` grid (frame + floor blocks) and autotiles every cell from its 8 neighbors using `SOLID_FILL` (`25`, `#423a51`), borders `20/24/19/22`, outer corners `18/21/26/23` and inner corners `28/29/27/30`.
 - `Back` paints stone `41` inside the frame; outside shows `DungeonVoid` (`Polygon2D`, z = -5, `#423a51`), above world parallax (z = -100) and below `Back` (z = -4).
 - `Walls` is solid (full-square collision on layer 1). `Platforms` is one-way (top 10 px only). `Back`/`Decor` are physics-free.
-- `DungeonGenerator._on_exit_body_entered()` emits `exit_requested.emit.call_deferred()` so world chunk/physics rebuilds run outside the `Area2D` physics query flush.
+- **The exit pad is the staircase** (2026-11-26, T-0095): stepping on it rebuilds the hall one floor up (deferred, outside the `Area2D` physics query flush) and emits `floor_changed(floor)`; `DungeonLayer` fades, teleports the player to the new `spawn_point` and fades back in. Only the **top floor** emits `exit_requested` and returns to the world.
 
 ## Save and load (T-0080)
 
@@ -28,7 +28,7 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 
 ## F6 (manual, pending for Ruben)
 
-- Open `scenes/structures/dungeon_test.tscn` and press F6: the player lands on `spawn_point`, keys 1/2 regenerate floor 0/1 and the amber pad prints `Dungeon: exit requested on floor N.` The scene needs its own `UILayer`, or the player fails to create one mid-setup.
+- Open `scenes/structures/dungeon_test.tscn` and press F6: the player lands on `spawn_point`, keys 1/2 regenerate floor 0/1, the amber pad climbs (`Dungeon: climbed to floor N.`) and the top floor prints `Dungeon: exit requested on floor N.` The scene needs its own `UILayer`, or the player fails to create one mid-setup.
 - In game: walk to the tower, press F within 64 px, and the exit pad returns to the same world spot. KP3 lands on the next structure or door.
 
 ## Decisions and traps
