@@ -214,7 +214,11 @@ func _try_step_up(direction: float) -> void:
 	# see 1-tile steps (the origin is ~27 px above the feet).
 	if not is_on_floor() or direction == 0.0:
 		return
-	var forward := Vector2(direction, 0.0)
+	# Look far enough ahead for the distance the body will cover this frame.
+	# A fixed 1 px probe missed steps when running and left the player glued
+	# to the face for one or more frames, which read as an intermittent fail.
+	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
+	var forward := Vector2(direction * lookahead, 0.0)
 	if not test_move(global_transform, forward):
 		return
 	# Lowest lift that frees the space ahead, in 1 px steps: a half block (the
@@ -238,6 +242,11 @@ func _try_step_up(direction: float) -> void:
 	var target := global_transform
 	target.origin.y -= lift
 	if test_move(target, Vector2.UP, null, 0.0):
+		return
+	# Only commit the lift if the raised body lands on something. Without this
+	# check an overhang or a missing floor could raise the player into the air
+	# and then drop it, which looked like a broken step.
+	if not test_move(target, Vector2.DOWN * 2.0, null, 0.0):
 		return
 	global_position += Vector2(0.0, -lift)
 	_visual_step_offset += lift
@@ -543,10 +552,15 @@ func _shape_rect(shape_node: CollisionShape2D) -> Rect2:
 		return Rect2()
 	var shape_scale := shape_node.global_transform.get_scale()
 	if shape_node.shape is RectangleShape2D:
+		# A mirrored parent (negative scale.x) used to return a Rect2 with a
+		# negative width; Godot rejects those in has_point()/get_center().
 		var size := (shape_node.shape as RectangleShape2D).size * shape_scale
+		size = Vector2(absf(size.x), absf(size.y))
 		return Rect2(shape_node.global_position - size * 0.5, size)
 	if shape_node.shape is CircleShape2D:
-		var radius := (shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		var radius := absf(
+			(shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		)
 		return Rect2(shape_node.global_position - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
 	return Rect2()
 

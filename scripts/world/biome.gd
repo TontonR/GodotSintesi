@@ -33,8 +33,13 @@ extends Resource
 ## Chance per chunk of each `structure_kinds` (same order; each one rolls alone,
 ## so a chunk can get none, some or all, never two of the same).
 @export var structure_chances: Array[float] = []
-## Ambient particles: "none", "leaves" (red leaves) or "snow" (snowflakes).
+## Ambient particles: "none", "leaves" or "snow" (snowflakes).
 @export_enum("none", "leaves", "snow") var ambient: String = "none"
+## Multiplier of the ambient particle count (1 = recipe density). The meadow
+## uses 0.2 for a sparse green leaf rain.
+@export_range(0.0, 1.0, 0.05) var ambient_density: float = 1.0
+## Tint of open-sky leaves; alpha 0 keeps the recipe's autumn palettes.
+@export var ambient_leaf_color: Color = Color(0, 0, 0, 0)
 ## Relative weight in the world's biome distribution.
 @export var spawn_weight: float = 1.0
 ## Distance from the start (tiles) before this biome can appear at all.

@@ -7,9 +7,10 @@ extends CanvasLayer
 # both ported from Sprite Fusion's free MIT VFX library (T-0093). The layer
 # copies the camera transform every frame, so the effects scroll with the world
 # instead of following the player. There is no alpha crossfade: each emitter
-# asks WorldGenerator.ambient_share_at_world_x() for the biome share of every
+# asks WorldGenerator.ambient_amount_at_world_x() for the biome amount of every
 # visible tile and only spawns a particle there with that probability, so the
-# weather thins out block by block through the terrain transition.
+# particle count fades across the terrain transition (the snow cap has its own
+# hard edge; see spritefusion_ambient.gd).
 
 const VFX_SETTINGS_SCRIPT := preload("res://scripts/vfx_settings.gd")
 

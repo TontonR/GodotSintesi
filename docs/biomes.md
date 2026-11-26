@@ -28,6 +28,8 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-1
 | `structure_kinds` | Structure `display_name`s from `WorldGenerator.structures` |
 | `structure_chances` | Chance per chunk of each kind (same order; each one rolls alone) |
 | `ambient` | `"none"`, `"leaves"` or `"snow"` |
+| `ambient_density` | Particle-count multiplier (1 = recipe density; meadow 0.2) |
+| `ambient_leaf_color` | Open-sky leaf tint; alpha 0 keeps the autumn palettes |
 | `spawn_weight` | Relative weight for the order roll |
 | `min_distance_tiles` | Distance from tile 0 before the biome can appear |
 | `terrain_amplitude_multiplier` | Noise amplitude multiplier; **never above 1.0** (see Traps) |
@@ -39,7 +41,7 @@ _2026-11-01 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-1
 
 | Biome | Grass | Forest | Rock | Decor | Ambient | Weight | Unlock | Enemies per chunk |
 |---|---|---|---|---|---|---|---|---|
-| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | 3 greens (4/4/3) | none | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
+| Meadow (`pradera`) | `(0.72, 1, 0.28)` | `(0.233, 0.388, 0.388)` | white | 3 greens (4/4/3) | leaves, density 0.2 | 0.55 | tile 0 | 3 orc, 3 slime, 1 toad |
 | Red Forest (`bosque_rojo`) | `(0.674, 0.196, 0.159)` | `(0.625, 0, 0.036)` | white | red/orange/yellow (6/3/1) | leaves | 0.30 | tile 0 | 1 wolf, 1 toad |
 | Snow (`nieve`) | `(0.93, 0.96, 1)` | `(0.82, 0.88, 0.96)` | `(0.92, 0.94, 0.98)` | 3 near-whites (3/3/2) | snow | 0.20 | tile 4096 | 2 skeleton, 2 archer, 1 wolf |
 
@@ -121,13 +123,16 @@ skipped. A biome that lists nothing places nothing. Full reference:
 - The pine textures are gray versions of the originals, each with its own calibrated gray
   (far 116, near 92, mountain 172/211), so the tint doesn't flatten the depth difference.
 - Ambient particles: `scripts/world/biome_particles.gd` keeps both emitters on and each
-  one asks `WorldGenerator.ambient_share_at_world_x()` for every visible tile. The query
-  uses the same ±`biome_transition_tiles` window that tints the terrain but snaps to 0/1
-  at `AMBIENT_SHARE_CUTOFF` (0.8), so leaves and snow switch on only when the window is
-  mostly their biome; there is no long density fade through the transition. Both come from Sprite Fusion's MIT VFX library (`falling-leaves`: 108
+  one asks `WorldGenerator.ambient_amount_at_world_x()` for every visible tile. The query
+  uses the same ±`biome_transition_tiles` window that tints the terrain: the raw amount and
+  the biome's `ambient_density` blend through the transition, so the particle quantity fades
+  instead of switching. The snow blanket keeps a hard 0/1 edge at `AMBIENT_SHARE_CUTOFF`
+  (0.8) and extends it over flat ground to the next height change. Both come from Sprite Fusion's MIT VFX library (`falling-leaves`: 108
   leaves + litter; `snow`: 260/150/30 flakes + drift) and live in world space: the layer
   copies the camera transform, so they scroll with the terrain and rest on the
-  block-stepped ground; see `fx.md`.
+  block-stepped ground; see `fx.md`. The meadow enables leaves at density 0.2, so it
+  gets roughly one fifth of the red forest's rain, and `ambient_leaf_color` makes its
+  open-sky leaves and litter green; the red forest keeps the autumn palettes.
 
 ## Adding a biome
 

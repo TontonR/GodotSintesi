@@ -198,8 +198,12 @@ var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _world: Node
 var _ground_world := PackedFloat32Array()
-## Biome share (0..1) of every sampled tile, used as spawn probability.
+## Biome amount × its density (0..1) for every sampled tile, used as spawn
+## probability; the meadow's density is lower than the red forest's.
 var _share_world := PackedFloat32Array()
+## Hard snow-cover edge (0/1) for every sampled tile. It is separate from the
+## particle share: the cap stays solid and only its edge is extended.
+var _cover_world := PackedByteArray()
 var _ground_origin := 0.0
 var _ground_timer := 0.0
 var _area_center := Vector2.ZERO
@@ -336,18 +340,24 @@ func _refresh_ground() -> void:
 	if _ground_world.size() != columns:
 		_ground_world.resize(columns)
 		_share_world.resize(columns)
+		_cover_world.resize(columns)
 	if _world == null:
 		_world = get_tree().get_first_node_in_group("world_generator")
 	if _world == null or not _world.has_method("ground_y_at"):
 		# Dungeon or no generator: the bottom of the view acts as the ground.
 		_ground_world.fill(_area.end.y)
 		_share_world.fill(1.0)
+		_cover_world.fill(1)
 	else:
 		_ground_origin = float(first) * GROUND_STEP
 		for i in columns:
 			var center_x := _ground_origin + (float(i) + 0.5) * GROUND_STEP
 			_ground_world[i] = float(_world.call("ground_y_at", center_x))
 			_share_world[i] = _biome_share(center_x)
+			var cover := 1.0 if effect == "snow" else 0.0
+			if effect == "snow" and _world.has_method("ambient_share_at_world_x"):
+				cover = float(_world.call("ambient_share_at_world_x", center_x, effect))
+			_cover_world[i] = 1 if cover >= 0.5 else 0
 	_place_litter()
 	queue_redraw()
 
@@ -362,7 +372,7 @@ func _ground_at(world_x: float) -> float:
 	return _ground_world[i]
 
 
-## Biome share (0..1) of the tile that contains `world_x`.
+## Biome amount × density (0..1) of the tile that contains `world_x`.
 func _share_at(world_x: float) -> float:
 	var last := _share_world.size() - 1
 	if last < 0:
@@ -371,10 +381,33 @@ func _share_at(world_x: float) -> float:
 	return _share_world[i]
 
 
+## Hard snow-cover edge (0/1) of the tile that contains `world_x`.
+func _cover_at(world_x: float) -> bool:
+	var last := _cover_world.size() - 1
+	if last < 0:
+		return false
+	var i := clampi(floori((world_x - _ground_origin) / GROUND_STEP), 0, last)
+	return _cover_world[i] != 0
+
+
 func _biome_share(world_x: float) -> float:
-	if not _world.has_method("ambient_share_at_world_x"):
-		return 1.0
-	return clampf(float(_world.call("ambient_share_at_world_x", world_x, effect)), 0.0, 1.0)
+	var share := 1.0
+	if _world.has_method("ambient_amount_at_world_x"):
+		share = clampf(float(_world.call("ambient_amount_at_world_x", world_x, effect)), 0.0, 1.0)
+	elif _world.has_method("ambient_share_at_world_x"):
+		share = clampf(float(_world.call("ambient_share_at_world_x", world_x, effect)), 0.0, 1.0)
+	if _world.has_method("ambient_density_at_world_x"):
+		share *= clampf(float(_world.call("ambient_density_at_world_x", world_x, effect)), 0.0, 1.0)
+	return share
+
+
+## Biome tint for open-sky leaves and litter; transparent keeps the autumn
+## palette, while the meadow returns its green foliage tint.
+func _leaf_tint_at(world_x: float) -> Color:
+	if _world == null or not _world.has_method("ambient_leaf_color_at_world_x"):
+		return Color(0, 0, 0, 0)
+	var tint: Color = _world.call("ambient_leaf_color_at_world_x", world_x)
+	return tint if tint.a > 0.0 else Color(0, 0, 0, 0)
 
 
 ## Uniform X in the range, then one independent roll against the share of that
@@ -472,8 +505,12 @@ func _init_ground_leaf(ground: GroundLeaf, slot: int, x: float) -> void:
 	ground.kick_rot = 0.0
 	ground.kick_spin = 0.0
 	var shape := int(_hash(slot, 2) * float(LEAF_SHAPES.size())) % LEAF_SHAPES.size()
-	var palette := int(_hash(slot, 4) * float(LEAF_PALETTES.size())) % LEAF_PALETTES.size()
-	ground.sprite.texture = _leaf_textures[shape * LEAF_PALETTES.size() + palette]
+	var tint := _leaf_tint_at(x)
+	if tint.a > 0.0:
+		ground.sprite.texture = _leaf_color_texture(tint, shape)
+	else:
+		var palette := int(_hash(slot, 4) * float(LEAF_PALETTES.size())) % LEAF_PALETTES.size()
+		ground.sprite.texture = _leaf_textures[shape * LEAF_PALETTES.size() + palette]
 	ground.base_y = _resting_y(x, ground.sprite.texture.get_height())
 	ground.base_rotation = (_hash(slot, 5) - 0.5) * 0.6
 	ground.sprite.scale = Vector2(_leaf_px, _leaf_px)
@@ -655,9 +692,15 @@ func _reset_leaf(leaf: Leaf, top: bool, canopy_spawn: bool = true) -> void:
 		else:
 			var bottom := clampf(_ground_at(x) - 20.0, _area.position.y, _area.end.y - 20.0)
 			leaf.y = _rng.randf_range(_area.position.y, maxf(bottom, _area.position.y))
-		leaf.color = Color.WHITE
-		leaf.palette = _rng.randi_range(0, LEAF_PALETTES.size() - 1)
-		leaf.sprite.texture = _leaf_textures[leaf.shape * LEAF_PALETTES.size() + leaf.palette]
+		var tint := _leaf_tint_at(x)
+		if tint.a > 0.0:
+			leaf.color = tint
+			leaf.palette = -1
+			leaf.sprite.texture = _leaf_color_texture(tint, leaf.shape)
+		else:
+			leaf.color = Color.WHITE
+			leaf.palette = _rng.randi_range(0, LEAF_PALETTES.size() - 1)
+			leaf.sprite.texture = _leaf_textures[leaf.shape * LEAF_PALETTES.size() + leaf.palette]
 	leaf.sprite.visible = true
 	leaf.x = leaf.x0
 	leaf.sprite.z_index = 1 if leaf.near else 0
@@ -828,6 +871,10 @@ func _lift_rect(rect: Rect2) -> void:
 	if _hit_cooldown > 0.0:
 		return
 	_hit_cooldown = HIT_LEAF_COOLDOWN
+	# Defensive: a mirrored hitbox used to arrive with negative width and
+	# spammed the debugger from the ground-litter has_point() call.
+	if rect.size.x < 0.0 or rect.size.y < 0.0:
+		rect = rect.abs()
 	var origin_x := rect.get_center().x
 	var point: Vector2
 	var lifted := 0
@@ -1042,21 +1089,55 @@ func _snow_drift_height(world_x: float) -> int:
 	)
 
 
+## The hard biome edge is extended over flat ground, in both directions, until
+## the surface height changes. The cap therefore ends on a step, not in the
+## middle of a flat run; a step up or down stops the extension.
+func _snow_cover_columns(first: int, last: int) -> PackedByteArray:
+	var count := last - first + 1
+	var cover := PackedByteArray()
+	cover.resize(count)
+	for i in count:
+		cover[i] = 1 if _cover_at(float(first + i) + 0.5) else 0
+	for i in count:
+		if cover[i] == 0:
+			continue
+		if i == 0 or cover[i - 1] == 0:
+			cover = _extend_snow_cover(cover, first, i, -1)
+		if i == count - 1 or cover[i + 1] == 0:
+			cover = _extend_snow_cover(cover, first, i, 1)
+	return cover
+
+
+func _extend_snow_cover(cover: PackedByteArray, first: int, edge_index: int, step: int) -> PackedByteArray:
+	var edge_x := float(first + edge_index) + 0.5
+	var edge_ground := _ground_at(edge_x)
+	var i := edge_index + step
+	while i >= 0 and i < cover.size():
+		var x := float(first + i) + 0.5
+		if not is_equal_approx(_ground_at(x), edge_ground):
+			break
+		cover[i] = 1
+		i += step
+	return cover
+
+
 ## Snow drift drawn one world pixel at a time, like the first version: no
 ## full-width tile bands. The cap sits on the stepped ground, so block edges
 ## end it instead of drawing a diagonal seam, and its broad noise keeps the
-## top irregular without the old spikes.
+## top irregular without the old spikes. Its edge comes from `cover`, not from
+## the particle probability, so the blanket stays solid while flakes fade.
 func _draw() -> void:
-	if effect != "snow" or _drift_colors.is_empty() or _share_world.is_empty():
+	if effect != "snow" or _drift_colors.is_empty() or _share_world.is_empty() or _cover_world.is_empty():
 		return
 	var footprint := _snow_footprint()
 	var first := floori(_area.position.x - 16.0)
 	var last := ceili(_area.end.x + 16.0)
+	var cover := _snow_cover_columns(first, last)
 	for column in range(first, last + 1):
+		if cover[column - first] == 0:
+			continue
 		var x := float(column)
 		var center_x := x + 0.5
-		if _hash(column, 21) > _share_at(center_x):
-			continue
 		var ground := roundf(_ground_at(center_x))
 		var height := _snow_drift_height(center_x)
 		var press := 0.0

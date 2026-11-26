@@ -2,6 +2,35 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-26 · `buffy` · Rectángulos espejados y errores de `_lift_rect` (T-0098)
+
+- `EnemyBase._collision_rect()` y `Player._shape_rect()` normalizan el tamaño/radio con
+  `absf`: las `attack_range` de los enemigos cuelgan de `flip_pivot`, y al mirar a la
+  izquierda su `scale.x = -1` producía un `Rect2` de ancho negativo.
+- `SpriteFusionAmbient._lift_rect()` sanea cualquier rectángulo negativo con `Rect2.abs()`
+  antes de `get_center()`/`has_point()`, así que las hitboxes espejadas dejan de llenar el
+  debugger y las hojas siguen reaccionando.
+- Docs: `docs/fx.md`; ticket T-0098.
+
+## 2026-11-26 · `buffy` · Subida automática y borde del manto de nieve (T-0097)
+
+- La subida automática mira el alcance real del movimiento y comprueba que el cuerpo
+  elevado tenga apoyo; deja de fallar de forma intermitente al correr y no sube a
+  salientes sin suelo.
+- Las partículas ambientales vuelven a tener cantidad gradual: `ambient_amount_at_world_x`
+  da la cuota 0..1 y `ambient_density_at_world_x` mezcla la densidad del bioma. El manto
+  de nieve conserva un borde duro, pero se prolonga por terreno llano hasta el primer
+  cambio de altura (subida o bajada), sin cortarse en mitad de una llanura.
+- Docs: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md`; ticket T-0097.
+
+## 2026-11-26 · `buffy` · Hojas verdes y escasas en el prado (T-0096 ronda 12)
+
+- El prado activa `ambient = "leaves"` con `ambient_density = 0.2`: tiene hojas
+  ambientales, pero aproximadamente una quinta parte de las del bosque rojo.
+- `Biome.ambient_leaf_color` tiñe de verde las hojas de cielo abierto y el litter del
+  prado; las copas de sus árboles ya usan su propio tinte verde. El bosque rojo conserva
+  las paletas de otoño y su densidad completa.
+
 ## 2026-11-26 · `buffy` · Nieve con ruido, corte de ambiente y puerta del castillo (T-0096/T-0095 ronda 11)
 
 - La nieve recupera un ruido de baja frecuencia (3–7 px) que ondula la superficie sin

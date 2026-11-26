@@ -348,10 +348,16 @@ func _collision_rect(shape_node: CollisionShape2D) -> Rect2:
 		return Rect2()
 	var shape_scale := shape_node.global_transform.get_scale()
 	if shape_node.shape is RectangleShape2D:
+		# attack_range lives under flip_pivot, whose scale.x is -1 when the
+		# enemy faces left. Keep the world size positive or Godot rejects the
+		# rectangle in has_point()/get_center().
 		var size := (shape_node.shape as RectangleShape2D).size * shape_scale
+		size = Vector2(absf(size.x), absf(size.y))
 		return Rect2(shape_node.global_position - size * 0.5, size)
 	if shape_node.shape is CircleShape2D:
-		var radius := (shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		var radius := absf(
+			(shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		)
 		return Rect2(shape_node.global_position - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
 	return Rect2()
 

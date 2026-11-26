@@ -92,3 +92,19 @@ de 1 px que se veían como líneas. El manto sigue cortándose en el escalón re
 El ambiente también cambia: `ambient_share_at_world_x()` devuelve 0/1 según
 `AMBIENT_SHARE_CUTOFF = 0.8`, así que hojas y nieve aparecen de golpe cerca de su bioma y
 no se degradan durante toda la transición.
+
+## Ronda 12 (2026-11-26)
+
+El prado también tiene hojas, pero muchas menos que el bosque rojo. `Biome` gana
+`ambient_density` (el prado usa 0.2) y `ambient_leaf_color` (verde en el prado, alfa 0 =
+paletas de otoño). `WorldGenerator.ambient_density_at_world_x()` multiplica la cuota de
+partículas y `ambient_leaf_color_at_world_x()` tiñe las hojas de cielo abierto y el
+litter. Las copas de los árboles normales ya usan su `tint_color` verde; el bosque rojo
+no cambia.
+
+## Ronda 13 (2026-11-26)
+
+La transición de partículas pasa a cantidad gradual (`ambient_amount_at_world_x` más la
+densidad mezclada); el manto de nieve mantiene un borde duro y ahora lo prolonga por terreno
+llano hasta el primer cambio de altura. La subida automática del jugador se corrige en
+T-0097.

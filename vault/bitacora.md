@@ -1068,3 +1068,29 @@ Formato de entrada:
 - `player.gd`/`enemy_base.gd`: `hurt_rect()`, `attack_rects()`, `is_attacking_now()` y
   grupo `enemies`. Docs: `docs/fx.md`, `docs/decor.md`, `docs/world.md`, `docs/ui.md`.
 - Sin Godot en esta sesión: F5 pendiente de interacciones, disolución y ajustes.
+
+## 2026-11-26 · `buffy` · Subida automática y borde del manto (T-0097)
+
+- Ruben: la subida automática funciona casi siempre pero a veces se rompe; las partículas
+  deben tener transición de cantidad y el manto de nieve no debe cortarse en vertical.
+- `player.gd`: el sondeo de escalón usa la distancia real del frame (mínimo 3 px) y exige
+  2 px de apoyo bajo los pies elevados; así no falla al correr ni sube a salientes vacíos.
+- `world_generator.gd`: `ambient_amount_at_world_x()` da la cuota gradual de partículas y
+  `ambient_density_at_world_x()` mezcla la densidad del bioma; `ambient_share_at_world_x()`
+  queda como borde duro del manto. `spritefusion_ambient.gd` guarda `_cover_world` y
+  `_snow_cover_columns()` prolonga cada borde por terreno llano hasta un cambio de altura.
+- Docs: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md`; T-0097,
+  changelog, estado y roadmap. Sin Godot en esta sesión: F5 pendiente. Sin commit.
+
+## 2026-11-26 · `buffy` · Rectángulos de ataque espejados (T-0098)
+
+- Ruben pasó 3974 errores del debugger: `spritefusion_ambient.gd:895 @ _lift_rect()`
+  rechazaba `Rect2` con tamaño negativo. Los puntos 881/895 son los `has_point()` de hojas
+  y litter, no el manto de nieve.
+- Causa: `EnemyBase._collision_rect()` multiplicaba el tamaño por
+  `global_transform.get_scale()`; `attack_range` cuelga de `flip_pivot`, que vale
+  `scale.x = -1` al mirar a la izquierda. `Player._shape_rect()` tenía el mismo patrón
+  latente.
+- Fix: tamaño/radio con `absf` en ambos lados y `Rect2.abs()` defensivo al entrar en
+  `_lift_rect()`. Docs: `docs/fx.md`; ticket T-0098, changelog, estado y roadmap. Sin
+  Godot en esta sesión: F5 pendiente de repetir el combate y ver el contador a cero.

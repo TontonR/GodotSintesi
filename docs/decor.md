@@ -96,8 +96,9 @@ random weight, so a sparse biome cannot come out too alive or too dead.
   Every crown takes part: the round-robin cursor hands each assigned leaf to the next
   tree, so the rain is spread evenly instead of piling on one. Only about 35 % of
   normal recycling leaves are assigned to a crown; the initial fill and the re-scatter
-  after a teleport skip crowns so the whole view fills evenly. The group dies with the chunk, so
-  unloaded trees never rain anything.
+  after a teleport skip crowns so the whole view fills evenly. Meadow crowns are green, so
+  their leaves match the sparse green rain; the red forest keeps its autumn colours. The
+  group dies with the chunk, so unloaded trees never rain anything.
 - Leaves react to the player and enemies walking through them; running throws them a
   little further and sword/enemy hitboxes lift the ones inside. Ground litter keeps
   its own lifetime, gains time when touched and dissolves pixel by pixel instead of
