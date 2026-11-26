@@ -11,3 +11,6 @@ opencode.json
 # Python (editor del vault)
 __pycache__/
 *.pyc
+
+# Descargas temporales (ZIPs de Sprite Fusion)
+assets/downloads/
