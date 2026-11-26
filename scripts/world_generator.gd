@@ -12,6 +12,8 @@ const KEEP_CHUNKS_SIDE := 2
 ## The mountain base band darkens the biome's forest color by this factor
 ## (the meadow's `#283D43` comes out of `forest_color` darkened 0.35).
 const MOUNTAIN_BASE_DARKENING := 0.35
+## Tiles on each side over which the ambient VFX crossfade between biomes.
+const AMBIENT_BLEND_TILES := 32
 
 @export_group("World")
 ## World seed; 0 = random per run.
@@ -649,6 +651,28 @@ func biome_at_world_x(world_x: float) -> Biome:
 	if index < 0:
 		return null
 	return biomes[index]
+
+
+## Share (0..1) of the ±`AMBIENT_BLEND_TILES` window around `world_x` whose
+## biome uses `ambient`. The ambient VFX chase this so leaves and snow fade
+## into each other over ~64 tiles, like the biome tint does.
+func ambient_weight_at_world_x(world_x: float, ambient: String) -> float:
+	if biomes.is_empty():
+		return 0.0
+	var tile_x := floori(world_x / float(TILE_SIZE))
+	var counts: Dictionary = {}
+	for i in range(-AMBIENT_BLEND_TILES, AMBIENT_BLEND_TILES + 1):
+		_add_biome_count(counts, tile_x + i)
+	var samples := 0
+	var matching := 0
+	for index in counts:
+		var count := int(counts[index])
+		samples += count
+		if index >= 0 and index < biomes.size() and biomes[index].ambient == ambient:
+			matching += count
+	if samples <= 0:
+		return 0.0
+	return float(matching) / float(samples)
 
 
 ## Chunk biome for enemies and counts: the one at the central block.

@@ -1,15 +1,15 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-25 por `opencode-jorge`_
+_Actualizado 2026-11-26 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `test/fusion-structure`: fusión de estructuras y castillo (T-0074/T-0075/T-0076/T-0079/T-0080/T-0087/T-0088/T-0091/T-0093), sobre `main` `ccbae38` |
-| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas. F5 pendiente |
+| Rama | `feat/vfx-ambiente-spritefusion`: VFX ambientales (T-0093) sobre `main`; `test/fusion-structure` ya está fusionado en `main` (PR #10) |
+| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas, y VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero). F5 pendiente |
 | Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de Ruben (hall T-0093, guardado dentro del castillo T-0080, ruinas, cajas, puerta y salida lejana) y PR de `test/fusion-structure` a `main`; después T-0081 (boss) y T-0078 (tienda) |
+| Siguiente paso | F5 de Ruben (hall T-0093, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana y densidad de hojas/nieve) y PR de `feat/vfx-ambiente-spritefusion` a `main`; después T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
@@ -18,6 +18,7 @@ _Actualizado 2026-11-25 por `opencode-jorge`_
 |---|---|---|
 | `humano-ruben` | F5 de la fusión, del castillo y del guardado; decisiones de diseño | — |
 | `opencode-jorge` | T-0080 guardado por piso (hecho, pendiente F5) + revisión y testeo headless de T-0093 | `scripts/world/dungeon_layer.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scenes/structures/dungeon_test.tscn`, `docs/dungeon.md` |
+| `buffy` | T-0093 VFX ambientales de Sprite Fusion (hecho, pendiente F5) | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `scripts/world_generator.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md` |
 | `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -27,6 +28,7 @@ _Actualizado 2026-11-25 por `opencode-jorge`_
 | Fecha | Ticket | Qué |
 |---|---|---|
 | 2026-11-25 | T-0080 | Guardar dentro de la mazmorra conserva planta, posición y punto de vuelta; `run/position` y metros del mundo; partidas viejas cargan igual |
+| 2026-11-26 | T-0093 (VFX) | Partículas ambientales de Sprite Fusion (hojas y nieve) ancladas al mundo, con litter, ventisquero y crossfade de ~64 tiles; F5 pendiente |
 | 2026-11-25 | T-0093 (revisión) | Hall verificado en headless: colisión, one-way, semilla por planta; F6 arreglado con `UILayer` |
 | 2026-11-24 | T-0090 | Interior del castillo con el atlas 8×6 de 32 px de `map.zip`: piedra, ladrillo, ventanas y estandartes; F5 pendiente |
 | 2026-11-24 | T-0089 | Salida de la mazmorra: la cámara suavizada ya no arrastra el rango de chunks (49 → 5 chunks medidos); F5 pendiente |

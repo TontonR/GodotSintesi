@@ -2,6 +2,32 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-25 · `buffy` · VFX anclados al mundo con litter y ventisquero (T-0093)
+
+- La capa de ambiente copia la transformada de cámara: las partículas pasan a
+  coordenadas de mundo y se generan/reciclan alrededor del rect visible, no del jugador.
+  Al caminar hacen scroll con el terreno en vez de moverse con él.
+- Portados los suelos de las recetas: litter de hojas determinista cada 18 px y
+  ventisquero de nieve por ruido; los copos cercanos se derriten con fundido.
+- `ground_y_at()` por columna de mundo cada 0,1 s; en mazmorra se usa el fondo de vista.
+
+## 2026-11-25 · `buffy` · VFX: escala, suelo y crossfade (T-0093)
+
+- Partículas a 1 px por píxel de arte (`pixel_scale`), la mitad de tamaño.
+- `ground_y_at()` muestreado por la transformada de cámara: hojas y nieve se posan,
+  descansan con fundido y renacen; sin generador el fondo de pantalla es el suelo.
+- `WorldGenerator.ambient_weight_at_world_x()` da la cuota del blend de ±32 tiles y
+  los efectos la persiguen, así que hojas y nieve se funden a lo largo de ~64 tiles.
+
+## 2026-11-25 · `buffy` · VFX ambientales de Sprite Fusion (T-0093)
+
+- `scripts/world/spritefusion_ambient.gd` porta `falling-leaves` y `snow` de la
+  librería VFX gratuita (MIT) de Sprite Fusion: 80 hojas con 3 siluetas y 4 paletas
+  de otoño, y 440 copos en tres profundidades con cristales animados y viento.
+- `biome_particles.gd` cambia sus `CPUParticles2D` por estos emisores `Sprite2D`;
+  el contrato del bioma (`ambient`) y el fundido de 0,4 s no cambian.
+- Fuentes y licencia en `assets/vfx/spritefusion/`; validado en headless, falta F5.
+
 ## 2026-11-25 · `test/fusion-structure` — pisos aleatorios por semilla (T-0093)
 
 - `DungeonGenerator` reemplaza `@export var floors` por `min_floors` (3) y `max_floors` (6) como exports.
