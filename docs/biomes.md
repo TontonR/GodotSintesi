@@ -121,7 +121,8 @@ skipped. A biome that lists nothing places nothing. Full reference:
 - The pine textures are gray versions of the originals, each with its own calibrated gray
   (far 116, near 92, mountain 172/211), so the tint doesn't flatten the depth difference.
 - Ambient particles: `scripts/world/biome_particles.gd` asks
-  `WorldGenerator.ambient_weight_at_world_x()` for the leaves/snow share of the biome
+  `WorldGenerator.ambient_weight_at_world_x()` (a delegate; the window is computed in
+  `WorldBiomeManager`) for the leaves/snow share of the biome
   blend (±32 tiles) every 0.25 s; both effects follow it with a 0.5 s alpha tween, so
   they crossfade over ~64 tiles. Both come from Sprite Fusion's MIT VFX library
   (`falling-leaves`: 80 leaves + litter; `snow`: 260/150/30 flakes + drift) and live in

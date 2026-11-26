@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `test/fusion-structure`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · 2026-11-26 · branch `refactor/world-split`_
 
 ## What it does and where it lives
 
@@ -8,6 +8,16 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 - `scenes/game.tscn` keeps `solid_map_layer`/`grass_map_layer` with the example patch: they serve as the tile template and the `TileSet` source; new chunks don't reuse their `tile_map_data`.
 - Terrain with `FastNoiseLite` 1D Perlin over the global X. `base_height` 60 (scene: 50), amplitude 20, frequency 0.007: soft hills. Measured with the scene values on seeds 12345, 775344231 and 777 (40k tiles): rows 35–65, i.e. 30 tiles of relief at most, and never more than 1 row of step between neighbors.
 - Flat start in tiles 0–49 and a 24-tile transition (scene `safe_start_tiles=50`); the player appears at `x=808`, 6 tiles above the ground.
+
+## Architecture (2026-11-26, T-0094)
+
+`WorldGenerator` keeps the chunk streaming, terrain heights, the left mountain and the public API (`ground_y_at`, `biome_at_world_x`, `meters_at`…). The rest lives in three `RefCounted` helpers it builds in `_ready` and talks to through `_biome`, `_decor` and `_spawner`:
+
+- `scripts/world/world_biome_manager.gd` (`WorldBiomeManager`): biome runs, transition windows and blended colors, per-column amplitude/frequency, `ambient_weight_at_world_x`.
+- `scripts/world/world_decor_manager.gd` (`WorldDecorManager`): decor kind picking, tints, scale/z/sway lookup, tinted tilesets for structures.
+- `scripts/world/world_spawner.gd` (`WorldSpawner`): rolls a chunk's enemies/coins/structures/crates as data and instantiates them; keeps the defeated/collected/broken ids.
+
+`world_generator.gd` is ~670 lines; the public API and the scene exports did not change, so the same seed builds the same world.
 
 ## Terrain tiles
 
@@ -138,7 +148,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
 - `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) owns two `SpriteFusionAmbient` effects (see `fx.md`). Every 0.25 s it asks `ambient_weight_at_world_x()` for the share of the biome blend around the player and sets that opacity; no more binary on/off.
-- **`ambient_weight_at_world_x(world_x, ambient)`** (2026-11-25): share (0..1) of the ±`AMBIENT_BLEND_TILES` (32) window whose biome uses that ambient. It makes leaves and snow crossfade over ~64 tiles; a meadow or a dungeon still returns 0.
+- **`ambient_weight_at_world_x(world_x, ambient)`** (2026-11-25): share (0..1) of the ±`AMBIENT_BLEND_TILES` (32) window whose biome uses that ambient. It makes leaves and snow crossfade over ~64 tiles; a meadow or a dungeon still returns 0. Since T-0094 the window lives in `WorldBiomeManager` and `WorldGenerator` only delegates (the VFX look it up by node).
 - **`ground_y_at(world_x)`**: already existed for debug travel; the VFX sample it per world column every 0.1 s and rest particles on it, so they land on hills instead of the screen bottom.
 - **World space** (T-0093 round 3): `biome_particles.gd` copies the camera transform into the `CanvasLayer` every frame, and the effects spawn/recycle around the visible world rect. Particles are anchored to the world and scroll with it; the leaf litter is hashed per 18 px world slot and the snow drift is drawn from per-column noise.
 - Counts and sizes are the library's (`falling-leaves` 80, `snow` 260/150/30) at 1 px per art pixel. The view is pre-filled when an effect fades in.

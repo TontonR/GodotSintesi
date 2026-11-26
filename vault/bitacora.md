@@ -926,3 +926,26 @@ Formato de entrada:
 - Portados los suelos de las recetas: litter determinista de hojas (18 px) y ventisquero
   de nieve por ruido; `_draw()` para el drift.
 - Headless: 80 hojas + litter y 440 copos, reposo/litter sobre el stub, 0 bajo el suelo.
+
+## 2026-11-26 · `opencode-jorge` · Cadena de ramas y refactor de world_generator (T-0094)
+
+- Puesto en orden el trabajo de tres agentes: `test/fusion-structure`
+  (castillo/ruinas/cajas/mazmorra, T-0074…T-0093) es la base; de ella salen
+  `feat/vfx-ambiente-spritefusion` (VFX, antes T-0093) y `refactor/world-split`
+  (T-0094). Van en cadena: castillo → VFX → refactor.
+- `test/fusion-structure` pusheada (le faltaban 2 commits) y `refactor/world-split`
+  rebanada encima del VFX con `git rebase --onto` para no duplicar los commits del
+  castillo.
+- Único conflicto de código: `world_generator.gd`. `ambient_weight_at_world_x()` y
+  `AMBIENT_BLEND_TILES` pasan a `WorldBiomeManager` (recibe `tile_size` como el resto
+  de su API) y `WorldGenerator` deja un delegado de 2 líneas porque
+  `biome_particles.gd` lo busca por el grupo.
+- Revisión estática del refactor: 0 llamadas a funciones movidas sin cualificar, 0
+  privadas inexistentes, ids de guardado idénticos, managers cableados en `_ready`.
+  Sin Godot CLI en la sesión: el F5 sigue pendiente.
+- `.uid` de los dos managers nuevos versionados y `assets/downloads/` al `.gitignore`.
+- `T-0093` está duplicado (castillo y VFX): el de VFX pasa a **T-0095**. El rename del
+  fichero no se ha hecho porque esa rama está abierta en el worktree
+  `GodotSintesi-vfx` con la ronda de sangre sin commitear; se hace al commitearla.
+- Ficheros: `scripts/world_generator.gd`, `scripts/world/world_biome_manager.gd`,
+  `docs/world.md`, `docs/biomes.md`, `vault/{estado,tickets/T-0094}.md`, `.gitignore`.
