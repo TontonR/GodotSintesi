@@ -1035,3 +1035,36 @@ Formato de entrada:
 - `dungeon_layer.gd`: funde a negro, teletransporta al nuevo `spawn_point` y vuelve;
   `dungeon_test.gd` sube con la puerta en F6. El guardado por planta no cambia.
 - Sin Godot en esta sesión: F5/F6 pendientes de recorrer el castillo completo.
+
+## 2026-11-26 · `buffy` · Vuelta al hall de tres bloques, sangre radial y hojas estables (T-0093 ronda 6, T-0094)
+
+- Ruben: los bloques escalonados tipo Minecraft hicieron más mal que bien. `CastleLayout`
+  vuelve a 34×22 con tres bloques (filas 12–17) y dos fosas de 3 tiles con repisas de
+  madera, 8 ventanas y 2 estandartes. `CastlePainter` pinta de forma explícita, sin
+  autotiling de 8 vecinos, y el ladrillo queda solo en la cara superior de los bloques
+  (`20/24/19/22`, esquinas `18/21`); laterales y fondo son piedra `41`.
+  `DungeonGenerator.width_tiles` vuelve a 34.
+- Sangre: `fx.enemy_death()` pasa dirección `0` a `SpriteFusionBlood`; la muerte usa una
+  explosión radial (72 gotas base ×1,6, 20 de anillo y 10 puffs, 360° y más lenta) en vez
+  del chorro lateral aleatorio.
+- Hojas: `_pick_spawn_x()` hace una tirada uniforme y una sola comprobación de cuota por
+  partícula (el 0..1 es la probabilidad; si falla queda oculta 5–9 s, un ciclo). Al
+  detectar un salto de cámara,
+  `_scatter()` rellena la vista a alturas aleatorias y sin copas, en vez de dejar caer
+  todas desde arriba; `_pick_canopy()` reparte las copas por turnos.
+- Docs: `docs/dungeon.md`, `docs/fx.md`, `docs/world.md`, `docs/decor.md`.
+  Tickets T-0093 (ronda 6) y T-0094, changelog y estado. Sin Godot en esta sesión: F5
+  pendiente del hall, la sangre y las hojas.
+
+## 2026-11-26 · `buffy` · Hojas interactivas y ajustes VFX (T-0096)
+
+- Ruben: todas las copas deben soltar hojas, los ajustes deben poder quitarlas, las hojas
+  se mueven al pasar/correr/golpear, el litter gana vida al tocarlo, la retirada es píxel a
+  píxel y las físicas VFX se pueden desactivar.
+- `spritefusion_ambient.gd`: fuera el 55 % de copas (turnos también en la siembra y el
+  re-scatter), impulsos por `hurt_rect()` de jugador/enemigos, `attack_rects()` levanta las
+  hojas de la hitbox, litter de 18–34 s +5 s al tocarlo y `leaf_dissolve.gdshader` por
+  texel. `scripts/vfx_settings.gd` (autoload) + filas del `SettingsPanel`.
+- `player.gd`/`enemy_base.gd`: `hurt_rect()`, `attack_rects()`, `is_attacking_now()` y
+  grupo `enemies`. Docs: `docs/fx.md`, `docs/decor.md`, `docs/world.md`, `docs/ui.md`.
+- Sin Godot en esta sesión: F5 pendiente de interacciones, disolución y ajustes.

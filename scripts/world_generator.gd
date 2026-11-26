@@ -12,6 +12,10 @@ const KEEP_CHUNKS_SIDE := 2
 ## The mountain base band darkens the biome's forest color by this factor
 ## (the meadow's `#283D43` comes out of `forest_color` darkened 0.35).
 const MOUNTAIN_BASE_DARKENING := 0.35
+## Ambient weather is on only when at least this share of the transition window
+## belongs to the biome; below it, it is off. This makes the switch abrupt near
+## the biome instead of a long density fade.
+const AMBIENT_SHARE_CUTOFF := 0.8
 @export_group("World")
 ## World seed; 0 = random per run.
 @export var world_seed: int = 0
@@ -653,10 +657,10 @@ func biome_at_world_x(world_x: float) -> Biome:
 	return biomes[index]
 
 
-## Probability (0..1) that the tile under `world_x` belongs to a biome with
-## `ambient`. It uses the same ±`biome_transition_tiles` window that tints the
-## block, so the ambient VFX thin out block by block through the terrain
-## transition: the share is the spawn probability of a particle on that tile.
+## Whether the tile under `world_x` belongs to a biome with `ambient`. It uses
+## the same ±`biome_transition_tiles` window that tints the block and returns a
+## hard 0/1 at `AMBIENT_SHARE_CUTOFF`, so the weather switches on only when the
+## window is mostly that biome instead of fading across the whole transition.
 func ambient_share_at_world_x(world_x: float, ambient: String) -> float:
 	if biomes.is_empty():
 		return 0.0
@@ -673,6 +677,7 @@ func ambient_share_at_world_x(world_x: float, ambient: String) -> float:
 		if index >= 0 and index < biomes.size() and biomes[index].ambient == ambient:
 			matching += count
 	var share := 0.0 if samples <= 0 else float(matching) / float(samples)
+	share = 1.0 if share >= AMBIENT_SHARE_CUTOFF else 0.0
 	if _ambient_share_cache.size() > 8192:
 		_ambient_share_cache.clear()
 	_ambient_share_cache[key] = share

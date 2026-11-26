@@ -125,6 +125,8 @@ var _hit_tween: Tween
 
 
 func _ready() -> void:
+	# The ambient leaves query this group to react to enemies walking through.
+	add_to_group("enemies")
 	# Global difficulty adjustment: children set their stats in `_init()` and
 	# scenes may override them, so it is applied here, at the end.
 	max_health = maxf(max_health * health_multiplier, 1.0)
@@ -301,6 +303,65 @@ func _update_behavior(_delta: float) -> void:
 ## True when the enemy hurts with its own contact hitbox (wolf), so the player
 ## does not add the generic body-contact hit on top of it.
 func uses_custom_contact_damage() -> bool:
+	return false
+
+
+# ---------------------------------------------------------------------------
+# Ambient leaves (T-0096)
+# ---------------------------------------------------------------------------
+
+func is_attacking_now() -> bool:
+	return _is_attacking
+
+
+## Approximate world box of the body, used to nudge ground and falling leaves.
+func hurt_rect() -> Rect2:
+	var rect := Rect2(global_position - Vector2(14.0, 28.0), Vector2(28.0, 56.0))
+	for node in find_children("*", "CollisionShape2D", true, false):
+		var shape_node := node as CollisionShape2D
+		if shape_node == null or shape_node.shape == null or _under_area(shape_node):
+			continue
+		var shape_rect := _collision_rect(shape_node)
+		if shape_rect.size != Vector2.ZERO:
+			rect = rect.merge(shape_rect)
+	return rect
+
+
+## World rectangles of the attack area while the attack is active.
+func attack_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	if not _is_attacking:
+		return rects
+	if attack_range != null:
+		for node in attack_range.find_children("*", "CollisionShape2D", true, false):
+			var shape_rect := _collision_rect(node as CollisionShape2D)
+			if shape_rect.size != Vector2.ZERO:
+				rects.append(shape_rect)
+	if rects.is_empty():
+		# Fallback for enemies whose attack is a contact/timer hit.
+		rects.append(Rect2(global_position - Vector2(30.0, 34.0), Vector2(60.0, 68.0)))
+	return rects
+
+
+func _collision_rect(shape_node: CollisionShape2D) -> Rect2:
+	if shape_node == null or shape_node.shape == null:
+		return Rect2()
+	var shape_scale := shape_node.global_transform.get_scale()
+	if shape_node.shape is RectangleShape2D:
+		var size := (shape_node.shape as RectangleShape2D).size * shape_scale
+		return Rect2(shape_node.global_position - size * 0.5, size)
+	if shape_node.shape is CircleShape2D:
+		var radius := (shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		return Rect2(shape_node.global_position - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
+	return Rect2()
+
+
+func _under_area(shape_node: CollisionShape2D) -> bool:
+	var parent := shape_node.get_parent()
+	while parent != null:
+		if parent is Area2D:
+			return true
+		parent = parent.get_parent()
 	return false
 
 
@@ -496,7 +557,7 @@ func take_damage(amount: float, critical: bool = false) -> void:
 	health = maxf(health - damage, 0.0)
 	var fx := _fx()
 	if fx:
-		fx.call("enemy_hit", global_position + Vector2(0.0, -20.0), damage, critical)
+		fx.call("enemy_hit", global_position + Vector2(0.0, -20.0), damage, critical, blood_color)
 	if health <= 0.0:
 		_die()
 	else:

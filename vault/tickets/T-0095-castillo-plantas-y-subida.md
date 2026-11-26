@@ -8,7 +8,7 @@
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-26 |
-| Actualizado | 2026-11-26 |
+| Actualizado | 2026-11-26 (corrección del layout) |
 | Relacionado | T-0093, T-0080, T-0087 |
 
 ## Problema
@@ -43,3 +43,17 @@ puerta). Sin Godot en esta sesión: F5/F6 pendientes.
 ## Verificación
 
 Revisión estática del diff y `git diff --check`; sin pruebas en runtime.
+
+## Corrección 2026-11-26
+
+El working tree había restaurado la sala antigua de 34 tiles de T-0093 y el castillo se
+veía roto. Se recuperó de HEAD el layout de **64×22** (`HALL_WIDTH=64`,
+`width_tiles=64`, `_ensure_reachable()` y pintado por autotiling) sin tocar la subida de
+plantas. F5 pendiente.
+
+## Entrada del mundo (2026-11-26)
+
+La puerta del castillo seguía usando el placeholder de 16×16 con `Visual.z_index = -1`.
+Ahora `tower_test.png` es una puerta de **64×64** (4 tiles), el sprite escala 1:1, su base
+queda en el suelo y dibuja en `z_index = 0`; `tower_test.tres` ocupa 4 tiles para el
+reparto. F5 pendiente.

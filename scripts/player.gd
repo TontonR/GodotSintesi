@@ -511,6 +511,46 @@ func set_hitbox_active(active: bool) -> void:
 		_hit_targets.clear()
 
 
+## Read-only state and boxes for other systems (ambient leaves, T-0096).
+func is_attacking_now() -> bool:
+	return _is_attacking
+
+
+func is_running_now() -> bool:
+	return _is_running
+
+
+func hurt_rect() -> Rect2:
+	return _shape_rect(body_collision)
+
+
+## World rectangles of the active sword hitbox(es).
+func attack_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	if not _is_attacking:
+		return rects
+	for i in attack_hitboxes.size():
+		if not attack_hitboxes[i].monitoring:
+			continue
+		var rect := _shape_rect(hitbox_shapes[i])
+		if rect.size != Vector2.ZERO:
+			rects.append(rect)
+	return rects
+
+
+func _shape_rect(shape_node: CollisionShape2D) -> Rect2:
+	if shape_node == null or shape_node.shape == null:
+		return Rect2()
+	var shape_scale := shape_node.global_transform.get_scale()
+	if shape_node.shape is RectangleShape2D:
+		var size := (shape_node.shape as RectangleShape2D).size * shape_scale
+		return Rect2(shape_node.global_position - size * 0.5, size)
+	if shape_node.shape is CircleShape2D:
+		var radius := (shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		return Rect2(shape_node.global_position - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
+	return Rect2()
+
+
 func _on_attack_hitbox_body_entered(body: Node2D) -> void:
 	_register_hit(body)
 

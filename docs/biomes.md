@@ -121,10 +121,10 @@ skipped. A biome that lists nothing places nothing. Full reference:
 - The pine textures are gray versions of the originals, each with its own calibrated gray
   (far 116, near 92, mountain 172/211), so the tint doesn't flatten the depth difference.
 - Ambient particles: `scripts/world/biome_particles.gd` keeps both emitters on and each
-  one asks `WorldGenerator.ambient_share_at_world_x()` for its share (0..1) of every
-  visible tile; that share is the spawn probability, so leaves and snow thin out block by
-  block through the same ±`biome_transition_tiles` window that tints the terrain, with no
-  opacity fade. Both come from Sprite Fusion's MIT VFX library (`falling-leaves`: 80
+  one asks `WorldGenerator.ambient_share_at_world_x()` for every visible tile. The query
+  uses the same ±`biome_transition_tiles` window that tints the terrain but snaps to 0/1
+  at `AMBIENT_SHARE_CUTOFF` (0.8), so leaves and snow switch on only when the window is
+  mostly their biome; there is no long density fade through the transition. Both come from Sprite Fusion's MIT VFX library (`falling-leaves`: 108
   leaves + litter; `snow`: 260/150/30 flakes + drift) and live in world space: the layer
   copies the camera transform, so they scroll with the terrain and rest on the
   block-stepped ground; see `fx.md`.

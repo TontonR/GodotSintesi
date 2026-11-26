@@ -6,10 +6,10 @@ _Actualizado 2026-11-26 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/castillo-plantas-3-10`: castillo de 3 a 10 plantas que sube al pisar la puerta (T-0095), apilada sobre `feat/vfx-suelo-transicion-sangre` (VFX: suelo por tile, transición por densidad, rondas 4–5 y sangre T-0094, PR #12 abierto); `feat/vfx-ambiente-spritefusion` ya está fusionado (PR #11) |
-| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas, y VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad, hojas de ronda 5 precargadas fuera de cámara y con lluvia bajo las copas, y sangre de la receta `blood` en la muerte) y castillo de 3–10 plantas que asciende al pisar la puerta (T-0095). F5 pendiente |
+| Rama | `feat/castillo-plantas-3-10`: castillo de 3 a 10 plantas que sube al pisar la puerta (T-0095), apilada sobre `feat/vfx-suelo-transicion-sangre` (VFX: suelo por tile, transición por densidad, rondas 4–6 y sangre radial T-0094, PR #12 abierto); `feat/vfx-ambiente-spritefusion` ya está fusionado (PR #11) |
+| Árbol | `revision` tras T-0080 y T-0095 (hall de 64×22 con suelo escalonado continuo, sin diagonales y con autotiling en las caras superiores): VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad, hojas de ronda 9 sin oleadas ni montones tras TP, y sangre de la receta `blood` en golpes y muerte), castillo de 3–10 plantas que asciende al pisar la puerta (T-0095), hojas interactivas con disolución por píxeles y ajustes VFX (T-0096) y ronda 11: nieve con ruido bajo 3–7 px, ambiente con corte al 80 % y puerta del castillo con sprite de 64×64. F5 pendiente |
 | Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de Ruben (hall T-0093, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana, diagonales del suelo, frontera hojas/nieve, hojas de ronda 5, sangre y subida de plantas T-0095); PR #12 (`feat/vfx-suelo-transicion-sangre`) y PR de `feat/castillo-plantas-3-10` (base: la rama de VFX); después T-0081 (boss) y T-0078 (tienda) |
+| Siguiente paso | F5 de Ruben (hall T-0095 de 64×22 con suelo escalonado, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana, frontera hojas/nieve, hojas de ronda 9, sangre al golpe y en la muerte, subida de plantas T-0095 y hojas interactivas T-0096); PR #12 (`feat/vfx-suelo-transicion-sangre`) y PR de `feat/castillo-plantas-3-10` (base: la rama de VFX); después T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
 
 ## Foco por agente
@@ -18,7 +18,7 @@ _Actualizado 2026-11-26 por `buffy`_
 |---|---|---|
 | `humano-ruben` | F5 de la fusión, del castillo y del guardado; decisiones de diseño | — |
 | `opencode-jorge` | T-0080 guardado por piso (hecho, pendiente F5) + revisión y testeo headless de T-0093 | `scripts/world/dungeon_layer.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scenes/structures/dungeon_test.tscn`, `docs/dungeon.md` |
-| `buffy` | T-0093 VFX ambientales (rondas 4 y 5: suelo por tile, transición por densidad y hojas) + T-0094 sangre de Sprite Fusion + T-0095 castillo de 3–10 plantas (hechos, pendientes de F5) | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `scripts/world_generator.gd`, `scripts/fx/spritefusion_blood.gd`, `scripts/fx.gd`, `scripts/structures/castle/dungeon_generator.gd`, `scripts/world/dungeon_layer.gd`, `scripts/world/dungeon_test.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md`, `docs/world.md`, `docs/decor.md`, `docs/dungeon.md` |
+| `buffy` | T-0093 VFX ambientales (rondas 4 y 5: suelo por tile, transición por densidad y hojas) + T-0094 sangre de Sprite Fusion + T-0095 castillo de 3–10 plantas + T-0096 hojas interactivas (hechos, pendientes de F5) | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `scripts/world_generator.gd`, `scripts/fx/spritefusion_blood.gd`, `scripts/fx.gd`, `scripts/structures/castle/dungeon_generator.gd`, `scripts/world/dungeon_layer.gd`, `scripts/world/dungeon_test.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md`, `docs/world.md`, `docs/decor.md`, `docs/dungeon.md`, `scripts/vfx_settings.gd`, `assets/vfx/spritefusion/leaf_dissolve.gdshader` |
 | `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -27,6 +27,13 @@ _Actualizado 2026-11-26 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-26 | T-0096 (ronda 11) | Nieve con ruido de baja frecuencia 3–7 px, fin del degradado de ambiente (corte 0,8) y puerta del castillo con sprite 64×64 visible; F5 pendiente |
+| 2026-11-26 | T-0096 (ronda 10) | Nieve de 3 px sobre el escalón real, sin picos ni diagonales; TP sin copas, sangre al golpe y castillo de 64 tiles restaurado; F5 pendiente |
+| 2026-11-26 | T-0096 (ronda 9) | TP sin copas, nieve interpolada sin costuras, sangre al golpe y castillo de 64 tiles restaurado |
+| 2026-11-26 | T-0096 (ronda 8) | Nieve por píxel sin bandas de 16 px, 1 px más alta, huella baja de 3,5 s con Enhanced VFX physics; hojas menos numerosas por golpe/carrera, con empuje lateral y sin volver al slot; F5 pendiente |
+| 2026-11-26 | T-0096 | Hojas interactivas con jugador/enemigos/hitboxes, vida del litter, disolución por píxeles y ajustes de partículas/físicas VFX; F5 pendiente |
+| 2026-11-26 | T-0093 (ronda 6) | Vuelta al hall de tres bloques sin autotiling diagonal, borde solo en la cara superior, hojas sin oleadas tras TP y copas por turnos; F5 pendiente |
+| 2026-11-26 | T-0094 (ronda 6) | Sangre de muerte radial: más gotas en 360° y menos velocidad que el chorro, sin dirección contraria; F5 pendiente |
 | 2026-11-26 | T-0095 | Castillo de 3 a 10 plantas: la puerta sube una planta y la última vuelve al mundo (`floor_changed`); F5 pendiente |
 | 2026-11-26 | T-0093 (ronda 5) | Hojas a 0,75 px, 108 unidades precargadas ±260 px fuera de la vista con deriva propia y lluvia bajo las copas con el tinte del árbol; F5 pendiente |
 | 2026-11-26 | T-0094 | Sangre de Sprite Fusion en la muerte de enemigos: hebras, gotas con estela, niebla, goteo y costras que secan 6 s sobre el suelo; rampa derivada de `blood_color`; F5 pendiente |

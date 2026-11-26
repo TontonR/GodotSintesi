@@ -11,7 +11,9 @@ extends Sprite2D
 # 7 strands grow first, drops fly with drag and gravity, land on
 # `WorldGenerator.ground_y_at()` and leave stains that dry for 6 s; mist and
 # drips finish the read. The 6-tone ramp is derived from `blood_color`, so every
-# enemy keeps its own blood.
+# enemy keeps its own blood. A directional spray is used for hits; deaths use a
+# radial burst (no side, slower drops and more of them) so the blood never flies
+# away from the corpse.
 
 const CANVAS_SIZE := Vector2i(256, 160)
 ## Canvas top-left relative to the hit: mostly above and to both sides.
@@ -23,7 +25,7 @@ const BAYER := [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5]
 
 ## Colour of this spray; the six tones of the palette are derived from it.
 @export var blood_color: Color = Color(0.82, 0.11, 0.1)
-## Spray side: +1 to the right, -1 to the left.
+## Spray side: +1 right, -1 left, 0 for the radial death burst.
 @export var direction: int = 1
 ## Scales the number of drops and the jet, like the recipe's `amount`.
 @export_range(0.3, 3.0, 0.1) var amount: float = 1.0
@@ -56,7 +58,7 @@ func _ready() -> void:
 ## the tree; the node frees itself when the last stain dries.
 func play(world_position: Vector2, spray_direction: int = 1) -> void:
 	global_position = world_position
-	direction = 1 if spray_direction >= 0 else -1
+	direction = 1 if spray_direction > 0 else (-1 if spray_direction < 0 else 0)
 	offset = CANVAS_OFFSET
 	_origin = world_position + CANVAS_OFFSET
 	_rng.randomize()
@@ -88,14 +90,18 @@ func _process(delta: float) -> void:
 
 func _emit() -> void:
 	_time = 0.0
+	# Direction 0 is the death burst: no side, drops fly in every direction.
+	var radial := direction == 0
+	var burst := amount * (1.6 if radial else 1.0)
 	_angle = -0.35 if direction > 0 else PI + 0.35
-	var ux := cos(_angle)
-	var uy := sin(_angle)
 	var wound := global_position
 	for i in 7:
 		var u := (float(i) - 3.0) / 3.0
+		var strand_angle := _angle + u * 0.62 + _rng.randf_range(-0.08, 0.08)
+		if radial:
+			strand_angle = TAU * float(i) / 7.0 + _rng.randf_range(-0.2, 0.2)
 		_strands.append({
-			"a": _angle + u * 0.62 + _rng.randf_range(-0.08, 0.08),
+			"a": strand_angle,
 			"l": (11.0 + 7.0 * (1.0 - absf(u)) + _rng.randf_range(-2.0, 3.0)) * size,
 			"w": (1.3 + 0.6 * (1.0 - absf(u))) * size,
 		})
@@ -106,39 +112,53 @@ func _emit() -> void:
 	]
 	for i in (3 if amount >= 1.0 else 2):
 		_drips.append({"t0": drip_times[i], "fell": false})
-	for i in roundi(46.0 * amount):
+	for i in roundi((72.0 if radial else 46.0) * burst):
 		var s := 3 if _rng.randf() < 0.12 else (2 if _rng.randf() < 0.35 else 1)
-		var spread := _rng.randf_range(-1.0, 1.0) * _rng.randf_range(0.1, 0.65) * (1.2 if s == 1 else 0.8)
-		var delay := _rng.randf_range(0.0, 0.07)
-		var speed := (
-			_rng.randf_range(260.0, 950.0) if s == 1
-			else _rng.randf_range(200.0, 650.0) if s == 2
-			else _rng.randf_range(150.0, 460.0)
-		) * (1.0 - delay * 4.0) * sqrt(size)
-		var a := _angle + spread
+		var delay := _rng.randf_range(0.0, 0.05 if radial else 0.07)
+		var speed := 0.0
+		var a := 0.0
+		if radial:
+			# Slower than the directional jet and all around: an explosion.
+			speed = (
+				_rng.randf_range(180.0, 560.0) if s == 1
+				else _rng.randf_range(140.0, 440.0) if s == 2
+				else _rng.randf_range(90.0, 320.0)
+			) * (1.0 - delay * 2.0) * sqrt(size)
+			a = TAU * _rng.randf()
+		else:
+			var spread := _rng.randf_range(-1.0, 1.0) * _rng.randf_range(0.1, 0.65) * (1.2 if s == 1 else 0.8)
+			speed = (
+				_rng.randf_range(260.0, 950.0) if s == 1
+				else _rng.randf_range(200.0, 650.0) if s == 2
+				else _rng.randf_range(150.0, 460.0)
+			) * (1.0 - delay * 4.0) * sqrt(size)
+			a = _angle + spread
 		_drops.append(_make_drop(
-			wound.x + ux * _rng.randf_range(0.0, 8.0),
-			wound.y + uy * _rng.randf_range(0.0, 8.0),
+			wound.x + cos(a) * _rng.randf_range(0.0, 8.0),
+			wound.y + sin(a) * _rng.randf_range(0.0, 8.0),
 			cos(a) * speed,
-			sin(a) * speed - _rng.randf_range(0.0, 150.0),
+			sin(a) * speed - _rng.randf_range(0.0, 110.0 if radial else 150.0),
 			s, delay, 3.0, false))
-	var jet := roundi(14.0 * amount)
+	var jet := roundi(20.0 * amount) if radial else roundi(14.0 * amount)
 	for i in jet:
 		var a := _angle + _rng.randf_range(-0.12, 0.12)
-		var speed := _rng.randf_range(620.0, 1050.0) * sqrt(size)
+		if radial:
+			a = TAU * (float(i) / maxf(1.0, float(jet))) + _rng.randf_range(-0.1, 0.1)
+		var speed := _rng.randf_range(320.0, 640.0) if radial else _rng.randf_range(620.0, 1050.0)
+		speed *= sqrt(size)
 		_drops.append(_make_drop(
 			wound.x, wound.y,
 			cos(a) * speed,
-			sin(a) * speed - _rng.randf_range(0.0, 60.0),
+			sin(a) * speed - _rng.randf_range(0.0, 50.0),
 			2 if _rng.randf() < 0.25 else 1,
-			(float(i) / 14.0) * 0.05, 3.0, false))
-	for i in roundi(6.0 * sqrt(amount)):
-		var a := _angle + _rng.randf_range(-0.5, 0.5)
+			(float(i) / maxf(1.0, float(jet))) * 0.05, 3.0, false))
+	for i in roundi((10.0 if radial else 6.0) * sqrt(amount)):
+		var a := TAU * _rng.randf() if radial else _angle + _rng.randf_range(-0.5, 0.5)
 		var speed := _rng.randf_range(30.0, 110.0)
 		var life := _rng.randf_range(0.35, 0.6)
 		_mist.append({
-			"x": wound.x + ux * _rng.randf_range(2.0, 14.0),
-			"y": wound.y + uy * _rng.randf_range(2.0, 14.0),
+			"x": wound.x + cos(a) * _rng.randf_range(2.0, 14.0),
+			"y": wound.y + sin(a) * _rng.randf_range(2.0, 14.0),
 			"vx": cos(a) * speed,
 			"vy": sin(a) * speed - 12.0,
 			"r": _rng.randf_range(2.5, 5.0) * size,

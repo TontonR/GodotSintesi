@@ -28,7 +28,7 @@ _2026-10-20 · 2026-11-01 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-1
   `base_attack`) / `projectile_spawn`; `flee_enemy` + `flee_area`.
 - Attack: `attack_impact_delay` 0.5 and `attack_duration` 1.0 (the enemy stands still while
   attacking; the hit lands on impact and the animation finishes before releasing it).
-- FX: `blood_color` (default `0.82, 0.11, 0.1`) feeds `fx.enemy_death()`.
+- FX: `blood_color` (default `0.82, 0.11, 0.1`) feeds both `fx.enemy_hit()` (directional jet) and `fx.enemy_death()` (radial burst).
 - Loot: `coin_drop_chance` 0.45, `coin_drop_amount` 1, `item_drops`
   (`Array[LootEntry]`), `loot_drop_spread` 15, `loot_drop_y` 15. Full rules in
   [`docs/loot.md`](loot.md).

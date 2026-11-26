@@ -27,6 +27,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 | [T-0093](tickets/T-0093-rediseno-plataformas-castillo.md) | mundo | Mazmorra del castillo como sala de referencia: tres bloques, fosas, plataformas de madera y separación layout/tiles/painter | `revision` |
 | [T-0094](tickets/T-0094-vfx-sangre-spritefusion.md) | fx | Sangre de Sprite Fusion: hebras, gotas, niebla y costras sobre el suelo en la muerte de enemigos | `revision` |
 | [T-0095](tickets/T-0095-castillo-plantas-y-subida.md) | mundo | Castillo de 3 a 10 plantas: la puerta sube una planta y la última vuelve al mundo | `revision` |
+| [T-0096](tickets/T-0096-hojas-interactivas-y-ajustes-vfx.md) | fx / UI | Hojas interactivas, disolución por píxeles, vida del litter y ajustes de partículas/físicas VFX | `revision` |
 | [T-0080](tickets/T-0080-persistencia-por-piso.md) | guardado | Guardar y cargar dentro de la mazmorra: planta, posición y punto de vuelta sin guardar coordenadas de mazmorra | `revision` |
 | [T-0092](tickets/T-0092-investigar-sprite-fusion.md) | docs | Investigar Sprite Fusion: export a Godot, MCP/API de pixel art, coste y claves | `abierto` |
 | `T-0076` | mundo | Bloques rompibles con drop y estado persistido (previsto) | `revision` |

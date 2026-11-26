@@ -7,7 +7,6 @@
 script = ExtResource("1_entrance")
 
 [node name="Visual" type="Sprite2D" parent="."]
-z_index = -1
+z_index = 0
 texture = ExtResource("2_tower")
-position = Vector2(0, -24)
-scale = Vector2(3, 3)
+position = Vector2(0, -32)

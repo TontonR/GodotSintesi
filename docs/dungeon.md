@@ -1,6 +1,6 @@
 # Dungeon — explorable structure MVP (type 3)
 
-_2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093, T-0080_
+_2026-11-26 · branch `feat/castillo-plantas-3-10` · T-0079, T-0087, T-0088, T-0093, T-0095, T-0080_
 
 ## What it does and where it lives
 
@@ -29,7 +29,7 @@ _2026-11-25 · branch `test/fusion-structure` · T-0079, T-0087, T-0088, T-0093,
 ## F6 (manual, pending for Ruben)
 
 - Open `scenes/structures/dungeon_test.tscn` and press F6: the player lands on `spawn_point`, keys 1/2 regenerate floor 0/1, the amber pad climbs (`Dungeon: climbed to floor N.`) and the top floor prints `Dungeon: exit requested on floor N.` The scene needs its own `UILayer`, or the player fails to create one mid-setup.
-- In game: walk to the tower, press F within 64 px, and the exit pad returns to the same world spot. KP3 lands on the next structure or door.
+- In game: walk to the tower, press F within 64 px, and the exit pad returns to the same world spot. The world door is now a 64×64 castle gate (`tower_test.png`) with its base on the ground. KP3 lands on the next structure or door.
 
 ## Decisions and traps
 
