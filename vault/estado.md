@@ -6,8 +6,8 @@ _Actualizado 2026-11-26 por `buffy`_
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/vfx-suelo-transicion-sangre`: suelo por tile, transición por densidad (T-0093 ronda 4) y sangre de Sprite Fusion (T-0094) sobre `main`; `feat/vfx-ambiente-spritefusion` ya está fusionado (PR #11) |
-| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas, y VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad y sangre de la receta `blood` en la muerte). F5 pendiente |
+| Rama | `feat/vfx-suelo-transicion-sangre`: suelo por tile, transición por densidad (T-0093 ronda 4), hojas pequeñas/precargadas/bajo copas (ronda 5) y sangre de Sprite Fusion (T-0094) sobre `main`; `feat/vfx-ambiente-spritefusion` ya está fusionado (PR #11) |
+| Árbol | `revision` tras T-0080 y T-0093 (pasillo procedural 64×22): suelo continuo escalonado con autotiling 8-vecinos, techo visible, plataformas mínimas para subir, BFS alcanzable 20/20 y salida diferida sin errores de físicas, y VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad, hojas de ronda 5 precargadas fuera de cámara y con lluvia bajo las copas, y sangre de la receta `blood` en la muerte). F5 pendiente |
 | Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
 | Siguiente paso | F5 de Ruben (hall T-0093, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana, diagonales del suelo, frontera hojas/nieve y sangre) y PR de `feat/vfx-suelo-transicion-sangre` a `main`; después T-0081 (boss) y T-0078 (tienda) |
 | Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
@@ -18,7 +18,7 @@ _Actualizado 2026-11-26 por `buffy`_
 |---|---|---|
 | `humano-ruben` | F5 de la fusión, del castillo y del guardado; decisiones de diseño | — |
 | `opencode-jorge` | T-0080 guardado por piso (hecho, pendiente F5) + revisión y testeo headless de T-0093 | `scripts/world/dungeon_layer.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scenes/structures/dungeon_test.tscn`, `docs/dungeon.md` |
-| `buffy` | T-0093 VFX ambientales (ronda 4: suelo por tile y transición por densidad) + T-0094 sangre de Sprite Fusion (hechos, pendiente F5) | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `scripts/world_generator.gd`, `scripts/fx/spritefusion_blood.gd`, `scripts/fx.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md` |
+| `buffy` | T-0093 VFX ambientales (rondas 4 y 5: suelo por tile, transición por densidad y hojas) + T-0094 sangre de Sprite Fusion (hechos, pendiente F5) | `scripts/world/spritefusion_ambient.gd`, `scripts/world/biome_particles.gd`, `scripts/world_generator.gd`, `scripts/fx/spritefusion_blood.gd`, `scripts/fx.gd`, `assets/vfx/spritefusion/`, `docs/fx.md`, `docs/biomes.md`, `docs/world.md`, `docs/decor.md` |
 | `pixelforge` | T-0086 texturas de caja rompible | `assets/map/structures/crate_*.png` |
 
 > Al reclamar un ticket, añade aquí tu firma y los ficheros. Al soltarlo, bórralo.
@@ -27,6 +27,7 @@ _Actualizado 2026-11-26 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-26 | T-0093 (ronda 5) | Hojas a 0,75 px, 108 unidades precargadas ±260 px fuera de la vista con deriva propia y lluvia bajo las copas con el tinte del árbol; F5 pendiente |
 | 2026-11-26 | T-0094 | Sangre de Sprite Fusion en la muerte de enemigos: hebras, gotas con estela, niebla, goteo y costras que secan 6 s sobre el suelo; rampa derivada de `blood_color`; F5 pendiente |
 | 2026-11-26 | T-0093 (ronda 4) | Suelo de los VFX por tile (bandas de nieve escalonadas, sin diagonales) y transición por densidad por bloque, sin alfa; F5 pendiente |
 | 2026-11-25 | T-0080 | Guardar dentro de la mazmorra conserva planta, posición y punto de vuelta; `run/position` y metros del mundo; partidas viejas cargan igual |

@@ -1014,3 +1014,13 @@ Formato de entrada:
 - `scripts/fx/spritefusion_blood.gd`: port de la receta MIT `blood` (hebras, chorro, niebla,
   goteo y costras de 6 s) sobre `blood_color`; `fx.enemy_death()` mantiene su firma.
 - Sin Godot en esta sesión: F5 pendiente de diagonales, frontera y sangre.
+
+## 2026-11-26 · `buffy` · Hojas: tamaño, precarga y lluvia bajo los árboles (T-0093 ronda 5)
+
+- Ruben: hojas demasiado grandes; al correr no veía hojas delante y aparecían de golpe.
+- `spritefusion_ambient.gd`: 108 hojas a 0,75 px, margen de generación/reciclado de
+  ±260 px con `GROUND_MARGIN` 360 (suelo y cuota de bioma también fuera de vista),
+  deriva propia por hoja y 55 % de las hojas bajo copas de árboles vivos.
+- `world_generator.gd`: los `tree` vivos entran en el grupo `decor_tree` (el muerto no);
+  el ambiente lee corona y `tint_color` para teñir esas hojas como el árbol.
+- Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.

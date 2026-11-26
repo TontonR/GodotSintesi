@@ -17,10 +17,23 @@ extends Node2D
 # block steps (never a diagonal), and each particle is spawned with the biome
 # share of its own tile as probability: the weather thins out through the
 # terrain transition instead of fading the whole layer's opacity (T-0094).
+# Round 5 (T-0093): the leaves are smaller, spawned outside the view so they
+# are already falling when the camera reaches them, each one drifts in its own
+# direction, and living trees rain leaves tinted like their own crown.
 
 const LEAF_DRIFT := 12.0
-const LEAF_COUNT := 80
+const LEAF_COUNT := 108
 const LITTER_SPACING := 18.0
+## Leaves are spawned this far outside the view (world px) and culled at the
+## same distance: while running, the weather is already falling in the frame
+## that is about to enter instead of popping in front of the camera.
+const LEAF_SPAWN_MARGIN := 260.0
+## Falling leaves and the litter are drawn at this fraction of the recipe's
+## pixels; the art was too big at 1 px per art pixel.
+const LEAF_SCALE := 0.75
+## Share of the leaves born under a living tree instead of the open sky.
+const TREE_LEAF_SHARE := 0.55
+const CANOPY_REFRESH_SECONDS := 0.25
 const SNOW_WIND := 14.0
 const SNOW_COUNTS := [260, 150, 30]
 const SNOW_FALL := [26.0, 52.0, 86.0]
@@ -30,6 +43,10 @@ const SNOW_SWAY := [8.0, 16.0, 30.0]
 const GROUND_STEP := 16.0
 const GROUND_REFRESH_SECONDS := 0.1
 const OFFSCREEN_MARGIN := 80.0
+## World pixels sampled around the view for the ground and biome-share lookups.
+## It covers the leaf spawn margin plus their drift, so a leaf spawned off
+## camera still reads the share of its own tile in a transition.
+const GROUND_MARGIN := 360.0
 ## Attempts to find a tile whose biome share passes the spawn roll.
 const SPAWN_TRIES := 16
 ## Seconds a hidden particle waits before rolling for a new tile.
@@ -86,6 +103,8 @@ class Leaf:
 	var near := false
 	var angle := 0.0
 	var rest := -1.0
+	var drift := 0.0
+	var color := Color.WHITE
 
 
 class Flake:
@@ -103,6 +122,10 @@ class Flake:
 
 
 var _px := 1.0
+## Screen pixels per art pixel for the leaves and the litter (see LEAF_SCALE).
+var _leaf_px := 1.0
+## Distance at which particles are recycled; the leaves use their spawn margin.
+var _cull_margin := OFFSCREEN_MARGIN
 var _view := Vector2.ZERO
 var _area := Rect2()
 var _rng := RandomNumberGenerator.new()
@@ -115,6 +138,10 @@ var _ground_origin := 0.0
 var _ground_timer := 0.0
 
 var _leaves: Array[Leaf] = []
+## Live tree crowns (x, y, tint, half width) that rain leaves of their colour.
+var _canopies: Array[Dictionary] = []
+var _leaf_color_cache := {}
+var _canopy_timer := 0.0
 var _leaf_textures: Array[ImageTexture] = []
 var _litter: Array[Sprite2D] = []
 var _flakes: Array[Flake] = []
@@ -154,6 +181,10 @@ func _process(delta: float) -> void:
 		_ground_timer = GROUND_REFRESH_SECONDS
 		_refresh_ground()
 	if effect == "leaves":
+		_canopy_timer -= delta
+		if _canopy_timer <= 0.0:
+			_canopy_timer = CANOPY_REFRESH_SECONDS
+			_refresh_canopies()
 		_update_leaves(delta)
 	else:
 		_update_snow(delta)
@@ -165,6 +196,8 @@ func _scatter() -> void:
 	if _ground_world.is_empty():
 		_refresh_ground()
 	if effect == "leaves":
+		_canopy_timer = CANOPY_REFRESH_SECONDS
+		_refresh_canopies()
 		for leaf in _leaves:
 			_reset_leaf(leaf, false)
 	else:
@@ -189,8 +222,8 @@ func _refresh_area() -> void:
 ## sample per TILE. It refreshes every 0.1 s, so ground and share snap to blocks.
 func _refresh_ground() -> void:
 	_refresh_area()
-	var first := floori((_area.position.x - 48.0) / GROUND_STEP)
-	var last := ceili((_area.end.x + 48.0) / GROUND_STEP)
+	var first := floori((_area.position.x - GROUND_MARGIN) / GROUND_STEP)
+	var last := ceili((_area.end.x + GROUND_MARGIN) / GROUND_STEP)
 	var columns := int(last - first) + 1
 	if _ground_world.size() != columns:
 		_ground_world.resize(columns)
@@ -248,8 +281,8 @@ func _pick_spawn_x(min_x: float, max_x: float) -> float:
 
 func _out_of_area(x: float, y: float) -> bool:
 	return (
-		x < _area.position.x - OFFSCREEN_MARGIN
-		or x > _area.end.x + OFFSCREEN_MARGIN
+		x < _area.position.x - _cull_margin
+		or x > _area.end.x + _cull_margin
 		or y > _area.end.y + 40.0
 	)
 
@@ -257,6 +290,8 @@ func _out_of_area(x: float, y: float) -> bool:
 # --- Leaves -----------------------------------------------------------------
 
 func _build_leaves() -> void:
+	_leaf_px = pixel_scale * LEAF_SCALE
+	_cull_margin = LEAF_SPAWN_MARGIN + OFFSCREEN_MARGIN
 	for shape in LEAF_SHAPES:
 		for palette in LEAF_PALETTES:
 			_leaf_textures.append(_make_texture(shape, _leaf_colors(palette)))
@@ -294,7 +329,7 @@ func _place_litter() -> void:
 		sprite.texture = _leaf_textures[shape * LEAF_PALETTES.size() + palette]
 		sprite.position = Vector2(x, _resting_y(x, sprite.texture.get_height()))
 		sprite.rotation = (_hash(slot, 5) - 0.5) * 0.6
-		sprite.scale = Vector2(_px, _px)
+		sprite.scale = Vector2(_leaf_px, _leaf_px)
 
 
 func _leaf_colors(palette: Array) -> Dictionary:
@@ -310,32 +345,107 @@ func _leaf_colors(palette: Array) -> Dictionary:
 	}
 
 
-func _reset_leaf(leaf: Leaf, top: bool) -> void:
-	var x := _pick_spawn_x(_area.position.x - 40.0, _area.end.x)
-	if is_inf(x):
-		leaf.wait = RETRY_SECONDS
-		leaf.sprite.visible = false
+## Leaf texture in a tree's tint: the same 3 silhouettes, with the palette
+## derived from the crown colour (light, base, shade, dark). Cached because the
+## biome only has a handful of decor tints.
+func _leaf_color_texture(color: Color, shape: int) -> ImageTexture:
+	var key := "%d:%s" % [shape, color.to_html(false)]
+	if _leaf_color_cache.has(key):
+		return _leaf_color_cache[key]
+	var shade := color.darkened(0.25)
+	var dark := color.darkened(0.55)
+	var texture := _make_texture(LEAF_SHAPES[shape], {
+		"L": color.lightened(0.45),
+		"B": color,
+		"S": shade,
+		"D": dark,
+		"R": shade,
+		"T": dark,
+	})
+	_leaf_color_cache[key] = texture
+	return texture
+
+
+## Crowns of the living trees around the view (plus the spawn margin). They are
+## in the `decor_tree` group and die with their chunk, so the check is only
+## `is_instance_valid`; refreshed a few times per second instead of per leaf.
+func _refresh_canopies() -> void:
+	_canopies.clear()
+	if effect != "leaves":
 		return
+	var min_x := _area.position.x - LEAF_SPAWN_MARGIN
+	var max_x := _area.end.x + LEAF_SPAWN_MARGIN
+	for node in get_tree().get_nodes_in_group("decor_tree"):
+		var tree := node as DecorProp
+		if tree == null or not is_instance_valid(tree) or tree.texture == null:
+			continue
+		var crown := tree.global_position + Vector2(
+			0.0, -tree.texture.get_height() * tree.scale.y * 0.55
+		)
+		if crown.x < min_x or crown.x > max_x or crown.y > _area.end.y + 80.0:
+			continue
+		_canopies.append({
+			"x": crown.x,
+			"y": crown.y,
+			"color": tree.tint_color,
+			"half": tree.texture.get_width() * tree.scale.x * 0.3,
+		})
+
+
+## A visible crown whose tile belongs to this biome's share, or an empty dict
+## for the open-sky spawn.
+func _pick_canopy() -> Dictionary:
+	if _canopies.is_empty() or _rng.randf() > TREE_LEAF_SHARE:
+		return {}
+	for i in 4:
+		var canopy: Dictionary = _canopies[_rng.randi_range(0, _canopies.size() - 1)]
+		if _rng.randf() <= _share_at(float(canopy["x"])):
+			return canopy
+	return {}
+
+
+func _reset_leaf(leaf: Leaf, top: bool) -> void:
 	leaf.wait = 0.0
-	leaf.sprite.visible = true
-	leaf.x0 = x
-	if top:
-		leaf.y = _area.position.y - _rng.randf_range(0.0, 40.0)
-	else:
-		var bottom := clampf(_ground_at(x) - 20.0, _area.position.y, _area.end.y - 20.0)
-		leaf.y = _rng.randf_range(_area.position.y, maxf(bottom, _area.position.y))
+	leaf.rest = -1.0
+	leaf.angle = 0.0
 	leaf.vy = _rng.randf_range(34.0, 56.0)
 	leaf.amp = _rng.randf_range(14.0, 34.0)
 	leaf.w = _rng.randf_range(1.8, 2.8)
 	leaf.ph = _rng.randf_range(0.0, TAU)
 	leaf.flip = _rng.randf_range(0.0, TAU)
 	leaf.near = _rng.randf() < 0.35
+	# Each leaf drifts in its own direction instead of all of them to the right.
+	leaf.drift = _rng.randf_range(-LEAF_DRIFT, LEAF_DRIFT)
 	leaf.shape = _rng.randi_range(0, LEAF_SHAPES.size() - 1)
-	leaf.palette = _rng.randi_range(0, LEAF_PALETTES.size() - 1)
-	leaf.angle = 0.0
-	leaf.rest = -1.0
+	var canopy := _pick_canopy()
+	if not canopy.is_empty():
+		# Under a living tree: born at its crown, in that tree's own colour.
+		var half := float(canopy["half"])
+		leaf.x0 = float(canopy["x"]) + _rng.randf_range(-half, half)
+		leaf.y = float(canopy["y"]) + _rng.randf_range(-4.0, 6.0)
+		leaf.color = Color(canopy["color"])
+		leaf.palette = -1
+		leaf.sprite.texture = _leaf_color_texture(leaf.color, leaf.shape)
+	else:
+		var x := _pick_spawn_x(
+			_area.position.x - LEAF_SPAWN_MARGIN,
+			_area.end.x + LEAF_SPAWN_MARGIN
+		)
+		if is_inf(x):
+			leaf.wait = RETRY_SECONDS
+			leaf.sprite.visible = false
+			return
+		leaf.x0 = x
+		if top:
+			leaf.y = _area.position.y - _rng.randf_range(0.0, 40.0)
+		else:
+			var bottom := clampf(_ground_at(x) - 20.0, _area.position.y, _area.end.y - 20.0)
+			leaf.y = _rng.randf_range(_area.position.y, maxf(bottom, _area.position.y))
+		leaf.color = Color.WHITE
+		leaf.palette = _rng.randi_range(0, LEAF_PALETTES.size() - 1)
+		leaf.sprite.texture = _leaf_textures[leaf.shape * LEAF_PALETTES.size() + leaf.palette]
+	leaf.sprite.visible = true
 	leaf.x = leaf.x0
-	leaf.sprite.texture = _leaf_textures[leaf.shape * LEAF_PALETTES.size() + leaf.palette]
 	leaf.sprite.z_index = 1 if leaf.near else 0
 	leaf.sprite.modulate.a = 1.0
 	_place_leaf(leaf)
@@ -360,7 +470,7 @@ func _update_leaves(delta: float) -> void:
 			leaf.sprite.position = Vector2(leaf.x, _resting_leaf_y(leaf))
 			continue
 		leaf.ph += leaf.w * delta
-		leaf.x0 += LEAF_DRIFT * delta
+		leaf.x0 += leaf.drift * delta
 		leaf.x = leaf.x0 + sin(leaf.ph) * leaf.amp
 		leaf.y += leaf.vy * (0.45 + 0.9 * absf(cos(leaf.ph))) * delta
 		leaf.angle = cos(leaf.ph) * 0.75 + (0.0 if leaf.near else 0.3)
@@ -371,7 +481,7 @@ func _update_leaves(delta: float) -> void:
 			leaf.angle *= 0.3
 			leaf.sprite.modulate.a = 1.0
 			leaf.sprite.rotation = leaf.angle
-			leaf.sprite.scale = Vector2(_px, _px)
+			leaf.sprite.scale = Vector2(_leaf_px, _leaf_px)
 			leaf.sprite.position = Vector2(leaf.x, _resting_leaf_y(leaf))
 			continue
 		_place_leaf(leaf)
@@ -380,7 +490,7 @@ func _update_leaves(delta: float) -> void:
 func _place_leaf(leaf: Leaf) -> void:
 	leaf.sprite.position = Vector2(leaf.x, leaf.y)
 	leaf.sprite.rotation = leaf.angle
-	leaf.sprite.scale = Vector2(_px * (0.35 + 0.65 * absf(cos(leaf.flip))), _px)
+	leaf.sprite.scale = Vector2(_leaf_px * (0.35 + 0.65 * absf(cos(leaf.flip))), _leaf_px)
 
 
 ## Center of a leaf lying on the surface: its bottom overlaps the grass line.
@@ -389,7 +499,7 @@ func _resting_leaf_y(leaf: Leaf) -> float:
 
 
 func _resting_y(x: float, height: float) -> float:
-	return _ground_at(x) - height * _px * 0.5 + _px
+	return _ground_at(x) - height * _leaf_px * 0.5 + _leaf_px
 
 
 # --- Snow -------------------------------------------------------------------

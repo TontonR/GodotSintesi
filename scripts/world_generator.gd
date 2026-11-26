@@ -1527,6 +1527,10 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		sprite.modulate = Color.WHITE
 		sprite.tint_color = tint
 		sprite.sways = _decor_sways(kind)
+		# Living trees feed the ambient leaf rain with their crown and tint. The
+		# dead tree stays out, so it never drops foliage.
+		if kind < decor_names.size() and decor_names[kind] == "tree":
+			sprite.add_to_group("decor_tree")
 		sprite.sway_radius_px = decor_sway_radius_px
 		sprite.position = Vector2(
 			tile_x * TILE_SIZE + TILE_SIZE * 0.5,
