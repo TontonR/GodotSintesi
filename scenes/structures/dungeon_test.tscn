@@ -10,4 +10,6 @@ script = ExtResource("1_test")
 [node name="Dungeon" parent="." instance=ExtResource("2_dungeon")]
 auto_start_seed = 20261124
 
+[node name="UILayer" type="CanvasLayer" parent="."]
+
 [node name="player" parent="." instance=ExtResource("3_player")]

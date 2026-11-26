@@ -28,6 +28,103 @@ _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
   el contrato del bioma (`ambient`) y el fundido de 0,4 s no cambian.
 - Fuentes y licencia en `assets/vfx/spritefusion/`; validado en headless, falta F5.
 
+## 2026-11-25 · `test/fusion-structure` — pisos aleatorios por semilla (T-0093)
+
+- `DungeonGenerator` reemplaza `@export var floors` por `min_floors` (3) y `max_floors` (6) como exports.
+- `floor_count()` es ahora determinista y derivado de la semilla: garantiza `min_floors` y luego intenta añadir pisos con una tirada del 50 % encadenada (cada piso extra requiere que el anterior también saliera exitoso) hasta `max_floors`.
+- `_compute_floor_count(seed)` usa salt `0xDEAD_F100R` para no colisionar con las semillas por planta.
+- La identidad seed → número de pisos es reproducible: la misma semilla siempre produce el mismo castillo con el mismo número de plantas.
+
+## 2026-11-25 · `test/fusion-structure` — pasillo procedural continuo, autotiling 8-vecinos y salida diferida (T-0093)
+
+- `DungeonGenerator._on_exit_body_entered()` emite `exit_requested.emit.call_deferred()` para evitar el error de físicas (`flushing queries`) al reconstruir chunks al salir.
+- `CastleTiles` añade `SOLID_FILL` (`25`, `#423a51`) a `build_walls()`; `CastlePainter._paint_solid_grid()` construye un grid booleano `solid[x, y]` (marco + bloques) y resuelve bordes, esquinas exteriores e interiores (`27`–`30`) por sus 8 vecinos, eliminando huecos, bordes dobles y recortes negros.
+- `CastleLayout` amplía el hall a `64` tiles, baja el techo (`TOP_ROW = 6`) con ventanas/estandartes en `y = 8`, sustituye las fosas por un suelo continuo escalonado (alternando escalones de piedra y subidas de 2–3 tiles con plataformas mínimas) y verifica alcanzabilidad por BFS (`tested_layouts=20 failed=0`).
+
+## 2026-11-25 · `opencode-jorge` · T-0080 guardado y carga dentro de la mazmorra
+
+- `DungeonLayer.save_state()` (`{}` en el mundo o `{seed, floor, position,
+  world_position}`) y `restore_from_save()`: la carga descarga el mundo, genera la planta
+  guardada y teletransporta al jugador. `enter()` y la carga comparten `_open_dungeon()`.
+- `scripts/save_game.gd`: guardar dentro escribe `run/position`/`run/meters` del mundo y
+  añade `[dungeon] state`; `request_load()` lo lee en `SaveGame.data["dungeon"]`. Sin
+  subir `VERSION`: las partidas viejas leen `{}`.
+- `scripts/game.gd` llama a `restore_from_save()` tras `refresh_chunks()`.
+- Entrar por una puerta sigue empezando en la planta 0; solo cargar restaura otra planta.
+- Verificado en headless (Godot 4.7.2): guardar dentro, continuar en la planta 1, salir al
+  punto de la puerta y liberar la mazmorra; `game.tscn`/`dungeon_test.tscn` sin errores.
+  Falta F5 de Ruben.
+- Revisión de T-0093 (de `buffy`) en la misma sesión: probe del hall, comentario muerto de
+  `CastleTiles` y `UILayer` en `dungeon_test.tscn` para que F6 no suelte errores.
+
+## 2026-11-24 · `buffy` · T-0093 fondo original sin shader
+
+- Eliminado el shader de recorte y sus materiales: el PNG del atlas nunca se
+  modificó; su púrpura `#423a51` es el fondo original y los bordes de ladrillo
+  terminan contra él sin el degradado inventado.
+- `DungeonVoid` es ahora un `Polygon2D` opaco del mismo púrpura en `z=-5`, por
+  encima del parallax del mundo y debajo de `Back`. El interior de los bordes
+  usa otra vez el fondo original, como el borde del mapa.
+- Probe con fondo falso magenta: no aparece dentro del hall. F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 orientación del marco y fondo del dungeon
+
+- Solo el marco que rodea la sala vuelve a la orientación interior: borde
+  `24/20/22/19` y esquinas `28/29/27/30`; los bloques de suelo conservan
+  `20/24/19/22` con esquinas `18/21/26/23`.
+- El fondo normal del mundo se colaba porque el parallax está en `z = -100` y el
+  `CanvasLayer -10` quedaba detrás. `DungeonVoid` pasa a ser un `Polygon2D`
+  oscuro en `z = -5`: tapa el parallax, queda debajo de `Back` y mantiene el
+  negro del exterior y de las fosas.
+- Chequeo visual con fondo falso magenta: no debe verse dentro del hall. F5/F6
+  pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 corrección de paredes/suelo
+
+- El atlas tiene esquinas reales: marco y suelo usan bordes `20/24/19/22` y
+  esquinas `18/21/26/23`; el canto claro queda fuera del ladrillo. Las piezas
+  interiores `27–30` no se usan.
+- El púrpura `#423a51` pasa a ser clave de color con
+  `resources/shaders/castle_cutout.gdshader`; `Back` deja de pintar `25` y
+  `DungeonVoid` (CanvasLayer oscuro) da el negro exterior y de las fosas.
+- Chequeo headless: marco/esquinas correctos, fosas/exterior sin celdas de
+  fondo y materiales activos; F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 rework: sala de referencia por capas
+
+- La mazmorra pasa de cadena de salas a **una sala de 34 × 22**: tres bloques de
+  suelo, dos fosas, ocho ventanas 2×2, dos estandartes y tres plataformas de madera.
+- El fondo deja de estar oscurecido; las fosas tienen repisa de madera one-way.
+- Separación por responsabilidades en `scripts/structures/castle/`: `CastleLayout`
+  (datos), `CastleTiles` (atlas/colisión), `CastlePainter` (capas) y
+  `DungeonGenerator` (ciclo de vida). `WorldGenerator`/`WorldStructure` no se tocan.
+- La capa `Floor` se renombra a `Platforms`; `Walls` conserva la colisión completa.
+  Verificado con probe headless KP3 → F (semilla `20261124`, plantas 0/1); faltan F5/F6.
+
+## 2026-11-24 · `buffy` · Mazmorra del castillo como hall de plataformas (T-0093)
+
+- `dungeon_generator.gd`: el castillo pasa de sala plana a hall abierto con 7/9
+tramos en filas 32–34, huecos de 2–3 tiles, repisa inferior con escalón de
+recuperación, losas sobre huecos anchos y ruta alta con escalera en la sala central.
+- El fondo de piedra `41` llega hasta el marco inferior y solo se recorta a vacío en
+las fosas; las plataformas usan el remate `18` (claro arriba) en vez del `24` de techo.
+- Ventanas cada 5 tiles y estandartes al 25/50/75 % del ancho. Capturas finales en
+`vault/estructuras/platform_f0_*.png` y `platform_f1_*.png`.
+- Verificado con harness headless (KP3 → F, semilla `20261124`, plantas 0/1): sin
+errores de script. Falta F5/F6 de Ruben.
+
+## 2026-11-24 · `buffy` · Tilemap del castillo sin huecos (T-0091)
+
+- `dungeon_generator.gd`: el atlas no tiene un ladrillo continuo (las celdas
+  `20/25/26/30` llevan el interior morado), así que `Back`, muros y techo usan la
+  losa completa `41` y el remate `31`; `Floor` fija `32`/`40`.
+- `_build_rooms()` reparte las salas en 4–11 tiles y la última ya no se lleva el
+  resto (20 medidos con la semilla de prueba).
+- Ventanas 2×2 dejan un tile antes de la partición; ventanas y estandartes no se
+  colocan sobre la salida.
+- Verificado con harness de renderizado (KP3 → F, plantas 0/1); falta F5/F6 de
+  Ruben. `docs/dungeon.md` actualizado.
+
 ## 2026-11-24 · `buffy` · Interior de castillo y salida sin tirón (T-0089, T-0090)
 
 - T-0090: el interior explorable usa `assets/map/structures/castle_tiles.png` (atlas 8×6

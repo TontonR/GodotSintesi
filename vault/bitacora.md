@@ -37,7 +37,7 @@ Formato de entrada:
 
 ## 2026-11-03 · `buffy` · Noche con estrellas, montañas oscuras y velo (T-0016)
 
-- `day_night.gd`: `_night_factor_at()` da el 0→1 de la noche con el mismo fundido de 12 s que el cielo; de ese factor cuelgan los tres efectos.
+- `day_night.gd`: `_night_factor_at()` da el 0â†’1 de la noche con el mismo fundido de 12 s que el cielo; de ese factor cuelgan los tres efectos.
 - Estrellas: `StarField` interno en `CanvasLayer` `layer = -1` (detrás del parallax), 110 puntos de 2 px con semilla fija.
 - Montañas: `modulate` de `../mountains` de blanco a `Color(0.33, 0.36, 0.52)`.
 - Velo: `ColorRect` negro al 10% en `layer = 11`, encima del HUD, con `mouse_filter = IGNORE`.
@@ -271,7 +271,7 @@ Formato de entrada:
 
 - Creado `vault/entrega-2.md` (catalán, para Google Docs): resumen, cambios
   desde la entrega 1, explicación del cambio de herramientas (OpenCode →
-  FreeBuff y Gemini Chat → OpenCode) y funcionamiento del vault entre IAs.
+  FreeBuff y Gemini Chat â†’ OpenCode) y funcionamiento del vault entre IAs.
 - Recalca los tres próximos objetivos (texturas de objetos, estructuras y
   boses, objetos y mecánicas) y justifica la reestructuración como causa del
   menor progreso visible. Sin cambios de código.
@@ -326,7 +326,7 @@ Formato de entrada:
 
 ## 2026-11-12 · `opencode-jorge` · Tope de pendiente en el terreno (T-0049)
 - Reclamo T-0049 (petición de Ruben): paredes de 4 tiles en la seed 775344231 (tile 28227).
-- `max_step_tiles` (1) en `world_generator.gd`: cada columna a ±1 fila de la anterior, cadena cacheada por chunk; la columna compartida se hereda del vecino para no romper la costura. Fuera `_terrain_at_tile()`.
+- `max_step_tiles` (1) en `world_generator.gd`: cada columna a Â±1 fila de la anterior, cadena cacheada por chunk; la columna compartida se hereda del vecino para no romper la costura. Fuera `_terrain_at_tile()`.
 - Verificado con script headless desechable (seed 775344231, 28k tiles): escalón máximo 1 y costuras exactas; `game.tscn` arranca sin errores.
 - `docs/world.md` y `changelog.md` actualizados. F5 pendiente; ticket en `revision`.
 
@@ -334,7 +334,7 @@ Formato de entrada:
 - Petición de `humano-ruben`: el tope de ±1 de T-0049 convirtió las laderas en una escalera
   antinatural (diagonales de un escalón por columna, tramos de hasta 51 columnas). Que se
   vean redondeadas, con paredes de 2 tiles y de 3 muy de vez en cuando.
-- `scripts/world_generator.gd`: fuera `clampi(h, prev ± max_step_tiles)`.
+- `scripts/world_generator.gd`: fuera `clampi(h, prev Â± max_step_tiles)`.
   `_build_shaped_heights()` + `_shaped_step()` sostienen la losa con
   `tread_hold_chance` (0.65, mitad a 2 tiles de desvío) y pegan pared de
   `max_step_tiles` (ahora 2), con 3 cuando sale `rare_step_chance` (0.06). La tirada es
@@ -348,7 +348,7 @@ Formato de entrada:
 ## 2026-11-12 · `buffy` · Elevaciones exageradas del bosque rojo (T-0051)
 - `humano-ruben`: prefiere la generación anterior a la de T-0050 (demasiados suelos de 2
   tiles) y siguen saliendo elevaciones exageradas en algunos sitios.
-- `scripts/world_generator.gd` revertido a T-0049 (`git checkout`): vuelve el tope de ±1,
+- `scripts/world_generator.gd` revertido a T-0049 (`git checkout`): vuelve el tope de Â±1,
   sin `_shaped_step()`. T-0050 queda `cerrado` como revertido.
 - Causa de las zonas raras: no era el ruido ni las costuras, sino los modificadores del
   bosque rojo (`terrain_amplitude_multiplier` 1.35 y `terrain_frequency_multiplier` 1.1).
@@ -378,7 +378,7 @@ Formato de entrada:
   forzado a -5000 px acaba en -880. 4 filas = 64 px > 41 px de salto.
 - `scripts/debug_tools.gd`: fuera `SPEEDS`; `_speed` float con KP9 ×2, KP7 ×0.5 y KP8 a
   1.0, suelo `MIN_SPEED` 0.001; `game_speed` pasa a `start_speed`. Verificado enviando
-  teclas al nodo: x1 → x2 → x4 → x2 → x1 → x0.5 → x0.25 y etiqueta `x0.25`.
+  teclas al nodo: x1 â†’ x2 â†’ x4 â†’ x2 â†’ x1 â†’ x0.5 â†’ x0.25 y etiqueta `x0.25`.
 - `docs/world.md`, `docs/player.md`, `README.md`, `changelog.md` y `estado.md`
   actualizados. F5 pendiente; ambos tickets en `revision`.
 
@@ -390,10 +390,10 @@ Formato de entrada:
   `_left_wall_height_at()` (la cresta de T-0052 en la fila 5).
 - `scripts/debug_tools.gd`: `teleport_lift_tiles` (10) fuera, entra
   `teleport_above_ground_tiles` (4); `_teleport()` calcula X destino, pone Y en
-  suelo − 4 tiles y llama a `refresh_chunks()` para que el terreno exista en el frame.
+  suelo âˆ’ 4 tiles y llama a `refresh_chunks()` para que el terreno exista en el frame.
 - Medido en `game.tscn` enviando teclas: hueco de 4.00 tiles tras KP6 desde el spawn
-  (tile 50 → 114.5) y otra vez (→ 178.5), 3.96 al volver con KP4 y 3.92 al caer sobre la
-  cresta de la barrera izquierda (tile −52, fila 5).
+  (tile 50 â†’ 114.5) y otra vez (â†’ 178.5), 3.96 al volver con KP4 y 3.92 al caer sobre la
+  cresta de la barrera izquierda (tile âˆ’52, fila 5).
 - `README.md`, `docs/player.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente;
   ticket en `revision`.
 
@@ -500,7 +500,7 @@ Formato de entrada:
 - `SaveGame`: `has_free_slot()` y `first_free_slot()` (devuelve -1 si no queda hueco) sustituyen a `slot_for_new_run()`; `[run] meters` nuevo, con `SPAWN_X` (808) como fallback para slots viejos; `slot_summary()` expone `meters`.
 - `WorldGenerator.meters_at(world_x)` (spawn 50×16+8); `UILayer/Meters` en `game.tscn`; `Game._process()` refresca el label solo al cambiar de bloque.
 - Menú: Start arranca en el primer hueco o abre `LoadDialog` en modo sobrescritura (todo habilitado, `Erase` oculto, `Back` vuelve al diálogo de semilla); las filas muestran `M m · C coins`.
-- Verificado: `--check-only` en world_generator/save_game/game/main_menu (exit 0) y script headless desechable (borrado) → `start_m=0 label=0 m`, tras +160 px `10 m`. F5 pendiente.
+- Verificado: `--check-only` en world_generator/save_game/game/main_menu (exit 0) y script headless desechable (borrado) â†’ `start_m=0 label=0 m`, tras +160 px `10 m`. F5 pendiente.
 - Afectados: `scripts/world_generator.gd`, `scripts/save_game.gd`, `scripts/game.gd`, `scripts/ui/main_menu.gd`, `scenes/game.tscn`, `docs/ui.md`, tickets T-0060/T-0061, `changelog.md`, `estado.md`, `roadmap.md`.
 
 ## 2026-11-13 · `buffy` · El parry perfecto aturde al lobo (T-0062)
@@ -509,7 +509,7 @@ Formato de entrada:
 - Causa real: el lobo ya pega con su propio hitbox y el jugador le sumaba encima los 5 px de contacto genérico (13 + 5 cada 0.5 s).
 - `EnemyBase.uses_custom_contact_damage()` (false por defecto); el lobo lo pone a `true` y `player._update_body_contact()` lo salta.
 - `Player.parried(attacker)`: se emite al consumir la ventana de parry; el lobo se conecta una sola vez (grupo `player`, `_parry_connected`) y, si el atacante es él, entra en `STUN` con `parry_stun_time` 0.8 s, destello azulado y sin daño de contacto; en el aire espera a aterrizar y luego vuelve al aviso.
-- `charge_speed` 150 → 140: sigue superando el paseo (130) y queda por debajo del sprint (221).
+- `charge_speed` 150 â†’ 140: sigue superando el paseo (130) y queda por debajo del sprint (221).
 - Verificado headless (script desechable borrado): parry de otro atacante no aturde, parry propio → `state=5` (STUN) 0.8 s, luego vuelve a embestir, `_contact_cooldowns` del jugador vacío con el lobo encima y `charge_speed=140`. `--check-only` en player/enemy_base/werewolf con exit 0. F5 pendiente.
 
 ## 2026-11-13 · `buffy` · Cimas blancas en la montaña nevada (T-0063)
@@ -517,7 +517,7 @@ Formato de entrada:
 - Ruben: en el bioma nevado la cima del fondo se oscurece en vez de verse blanca.
 - Causa: `mountains/Sprite2DSnow` (`mountain2_snow.png`, la capa de nieve) no estaba en ninguna lista de tinte y su textura es blanco sucio (≈ 184, 172, 171) sobre un risco teñido de `rock_color` 0.75; el modulate solo multiplica, así que ningún tinte normal la aclaraba.
 - Nuevo canal `Biome.snow_color` (blanco por defecto) + `snow_tint_paths` (`../mountains/Sprite2DSnow`) aplicado en `_update_biome_tint()` junto a forest/rock/base.
-- `nieve.tres`: `snow_color = (1.55, 1.6, 1.65)` (por encima de 1, empuja la capa a blanco puro) y `rock_color` 0.75 → `(0.92, 0.94, 0.98)`.
+- `nieve.tres`: `snow_color = (1.55, 1.6, 1.65)` (por encima de 1, empuja la capa a blanco puro) y `rock_color` 0.75 â†’ `(0.92, 0.94, 0.98)`.
 - Antes de tocar código compuse las tres capas en PIL para comparar variantes (actual / roca clara + nieve al 150 % / todo a blanco); se eligió la intermedia.
 - Verificado headless (script desechable borrado): `snow_color=(1.55, 1.6, 1.65)`, `Sprite2DSnow` dentro de `_snow_tint_nodes` y el canal `"snow"` devolviéndolo; `--check-only` en world_generator/biome exit 0. F5 pendiente.
 
@@ -551,7 +551,7 @@ Formato de entrada:
 
 - Ruben: faltaba una vista de conjunto de enemigos (drops con probabilidad, stats, mecánicas)
   y de objetos, con una casilla de estado y fichas detalladas conectadas entre sí.
-- Nuevo `vault/enemies.md` (lista de los 8) + `vault/enemies/<slug>.md` (stats base → finales,
+- Nuevo `vault/enemies.md` (lista de los 8) + `vault/enemies/<slug>.md` (stats base â†’ finales,
   IA, tabla de drops con enlace al objeto, spawn y checklist de F5). Todos en `por revisar`;
   fantasma y demonio marcados como inalcanzables.
 - Nuevo `vault/items.md` (44 objetos) + `vault/items/<slug>.md`, generados desde `resources/*.tres`
@@ -785,7 +785,7 @@ Formato de entrada:
 
 ## 2026-11-19 · `opencode-jorge` · T-0075: fuera decor dentro de ruinas y musgo por bioma
 
-- `_decor_outside_structures()` descarta el decor que cae dentro de `x ± half` de
+- `_decor_outside_structures()` descarta el decor que cae dentro de `x Â± half` de
   cualquier estructura del chunk (se aplica después de tirar las estructuras).
 - Cada estructura guarda un `tint` de `_decor_tint_at()` y pinta sus atlas con
   `_tinted_texture(source, tint, 24, 12)`; `_tint_foliage()` gana umbrales opcionales
@@ -847,7 +847,7 @@ Formato de entrada:
 - Ficheros: `scripts/world/dungeon_generator.gd`, `scripts/world/dungeon_test.gd`,
   `scenes/structures/dungeon.tscn`, `scenes/structures/dungeon_test.tscn`,
   `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/T-0079-interior-explorable.md`.
-- Pendiente: la puerta mundo→mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
+- Pendiente: la puerta mundoâ†’mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
   el estado por piso, para T-0080. F6 de Ruben sobre `dungeon_test.tscn`.
 
 ## 2026-11-24 · `buffy` · Entrada a la mazmorra desde el mundo (T-0087)
@@ -891,9 +891,83 @@ Formato de entrada:
   construyendo en código y todas las celdas sólidas la reciben.
 - T-0089: la salida calculaba los chunks con la cámara suavizada, que sigue en la
   mazmorra tras el teletransporte. `_update_chunks()` pasa a usar la X del jugador en ese
-  caso. Medido en headless a 200 000 px: 49 chunks (0..48) → 5 (140 ms).
+  caso. Medido en headless a 200 000 px: 49 chunks (0..48) â†’ 5 (140 ms).
 - Comprobado en headless: 0 tiles de muro/suelo sin colisión, 42 celdas de decor y 9 ms
   por las dos plantas. Falta F5/F6 de Ruben: aspecto del castillo y salida lejana.
+
+## 2026-11-24 · `buffy` · Mazmorra del castillo como hall de plataformas (T-0093)
+
+- `scripts/world/dungeon_generator.gd`: sala plana sustituida por hall de 7/9 tramos en
+  filas 32–34, huecos de 2–3 tiles con repisa y escalón, losas sobre huecos anchos y ruta
+  alta en la sala central; fondo de piedra hasta el marco con fosas de vacío recortadas.
+- El remate del suelo pasa del tile de techo `24` al `18` para que la superficie no
+  muestre la franja de vacío. Ventanas cada 5 tiles y estandartes al 25/50/75 %.
+- Verificado con harness de renderizado (KP3 â†’ F, semilla `20261124`, plantas 0/1) y
+  capturas `vault/estructuras/platform_f0_*.png` / `platform_f1_*.png`; falta F5/F6.
+
+## 2026-11-24 · `buffy` · T-0093 segunda pasada: sala de referencia y responsabilidades
+
+- Rehecha la mazmorra como una sola sala de 34 × 22 (tres bloques de suelo, dos fosas,
+  8 ventanas, 2 estandartes y 3 plataformas de madera), con el fondo de piedra claro.
+- `scripts/structures/castle/`: `CastleLayout` (datos), `CastleTiles` (atlas/colisión),
+  `CastlePainter` (capas) y `DungeonGenerator` (ciclo); `WorldGenerator`/`WorldStructure`
+  intactos. La capa de madera pasa de `Floor` a `Platforms` con colisión fina one-way.
+- Probe headless KP3 â†’ F, semilla `20261124`, plantas 0/1, sin errores de script; capturas
+  `hall_spawn`, `hall_overview`, `hall_left_platform`, `hall_center_floor`, `hall_f1_spawn`.
+  Falta F5/F6 de Ruben.
+
+## 2026-11-24 · `buffy` · T-0093 paredes/suelo del castillo
+
+- Corregidas las esquinas con las piezas reales del atlas: marco y suelo
+  comparten borde `20/24/19/22` y esquinas `18/21/26/23`; el canto claro queda
+  fuera del ladrillo, como en la referencia.
+- `resources/shaders/castle_cutout.gdshader` descarta el púrpura `#423a51`;
+  `Back` deja de pintar el tile `25` y `DungeonVoid` da el negro exterior y de
+  las fosas.
+- Chequeo headless del castillo: marco/esquinas, fosas/exterior y materiales
+  correctos; captura visual del hall completo revisada. F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 corrección de orientación y fondo
+
+- Solo el marco que rodea la sala vuelve al canto interior: borde `24/20/22/19`
+  y esquinas `28/29/27/30`. Los bloques de suelo conservan `20/24/19/22` y
+  `18/21/26/23`.
+- El fondo normal era el `Parallax2D` del mundo (`z = -100`), no generación de
+  chunks: `DungeonLayer` ya los descarga. `DungeonVoid` pasa de CanvasLayer a
+  `Polygon2D` en `z = -5`, encima del parallax y debajo de `Back`.
+- Probe con un fondo falso magenta en `z = -100`: el hall sale con negro y no se
+  ve magenta. Frame IDs y `VOID_BACKDROP` correctos; exit 0. F5/F6 pendientes.
+
+## 2026-11-24 · `buffy` · T-0093 fondo original, sin shader
+
+- El PNG de `castle_tiles.png` no se ha modificado. El degradado/segundo negro
+  venía de `castle_cutout.gdshader`, que convertía el púrpura del atlas en
+  transparencia y dejaba ver otro fondo; se elimina el shader y sus materiales.
+- `DungeonVoid` usa el púrpura original `#423a51` en un `Polygon2D` z=-5. Los
+  bordes de suelo y marco conservan su interior original, como el borde del mapa.
+- Probe con parallax falso magenta: el fondo no se cuela. Sin material en las
+  capas; frame IDs correctos; exit 0. F5/F6 pendientes.
+
+## 2026-11-25 · `opencode-jorge` · Revisión de T-0093 y T-0080 persistencia por piso
+
+- T-0093 (de `buffy`): revisada y verificada en headless con Godot 4.7.2 (semilla
+  `20261124`, plantas 0/1): colisión completa en `Walls`, `Platforms` one-way, layout
+  determinista y distinto por planta, `game.tscn`/`dungeon_test.tscn` sin errores.
+  Corregidos el comentario muerto del shader y el F6 (`UILayer` en `dungeon_test.tscn`).
+- T-0080 abierto y hecho: `DungeonLayer.save_state()/restore_from_save()`, sección
+  `[dungeon] state` en `save_game.gd` y llamada en `game.gd`. Guardar dentro del
+  castillo conserva planta, posición y punto de vuelta; `run/position` y metros pasan a
+  ser del mundo. Verificado headless con un probe desechable (slot 3 borrado al acabar).
+  Ficheros: `scripts/world/dungeon_layer.gd`, `scripts/save_game.gd`, `scripts/game.gd`,
+  `scenes/structures/dungeon_test.tscn`, `scripts/structures/castle/castle_tiles.gd`,
+  `docs/dungeon.md` y `vault/`.
+
+## 2026-11-25 · Continuación de testeo y rediseño procedural del castillo (T-0093)
+
+- Detectado y corregido en `dungeon_generator.gd` el error de `flushing queries` al pisar `Exit` (`exit_requested.emit.call_deferred()`), dejando `_probe_flow` con 0 errores.
+- `castle_tiles.gd` / `castle_painter.gd`: añadido `SOLID_FILL` (`25`) y autotiling por 8 vecinos sobre un grid booleano `solid[x, y]` para fusionar marco, bloques adyacentes y esquinas sin huecos ni cortes negros.
+- `castle_layout.gd` / `dungeon_generator.gd`: hall ampliado a 64 tiles, techo bajado a `TOP_ROW = 6` con ventanas/estandartes en `y = 8`, suelo continuo escalonado sin fosas (alternando escalones de piedra de 1 tile y subidas de 2–3 tiles con plataformas mínimas) y verificador BFS (`20/20` layouts alcanzables, 0 errores en Godot 4.7.2).
+- Ficheros: `scripts/structures/castle/{castle_layout,castle_painter,castle_tiles,dungeon_generator}.gd`, `docs/dungeon.md`, `vault/{changelog,bitacora,estado}.md`.
 
 ## 2026-11-25 · `buffy` · VFX ambientales de Sprite Fusion (T-0093)
 

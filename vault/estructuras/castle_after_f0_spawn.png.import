@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://v3pjdu8hjqan"
-path="res://.godot/imported/mag-gpt.png-509cf5646ec223379b25d5276061445a.ctex"
+uid="uid://5tdm5ghkwpdy"
+path="res://.godot/imported/castle_after_f0_spawn.png-35d146604cc486dd5fb2e8ee96f664d1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/mag-gpt.png"
-dest_files=["res://.godot/imported/mag-gpt.png-509cf5646ec223379b25d5276061445a.ctex"]
+source_file="res://vault/estructuras/castle_after_f0_spawn.png"
+dest_files=["res://.godot/imported/castle_after_f0_spawn.png-35d146604cc486dd5fb2e8ee96f664d1.ctex"]
 
 [params]
 
