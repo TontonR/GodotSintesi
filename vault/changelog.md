@@ -11,6 +11,9 @@ _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
   antes de `get_center()`/`has_point()`, así que las hitboxes espejadas dejan de llenar el
   debugger y las hojas siguen reaccionando.
 - Docs: `docs/fx.md`; ticket T-0098.
+- Limpieza: la rama de trabajo queda como rama única de consolidación; se borraron 13
+  ramas locales y 6 remotas ya fusionadas, y `main` se actualizó a `origin/main`. El
+  worktree viejo `GodotSintesi-vfx` se guardó en `stash@{0}` antes de retirarlo.
 
 ## 2026-11-26 · `buffy` · Subida automática y borde del manto de nieve (T-0097)
 

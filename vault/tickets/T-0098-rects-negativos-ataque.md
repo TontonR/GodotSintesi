@@ -72,5 +72,6 @@ problema.
 - `docs/fx.md`: documentado que las cajas de ataque bajo un pivote espejado deben seguir
   teniendo tamaño positivo.
 
-No se ejecutó Godot en esta sesión: falta F5 para confirmar que el contador de errores
-queda a cero durante el combate.
+Commit de código: `694e6d2` en `feat/castillo-plantas-3-10`; la limpieza de ramas va en el
+commit de documentación siguiente. No se ejecutó Godot en esta sesión: falta F5 para
+confirmar que el contador de errores queda a cero durante el combate.

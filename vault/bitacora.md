@@ -1094,3 +1094,17 @@ Formato de entrada:
 - Fix: tamaño/radio con `absf` en ambos lados y `Rect2.abs()` defensivo al entrar en
   `_lift_rect()`. Docs: `docs/fx.md`; ticket T-0098, changelog, estado y roadmap. Sin
   Godot en esta sesión: F5 pendiente de repetir el combate y ver el contador a cero.
+
+## 2026-11-26 · `buffy` · Consolidación de ramas y worktree (T-0098)
+
+- El trabajo de VFX, castillo, subida automática y rectángulos queda en
+  `feat/castillo-plantas-3-10`; el commit de código `694e6d2` se subió a `origin` y `main`
+  se actualizó a `origin/main`.
+- Limpieza local: borradas 13 ramas ya fusionadas. Limpieza remota: borradas 6 ramas ya
+  contenidas en `origin/main`. Se conservan `refactor/world-split` y
+  `feat/enemigos-demon-toad-werewolf` porque no están fusionadas, y `origin/feat/vfx-suelo`
+  porque su PR #12 sigue abierto.
+- El worktree `GodotSintesi-vfx` tenía cambios antiguos sin commitear; se guardaron en
+  `stash@{0}` y luego se retiró el worktree. No se descartó nada.
+- Push verificado: `ff2d986..694e6d2` en `origin/feat/castillo-plantas-3-10`; el credential
+  manager necesitó `GCM_INTERACTIVE=Never` porque el modo interactivo se quedaba colgado.

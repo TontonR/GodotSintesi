@@ -69,4 +69,4 @@ Documentación: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md
 `vault/changelog.md`, `vault/estado.md`, `vault/bitacora.md` y `vault/roadmap.md`.
 
 Sin Godot en esta sesión: F5 pendiente de la subida, de la cantidad gradual y del borde del
-manto. Commit en la rama de consolidación `feat/castillo-plantas-3-10` (T-0098).
+manto. Commit en la rama de consolidación `feat/castillo-plantas-3-10` (`694e6d2`, T-0098).
