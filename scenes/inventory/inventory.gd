@@ -84,7 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			use_slot(i, get_parent())
 			return
 
-## Debug: numpad 0 clears everything, 1 gives a random consumable, 2 a random passive
+## Debug: numpad / clears everything, 1 gives a random consumable, 2 a random passive
 func _handle_debug_key(event: InputEvent) -> bool:
 	if not event is InputEventKey:
 		return false
@@ -93,7 +93,7 @@ func _handle_debug_key(event: InputEvent) -> bool:
 		return false
 	var key := key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode
 	match key:
-		KEY_KP_0:
+		KEY_KP_DIVIDE:
 			_clear_debug_items()
 		KEY_KP_1:
 			_give_debug_item(_DEBUG_CONSUMABLES.pick_random())

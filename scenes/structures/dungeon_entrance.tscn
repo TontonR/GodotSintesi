@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/dungeon_entrance.gd" id="1_entrance"]
+[ext_resource type="Texture2D" uid="uid://ckijgshkpursb" path="res://assets/map/structures/tower_test.png" id="2_tower"]
+
+[node name="DungeonEntrance" type="Node2D"]
+script = ExtResource("1_entrance")
+
+[node name="Visual" type="Sprite2D" parent="."]
+z_index = -1
+texture = ExtResource("2_tower")
+position = Vector2(0, -24)
+scale = Vector2(3, 3)

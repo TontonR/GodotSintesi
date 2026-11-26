@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WorldStructure" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/structure.gd" id="1_structure"]
+[ext_resource type="Texture2D" path="res://assets/map/structures/tent_test_1.png" id="2_tent_1"]
+[ext_resource type="Texture2D" path="res://assets/map/structures/tent_test_2.png" id="2_tent_2"]
+[ext_resource type="Texture2D" path="res://assets/map/structures/tent_test_3.png" id="2_tent_3"]
+
+[resource]
+script = ExtResource("1_structure")
+display_name = "Test Tent"
+texture = ExtResource("2_tent_1")
+textures = Array[Texture2D]([ExtResource("2_tent_1"), ExtResource("2_tent_2"), ExtResource("2_tent_3")])
+pixel_size = 32
+size_tiles = 4
+y_offset_px = 3
+flatten_ground = true

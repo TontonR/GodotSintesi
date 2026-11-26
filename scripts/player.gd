@@ -217,18 +217,30 @@ func _try_step_up(direction: float) -> void:
 	var forward := Vector2(direction, 0.0)
 	if not test_move(global_transform, forward):
 		return
-	# 1 px extra: with the feet right at step level the wall still
-	# counts as a collision and two step-ups chained (2 tiles at once).
-	var up := Vector2(0.0, - (step_height + 1.0))
-	if test_move(global_transform, up):
+	# Lowest lift that frees the space ahead, in 1 px steps: a half block (the
+	# ruins' half-height and half-width tiles) needs ~8, a whole tile ~16.
+	# `safe_margin` 0 is what makes it exact: at that height the body rests
+	# right on the surface instead of 1 px above it, so the player never leaves
+	# the floor and consecutive half blocks can be climbed without falling.
+	# Before (2026-11-24) the blind 17 px lift floated over half blocks, and the
+	# first fix lifted the minimum plus 1 px, which made every step airborne.
+	var lift := 0.0
+	for px in range(1, int(step_height) + 2):
+		var probe := global_transform
+		probe.origin.y -= float(px)
+		if not test_move(probe, forward, null, 0.0):
+			lift = float(px)
+			break
+	if lift <= 0.0:
 		return
-	var raised := global_transform
-	raised.origin += up
-	# safe_margin 0: resting right on the step does not count as a collision.
-	if test_move(raised, forward, null, 0.0):
+	# The lift has to fit: a ceiling right above the raised body would push the
+	# head into the ruins' wall, and 2+ tiles are still a jump.
+	var target := global_transform
+	target.origin.y -= lift
+	if test_move(target, Vector2.UP, null, 0.0):
 		return
-	global_position += up
-	_visual_step_offset += step_height
+	global_position += Vector2(0.0, -lift)
+	_visual_step_offset += lift
 
 
 func _input(event: InputEvent) -> void:

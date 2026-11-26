@@ -7,15 +7,16 @@ extends Node
 # Numpad: 7 halves the game speed, 9 doubles it (no cap) and 8 resets it to
 # x1; 4/6 make a quick
 # trip left/right + a bit upward, to avoid getting stuck
-# inside a mountain while testing, and 5 toggles player immortality.
-# Test items (KP0-KP3) remain in `scenes/inventory/inventory.gd`, which
+# inside a mountain while testing, 5 toggles player immortality, 3 jumps to the
+# next structure or dungeon door on the right and 0 to the next biome start.
+# Test items (KP1/KP2) remain in `scenes/inventory/inventory.gd`, which
 # belongs to the inventory.
 # The bottom-left label always shows the speed, immortality, the player
-# position (pixels and tiles) and the seed of the run, so a world can be
-# reproduced from the menu's seed dialog.
+# position (pixels and tiles), the chunk and the seed of the run, so a world can
+# be reproduced from the menu's seed dialog.
 
 const TILE_SIZE := 16
-const HINT := "speed %s · immortal %s · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal"
+const HINT := "speed %s · immortal %s · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal · KP3 next structure/door · KP0 next biome"
 const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 ## Floor for KP7: halving never reaches x0, which would freeze the game.
 const MIN_SPEED := 0.001
@@ -60,6 +61,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key := key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode
 	match key:
+		KEY_KP_0:
+			_teleport_to_biome()
+		KEY_KP_3:
+			_teleport_to_structure()
 		KEY_KP_4:
 			_teleport(-1.0)
 		KEY_KP_5:
@@ -104,14 +109,46 @@ func _toggle_immortal() -> void:
 ## offset from the current one: the player lands `teleport_above_ground_tiles`
 ## above the ground at the destination, so it ever ends up buried in a slope.
 func _teleport(direction: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player == null:
-		player = get_parent().get_node_or_null("player") as Node2D
+	var player := _player_node()
 	if player == null:
 		return
-	var target_x := player.global_position.x + direction * teleport_distance_tiles * TILE_SIZE
+	_travel_to_x(player.global_position.x + direction * teleport_distance_tiles * TILE_SIZE)
+
+
+## KP3: jumps to the next structure whose center is right of the player.
+func _teleport_to_structure() -> void:
+	var player := _player_node()
+	if player == null:
+		return
+	var world := _world_node()
+	if world == null or not world.has_method("next_structure_x"):
+		return
+	var target_x := float(world.call("next_structure_x", player.global_position.x))
+	if target_x >= 0.0:
+		_travel_to_x(target_x)
+
+
+## KP0: jumps to the start of the next biome run right of the player.
+func _teleport_to_biome() -> void:
+	var player := _player_node()
+	if player == null:
+		return
+	var world := _world_node()
+	if world == null or not world.has_method("next_biome_start_x"):
+		return
+	var target_x := float(world.call("next_biome_start_x", player.global_position.x))
+	if target_x >= 0.0:
+		_travel_to_x(target_x)
+
+
+## Moves the player to `target_x`, `teleport_above_ground_tiles` above the
+## destination's ground, and generates the chunks before the landing.
+func _travel_to_x(target_x: float) -> void:
+	var player := _player_node()
+	if player == null:
+		return
 	var target_y := player.global_position.y
-	var world := get_tree().get_first_node_in_group("world_generator")
+	var world := _world_node()
 	if world and world.has_method("ground_y_at"):
 		target_y = float(world.call("ground_y_at", target_x)) - teleport_above_ground_tiles * TILE_SIZE
 	var offset := Vector2(target_x - player.global_position.x, target_y - player.global_position.y)
@@ -123,6 +160,20 @@ func _teleport(direction: float) -> void:
 	# ground for a frame.
 	if world and world.has_method("refresh_chunks"):
 		world.call("refresh_chunks")
+
+
+func _player_node() -> Node2D:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player == null:
+		player = get_parent().get_node_or_null("player") as Node2D
+	return player
+
+
+func _world_node() -> Node:
+	var world := get_tree().get_first_node_in_group("world_generator")
+	if world == null:
+		world = get_parent().get_node_or_null("map")
+	return world
 
 
 func _build_label() -> void:
@@ -163,16 +214,19 @@ func _refresh_info() -> void:
 	_update_label()
 
 
-## `pos px,py · tile tx,ty · seed N`; the seed is the one the generator is using
-## (random when the run was started with an empty seed).
+## `pos px,py · tile tx,ty · chunk c · seed N`; the seed is the one the generator
+## is using (random when the run was started with an empty seed).
 func _info_text() -> String:
 	var seed_value := 0
 	if _world and _world.has_method("current_seed"):
 		seed_value = int(_world.call("current_seed"))
 	if _player == null:
-		return "pos -, - · tile -, - · seed %d" % seed_value
+		return "pos -, - · tile -, - · chunk - · seed %d" % seed_value
 	var pos := _player.global_position
 	var tile := Vector2i(floori(pos.x / TILE_SIZE), floori(pos.y / TILE_SIZE))
-	return "pos %d, %d · tile %d, %d · seed %d" % [
-		roundi(pos.x), roundi(pos.y), tile.x, tile.y, seed_value
+	var chunk := "-"
+	if _world and _world.has_method("chunk_at_world_x"):
+		chunk = str(_world.call("chunk_at_world_x", pos.x))
+	return "pos %d, %d · tile %d, %d · chunk %s · seed %d" % [
+		roundi(pos.x), roundi(pos.y), tile.x, tile.y, chunk, seed_value
 	]

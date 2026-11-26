@@ -223,6 +223,59 @@ Faltan además: precios, si se puede comprar varias veces, qué pasa al salir de
 zona segura y si hay más estructuras aparte de la tienda (la nota solo dice
 "¿Estructuras?").
 
+### 5.1 Estructuras por chunk (decidido 2026-11-18)
+
+**Estado: `parcial`.** El prototipo (`T-0074`) ya coloca estructuras decididas por
+semilla; solo existen los tipos "sprite" (placeholder) y "escena". Tienda real,
+bloques rompibles y mazmorra no existen.
+
+Reglas de aparición:
+
+1. El pipeline de un chunk es: **1 terreno → 2 bioma → 3 decoración → 4 estructuras →
+   5 enemigos y monedas**. Las estructuras son decoración grande y no bloquean el paso
+   (sin colisión en el prototipo).
+2. Cada bioma lista sus estructuras y **una probabilidad por estructura**.
+3. Se hace **una tirada independiente por estructura** y chunk: un chunk puede no tener
+   ninguna o tener todas las del bioma; **nunca dos de la misma**, porque hay una sola
+   tirada por tipo.
+4. Las probabilidades no tienen que sumar 1; son independientes (dos al 50 % pueden salir
+   las dos).
+
+Ejemplo (inventado, sirve de forma, no de contenido):
+
+| Pradera | Prob. | Bosque rojo | Prob. |
+|---|---|---|---|
+| Tienda de campaña | 40 % | Tienda de campaña | 35 % |
+| Tienda ambulante | 15 % | Tienda ambulante | 15 % |
+| Ruinas | 10 % | Ruinas | 15 % |
+| Torre | 5 % | Cueva | 2 % |
+
+Tipos de estructura:
+
+- **Simple / sprite único.** Un sprite y ya (una tienda de campaña). Puede llevar
+  opcionales alrededor: enemigos exclusivos al spawnear o un objeto exclusivo tirado en
+  el suelo desde su propia loot table. Nada complejo.
+  Dificultad: **baja**. Estimación: **~1 h** base (10 min el sistema, luego ~20–30 min por
+  estructura con sus extras).
+- **Generación a bloques / complejo.** Tiles que dan forma a la estructura (ruinas de
+  ladrillo roto). Puede contener **bloques especiales rompibles** que sueltan loot, o
+  combinar con estructuras simples dentro. Dificultad: **media**. Estimación:
+  **4–8 h** (lo único nuevo: tiles rompibles con vida, drop y "ya roto" persistido, más el
+  encaje del patrón con el terreno de ±1 escalón; estampar el patrón es copiar el pipeline
+  del decor).
+- **Explorable.** Pocas y exclusivas: se "entra dentro" y se genera una mazmorra
+  procedural con sus propios enemigos y reglas de generación (p. ej. castillo por pisos).
+  Al final, un **boss** con objetos exclusivos y/u objetos rotos (todo o casi todo el
+  loot). Dificultad: **muy alta**. Estimación: **15–30 h** (generador de interiores 5–8,
+entrada/salida y transición 3–4, reglas y persistencia por piso 3–5, boss y arena 2–3,
+loot exclusivo 2–3, balance y F5 3–5). El rango alto solo si F5 descubre algo estructural
+(guardado por piso, ciclo de vida del segundo mundo).
+
+Orden recomendado: **tipo 2 primero** (desbloquea el arte de estructuras y el 3 se apoya en
+él); el tipo 1 se resuelve casi de paso. Calendario, tickets y reparto hasta el 2026-12-11:
+[`planning-estructuras.md`](planning-estructuras.md).
+
+
 ## 6. Biomas
 
 | Bioma | Rol | Enemigos del diseño | Gimmick | Estado |

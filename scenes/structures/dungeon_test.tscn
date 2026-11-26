@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/dungeon_test.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://scenes/structures/dungeon.tscn" id="2_dungeon"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
+
+[node name="DungeonTest" type="Node2D"]
+script = ExtResource("1_test")
+
+[node name="Dungeon" parent="." instance=ExtResource("2_dungeon")]
+auto_start_seed = 20261124
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="player" parent="." instance=ExtResource("3_player")]

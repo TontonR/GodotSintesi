@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://v3pjdu8hjqan"
-path="res://.godot/imported/mag-gpt.png-509cf5646ec223379b25d5276061445a.ctex"
+uid="uid://c30p83nee4tbb"
+path="res://.godot/imported/tienda_candidata_1.png-8d84d2598fe8a8f76cccf2c28b0361c1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/mag-gpt.png"
-dest_files=["res://.godot/imported/mag-gpt.png-509cf5646ec223379b25d5276061445a.ctex"]
+source_file="res://vault/estructuras/tienda_candidata_1.png"
+dest_files=["res://.godot/imported/tienda_candidata_1.png-8d84d2598fe8a8f76cccf2c28b0361c1.ctex"]
 
 [params]
 

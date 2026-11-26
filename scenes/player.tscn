@@ -441,14 +441,14 @@ script = ExtResource("1_3v2ag")
 [node name="SpritePivot" type="Node2D" parent="." unique_id=1450528728]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpritePivot" unique_id=264867996]
-position = Vector2(21.000002, -28.000004)
-scale = Vector2(0.872, 0.872)
+position = Vector2(18.558, -19.079)
+scale = Vector2(0.73248, 0.73248)
 sprite_frames = SubResource("SpriteFrames_yb26g")
 animation = &"jump"
 frame_progress = 0.112152204
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=163465054]
-offset = Vector2(60, -70)
+offset = Vector2(60, -102)
 limit_smoothed = true
 smoothing_enabled = true
 smoothing_speed = 15.0

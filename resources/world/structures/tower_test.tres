@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="WorldStructure" format=3 uid="uid://vie3yo6kihkv"]
+
+[ext_resource type="Script" uid="uid://dh7ehkt02lonj" path="res://scripts/world/structure.gd" id="1_structure"]
+[ext_resource type="PackedScene" path="res://scenes/structures/dungeon_entrance.tscn" id="2_entrance"]
+
+[resource]
+script = ExtResource("1_structure")
+display_name = "Test Tower"
+scene = ExtResource("2_entrance")
+size_tiles = 3

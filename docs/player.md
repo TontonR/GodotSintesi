@@ -13,9 +13,9 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives` · 2026-1
 - `move_speed` 130, `acceleration` 750, `friction` 1000, `jump_velocity` -340, `gravity` 1400, fall ×1.6, coyote 0.1, buffer 0.12.
 - Keys read raw: A/D, jump Space/W. Shift = run (1.7×, 7 to start + 6/s; before 10 + 10/s, tuned 2026-11-13). The arrows are left only for the UI (passive and inventory pages).
 - Jumping does not cancel the run (2026-11-13): `_is_running` only stops on release, guard, attack or empty stamina, so the 1.7× speed holds in the air, jumping doesn't brake, and landing with Shift held doesn't pay `run_initial_cost` again. The drain keeps running while airborne.
-- Auto step-up of 1 tile (16 px) with `test_move` on the real shape: it tests 1 px ahead, goes up 17 px and continues with X intact (doesn't brake or block the frame). The sprite stays 16 px below and rises interpolated in `step_duration` (0.08 s) so the hop isn't visible. 2+ tiles must be jumped.
+- Auto step-up of 1 tile (16 px) with `test_move` on the real shape: it tests 1 px ahead and rises the **lowest** height that frees the step (≈8 px on the ruins' half blocks, 16 px on whole tiles), using `safe_margin` 0 so the feet land **exactly on the surface**. 2026-11-24: the blind 17 px lift floated over half blocks, and raising the minimum plus 1 px made every step airborne (no `is_on_floor()` to chain the next one); now the body never leaves the floor, so a run of half blocks is climbed in a row. It needs headroom above the raised body and only climbs one tile: 2+ tiles must be jumped. The sprite stays that lift below and rises interpolated in `step_duration` (0.08 s) so the hop isn't visible.
 - Attacking or guarding blocks jump and turn; while attacking it moves at 38%.
-- Camera: `Camera2D` `offset (60,-70)`, physics `process_callback` (0). The follow target is `player.global_position`, never `camera.global_position`: using the camera's previous position makes the smoothing offset permanent. Each frame the global position is rounded to a whole pixel; on a step jump the Y advances up to 6 px/frame while the offset is ≤18 px. Measured over 1,200 frames on seeds 12345, 67890 and 20261029: max offset 10.21 px, max camera movement 6 px/frame and final offset after settling <0.28 px. `_diag.gd` repeats this check per seed.
+- Camera: `Camera2D` `offset (60,-102)`, physics `process_callback` (0). The follow target is `player.global_position`, never `camera.global_position`: using the camera's previous position makes the smoothing offset permanent. Each frame the global position is rounded to a whole pixel; on a step jump the Y advances up to 6 px/frame while the offset is ≤18 px. Measured over 1,200 frames on seeds 12345, 67890 and 20261029: max offset 10.21 px, max camera movement 6 px/frame and final offset after settling <0.28 px. `_diag.gd` repeats this check per seed.
 
 ## Combat
 
@@ -59,9 +59,11 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives` · 2026-1
 
 - `scripts/debug_tools.gd` (`DebugTools`, `debug_tools` node in `game.tscn`): KP7 halves `Engine.time_scale`, KP9 doubles it (no cap) and KP8 resets it to x1 (2026-11-12, T-0053); KP4/KP6 do a fast travel of 64 tiles left/right (`teleport_distance_tiles`) landing `teleport_above_ground_tiles` (4) above the ground at the destination, not 10 tiles above the current position: `WorldGenerator.ground_y_at()` gives the top row there and the destination chunks are refreshed in the same frame, so it never ends inside a slope. `start_speed` (default x1) is the speed at startup and `MIN_SPEED` (0.001) the floor, so halving never reaches x0 and freezes the game. The notice shows the current factor (`x0.5`, `x2`…).
 - **KP5** toggles immortality (`player.toggle_immortal()` → `immortal`): with it active `_apply_damage()` exits without touching health; the push/knockback from `take_damage_from()` still applies. The debug notice shows `immortal yes/no`. It's an independent numpad key; it doesn't use slots 1-3.
+- **KP3** jumps to the next structure to the right (`WorldGenerator.next_structure_x()` searches up to 64 chunk data blocks, generating them) and **KP0** to the start of the next biome run (`next_biome_start_x()`); both land above the ground at the destination with the same `debug_teleport` as KP4/KP6.
 - Travel calls `player.debug_teleport(offset)`: it moves, cuts velocity, clears the visual step offset and resets `_cam_y` so the camera doesn't drag the jump.
 - `_exit_tree` returns `time_scale` to 1.0: leaving the scene doesn't leave the game sped up.
-- The test items (KP0-KP3) live separately, in `scenes/inventory/inventory.gd` (see `docs/items.md`).
+- The notice's second line is `pos · tile · chunk · seed`; `chunk` is `WorldGenerator.chunk_at_world_x()`.
+- The test items (KP1/KP2 give a random consumable/passive, KP_DIVIDE clears all) live separately, in `scenes/inventory/inventory.gd` (see `docs/items.md`).
 
 ## Traps
 

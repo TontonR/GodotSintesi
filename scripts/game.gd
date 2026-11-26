@@ -59,6 +59,13 @@ func _ready() -> void:
 	if world:
 		world.call("refresh_chunks")
 
+	# Saved inside the dungeon: the world spot above is only the return point,
+	# so the floor and the player's place in it are put back by DungeonLayer.
+	var dungeon_state: Dictionary = SaveGame.data.get("dungeon", {})
+	var dungeon_layer := get_node_or_null("DungeonLayer")
+	if not dungeon_state.is_empty() and dungeon_layer:
+		dungeon_layer.call("restore_from_save", dungeon_state)
+
 	var ui := get_node_or_null("UILayer")
 	if ui:
 		ui.visible = true

@@ -19,6 +19,7 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `vault/changelog.md` | Histórico de lo ya hecho (append-only) | Al cerrar un ticket |
 | `vault/ideas.md` | Bóveda de ideas: todo el diseño (hecho, parcial, pendiente y por definir) con sus dudas | Al decidir qué construir o al añadir una idea |
 | `vault/entrega-2.md` | Texto de la entrega 2 (catalán): cambios desde la entrega 1, flujo con IA y los 3 objetivos | Al preparar entregas del proyecto |
+| `vault/planning-estructuras.md` | Super planning de estructuras y tienda: tipos, estimaciones, calendario al 2026-12-11 y reparto Rubén/Jorge | Al planificar o revisar estructuras y tienda |
 | `vault/bitacora.md` | Diario de sesiones y acuerdos entre agentes (append-only) | Al reclamar/entregar trabajo |
 | `vault/documentacion.md` | Mapa de toda la documentación: qué cubre cada `docs/`, qué faltaba y qué huecos quedan | Al crear/mover documentación o cerrar una auditoría |
 | `vault/enemies.md` | Lista de los 8 enemigos: drops con probabilidad, stats, mecánicas y estado, con enlace a su ficha | Al tocar enemigos, su loot o su estado |
@@ -36,6 +37,7 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 |---|---|
 | `buffy` | Buffy, agente de Freebuff |
 | `opencode-jorge` | opencode del compañero (Jorge) |
+| `pixelforge` | PixelForge, agente local de arte (Ollama/ComfyUI) |
 | `humano-ruben` | Ruben, decisiones de diseño y merge |
 
 ## Estados de un ticket

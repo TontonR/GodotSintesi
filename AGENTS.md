@@ -19,6 +19,7 @@ This is the only file always in context. **Do not read anything else "just in ca
 | `docs/player.md` | Movement, combo, guard, health, stamina and keys |
 | `docs/enemies.md` | `EnemyBase`, ghost (TP) and orc; loot |
 | `docs/world.md` | Zone generation, ground, population and layers |
+| `docs/dungeon.md` | Explorable dungeon MVP: scene, seed, floors, exit and save_state |
 | `docs/fx.md` | Combat particles, damage numbers, shake and HUD feedback |
 | `docs/decor.md` | Decor sprites (bushes, trees, rocks): spawn, layering, tinting and biome colors |
 | `docs/biomes.md` | Biome `.tres`, runs, transitions, tints and ambient |
