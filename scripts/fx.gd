@@ -66,14 +66,14 @@ func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
 
 
-## Enemy death: layered blood burst (dark jet with trail, splatter, mist and
-## sparks) in the enemy's `blood_color`, plus camera hit.
+## Enemy death: the Sprite Fusion blood spray (strands, drops, mist, drips and
+## stains that dry on the ground) in the enemy's `blood_color`, a light spark
+## burst and the camera hit.
 func enemy_death(world_position: Vector2, blood_color: Color = BLOOD_COLOR) -> void:
-	var mist := blood_color
-	mist.a = 0.55
-	_burst(world_position, blood_color.darkened(0.4), 32, 300.0, 0.95, 1.7, 680.0, 7.0, 180.0, true)
-	_burst(world_position, blood_color, 26, 190.0, 0.7, 1.4, 380.0, 10.0)
-	_burst(world_position, mist, 14, 55.0, 0.55, 2.6, 40.0, 6.0)
+	var spray := SpriteFusionBlood.new()
+	spray.blood_color = blood_color
+	add_child(spray)
+	spray.play(world_position, -1 if randf() < 0.5 else 1)
 	_burst(world_position, blood_color.lightened(0.75), 8, 120.0, 0.3, 0.7, 260.0, 4.0)
 	shake(1.4, 0.12)
 

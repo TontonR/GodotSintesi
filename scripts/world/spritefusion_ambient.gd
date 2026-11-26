@@ -13,8 +13,11 @@ extends Node2D
 # recycles around the visible world rect. Walking therefore scrolls them instead
 # of dragging them along, and they land on `WorldGenerator.ground_y_at()`.
 # The recipes' ground layers are also ported: leaf litter and the snow drift.
+# The ground is read per TILE, so the drift and the resting drops follow the
+# block steps (never a diagonal), and each particle is spawned with the biome
+# share of its own tile as probability: the weather thins out through the
+# terrain transition instead of fading the whole layer's opacity (T-0094).
 
-const FADE_SECONDS := 0.5
 const LEAF_DRIFT := 12.0
 const LEAF_COUNT := 80
 const LITTER_SPACING := 18.0
@@ -22,10 +25,15 @@ const SNOW_WIND := 14.0
 const SNOW_COUNTS := [260, 150, 30]
 const SNOW_FALL := [26.0, 52.0, 86.0]
 const SNOW_SWAY := [8.0, 16.0, 30.0]
-## World pixels between two ground samples, refreshed every 0.1 s.
-const GROUND_STEP := 8.0
+## World pixels between two ground samples: one tile, so the weather steps
+## with the blocks and never draws a diagonal.
+const GROUND_STEP := 16.0
 const GROUND_REFRESH_SECONDS := 0.1
 const OFFSCREEN_MARGIN := 80.0
+## Attempts to find a tile whose biome share passes the spawn roll.
+const SPAWN_TRIES := 16
+## Seconds a hidden particle waits before rolling for a new tile.
+const RETRY_SECONDS := 0.25
 
 ## 3 leaf silhouettes from falling-leaves.ts; L/B/S/D/R/T are palette slots.
 const LEAF_SHAPES: Array = [
@@ -64,6 +72,7 @@ const DRIFT_HEX := ["e9f0ff", "c3cff0", "8e9ccc"]
 
 class Leaf:
 	var sprite: Sprite2D
+	var wait := 0.0
 	var x0 := 0.0
 	var x := 0.0
 	var y := 0.0
@@ -81,6 +90,7 @@ class Leaf:
 
 class Flake:
 	var sprite: Sprite2D
+	var wait := 0.0
 	var x := 0.0
 	var y := 0.0
 	var vy := 0.0
@@ -97,11 +107,10 @@ var _view := Vector2.ZERO
 var _area := Rect2()
 var _rng := RandomNumberGenerator.new()
 var _time := 0.0
-var _active := false
-var _strength := -1.0
-var _tween: Tween
 var _world: Node
 var _ground_world := PackedFloat32Array()
+## Biome share (0..1) of every sampled tile, used as spawn probability.
+var _share_world := PackedFloat32Array()
 var _ground_origin := 0.0
 var _ground_timer := 0.0
 
@@ -120,40 +129,23 @@ func _ready() -> void:
 	_view = get_viewport_rect().size
 	_refresh_area()
 	_rng.seed = rng_seed
-	modulate.a = 0.0
-	visible = false
-	set_process(false)
+	modulate.a = 1.0
 	if effect == "leaves":
 		_build_leaves()
 	else:
 		_build_snow()
+	_scatter()
+	visible = true
+	set_process(true)
 
 
-## Sets the effect opacity from the biome blend (0 = off, 1 = full).
-func set_strength(strength: float) -> void:
-	strength = clampf(strength, 0.0, 1.0)
-	if is_equal_approx(strength, _strength):
-		return
-	_strength = strength
-	var enabled := strength > 0.01
-	if enabled and not _active:
-		_scatter()
-		visible = true
-		set_process(true)
-	_active = enabled
-	if _tween:
-		_tween.kill()
-	_tween = create_tween()
-	_tween.tween_property(self, "modulate:a", strength, FADE_SECONDS)
-	if not enabled:
-		_tween.tween_callback(func() -> void:
-			set_process(false)
-			visible = false)
-
-
-## Turns the effect fully on or off; kept for callers that only toggle.
+## Turns the effect fully on or off. There is no fade: the layer is never
+## translucent, the per-tile spawn probability is what thins the weather out.
 func set_active(enabled: bool) -> void:
-	set_strength(1.0 if enabled else 0.0)
+	visible = enabled
+	set_process(enabled)
+	if enabled:
+		_scatter()
 
 
 func _process(delta: float) -> void:
@@ -193,36 +185,65 @@ func _refresh_area() -> void:
 	_area = Rect2(top_left, bottom_right - top_left)
 
 
-## Samples the terrain under the visible columns, in world pixels.
+## Samples the terrain and the biome share of every visible tile column, one
+## sample per TILE. It refreshes every 0.1 s, so ground and share snap to blocks.
 func _refresh_ground() -> void:
 	_refresh_area()
-	var origin_x := _area.position.x - 48.0
-	var end_x := _area.end.x + 48.0
-	var columns := int(ceil((end_x - origin_x) / GROUND_STEP)) + 1
+	var first := floori((_area.position.x - 48.0) / GROUND_STEP)
+	var last := ceili((_area.end.x + 48.0) / GROUND_STEP)
+	var columns := int(last - first) + 1
 	if _ground_world.size() != columns:
 		_ground_world.resize(columns)
+		_share_world.resize(columns)
 	if _world == null:
 		_world = get_tree().get_first_node_in_group("world_generator")
 	if _world == null or not _world.has_method("ground_y_at"):
 		# Dungeon or no generator: the bottom of the view acts as the ground.
 		_ground_world.fill(_area.end.y)
+		_share_world.fill(1.0)
 	else:
-		_ground_origin = origin_x
+		_ground_origin = float(first) * GROUND_STEP
 		for i in columns:
-			var world_x := origin_x + i * GROUND_STEP
-			_ground_world[i] = float(_world.call("ground_y_at", world_x))
+			var center_x := _ground_origin + (float(i) + 0.5) * GROUND_STEP
+			_ground_world[i] = float(_world.call("ground_y_at", center_x))
+			_share_world[i] = _biome_share(center_x)
 	_place_litter()
 	queue_redraw()
 
 
-## Ground Y in world pixels under `world_x`, interpolated between samples.
+## Ground Y of the tile that contains `world_x`. Stepped on purpose: the
+## weather sits on blocks, so two heights never meet in a diagonal.
 func _ground_at(world_x: float) -> float:
 	var last := _ground_world.size() - 1
-	if last <= 0:
+	if last < 0:
 		return _area.end.y
-	var t := clampf((world_x - _ground_origin) / GROUND_STEP, 0.0, float(last))
-	var i := mini(int(t), last - 1)
-	return lerpf(_ground_world[i], _ground_world[i + 1], t - float(i))
+	var i := clampi(floori((world_x - _ground_origin) / GROUND_STEP), 0, last)
+	return _ground_world[i]
+
+
+## Biome share (0..1) of the tile that contains `world_x`.
+func _share_at(world_x: float) -> float:
+	var last := _share_world.size() - 1
+	if last < 0:
+		return 1.0
+	var i := clampi(floori((world_x - _ground_origin) / GROUND_STEP), 0, last)
+	return _share_world[i]
+
+
+func _biome_share(world_x: float) -> float:
+	if not _world.has_method("ambient_share_at_world_x"):
+		return 1.0
+	return clampf(float(_world.call("ambient_share_at_world_x", world_x, effect)), 0.0, 1.0)
+
+
+## Random X inside the range whose tile share passes its own die roll, so the
+## density of the weather follows the transition block by block.
+func _pick_spawn_x(min_x: float, max_x: float) -> float:
+	for i in SPAWN_TRIES:
+		var x := _rng.randf_range(min_x, max_x)
+		if _rng.randf() <= _share_at(x):
+			return x
+	return INF
 
 
 func _out_of_area(x: float, y: float) -> bool:
@@ -262,9 +283,14 @@ func _place_litter() -> void:
 	for i in _litter.size():
 		var slot := start_slot + i
 		var x := float(slot) * LITTER_SPACING + _hash(slot, 1) * LITTER_SPACING
+		var sprite := _litter[i]
+		# Litter only exists where this biome's share wins its own die roll.
+		if _hash(slot, 7) > _share_at(x):
+			sprite.visible = false
+			continue
+		sprite.visible = true
 		var shape := int(_hash(slot, 2) * float(LEAF_SHAPES.size())) % LEAF_SHAPES.size()
 		var palette := int(_hash(slot, 4) * float(LEAF_PALETTES.size())) % LEAF_PALETTES.size()
-		var sprite := _litter[i]
 		sprite.texture = _leaf_textures[shape * LEAF_PALETTES.size() + palette]
 		sprite.position = Vector2(x, _resting_y(x, sprite.texture.get_height()))
 		sprite.rotation = (_hash(slot, 5) - 0.5) * 0.6
@@ -285,7 +311,13 @@ func _leaf_colors(palette: Array) -> Dictionary:
 
 
 func _reset_leaf(leaf: Leaf, top: bool) -> void:
-	var x := _rng.randf_range(_area.position.x - 40.0, _area.end.x)
+	var x := _pick_spawn_x(_area.position.x - 40.0, _area.end.x)
+	if is_inf(x):
+		leaf.wait = RETRY_SECONDS
+		leaf.sprite.visible = false
+		return
+	leaf.wait = 0.0
+	leaf.sprite.visible = true
 	leaf.x0 = x
 	if top:
 		leaf.y = _area.position.y - _rng.randf_range(0.0, 40.0)
@@ -311,6 +343,11 @@ func _reset_leaf(leaf: Leaf, top: bool) -> void:
 
 func _update_leaves(delta: float) -> void:
 	for leaf in _leaves:
+		if leaf.wait > 0.0:
+			leaf.wait -= delta
+			if leaf.wait <= 0.0:
+				_reset_leaf(leaf, true)
+			continue
 		if _out_of_area(leaf.x, leaf.y):
 			_reset_leaf(leaf, true)
 			continue
@@ -381,7 +418,13 @@ func _build_snow() -> void:
 
 
 func _reset_flake(flake: Flake, top: bool) -> void:
-	var x := _rng.randf_range(_area.position.x - 60.0, _area.end.x)
+	var x := _pick_spawn_x(_area.position.x - 60.0, _area.end.x)
+	if is_inf(x):
+		flake.wait = RETRY_SECONDS
+		flake.sprite.visible = false
+		return
+	flake.wait = 0.0
+	flake.sprite.visible = true
 	flake.x = x
 	if top:
 		flake.y = _area.position.y - _rng.randf_range(0.0, 40.0)
@@ -408,6 +451,11 @@ func _update_snow(delta: float) -> void:
 	_time += delta
 	var wind := SNOW_WIND + 16.0 * _noise(_time * 0.3, 5)
 	for flake in _flakes:
+		if flake.wait > 0.0:
+			flake.wait -= delta
+			if flake.wait <= 0.0:
+				_reset_flake(flake, true)
+			continue
 		if _out_of_area(flake.x, flake.y):
 			_reset_flake(flake, true)
 			continue
@@ -446,23 +494,25 @@ func _resting_flake_y(flake: Flake) -> float:
 	return _ground_at(flake.x) - flake.sprite.texture.get_height() * _px * 0.5
 
 
-## Snow drift along the ground, from the recipe's per-column noise.
+## Snow drift along the ground, from the recipe's per-tile noise. Each tile
+## draws a full-width band of 1–3 px, so two heights always meet in a block
+## step (like Minecraft's snow layers), never in a diagonal.
 func _draw() -> void:
-	if effect != "snow" or _strength <= 0.01 or _drift_colors.is_empty():
+	if effect != "snow" or _drift_colors.is_empty() or _share_world.is_empty():
 		return
-	var left := floorf(_area.position.x - 16.0)
-	var right := _area.end.x + 16.0
-	var x := left
-	while x <= right:
-		var ground := _ground_at(x)
-		var height := 1 + roundi(1.6 + _noise(x * 0.09, 11) * 1.4 + _noise(x * 0.31, 12) * 0.6)
+	var first := floori((_area.position.x - GROUND_STEP) / GROUND_STEP)
+	var last := floori((_area.end.x + GROUND_STEP) / GROUND_STEP)
+	for t in range(first, last + 1):
+		var column_x := float(t) * GROUND_STEP
+		var center_x := column_x + GROUND_STEP * 0.5
+		if _hash(t, 21) > _share_at(center_x):
+			continue
+		var ground := _ground_at(center_x)
+		var height := 1 + roundi(1.6 + _noise(float(t) * 1.44, 11) * 1.4 + _noise(float(t) * 4.96, 12) * 0.6)
 		for r in height:
 			var color: Color = _drift_colors[0] if r == height - 1 else _drift_colors[1]
-			draw_rect(Rect2(x, ground - 1.0 - r, 1.0, 1.0), color)
-		draw_rect(Rect2(x, ground, 1.0, 1.0), _drift_colors[2])
-		if _hash(floori(x), 13) < 0.3:
-			draw_rect(Rect2(x, ground + 1.0, 1.0, 1.0), _drift_colors[2])
-		x += 1.0
+			draw_rect(Rect2(column_x, ground - 1.0 - r, GROUND_STEP, 1.0), color)
+		draw_rect(Rect2(column_x, ground, GROUND_STEP, 1.0), _drift_colors[2])
 
 
 # --- Texture building -------------------------------------------------------

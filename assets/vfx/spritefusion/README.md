@@ -8,7 +8,8 @@ ports them to Godot.
 |---|---|---|
 | Falling Leaves | https://www.spritefusion.com/pixel-art-vfx/falling-leaves | https://www.spritefusion.com/downloads/pixel-art-vfx/falling-leaves.zip |
 | Snow | https://www.spritefusion.com/pixel-art-vfx/snow | https://www.spritefusion.com/downloads/pixel-art-vfx/snow.zip |
+| Blood | https://www.spritefusion.com/pixel-art-vfx/blood | https://www.spritefusion.com/downloads/pixel-art-vfx/blood.zip |
 
 License: MIT, free for commercial use (see `LICENSE`). The MCP/API channel was
-not used: both ZIPs are public downloads and the library endpoints need an
+not used: the ZIPs are public downloads and the library endpoints need an
 account token.
