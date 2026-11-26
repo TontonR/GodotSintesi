@@ -1108,3 +1108,18 @@ Formato de entrada:
   `stash@{0}` y luego se retiró el worktree. No se descartó nada.
 - Push verificado: `ff2d986..694e6d2` en `origin/feat/castillo-plantas-3-10`; el credential
   manager necesitó `GCM_INTERACTIVE=Never` porque el modo interactivo se quedaba colgado.
+
+## 2026-11-26 · `buffy` · Subida automática: primera colisión y apoyo en destino (T-0097)
+
+- Ruben: la subida automática funciona cada vez menos; probar con KP5, KP9 y D mantenida.
+- El arnés headless reprodujo el fallo a 1×: la comprobación de apoyo miraba bajo la
+  posición actual, donde el suelo ya no está al elevar el cuerpo. A 16×/32× el sondeo
+  además veía el segundo escalón de una escalera y rechazaba el primero.
+- `scripts/player.gd:_try_step_up()` ahora busca la primera colisión del recorrido, sube
+  solo ese escalón, comprueba hueco y apoyo en el destino, anula `velocity.y` y, si el
+  contacto cae en el límite del frame, espera al siguiente para no quedar nivelado con
+  la cara del escalón.
+- Verificación: 60/60 casos sintéticos (8/16 px, anchos/estrechos/encadenados, 1×–64×) y
+  `game.tscn` real (semilla 12345) avanzando 898/2.739/3.328/3.579 px a 1×/16×/32×/64×
+  sin errores de física. Arneses temporales retirados; F5 visual pendiente.
+- Docs: `docs/player.md`, `docs/world.md`; ticket T-0097, changelog y estado.

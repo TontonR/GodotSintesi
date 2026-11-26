@@ -2,6 +2,19 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-26 · `buffy` · Subida automática estable a cualquier velocidad (T-0097)
+
+- `_try_step_up()` localiza la primera colisión dentro del avance del frame y sube solo
+  ese escalón; comprueba hueco y apoyo de 2 px en el destino y anula la velocidad Y para
+  no quedar 1 px por debajo del borde siguiente.
+- Si el contacto cae justo al final del avance, no consume la subida: `move_and_slide`
+  frena contra la cara y el frame siguiente reintenta. Esto corrige los atascos con KP9
+  alto y escalones consecutivos.
+- Verificado headless: 60/60 casos sintéticos de 8/16 px (anchos, estrechos y encadenados)
+  a 1×–64×, y el `game.tscn` real avanzando a 1×/16×/32×/64× sin errores. F5 visual
+  pendiente.
+- Docs: `docs/player.md`, `docs/world.md`; ticket T-0097.
+
 ## 2026-11-26 · `buffy` · Rectángulos espejados y errores de `_lift_rect` (T-0098)
 
 - `EnemyBase._collision_rect()` y `Player._shape_rect()` normalizan el tamaño/radio con

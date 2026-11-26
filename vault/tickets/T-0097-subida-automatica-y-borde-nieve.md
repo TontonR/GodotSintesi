@@ -44,8 +44,8 @@ llano.
 
 ## Criterios de aceptación
 
-- [ ] Un escalón de un tile se sube de forma consistente andando y corriendo.
-- [ ] Los medios bloques siguen subiéndose con la altura mínima y sin quedar en el aire.
+- [x] Un escalón de un tile se sube de forma consistente andando y corriendo (headless 2026-11-26).
+- [x] Los medios bloques siguen subiéndose con la altura mínima y sin quedar en el aire (headless 2026-11-26).
 - [ ] Un saliente o un borde sin suelo no eleva al jugador.
 - [ ] La cantidad de hojas y nieve varía gradualmente al cruzar un bioma.
 - [ ] El manto de nieve no se corta en mitad de una llanura: el borde se prolonga hasta
@@ -68,5 +68,32 @@ altura de suelo y se detiene en cuanto la altura cambia, suba o baje.
 Documentación: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md`,
 `vault/changelog.md`, `vault/estado.md`, `vault/bitacora.md` y `vault/roadmap.md`.
 
-Sin Godot en esta sesión: F5 pendiente de la subida, de la cantidad gradual y del borde del
-manto. Commit en la rama de consolidación `feat/castillo-plantas-3-10` (`694e6d2`, T-0098).
+Godot 4.7.2 headless en esta sesión: la subida se verificó con un arnés temporal y el
+`game.tscn` real; F5 visual pendiente de la cantidad gradual y del borde del manto.
+Commit base en la rama de consolidación `feat/castillo-plantas-3-10` (`694e6d2`, T-0098).
+
+## Ronda 2026-11-26 · primera colisión y apoyo en el destino
+
+Ruben reportó que la subida automática «cada vez funciona menos» al probar con KP5, KP9 y
+D mantenida. El problema se reprodujo en headless incluso a 1×:
+
+- La comprobación de apoyo se hacía en la posición actual, pero al elevar el cuerpo el
+  suelo antiguo ya no está debajo de los pies; por eso rechazaba escalones de 8/16 px.
+- A 16×/32× el sondeo recorría todo el frame y veía el segundo escalón de una escalera,
+  rechazando el primero.
+- Si el primer contacto caía justo al final del avance, la subida dejaba al cuerpo a la
+  altura del borde pero sin estar encima; `is_on_floor()` quedaba falso y se atascaba.
+- Conservar la velocidad vertical de gravedad tras la subida lo hundía ~1 px en la cara
+  siguiente a time scales altos.
+
+El fix en `scripts/player.gd:_try_step_up()` busca la primera colisión del recorrido,
+sube solo ese escalón, comprueba hueco y apoyo de 2 px en el destino, anula `velocity.y` y
+se abstiene cuando el contacto cae en el límite del frame para reintentar al siguiente.
+
+Verificación headless (Godot 4.7.2, arneses temporales retirados):
+
+- 60/60 casos: 8/16 px, escalones anchos y estrechos, dos escalones seguidos, andando y
+  corriendo a 1×, 4×, 16×, 32× y 64×.
+- `game.tscn` real, semilla 12345, inmortal y D mantenida: avance de 898 px a 1×, 2.739 px
+  a 16×, 3.328 px a 32× y 3.579 px a 64×, sin errores de física en el log.
+- F5 visual pendiente; el caso 64× es una prueba de estrés, no la velocidad de juego.

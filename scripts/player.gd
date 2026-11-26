@@ -215,12 +215,26 @@ func _try_step_up(direction: float) -> void:
 	if not is_on_floor() or direction == 0.0:
 		return
 	# Look far enough ahead for the distance the body will cover this frame.
-	# A fixed 1 px probe missed steps when running and left the player glued
-	# to the face for one or more frames, which read as an intermittent fail.
+	# Use the *first* collision, not the whole frame: at high time scales the
+	# frame reaches two steps and a single probe saw the second one, rejecting
+	# the first. Climbing one step per frame lets the next frame handle the next.
 	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
-	var forward := Vector2(direction * lookahead, 0.0)
-	if not test_move(global_transform, forward):
+	var forward_distance := 0.0
+	for px in range(1, int(ceil(lookahead)) + 1):
+		if test_move(global_transform, Vector2(direction * float(px), 0.0)):
+			# +1 px so the raised body actually overlaps the step for the
+			# support probe instead of only touching its vertical face.
+			forward_distance = minf(float(px) + 1.0, lookahead)
+			break
+	if forward_distance <= 0.0:
 		return
+	# If the first contact is at the very end of the frame's travel, lifting now
+	# would leave the body level with the step edge but not on top of it. Let
+	# `move_and_slide` stop against the face and step next frame, when the probe
+	# has room to overlap the surface.
+	if forward_distance >= lookahead - 0.001:
+		return
+	var forward := Vector2(direction * forward_distance, 0.0)
 	# Lowest lift that frees the space ahead, in 1 px steps: a half block (the
 	# ruins' half-height and half-width tiles) needs ~8, a whole tile ~16.
 	# `safe_margin` 0 is what makes it exact: at that height the body rests
@@ -232,23 +246,31 @@ func _try_step_up(direction: float) -> void:
 	for px in range(1, int(step_height) + 2):
 		var probe := global_transform
 		probe.origin.y -= float(px)
-		if not test_move(probe, forward, null, 0.0):
-			lift = float(px)
-			break
+		# `probe` has to clear the whole horizontal motion, not just the
+		# step face: at high speed the body advances several pixels in a frame.
+		if test_move(probe, forward, null, 0.0):
+			continue
+		# The raised body must have headroom both now and at the destination.
+		var destination := probe
+		destination.origin.x += forward.x
+		if test_move(probe, Vector2.UP, null, 0.0):
+			continue
+		if test_move(destination, Vector2.UP, null, 0.0):
+			continue
+		# Check support where the body will land. Checking under the current
+		# position rejected every real step: once raised, the old floor is no
+		# longer below the feet, even though the step ahead is solid.
+		if not test_move(destination, Vector2.DOWN * 2.0, null, 0.0):
+			continue
+		lift = float(px)
+		break
 	if lift <= 0.0:
 		return
-	# The lift has to fit: a ceiling right above the raised body would push the
-	# head into the ruins' wall, and 2+ tiles are still a jump.
-	var target := global_transform
-	target.origin.y -= lift
-	if test_move(target, Vector2.UP, null, 0.0):
-		return
-	# Only commit the lift if the raised body lands on something. Without this
-	# check an overhang or a missing floor could raise the player into the air
-	# and then drop it, which looked like a broken step.
-	if not test_move(target, Vector2.DOWN * 2.0, null, 0.0):
-		return
 	global_position += Vector2(0.0, -lift)
+	# The body is resting on the new surface now. Keeping the gravity velocity
+	# accumulated this frame would move it back into the step in `move_and_slide`
+	# (noticeable at high time scales), leaving it 1 px below the next edge.
+	velocity.y = 0.0
 	_visual_step_offset += lift
 
 

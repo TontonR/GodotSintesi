@@ -1,6 +1,6 @@
 # World — procedural chunk generation
 
-_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · branch `test/fusion-structure`_
+_2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-13 · 2026-11-18 · 2026-11-19 · 2026-11-24 · 2026-11-26 · branch `test/fusion-structure`_
 
 ## What it does and where it lives
 
@@ -158,7 +158,8 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 
 ## Auto step-up
 
-- Player and ground enemies climb 1 tile (16 px) at once when reaching a step, using `test_move` on the body's real shape. The player probes the distance it will cover this frame (`max(|vx| * delta, 2) + 1`) and requires 2 px of support below the raised feet; enemies keep their own lookahead (`|vx| * delta`, min 2 px) + 1, because the wolf reaches 300 px/s. They rise before colliding (without losing X) and don't chain two step-ups.
+- Player and ground enemies climb 1 tile (16 px) at once when reaching a step, using `test_move` on the body's real shape. The player finds the first collision inside the frame's travel, lifts only that step, checks headroom at the start/destination and 2 px of support at the destination, and clears Y velocity after the lift. If contact lands exactly at the frame boundary it waits for the next frame instead of leaving the body level with the edge. Enemies keep their own lookahead (`|vx| * delta`, min 2 px) + 1, because the wolf reaches 300 px/s. They rise before colliding (without losing X) and don't chain two step-ups.
+- Verified 2026-11-26: 60/60 headless cases with 8/16 px steps, wide/narrow ledges and chained steps at 1×–64×, plus the real `game.tscn` at 1×/16×/32×/64×. F5 visual pending.
 - 2+ tiles are not climbed: you have to jump. It doesn't apply to flying enemies.
 - With the enemy increase, a mature chunk puts in 16: if performance drops, lower `enemy_ramp_max_multiplier` or `enemy_counts_per_chunk`.
 
