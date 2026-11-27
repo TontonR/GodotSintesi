@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
 | Sistema | world / save |
 | Creado | 2026-11-25 |
-| Actualizado | 2026-11-25 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0079, T-0087, T-0093, [`planning-estructuras.md`](../planning-estructuras.md) |
 
 ## Problema

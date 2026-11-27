@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | fx / ui / world |
 | Creado | 2026-11-26 |
-| Actualizado | 2026-11-26 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0093, T-0094 |
 
 ## Problema

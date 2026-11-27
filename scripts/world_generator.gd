@@ -181,7 +181,8 @@ const AMBIENT_SHARE_CUTOFF := 0.8
 @export var structures: Array[WorldStructure] = [
 	preload("res://resources/world/structures/tower_test.tres"),
 	preload("res://resources/world/structures/ruin_test.tres"),
-	preload("res://resources/world/structures/tent_test.tres")
+	preload("res://resources/world/structures/tent_test.tres"),
+	preload("res://resources/world/structures/shop_test.tres")
 ]
 ## Minimum gap in tiles between two structures of the same chunk.
 @export var structure_min_gap_tiles: int = 3
@@ -1596,6 +1597,14 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 		var node: Node2D
 		if structure.scene != null:
 			node = structure.scene.instantiate() as Node2D
+			# A scene structure scales like a sprite when it declares `pixel_size`
+			# (the castle gate: 64 px of art over `size_tiles` 16 px tiles). The
+			# scene keeps its anchor at the bottom center, so it never leaves the
+			# ground while it grows.
+			if node != null and structure.pixel_size > 0:
+				node.scale = Vector2.ONE * (
+					float(structure.size_tiles * TILE_SIZE) / float(structure.pixel_size)
+				)
 		elif not structure.pattern.is_empty():
 			var tint: Color = entry["tint"]
 			var tile_set := _structure_tileset(structure.tileset, tint)

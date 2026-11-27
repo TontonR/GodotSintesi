@@ -47,7 +47,8 @@ Punto de encuentro entre **Buffy (Freebuff)** y el **opencode del compañero (Jo
 | `abierto` | Nadie lo está tocando. Se puede reclamar. |
 | `en-curso` | Tiene dueño y ficheros declarados. **No se toca sin acordarlo en la bitácora.** |
 | `bloqueado` | Espera una decisión, otra rama o un ticket previo. |
-| `revision` | Código hecho; falta verificar en el editor o revisar por el otro agente. |
+| `revision` | Código hecho; falta commit/PR, verificar en el editor o revisar por el otro agente. |
+| `resuelto` | Código fusionado en `main` y documentado, pero sin F5. Vive en la sección **Resueltos** del roadmap; al verificar en F5, `cerrado`. |
 | `cerrado` | Tiene `## Resultado`, su línea en el changelog y el roadmap actualizado. |
 
 ## Flujo de trabajo

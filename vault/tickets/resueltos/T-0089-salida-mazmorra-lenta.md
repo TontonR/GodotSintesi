@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-24 |
-| Actualizado | 2026-11-24 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0079, T-0087, T-0088 |
 
 ## Problema

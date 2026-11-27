@@ -7,4 +7,7 @@
 script = ExtResource("1_structure")
 display_name = "Test Tower"
 scene = ExtResource("2_entrance")
-size_tiles = 4
+pixel_size = 64
+size_tiles = 8
+y_offset_px = 2
+flatten_ground = true

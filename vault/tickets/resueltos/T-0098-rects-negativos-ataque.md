@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `fix` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
 | Sistema | enemies / player / fx |
 | Creado | 2026-11-26 |
-| Actualizado | 2026-11-26 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0096, T-0097 |
 
 ## Problema

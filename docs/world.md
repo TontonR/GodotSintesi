@@ -82,9 +82,10 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 ## Structures (2026-11-18 · 2026-11-24, T-0074/T-0088)
 
 - `scripts/world/structure.gd` (`class_name WorldStructure`, `Resource`): `display_name`,
-  optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width,
-  0 = texture width), `size_tiles`, `margin_tiles`, `z_index`, `min_distance_tiles`
-  and `biomes` (by `Biome.display_name`; empty = all).
+  optional `scene` (used instead of the texture), `texture`, `pixel_size` (native width of
+  the art; 0 = the texture's own width, and no scaling at all for a scene), `size_tiles`,
+  `margin_tiles`, `z_index` (default `-1`), `min_distance_tiles` and `biomes` (by
+  `Biome.display_name`; empty = all).
 - Three kinds of structure, decided by the resource's fields: `scene` (a full scene), `texture` (one sprite) or **`pattern`** (type 2, blocks). The pattern is one string per row from top to bottom, `#` = block; any other character is empty. It repeats horizontally to a random length between `min_length_tiles` and `max_length_tiles` (20–50 for the ruin), and each column rests on **its own** ground row, so the wall follows the terrain.
 - **TileSet, not code** (2026-11-19): the pattern is painted by `scripts/world/block_structure.gd`, a `TileMapLayer` using `WorldStructure.tileset` (`resources/world/structures/ruin_tileset.tres`), so the atlas, the tiles and their collision are edited in the TileSet editor like the ground. Two sources: `0` dark atlas = background wall
   (tiles 6/7, no physics; its 0-2 polygons are reserved for reuse), `1` light atlas =
@@ -92,7 +93,7 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
   reserved for the front layer (kept in the atlas for reuse).
 - **Collision only on the ground** (2026-11-24): source `1` paints just the bottom pattern row; the big stone 8 gets a full-square polygon, not just the two lower-half slabs. Two rules, both at ground level so nothing floats: a bottom wall block becomes a stone with `front_chance` (0.25), and an empty bottom column with wall above gets a support beam with `support_chance` (0.6). No collidable block is ever above the first row, so all of them can be jumped over/onto. They are one node in front of the wall (moved to child index 0 so decor draws over it), `z_index` 0; the collision is the TileSet's physics layer (8 and 11 full squares, 9 and 12 lower halves), not a `StaticBody2D` built by code.
 - Atlases: `assets/map/structures/ruin_tiles.png` (light) and `ruin_tiles_dark.png` (same layout, darker), 8×2 tiles of 16 px, matte: near-black bricks with teal grout (6 bright, 7 dim) and chunky slate blocks in big/long/small × light/dark, plus the mossy set. 14-15 are the mossy brick tops. `scripts/world/block_structure.gd`: `WALL_TILES` (bricks) with a hash of the cell so a reload picks the same, `TOP_TILES` when the tile above is empty, `STONE_TILES`/`SUPPORT_TILES` for the solid ground layer (the only user of `cell_tiles`; `-1` means "pick from the wall pool"). To retune the look or the hitboxes, edit `ruin_tileset.tres` in Godot: the dark wall tiles 6/7 have no physics, the light source has polygons on 8 (full), 9 (lower half), 11 (full) and 12 (lower half).
-- The test resources live in `resources/world/structures/`: `tower_test.tres` (`Test Tower`) is a **scene** structure: it instantiates `scenes/structures/dungeon_entrance.tscn`, the dungeon door, with a 64×64 castle gate (4 tiles) in `tower_test.png`, `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`) and `tent_test.tres` (`Test Tent`) is a 32 px tent sprite that lists `textures` (three tent colors) so each placement picks one at random. The generator preloads all three in `WorldGenerator.structures`. Pattern resources require a `tileset`; `_structure_allowed()` drops a kind that has a pattern but no TileSet instead of instancing a tilemap without physics.
+- The test resources live in `resources/world/structures/`: `tower_test.tres` (`Test Tower`) is a **scene** structure: it instantiates `scenes/structures/dungeon_entrance.tscn`, the dungeon door, with a 64×64 castle gate in `tower_test.png` drawn at ×2 (`size_tiles` 8 / `pixel_size` 64 → 128 px, 8 tiles), `ruin_test.tres` is an 8×5 block pattern (`Test Ruin`) `tent_test.tres` (`Test Tent`) is a 32 px tent sprite that lists `textures` (three tent colors) so each placement picks one at random, and `shop_test.tres` (`Test Shop`) instantiates the merchant stall at 96 px (`scenes/shop/merchant.tscn`, see [`shop.md`](shop.md)). The generator preloads all four in `WorldGenerator.structures`. Pattern resources require a `tileset`; `_structure_allowed()` drops a kind that has a pattern but no TileSet instead of instancing a tilemap without physics.
 - **The biome decides**: `structure_kinds` (the structures' `display_name`) and
   `structure_chances` (same order). **Each structure rolls on its own per chunk**, so a
   chunk can get none, some or all of them, but never two of the same; a chance of 0 or an
@@ -108,10 +109,19 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 - Each one is a chunk child, no parallax. Sprites keep the texture scale from
   `size_tiles`/`pixel_size` and sit on the **lowest** column of their span (on a hill they
   are partly hidden behind `Solid`, but never float); patterns use each column's ground.
-  Stable id `s:x:y:index` (node metadata) but **not persisted**:
-  nothing destroys structures, so a reload rebuilds the same ones from the seed.
+  Stable id `s:x:y:index` (node metadata) but **not persisted**: nothing destroys
+  structures, so a reload rebuilds the same ones from the seed.
+- **Scene structures scale too** (2026-11-27, T-0099): a `scene` structure with
+  `pixel_size` set takes the same `size_tiles * 16 / pixel_size` factor a sprite takes, and
+  the scene keeps its bottom-center anchor. The castle gate went from 4 to 8 tiles
+  (64 px of art → 128 px on screen) together with `flatten_ground` and 2 px of sink.
+- **Draw order** (2026-11-27, T-0099): `z_index` defaults to `-1`, so a sprite structure
+  paints behind `Solid`/`GrassPaint` and behind the player. The player is a sibling
+  **before** `map` in `game.tscn`, so at `z_index` 0 anything living inside the chunk is
+  drawn over him; a negative value is the only reliable way to keep tents and the gate in
+  the background. `Solid` then covers the sunk base, which is what `y_offset_px` is for.
 - **Variant textures** (2026-11-24): a sprite structure may list `textures`; `_roll_structures()` stores the pick in the entry and the sprite uses it. The pick is a hash of the global tile, not the chunk RNG, so it stays the same on a rebuild and does not shift enemies, decor or crates. Tents: meadow and red forest, 0.2 each, 4 tiles wide (the 32 px art drawn at ×2, base on the ground row).
-- **Footprint** (2026-11-24): `flatten_ground` levels the span (±`half`) to its **highest** column before the chunk is painted, so a slope never buries the sprite; `_level_entities()` moves the enemies and coins inside up with the new surface. `y_offset_px` sinks the sprite (positive = into the ground, applied to its anchor) so the base overlaps the grass line; the tent uses 3 px.
+- **Footprint** (2026-11-24): `flatten_ground` levels the span (±`half`) to its **highest** column before the chunk is painted, so a slope never buries the sprite; `_level_entities()` moves the enemies and coins inside up with the new surface. `y_offset_px` sinks the sprite (positive = into the ground, applied to its anchor) so the base overlaps the grass line; the tent uses 6 px (T-0099).
 - To add one: create the `.tres`, add it to `WorldGenerator.structures`, name it in a
   biome's `structure_kinds`.
 

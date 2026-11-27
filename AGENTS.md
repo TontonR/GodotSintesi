@@ -25,6 +25,7 @@ This is the only file always in context. **Do not read anything else "just in ca
 | `docs/biomes.md` | Biome `.tres`, runs, transitions, tints and ambient |
 | `docs/loot.md` | Coin/item rolls, per-enemy tables, pickup physics and saved spawn ids |
 | `docs/passives.md` | `PlayerPassives`, hooks and the 35-passive catalog |
+| `docs/shop.md` | Merchant stalls: deterministic stock, prices, buy window and what is missing |
 | `docs/historial.md` | Bugs already fixed (drops, loot); read only if something smells like that |
 | `documentation.md` | Historical (396 lines). Archaeology only; do not use as a source |
 | `vault/README.md` | Plan and channel with the partner's opencode: tickets, status and log |

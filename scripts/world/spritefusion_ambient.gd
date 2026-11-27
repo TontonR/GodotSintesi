@@ -296,6 +296,49 @@ func _process(delta: float) -> void:
 
 
 ## Fills the visible area on activation, so the weather never starts as drops.
+## Shakes leaves off a bush the player walks through (T-0103). Reuses the pool:
+## the idle leaves are re-seeded on the spot and kicked outwards, so no node is
+## created and the weather keeps its count. Does nothing with the effect off.
+func burst_leaves(world_position: Vector2, color: Color, amount: int, force: float = 95.0) -> void:
+	if not visible or _leaves.is_empty() or amount <= 0:
+		return
+	var spawned := 0
+	for leaf in _leaves:
+		if spawned >= amount:
+			break
+		if leaf.kicked or leaf.wait > 0.0 or leaf.sprite == null or not leaf.sprite.visible:
+			continue
+		_seed_leaf_at(leaf, world_position, color, force)
+		spawned += 1
+
+
+## One pooled leaf thrown from `world_position`, instead of the random scatter
+## `_reset_leaf` does. Same fields, same physics as a kicked leaf.
+func _seed_leaf_at(leaf, world_position: Vector2, color: Color, force: float) -> void:
+	leaf.wait = 0.0
+	leaf.top = false
+	leaf.rest = -1.0
+	leaf.kicked = true
+	leaf.reaction_cd = LEAF_REACTION_COOLDOWN
+	leaf.x = world_position.x + _rng.randf_range(-8.0, 8.0)
+	leaf.x0 = leaf.x
+	leaf.y = world_position.y + _rng.randf_range(-8.0, 8.0)
+	leaf.vx = _rng.randf_range(-1.0, 1.0) * force
+	leaf.vy = -_rng.randf_range(0.5, 1.1) * force
+	leaf.spin = _rng.randf_range(-7.0, 7.0)
+	leaf.angle = _rng.randf_range(-0.5, 0.5)
+	leaf.flip = _rng.randf_range(0.0, TAU)
+	leaf.near = true
+	leaf.color = color
+	leaf.palette = -1
+	leaf.sprite.texture = _leaf_color_texture(color, leaf.shape)
+	leaf.sprite.modulate.a = 1.0
+	leaf.sprite.visible = true
+	leaf.sprite.z_index = 1
+	_set_dissolve(leaf.material, 0.0)
+	_place_leaf(leaf)
+
+
 func _scatter() -> void:
 	_ground_timer = 0.0
 	if _ground_world.is_empty():

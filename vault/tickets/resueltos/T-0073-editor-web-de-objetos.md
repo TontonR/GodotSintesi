@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `opencode-jorge` |
 | Sistema | docs / vault |
 | Creado | 2026-11-17 |
-| Actualizado | 2026-11-17 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0065, T-0072 |
 
 ## Problema

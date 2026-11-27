@@ -1,17 +1,17 @@
 # Estado del proyecto
 
-_Actualizado 2026-11-26 por `buffy`_
+_Actualizado 2026-11-27 por `buffy`_
 
 ## Ahora mismo
 
 | Campo | Valor |
 |---|---|
-| Rama | `feat/castillo-plantas-3-10` (rama única de consolidación): castillo de 3 a 10 plantas que sube al pisar la puerta (T-0095), apilada sobre `feat/vfx-suelo-transicion-sangre` (VFX: suelo por tile, transición por densidad, rondas 4–6 y sangre radial T-0094, PR #12 abierto); `feat/vfx-ambiente-spritefusion` ya está fusionado (PR #11) |
+| Rama | `feat/estructuras-detras-castillo-grande`, sacada de `main` con los PR #12 y #13 ya fusionados (`origin/main` en `69814d9`); `refactor/world-split` sigue sin PR |
 | Árbol | `revision` tras T-0080, T-0095, T-0097 y T-0098 (hall de 64×22 con suelo escalonado continuo, sin diagonales y con autotiling en las caras superiores): VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad, hojas de ronda 9 sin oleadas ni montones tras TP, y sangre de la receta `blood` en golpes y muerte), castillo de 3–10 plantas que asciende al pisar la puerta (T-0095), hojas interactivas con disolución por píxeles y ajustes VFX (T-0096) y ronda 12: hojas verdes y escasas en el prado (densidad 0,2), ruido de nieve 3–7 px, ambiente con corte al 80 % y puerta del castillo con sprite de 64×64; ronda 13: subida automática con alcance real y apoyo, partículas con cantidad gradual y manto de nieve prolongado por terreno llano hasta un cambio de altura; ronda 14: rectángulos de ataque normalizados para que `flip_pivot` no genere `Rect2` negativos. F5 pendiente |
 | Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
 | Siguiente paso | F5 de Ruben (hall T-0095 de 64×22 con suelo escalonado, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana, frontera hojas/nieve, hojas verdes del prado (ronda 12), subida automática y borde del manto (T-0097, ronda 13; subida revalidada en headless 2026-11-26), rectángulos de ataque (T-0098, ronda 14), sangre al golpe y en la muerte, subida de plantas T-0095 y hojas interactivas T-0096); PR #12 (`feat/vfx-suelo-transicion-sangre`) y PR de `feat/castillo-plantas-3-10` (base: la rama de VFX); después T-0081 (boss) y T-0078 (tienda) |
 | Ramas | Limpieza 2026-11-26: 13 ramas locales y 6 remotas ya fusionadas borradas; `main` actualizado a `origin/main`. Se conservan `refactor/world-split` y `feat/enemigos-demon-toad-werewolf` porque no están fusionadas, y el worktree viejo `GodotSintesi-vfx` quedó guardado en `stash@{0}` antes de retirarlo. |
-| Bloqueos | Tienda sin decisiones de moneda/precios/surtido (`vault/ideas.md` §7) |
+| Bloqueos | Ninguno: moneda, precios y surtido de la tienda ya están decididos e implementados (T-0078); quedan la zona segura y el stock persistente (T-0101) |
 
 ## Foco por agente
 
@@ -28,6 +28,9 @@ _Actualizado 2026-11-26 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-27 | T-0078 | Tienda jugable: puesto de mercader con sprite nuevo, stock determinista de 3 consumibles, precios por stats y ventana de compra con F; zona segura y persistencia del stock pendientes, F5 pendiente |
+| 2026-11-27 | T-0100 | Puerta `Leave` detrás del spawn, pads negros con F y prompt enter/exit, y 3 cajas + 6 monedas + 3 arqueros por planta; F5 pendiente |
+| 2026-11-27 | T-0099 | Estructuras de sprite detrás del jugador (`z_index` −1), tienda hundida 6 px y castillo de 4 a 8 tiles escalando los `scene`; F5 pendiente |
 | 2026-11-26 | T-0097 (ronda 2) | Subida automática: primera colisión, apoyo en destino y velocidad vertical a cero; 60/60 sintético 1×–64× y `game.tscn` 1×/16×/32×/64× sin errores; F5 visual pendiente |
 | 2026-11-26 | T-0098 | Rectángulos de ataque normalizados bajo `flip_pivot`; `_lift_rect()` sanea `Rect2` negativos y deja de inundar el debugger; F5 pendiente |
 | 2026-11-26 | T-0097 | Subida automática con alcance por velocidad y comprobación de apoyo; partículas con cantidad gradual y manto de nieve extendido por terreno llano hasta el primer cambio de altura; F5 pendiente |

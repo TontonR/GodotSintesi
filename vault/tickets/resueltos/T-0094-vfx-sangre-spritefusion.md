@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |

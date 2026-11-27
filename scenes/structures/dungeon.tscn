@@ -30,7 +30,20 @@ shape = SubResource("RectangleShape2D_exit")
 
 [node name="Visual" type="Polygon2D" parent="Exit"]
 z_index = -1
-color = Color(1, 0.85, 0.3, 0.85)
+color = Color(0, 0, 0, 1)
+polygon = PackedVector2Array(-16, -64, 16, -64, 16, 0, -16, 0)
+
+[node name="Leave" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Leave"]
+position = Vector2(0, -32)
+shape = SubResource("RectangleShape2D_exit")
+
+[node name="Visual" type="Polygon2D" parent="Leave"]
+z_index = -1
+color = Color(0, 0, 0, 1)
 polygon = PackedVector2Array(-16, -64, 16, -64, 16, 0, -16, 0)
 
 [node name="spawn_point" type="Marker2D" parent="."]

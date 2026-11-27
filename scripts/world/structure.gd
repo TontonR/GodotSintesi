@@ -13,14 +13,17 @@ extends Resource
 ## Extra textures for that sprite: one is picked per placement (stable for the
 ## seed), so several colors of the same structure need a single resource.
 @export var textures: Array[Texture2D] = []
-## Native width of `texture` in px (0 = the texture's own width). Only used to scale.
+## Native width of the art in px (0 = the texture's own width, and no scaling at all
+## for a scene). `size_tiles * 16 / pixel_size` is the sprite or scene scale.
 @export var pixel_size: int = 0
 ## Width the structure occupies, in tiles: spacing, margins and enemy avoidance.
 @export var size_tiles: int = 4
 ## Minimum distance from the chunk edges, in tiles.
 @export var margin_tiles: int = 2
-## Draw order inside the chunk; negative goes behind the grass row.
-@export var z_index: int = 0
+## Draw order inside the chunk; negative goes behind the grass row and the player.
+## Sprite structures (tents, the castle gate) want `-1`: the grass hides their base
+## and the player walks in front instead of behind the art.
+@export var z_index: int = -1
 ## Distance from tile 0 before it can appear.
 @export var min_distance_tiles: int = 0
 ## Vertical offset of the sprite in px; positive sinks it into the ground.

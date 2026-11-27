@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `cerrado` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
 | Sistema | `inventory` |
 | Creado | 2026-11-17 |
-| Actualizado | 2026-11-17 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0051, T-0052, T-0053 |
 
 ## Problema

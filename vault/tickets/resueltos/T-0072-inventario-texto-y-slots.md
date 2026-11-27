@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `cambio` |
 | Prioridad | `media` |
 | Dueño | `opencode-jorge` |
 | Sistema | inventory / docs |
 | Creado | 2026-11-17 |
-| Actualizado | 2026-11-17 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0069, T-0070, T-0071 |
 
 ## Problema

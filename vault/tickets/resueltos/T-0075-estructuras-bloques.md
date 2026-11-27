@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `humano-ruben` |
 | Sistema | world |
 | Creado | 2026-11-19 |
-| Actualizado | 2026-11-19 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0074, [`planning-estructuras.md`](../planning-estructuras.md) |
 
 ## Problema

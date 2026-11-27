@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `opencode-jorge` |
 | Sistema | world |
 | Rama | `feat/bloques-rompibles` |
 | Creado | 2026-11-24 |
-| Actualizado | 2026-11-24 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0074, T-0075, [`planning-estructuras.md`](../planning-estructuras.md) |
 
 ## Problema

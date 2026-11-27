@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WorldStructure" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/structure.gd" id="1_structure"]
+[ext_resource type="PackedScene" path="res://scenes/shop/merchant.tscn" id="2_merchant"]
+
+[resource]
+script = ExtResource("1_structure")
+display_name = "Test Shop"
+scene = ExtResource("2_merchant")
+pixel_size = 96
+size_tiles = 6
+y_offset_px = 4
+flatten_ground = true

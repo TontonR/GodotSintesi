@@ -2,13 +2,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `buffy` |
 | Sistema | world |
 | Creado | 2026-11-17 |
-| Actualizado | 2026-11-18 |
+| Actualizado | 2026-11-27 |
 | Relacionado | T-0057 (decor), T-0048 (semilla), T-0066 (biomas), T-0013 (mundo) |
 
 ## Problema

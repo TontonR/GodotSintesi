@@ -7,18 +7,29 @@ extends Node2D
 ## only handles lifecycle, spawn and exit. It is independent from the chunked
 ## world and never instantiates nor keeps the player.
 
-## Emitted once per `start()` when the player steps on the top floor exit.
+## Emitted once per `start()` when the player uses the door back to the world
+## (always, and also on the top floor, where the stairs become that door).
 signal exit_requested
-## Emitted after the exit door climbs one floor; the hall is already rebuilt and
-## the caller must move the player to the new `spawn_point`.
+## Emitted after the stairs climb one floor; the hall is already rebuilt and the
+## caller must move the player to the new `spawn_point`.
 signal floor_changed(floor: int)
 
 const LayoutScript := preload("res://scripts/structures/castle/castle_layout.gd")
 const TilesScript := preload("res://scripts/structures/castle/castle_tiles.gd")
 const PainterScript := preload("res://scripts/structures/castle/castle_painter.gd")
+const CRATE_SCENE := preload("res://scenes/world/breakable_block.tscn")
+const COIN_SCENE := preload("res://scenes/collectables/coin.tscn")
+const ARCHER_SCENE := preload("res://scenes/enemies/archer.tscn")
 const TILE_SIZE := 32
 ## Player origin is ~27 px above the feet; 30 leaves a 3 px fall.
 const SPAWN_ABOVE_PX := 30.0
+## Radius (px) around a pad where the prompt shows and F works.
+const INTERACT_RADIUS_PX := 56.0
+## Tiles between the spawn and the door back to the world.
+const LEAVE_GAP_TILES := 4
+## F is ignored for this long after a rebuild: the press that entered must not
+## leave again, and climbing must never chain two floors by accident.
+const INTERACT_LOCK_SECONDS := 0.35
 
 @export_group("Layout")
 ## Hall width in tiles (64 x 32 = 2048 px).
@@ -28,6 +39,14 @@ const SPAWN_ABOVE_PX := 30.0
 @export var min_floors: int = 3
 ## Hard cap on floors (cascade stops here); the castle has 3..10 floors.
 @export var max_floors: int = 10
+
+@export_group("Contents")
+## Loose crates on the floor of every floor (0 = none).
+@export var crates_per_floor: int = 3
+## Coins lying on the floor; they fall and settle on their own (0 = none).
+@export var coins_per_floor: int = 6
+## Archers wandering the hall (0 = none).
+@export var archers_per_floor: int = 3
 
 @export_group("Test")
 ## Seed used when the scene is opened on its own; 0 = wait for `start()`.
@@ -43,6 +62,11 @@ var _wall_layer: TileMapLayer
 var _back_layer: TileMapLayer
 var _decor_layer: TileMapLayer
 var _exit_area: Area2D
+var _leave_area: Area2D
+var _contents: Node2D
+var _prompt: Label
+var _prompt_layer: CanvasLayer
+var _interact_lock := 0.0
 var _dungeon_seed: int = 0
 var _floor_index: int = 0
 var _exit_emitted := false
@@ -55,6 +79,7 @@ var _layout: Dictionary = {}
 func _ready() -> void:
 	_bind_nodes()
 	_build_void_backdrop()
+	_build_prompt()
 	if auto_start_seed != 0:
 		start(auto_start_seed, auto_start_floor)
 
@@ -68,6 +93,7 @@ func start(seed: int, floor: int = 0) -> void:
 		return
 	_dungeon_seed = seed
 	_floor_index = clampi(floor, 0, floor_count() - 1)
+	_interact_lock = INTERACT_LOCK_SECONDS
 	_generate()
 
 
@@ -139,6 +165,8 @@ func _generate() -> void:
 	)
 	_place_spawn(_layout["spawn_cell"])
 	_place_exit(_layout["exit_cell"])
+	_place_leave(_leave_cell())
+	_spawn_contents()
 
 
 ## Opaque polygon behind Back. The color is the atlas' own purple, not a custom
@@ -179,24 +207,216 @@ func _place_exit(cell: Vector2i) -> void:
 	)
 
 
-func _on_exit_body_entered(body: Node2D) -> void:
-	if _exit_emitted or not body.is_in_group("player"):
+func _place_leave(cell: Vector2i) -> void:
+	if _leave_area == null:
+		return
+	_leave_area.position = Vector2(
+		cell.x * TILE_SIZE + TILE_SIZE / 2.0,
+		cell.y * TILE_SIZE
+	)
+
+
+## Cell of the door back to the world: a few tiles behind the spawn, on the top
+## of its own floor block, so the stepped floor never buries it.
+func _leave_cell() -> Vector2i:
+	var spawn: Vector2i = _layout["spawn_cell"]
+	var tile_x := maxi(spawn.x - LEAVE_GAP_TILES, 2)
+	return Vector2i(tile_x, _ground_top(tile_x))
+
+
+## Ground row of the first block covering `tile_x` (-1 when outside the floor).
+func _ground_top(tile_x: int) -> int:
+	for block in _layout.get("blocks", []):
+		var rect: Rect2i = block["rect"]
+		if tile_x >= rect.position.x and tile_x < rect.end.x:
+			return rect.position.y
+	return -1
+
+
+## F uses the closest pad: the one at the end of the hall goes up a floor (and
+## back to the world on the top floor), the one behind the spawn leaves.
+func _unhandled_input(event: InputEvent) -> void:
+	if _interact_lock > 0.0 or not event.is_action_pressed("interact"):
+		return
+	var pad := _nearest_pad()
+	if pad == null:
+		return
+	if pad == _leave_area:
+		_request_leave()
+	else:
+		_step_forward()
+
+
+func _process(delta: float) -> void:
+	_interact_lock = maxf(_interact_lock - delta, 0.0)
+	_update_prompt()
+
+
+## Pad inside `INTERACT_RADIUS_PX`, the closest one, or null.
+func _nearest_pad() -> Area2D:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player == null:
+		return null
+	var best: Area2D = null
+	var best_distance := INTERACT_RADIUS_PX
+	for pad: Area2D in [_exit_area, _leave_area]:
+		if pad == null or not is_instance_valid(pad):
+			continue
+		var distance := pad.global_position.distance_to(player.global_position)
+		if distance <= best_distance:
+			best_distance = distance
+			best = pad
+	return best
+
+
+## "F: enter" over the stairs, "F: exit" over the door behind the spawn.
+func _update_prompt() -> void:
+	if _prompt == null:
+		return
+	var pad := _nearest_pad()
+	if pad == null:
+		_prompt.visible = false
+		return
+	# On the top floor the stairs are the way out, so they say "exit" too.
+	var leaves := pad == _leave_area or _floor_index + 1 >= floor_count()
+	_prompt.text = "F: exit" if leaves else "F: enter"
+	var screen := get_viewport().get_canvas_transform() * pad.global_position
+	_prompt.position = Vector2(roundf(screen.x - 40.0), roundf(screen.y - 78.0))
+	_prompt.visible = true
+
+
+## The door behind the spawn returns to the world; the caller rebuilds it.
+func _request_leave() -> void:
+	if _exit_emitted:
 		return
 	_exit_emitted = true
-	# Deferred so the rebuild (and the caller's teleport) happens outside the
-	# Area2D physics query flush.
-	_step_forward.call_deferred()
+	exit_requested.emit.call_deferred()
 
 
 ## The exit pad is the staircase: rebuild the hall one floor up and let the
 ## caller move the player. Only the top floor returns to the world.
 func _step_forward() -> void:
+	if _exit_emitted:
+		return
+	_exit_emitted = true
 	if _floor_index + 1 < floor_count():
 		start(_dungeon_seed, _floor_index + 1)
 		# Already outside the physics flush: the caller can move the player now.
 		floor_changed.emit(_floor_index)
 		return
 	exit_requested.emit.call_deferred()
+
+
+## Loose crates, coins and archers of the floor, rolled from the same seed and
+## floor so a reload paints the same hall. Everything lives under `Contents`,
+## which is emptied on every `start()`.
+func _spawn_contents() -> void:
+	_clear_contents()
+	if _contents == null:
+		_contents = Node2D.new()
+		_contents.name = "Contents"
+		add_child(_contents)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _dungeon_seed ^ (_floor_index * 7919) ^ 0x00C0FFEE
+	var spawn: Vector2i = _layout["spawn_cell"]
+	var exit_cell: Vector2i = _layout["exit_cell"]
+	var leave_x := _leave_cell().x
+	var width: int = _layout["width"]
+	var free: Array[int] = []
+	for tile_x in range(4, width - 4):
+		# Keep the spawn, the door behind it and the stairs clear.
+		if absi(tile_x - spawn.x) <= 3 or absi(tile_x - exit_cell.x) <= 2:
+			continue
+		if tile_x == leave_x or _ground_top(tile_x) < 0:
+			continue
+		free.append(tile_x)
+	if free.is_empty():
+		return
+	for _i in crates_per_floor:
+		_add_crate(free[rng.randi_range(0, free.size() - 1)])
+	for _i in coins_per_floor:
+		_add_coin(free[rng.randi_range(0, free.size() - 1)])
+	for _i in archers_per_floor:
+		_add_archer(free[rng.randi_range(0, free.size() - 1)])
+
+
+func _clear_contents() -> void:
+	if _contents == null:
+		return
+	for child in _contents.get_children():
+		child.queue_free()
+
+
+## Dungeon cells are 32 px and the crate art is 16, so it goes in at ×2: same
+## size as the castle atlas, and it breaks and drops like the ruins' crates.
+func _add_crate(tile_x: int) -> void:
+	var crate := CRATE_SCENE.instantiate() as BreakableBlock
+	if crate == null:
+		return
+	crate.scale = Vector2(2, 2)
+	crate.position = Vector2(tile_x * TILE_SIZE, _ground_top(tile_x) * TILE_SIZE)
+	_contents.add_child(crate)
+
+
+func _add_coin(tile_x: int) -> void:
+	var coin := COIN_SCENE.instantiate() as Node2D
+	if coin == null:
+		return
+	# Born above the floor: the coin finds the ground with its own raycast.
+	coin.position = Vector2(
+		tile_x * TILE_SIZE + TILE_SIZE * 0.5,
+		_ground_top(tile_x) * TILE_SIZE - 40.0
+	)
+	_contents.add_child(coin)
+
+
+func _add_archer(tile_x: int) -> void:
+	var archer := ARCHER_SCENE.instantiate() as Node2D
+	if archer == null:
+		return
+	var offset: float = archer.get("spawn_y_offset")
+	archer.position = Vector2(
+		tile_x * TILE_SIZE + TILE_SIZE * 0.5,
+		_ground_top(tile_x) * TILE_SIZE
+	) - Vector2(0.0, _body_bottom(archer) + offset)
+	_contents.add_child(archer)
+
+
+## Distance from the origin to the body collider base. Same shortcut as the
+## world generator (only direct RectangleShape2D colliders), kept here so the
+## dungeon never depends on `WorldGenerator`.
+func _body_bottom(node: Node2D) -> float:
+	var bottom := 0.0
+	for child in node.get_children():
+		var shape_node := child as CollisionShape2D
+		if shape_node and shape_node.shape is RectangleShape2D:
+			var rect := shape_node.shape as RectangleShape2D
+			var local_bottom: float = shape_node.position.y + rect.size.y * 0.5 * shape_node.scale.y
+			bottom = maxf(bottom, local_bottom * node.scale.y)
+	return bottom
+
+
+## "F: enter" / "F: exit" in its own CanvasLayer, like the world door prompt:
+## above the HUD (1) and the particles (5), below the menus (10/20/30).
+func _build_prompt() -> void:
+	if _prompt != null:
+		return
+	_prompt_layer = CanvasLayer.new()
+	_prompt_layer.name = "PadPrompt"
+	_prompt_layer.layer = 8
+	add_child(_prompt_layer)
+	_prompt = Label.new()
+	_prompt.text = "F: enter"
+	_prompt.visible = false
+	_prompt.size = Vector2(80, 20)
+	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_prompt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_prompt.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_prompt.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
+	_prompt.add_theme_constant_override("shadow_offset_x", 1)
+	_prompt.add_theme_constant_override("shadow_offset_y", 1)
+	_prompt.add_theme_font_size_override("font_size", 10)
+	_prompt_layer.add_child(_prompt)
 
 
 func _bind_nodes() -> void:
@@ -207,6 +427,7 @@ func _bind_nodes() -> void:
 	_back_layer = get_node_or_null("Back") as TileMapLayer
 	_decor_layer = get_node_or_null("Decor") as TileMapLayer
 	_exit_area = get_node_or_null("Exit") as Area2D
+	_leave_area = get_node_or_null("Leave") as Area2D
 	spawn_point = get_node_or_null("spawn_point") as Marker2D
 	if (
 		_platform_layer == null
@@ -217,5 +438,4 @@ func _bind_nodes() -> void:
 	):
 		push_error("DungeonGenerator: the scene needs Platforms, Walls, Back, Exit and spawn_point.")
 		return
-	_exit_area.body_entered.connect(_on_exit_body_entered)
 	_bound = true

@@ -58,6 +58,7 @@ Formato de entrada:
 - Afectados: `docs/items.md`. Ticket T-0017 (en curso). Sin commit.
 
 ## 2026-11-03 · `buffy` · Errores de parse al abrir el proyecto (T-0017)
+
 - `day_night.gd`: una edición previa había comido dos saltos de línea, así que `func _night_factor_at` y `func _apply_state` quedaron pegados a la línea anterior (el primero dentro de un `##`, de ahí el `cycle` duplicado). Rehechas las dos líneas.
 - `_apply_state`: el local `is_night` pasa a `show_night` para no tapar el método público `is_night()`.
 - `NightBonusPassive._refresh()`: `bool(_night.call("is_night"))` con `is_instance_valid`, en vez de encadenar `and` sobre Variant.
@@ -299,38 +300,45 @@ Formato de entrada:
 - `docs/ui.md` actualizado. F5 pendiente.
 
 ## 2026-11-09 · `opencode-jorge` · Lobo menos agresivo (T-0035)
+
 - Petición de Ruben: el lobo corre demasiado y no deja pelear.
 - `scripts/enemies/werewolf.gd`: `charge_speed` 150, `charge_distance_scale` 0.4, `attack_recovery` 1.5 y recuperación quieto (sin persecución).
 - F5 pendiente; ticket en `revision`.
 
 ## 2026-11-09 · `opencode-jorge` · Slime y lobo en el bosque (T-0036)
+
 - Petición de Ruben: slime en el bosque y menos lobos.
 - `resources/world/biomes/bosque_rojo.tres`: `enemy_counts` [1 lobo, 1 sapo, 1 demonio, 2 slimes].
 - F5 pendiente; ticket en `revision`.
 
 ## 2026-11-09 · `opencode-jorge` · Loot por enemigo (T-0037)
+
 - Ruben rechaza los presets compartidos: quiere tabla y probabilidad por objeto en cada enemigo.
 - `LootEntry` nuevo y `item_drops` en `EnemyBase`; fuera `PRESET_POOLS`, `loot_preset`, `item_drop_chance` y `rare_loot_weight`.
 - Cuatro escenas migradas (ogro, lobo, rana y slime). F5 pendiente; ticket en `revision`.
 
 ## 2026-11-09 · `opencode-jorge` · Corrección del loot (T-0037)
+
 - Ruben aclara: una sola tirada para todos los coleccionables (probabilidades sumadas) y monedas siempre aparte, pudiendo soltar varias.
 - `_drop_loot` separado en `_drop_coins` y `_drop_item`; elección del objeto ponderada por `drop_chance`.
 - Docs y ticket actualizados. F5 pendiente.
 
 ## 2026-11-10 · `opencode-jorge` · Fuera skills (T-0038)
+
 - Ruben quita las skills: el inventario queda con 3 consumibles y teclas 1/2/3.
 - `Skills.gd` borrado; `SKILL_SLOTS`, `SkillsFlow` y `use_slot_4/5` fuera.
 - `docs/items.md` pasa a catálogo completo (9 consumibles + 35 pasivas), todas en `falta textura`.
 - F5 pendiente; ticket en `revision`.
 
 ## 2026-11-12 · `opencode-jorge` · Tope de pendiente en el terreno (T-0049)
+
 - Reclamo T-0049 (petición de Ruben): paredes de 4 tiles en la seed 775344231 (tile 28227).
 - `max_step_tiles` (1) en `world_generator.gd`: cada columna a Â±1 fila de la anterior, cadena cacheada por chunk; la columna compartida se hereda del vecino para no romper la costura. Fuera `_terrain_at_tile()`.
 - Verificado con script headless desechable (seed 775344231, 28k tiles): escalón máximo 1 y costuras exactas; `game.tscn` arranca sin errores.
 - `docs/world.md` y `changelog.md` actualizados. F5 pendiente; ticket en `revision`.
 
 ## 2026-11-12 · `buffy` · Terreno redondeado en vez de escalera (T-0050)
+
 - Petición de `humano-ruben`: el tope de ±1 de T-0049 convirtió las laderas en una escalera
   antinatural (diagonales de un escalón por columna, tramos de hasta 51 columnas). Que se
   vean redondeadas, con paredes de 2 tiles y de 3 muy de vez en cuando.
@@ -346,6 +354,7 @@ Formato de entrada:
 - `docs/world.md`, `changelog.md` y `estado.md` actualizados. F5 pendiente; ticket en `revision`.
 
 ## 2026-11-12 · `buffy` · Elevaciones exageradas del bosque rojo (T-0051)
+
 - `humano-ruben`: prefiere la generación anterior a la de T-0050 (demasiados suelos de 2
   tiles) y siguen saliendo elevaciones exageradas en algunos sitios.
 - `scripts/world_generator.gd` revertido a T-0049 (`git checkout`): vuelve el tope de Â±1,
@@ -362,6 +371,7 @@ Formato de entrada:
   aplana". F5 pendiente; ticket en `revision`.
 
 ## 2026-11-12 · `buffy` · Barrera izquierda como montaña y debug de velocidad (T-0052, T-0053)
+
 - `humano-ruben`: a la izquierda se veía el vacío; quería una gran montaña, escalable un
   poco al principio pero imposible de subir, para camuflar la barrera. Y el numpad
   cambia: KP7 mitad, KP9 doble sin límite y KP8 reset.
@@ -383,6 +393,7 @@ Formato de entrada:
   actualizados. F5 pendiente; ambos tickets en `revision`.
 
 ## 2026-11-12 · `buffy` · Viaje rápido sobre el terreno (T-0054)
+
 - `humano-ruben`: KP4/KP6 no deben subir un número fijo de tiles respecto a la posición
   actual, sino dejar al jugador un poco por encima del terreno del destino.
 - `scripts/world_generator.gd`: `ground_y_at(world_x)` devuelve la fila superior de la
@@ -398,6 +409,7 @@ Formato de entrada:
   ticket en `revision`.
 
 ## 2026-11-12 · `buffy` · Monedas arriba a la izquierda con icono (T-0055)
+
 - `humano-ruben`: el contador de monedas sale debajo de las stats; lo quiere arriba a la
   izquierda con un icono de moneda.
 - Causa: `UILayer/coins` tenía `anchors_preset = 15` (pantalla completa) con el texto
@@ -414,6 +426,7 @@ Formato de entrada:
   `revision`.
 
 ## 2026-11-12 · `buffy` · Auditoría de documentación (T-0056)
+
 - `humano-ruben` pide actualizar toda la documentación y crear en el vault lo que falte
   (enemigos, drops, biomas, items…).
 - Auditoría contra código: sets de enemigos por bioma (`pradera` 3 orcos + 3 slimes + 1
@@ -431,6 +444,7 @@ Formato de entrada:
   falta F5. Ticket en `revision`.
 
 ## 2026-11-12 · `buffy` · Decoraciones de bioma (T-0057) y ramas por feature
+
 - `humano-ruben` pide que cada feature vaya en su propia rama y se integre con PR, y que
   el mundo spawee `assets/map/decor` (2 arbustos, 2 árboles, 2 rocas) detrás del suelo, sin
   colisión, escala ni parallax, con el verde tintado por bioma.
@@ -584,18 +598,21 @@ Formato de entrada:
   el drenaje sigue en el aire. Docs de player al día. Sin Godot; F5 pendiente.
 
 ## 2026-11-13 · `opencode-jorge` · Iconos de consumibles y tiers de pociones (T-0069)
+
 - Ruben confirma el mapa de sprites y pide aplicar el rework: vida/estamina en 20/50/100.
 - 9 `.tres` de consumibles actualizados (nombre, efecto, icono, `id`); `Vital Essence` pasa a `Vigorizing Pie` y `Mucus Heart` a `Mucus Essence`.
 - Rutas de `.tres` intactas para no romper saves; `pocion_mocos` usa `assets/items/Icon19.png` (aun sin `.import`).
 - `docs/items.md` y preview `docs/pociones-antes-despues.png` actualizados. F5 pendiente; ticket en `revision`.
 
 ## 2026-11-13 · `opencode-jorge` · Iconos de pasivas pendientes (T-0070)
+
 - Ruben pide asignar sprites parecidos a las 34 pasivas que seguian con iconos provisionales o genericos.
 - Cada pasiva usa un `assets/items/item###.png` distinto: amuletos con colgante, anillo, armaduras, botas, garras, etc.
 - `Focus` no existe y no se crea; `Third-Hit Projectile` no estaba en la lista y conserva `magicW`.
 - `docs/items.md` y preview `docs/pasivas-antes-despues.png` actualizados. F5 pendiente; ticket en `revision`.
 
 ## 2026-11-13 · `opencode-jorge` · Correcciones de iconos de pasivas (T-0071)
+
 - Ruben corrige T-0070: Light Armor `item221`, Heavy Armor `item226`, Greed `item169`, Wolf Fang `Icon34`, Iron Heart `item199`, Wolf Claws `Icon12`, Mucus `item310`, Wolf Pelt `item202`, Light Feet `item276`.
 - `cazador` pasa a `Hunter's Faith`; `pulso_vampirico` pasa a `Sanguine Ruby` con `Icon29` copiado a `sanguine_ruby.png`.
 - `docs/items.md` y preview `docs/pasivas-cambios-2026-11-13.png` actualizados. F5 pendiente; ticket en `revision`.
@@ -671,7 +688,9 @@ Formato de entrada:
   `.tres` y lista solo diferencias; probado con un `.tres` cambiado y con uno que falta.
 - Descubierto y arreglado: `colgante_hierro.md` tiene la tabla alineada con espacios y el
   parser la dejaba vacía (el objeto no se podía editar).
+
 ## 2026-11-17 · `opencode-jorge` · Nuevos objetos de ideas.md (T-0054)
+
 - Ruben aprueba las 4 tandas y los valores propuestos; `Fragmento` queda fuera.
 - Se crean los 14 objetos de arquero, esqueleto, fantasma y demonio, con sistemas nuevos para arco, invulnerabilidad, teleport, saltos, rata y DOT.
 - Se añaden al `item_drops` de `archer.tscn`, `skeleton.tscn`, `ghost.tscn` y `demon.tscn`.
@@ -681,7 +700,7 @@ Formato de entrada:
 
 ## 2026-11-17 · `buffy` · Abierto T-0074: estructuras por chunk
 
-- Abierto [T-0074](tickets/T-0074-estructuras-por-chunk.md) a petición de Ruben: que se
+- Abierto [T-0074](tickets/resueltos/T-0074-estructuras-por-chunk.md) a petición de Ruben: que se
   puedan **añadir estructuras** (como recurso `.tres` o escena) a un bioma y que el
   generador decida por chunk si salen, **con la semilla** como fuente del reparto.
 - Rama `feat/estructuras-chunk` sale de `main`; de momento **solo el ticket**, sin código
@@ -695,7 +714,7 @@ Formato de entrada:
 
 ## 2026-11-18 · `opencode-jorge` · T-0074: estructuras por chunk implementadas
 
-- Continúo el [T-0074](tickets/T-0074-estructuras-por-chunk.md) abierto por `buffy` a
+- Continúo el [T-0074](tickets/resueltos/T-0074-estructuras-por-chunk.md) abierto por `buffy` a
   petición de Ruben: `WorldStructure` + 2 `.tres` de prueba con placeholder, roll por chunk
   con la semilla, colocación con márgenes/separación y el bioma decidiendo cuántas y cuáles.
 - Ficheros: `scripts/world/structure.gd` (nuevo), `scripts/world_generator.gd`,
@@ -846,7 +865,7 @@ Formato de entrada:
   `spawn_point`, `exit_requested` y `save_state()`/`load_state()` puros (`{seed, floor}`).
 - Ficheros: `scripts/world/dungeon_generator.gd`, `scripts/world/dungeon_test.gd`,
   `scenes/structures/dungeon.tscn`, `scenes/structures/dungeon_test.tscn`,
-  `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/T-0079-interior-explorable.md`.
+  `docs/dungeon.md`, `AGENTS.md`, `vault/tickets/resueltos/T-0079-interior-explorable.md`.
 - Pendiente: la puerta mundoâ†’mazmorra (hija + mundo oculto, o `change_scene` + autoload) y
   el estado por piso, para T-0080. F6 de Ruben sobre `dungeon_test.tscn`.
 
@@ -860,7 +879,7 @@ Formato de entrada:
   la escena (vida, monedas, inventario y semilla se conservan).
 - Ficheros: `scripts/world/dungeon_entrance.gd`, `scripts/world/dungeon_layer.gd`,
   `scenes/structures/dungeon_entrance.tscn`, `scripts/world_generator.gd`,
-  `scenes/game.tscn`, `docs/dungeon.md`, `vault/tickets/T-0087-entrada-mazmorra.md`.
+  `scenes/game.tscn`, `docs/dungeon.md`, `vault/tickets/resueltos/T-0087-entrada-mazmorra.md`.
 - Pendiente F5/F6 de Ruben; guardar dentro de la mazmorra sigue siendo T-0080.
 
 ## 2026-11-24 · `buffy` · Fusión de estructuras y arte de la mazmorra (T-0088)
@@ -1123,3 +1142,25 @@ Formato de entrada:
   `game.tscn` real (semilla 12345) avanzando 898/2.739/3.328/3.579 px a 1×/16×/32×/64×
   sin errores de física. Arneses temporales retirados; F5 visual pendiente.
 - Docs: `docs/player.md`, `docs/world.md`; ticket T-0097, changelog y estado.
+
+## 2026-11-27 · `buffy` · Estructuras de sprite al fondo y castillo a 8 tiles
+
+- Abierto T-0099 en `feat/estructuras-detras-castillo-grande`, sacada de `main` tras fusionar los PR #12 y #13.
+- `WorldStructure.z_index` pasa a `-1` por defecto: tiendas y puerta del castillo detrás del suelo y del jugador (el `player` va antes que `map` en `game.tscn`, así que a `z_index` 0 se pintaban encima de él).
+- Las estructuras `scene` escalan con `size_tiles`/`pixel_size`; tienda hundida 6 px; castillo de 4 a 8 tiles (128 px) con `flatten_ground`.
+- Ficheros: `scripts/world/structure.gd`, `scripts/world_generator.gd`, `resources/world/structures/{tent_test,tower_test}.tres`, `docs/world.md`, `docs/dungeon.md`.
+- F5 pendiente: orden de dibujo y escala nuevos.
+
+## 2026-11-27 · `buffy` · Puertas negras y contenido del castillo (T-0100)
+
+- Continuación de T-0099 en la misma rama. `dungeon.tscn` gana `Leave` (detrás del spawn) y las dos puertas pasan a negro; el generador ya no escucha `body_entered`, se usa F dentro de 56 px con prompt `F: enter` / `F: exit`.
+- Cada planta trae 3 cajas rompibles ×2, 6 monedas y 3 arqueros con RNG derivado de semilla y planta; todo cuelga de `Contents`, que se vacía en cada `start()`.
+- Ficheros: `scenes/structures/dungeon.tscn`, `scripts/structures/castle/dungeon_generator.gd`, `docs/dungeon.md`.
+- F5 pendiente: puertas, prompt y contenido sin ver.
+
+## 2026-11-27 · `buffy` · Tienda del mercader (T-0078)
+
+- T-0078 sale de `bloqueado` tomando el recorte que el planning ya preveía: moneda = `current_coins`, stock fijo de 3 consumibles distintos, precio derivado de las stats y sin recompra. La zona segura queda fuera.
+- Arte nuevo: `assets/map/structures/merchant_stall.png` (96×96 con alfa) generado a partir de la referencia de Rubén, con clave de magenta, recorte, downscale y cuantización.
+- Ficheros: `scenes/shop/merchant.tscn`, `scripts/world/merchant.gd`, `scripts/ui/shop_screen.gd`, `resources/world/structures/shop_test.tres`, `scripts/world_generator.gd`, `resources/world/biomes/{pradera,bosque_rojo}.tres`, `docs/shop.md`, `docs/world.md`, `AGENTS.md`.
+- F5 pendiente: el PNG necesita importarse en el editor antes de que la escena cargue la textura.
