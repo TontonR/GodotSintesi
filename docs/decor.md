@@ -88,6 +88,14 @@ random weight, so a sparse biome cannot come out too alive or too dead.
   burst in the bush's own tint. Particles go through the shared `fx` node, so
   they do not inherit the sprite's scale and are not tied to the chunk.
 
+## Trees and the ambient leaf rain
+
+- Living trees (`tree`, not `tree_dead`) join the **`decor_tree`** group when the
+  chunk spawns. `SpriteFusionAmbient` (leaves, T-0093 round 5) reads those nodes to
+  get the crown (`global_position`, texture height × scale) and `tint_color`, and
+  spawns 55 % of its leaves there with the tree's own colour. The group dies with
+  the chunk, so unloaded trees never rain anything.
+
 ## Adding or changing decor
 
 1. Drop the sprite in `assets/map/decor/<Kind>/`.

@@ -25,6 +25,7 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` · `cerrado` (los 
 | [T-0075](tickets/T-0075-estructuras-bloques.md) | mundo | Estructuras por bloques (tipo 2) con bloque gris de prueba: patrón en el `.tres` y ruina de prueba | `revision` |
 | [T-0091](tickets/T-0091-arreglar-tilemap-castillo.md) | mundo | Arreglar el tilemap del interior del castillo: remates, salas, ventanas y vigas del pack | `revision` |
 | [T-0093](tickets/T-0093-rediseno-plataformas-castillo.md) | mundo | Mazmorra del castillo como sala de referencia: tres bloques, fosas, plataformas de madera y separación layout/tiles/painter | `revision` |
+| [T-0094](tickets/T-0094-vfx-sangre-spritefusion.md) | fx | Sangre de Sprite Fusion: hebras, gotas, niebla y costras sobre el suelo en la muerte de enemigos | `revision` |
 | [T-0080](tickets/T-0080-persistencia-por-piso.md) | guardado | Guardar y cargar dentro de la mazmorra: planta, posición y punto de vuelta sin guardar coordenadas de mazmorra | `revision` |
 | [T-0092](tickets/T-0092-investigar-sprite-fusion.md) | docs | Investigar Sprite Fusion: export a Godot, MCP/API de pixel art, coste y claves | `abierto` |
 | `T-0076` | mundo | Bloques rompibles con drop y estado persistido (previsto) | `revision` |

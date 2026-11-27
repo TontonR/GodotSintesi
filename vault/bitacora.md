@@ -1000,3 +1000,27 @@ Formato de entrada:
 - Portados los suelos de las recetas: litter determinista de hojas (18 px) y ventisquero
   de nieve por ruido; `_draw()` para el drift.
 - Headless: 80 hojas + litter y 440 copos, reposo/litter sobre el stub, 0 bajo el suelo.
+
+## 2026-11-26 · `buffy` · Suelo por tile, transición por densidad y sangre de Sprite Fusion
+
+- Pedido de Ruben: la nieve entre alturas no puede formar diagonales, los VFX no se
+  transparentan en la frontera de biomas y falta la sangre de Sprite Fusion.
+- `spritefusion_ambient.gd`: el suelo se muestrea por tile de 16 px, el ventisquero pinta
+  bandas completas de 1–3 px y hojas/copos se posan en la fila del bloque; fuera el tween
+  de alfa.
+- `WorldGenerator.ambient_share_at_world_x()`: cuota 0..1 por tile con la ventana de
+  transición del terreno (cacheada). Es la probabilidad de que salga cada partícula; el
+  litter y la deriva usan la misma tirada, así que el clima se aclara bloque a bloque.
+- `scripts/fx/spritefusion_blood.gd`: port de la receta MIT `blood` (hebras, chorro, niebla,
+  goteo y costras de 6 s) sobre `blood_color`; `fx.enemy_death()` mantiene su firma.
+- Sin Godot en esta sesión: F5 pendiente de diagonales, frontera y sangre.
+
+## 2026-11-26 · `buffy` · Hojas: tamaño, precarga y lluvia bajo los árboles (T-0093 ronda 5)
+
+- Ruben: hojas demasiado grandes; al correr no veía hojas delante y aparecían de golpe.
+- `spritefusion_ambient.gd`: 108 hojas a 0,75 px, margen de generación/reciclado de
+  ±260 px con `GROUND_MARGIN` 360 (suelo y cuota de bioma también fuera de vista),
+  deriva propia por hoja y 55 % de las hojas bajo copas de árboles vivos.
+- `world_generator.gd`: los `tree` vivos entran en el grupo `decor_tree` (el muerto no);
+  el ambiente lee corona y `tint_color` para teñir esas hojas como el árbol.
+- Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.

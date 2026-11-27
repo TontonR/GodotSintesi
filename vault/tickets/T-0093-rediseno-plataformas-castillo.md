@@ -90,3 +90,17 @@ F5/F6 de Ruben.
 - `dungeon_test.tscn` gana un nodo `UILayer`: sin él el jugador creaba el suyo
   mientras el padre montaba hijos y F6 soltaba errores de `add_child`.
 
+
+## Ronda 5 · 2026-11-26 — hojas: tamaño, precarga y lluvia bajo los árboles
+
+Pedido de Ruben: las hojas se ven demasiado grandes, al correr no hay hojas delante y
+aparecen todas de golpe, y bajo los árboles deberían caer hojas de su color de forma
+constante.
+
+- 108 hojas (antes 80) a `LEAF_SCALE` 0,75; el litter usa la misma escala.
+- Margen de generación y reciclado de ±260 px (`LEAF_SPAWN_MARGIN`), con
+  `GROUND_MARGIN` 360 para que suelo y cuota de bioma se lean también fuera de la vista.
+- `Leaf.drift` aleatorio por partícula (±`LEAF_DRIFT`): dirección y velocidad propias.
+- Los árboles vivos (`tree`) entran en el grupo `decor_tree`; el 55 % de las hojas nacen
+  bajo una copa visible, con textura derivada de `DecorProp.tint_color`.
+- Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.

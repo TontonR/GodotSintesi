@@ -82,3 +82,16 @@ y `biome_particles.gd` lo alimenta con el peso del blend de biomas.
   limita al fondo de la vista.
 - Headless: 80 hojas + litter, 440 copos, reposo y litter sobre el stub de suelo, sin
   partículas por debajo. Falta F5.
+
+### Ronda 4 (2026-11-26): suelo por tile y transición por densidad
+
+- El suelo se muestrea una vez por **tile de 16 px** (`GROUND_STEP`) y el ventisquero pinta
+  una banda completa por tile con 1–3 px de alto: dos alturas se encuentran en un escalón
+  de bloque, nunca en diagonal. Hojas y copos se posan en la fila del tile que pisan.
+- Fuera el tween de alfa: `WorldGenerator.ambient_share_at_world_x()` devuelve la cuota
+  0..1 del tile con la misma ventana ±`biome_transition_tiles` que tiñe la hierba (cacheada
+  por tile), y cada partícula sale solo si su tirada gana esa probabilidad; el litter y la
+  deriva usan la misma tirada. El clima se aclara bloque a bloque y la capa nunca se
+  transparenta.
+- `ambient = "leaves" | "snow"` no cambia y no hace falta tocar los `.tres`.
+- Pendiente: F5 de densidad, contraste y frontera entre biomas.

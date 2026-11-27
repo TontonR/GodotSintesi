@@ -137,11 +137,11 @@ _2026-10-23 · 2026-10-25 · 2026-11-05 · 2026-11-10 · 2026-11-12 · 2026-11-1
 ## Ambient per biome (2026-11-05 · 2026-11-25, T-0093)
 
 - `Biome.ambient`: `"none"`, `"leaves"` (red leaves) or `"snow"` (flakes). Red forest has leaves, snow has flakes and meadow nothing.
-- `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) owns two `SpriteFusionAmbient` effects (see `fx.md`). Every 0.25 s it asks `ambient_weight_at_world_x()` for the share of the biome blend around the player and sets that opacity; no more binary on/off.
-- **`ambient_weight_at_world_x(world_x, ambient)`** (2026-11-25): share (0..1) of the ±`AMBIENT_BLEND_TILES` (32) window whose biome uses that ambient. It makes leaves and snow crossfade over ~64 tiles; a meadow or a dungeon still returns 0.
-- **`ground_y_at(world_x)`**: already existed for debug travel; the VFX sample it per world column every 0.1 s and rest particles on it, so they land on hills instead of the screen bottom.
+- `scripts/world/biome_particles.gd` (`biome_particles` node, `CanvasLayer` layer 5 in `game.tscn`) owns two `SpriteFusionAmbient` effects (see `fx.md`); both stay on and decide the weather tile by tile.
+- **`ambient_share_at_world_x(world_x, ambient)`** (2026-11-26, replaces `ambient_weight_at_world_x`): probability (0..1) that the tile under `world_x` belongs to a biome with that ambient. It uses the same ±`biome_transition_tiles` window that tints the block and caches the answer per tile, so the VFX thin out through the transition without opacity fades; a meadow or a dungeon still returns 0.
+- **`ground_y_at(world_x)`**: already existed for debug travel; the VFX sample it once per 16 px tile every 0.1 s and rest particles on that row, so they land on block steps instead of the screen bottom.
 - **World space** (T-0093 round 3): `biome_particles.gd` copies the camera transform into the `CanvasLayer` every frame, and the effects spawn/recycle around the visible world rect. Particles are anchored to the world and scroll with it; the leaf litter is hashed per 18 px world slot and the snow drift is drawn from per-column noise.
-- Counts and sizes are the library's (`falling-leaves` 80, `snow` 260/150/30) at 1 px per art pixel. The view is pre-filled when an effect fades in.
+- **Leaves, round 5** (2026-11-26): 108 leaves at 0.75 px per art pixel (they read too big at 1 px), each one with its own drift direction and speed, spawned and culled ±260 px outside the view. The ground and the biome share are sampled across that margin too, so when running the weather is already falling in the frame that is about to enter instead of popping in. Living trees (`tree`, not `tree_dead`) join the `decor_tree` group: 55 % of the leaves are born under a visible crown with that tree's `tint_color`, so the red forest rains red/orange leaves under its own trees. Snow keeps 260/150/30 at 1 px and 80 px of cull margin.
 
 ## Spawns and persistence
 

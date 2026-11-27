@@ -2,6 +2,29 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-26 · `buffy` · Hojas: más pequeñas, precargadas y bajo los árboles (T-0093 ronda 5)
+
+- 108 hojas a 0,75 px por píxel de arte (antes 80 a 1 px) y cada una con su propia
+  dirección y velocidad de deriva, en vez de todas hacia la derecha.
+- Se generan y se reciclan a ±260 px fuera de la vista, con el suelo y la cuota de
+  bioma muestreados también en ese margen: al correr ya están cayendo en el tramo que
+  va a entrar, sin montones que aparecen de golpe.
+- Los árboles vivos entran en el grupo `decor_tree`; el 55 % de las hojas nacen bajo
+  una copa visible con el `tint_color` de ese árbol, así que el bosque rojo llueve
+  hojas rojas/naranjas bajo sus propios árboles.
+
+## 2026-11-26 · `buffy` · VFX: suelo por tile, transición por densidad y sangre de Sprite Fusion (T-0093 ronda 4, T-0094)
+
+- El suelo se lee y se dibuja por tile de 16 px: el ventisquero de nieve pinta bandas
+  completas y las hojas y copos se posan en la fila del bloque, así que dos alturas nunca
+  forman una diagonal.
+- Fuera el tween de alfa: `ambient_share_at_world_x()` da la cuota 0..1 de cada tile con la
+  misma ventana ±`biome_transition_tiles` que tiñe el terreno, y cada partícula se genera
+  (o no) contra esa probabilidad; el clima se aclara bloque a bloque, sin transparencias.
+- `scripts/fx/spritefusion_blood.gd` porta la receta MIT `blood` de Sprite Fusion: hebras,
+  chorro, niebla, gotas, costras que secan 6 s y rampa derivada de `blood_color`; sustituye
+  las 4 capas de `CPUParticles2D` en `enemy_death()`.
+
 ## 2026-11-25 · `buffy` · VFX anclados al mundo con litter y ventisquero (T-0093)
 
 - La capa de ambiente copia la transformada de cámara: las partículas pasan a
