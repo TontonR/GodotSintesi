@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `resuelto` |
 | Tipo | `docs` |
 | Prioridad | `alta` |
-| Dueño | `sin asignar` |
+| Dueño | `buffy` |
 | Sistema | docs |
 | Creado | 2026-11-03 |
 | Actualizado | 2026-11-03 |
@@ -46,3 +46,9 @@ Al ser un proyecto de dos agentes, un doc que se queda en una rama es conocimien
 ## Resultado
 
 Pendiente.
+
+Cumplido por la reescritura de `docs/enemies.md` (T-0056): los tres enemigos están en el
+catálogo de stats (lobo, sapo mutante y demonio, con sus escenas y scripts) y en el apartado de
+comportamiento, con los `@export` reales del código en lugar de las notas de la rama. `AGENTS.md`
+enlaza `docs/enemies.md`, y los docs sueltos del compañero nunca llegaron a `main`, así que hay
+una sola fuente de verdad. No hizo falta partir el fichero.

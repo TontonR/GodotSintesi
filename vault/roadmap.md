@@ -16,9 +16,9 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` (código hecho, si
 | [T-0103](tickets/pendientes/T-0103-mas-vfx.md) | fx | Hojas nuevas al entrar y salir del arbusto, con más partículas al salir | `resuelto` |
 | [T-0104](tickets/pendientes/T-0104-tienda-zona-segura-y-stock-persistente.md) | mundo/UI | Tienda: zona segura alrededor del puesto y stock vendido persistido por `spawn_id` | `abierto` |
 | [T-0105](tickets/pendientes/T-0105-shop-screen-error-parseo.md) | ui | Error de parseo en `shop_screen.gd` que dejaba la tienda sin abrir | `resuelto` |
-| [T-0078](tickets/pendientes/T-0078-tienda-stock-precios-y-ui.md) | mundo/UI | Tienda: puesto de mercader con stock de 3, precios derivados de stats y ventana de compra con F | `revision` |
-| [T-0099](tickets/pendientes/T-0099-estructuras-detras-y-castillo-grande.md) | mundo | Estructuras de sprite detrás del jugador (`z_index` −1), tienda hundida y castillo a 8 tiles | `revision` |
-| [T-0100](tickets/pendientes/T-0100-puertas-negras-y-contenido-mazmorra.md) | mundo | Puertas negras del castillo usadas con F (`enter`/`exit`) y cajas, monedas y arqueros por planta | `revision` |
+| [T-0078](tickets/resueltos/T-0078-tienda-stock-precios-y-ui.md) | mundo/UI | Tienda: puesto de mercader con stock de 3, precios derivados de stats y ventana de compra con F | `resuelto` |
+| [T-0099](tickets/resueltos/T-0099-estructuras-detras-y-castillo-grande.md) | mundo | Estructuras de sprite detrás del jugador (`z_index` −1), tienda hundida y castillo a 8 tiles | `resuelto` |
+| [T-0100](tickets/resueltos/T-0100-puertas-negras-y-contenido-mazmorra.md) | mundo | Puertas negras del castillo usadas con F (`enter`/`exit`) y cajas, monedas y arqueros por planta | `resuelto` |
 | [T-0092](tickets/pendientes/T-0092-investigar-sprite-fusion.md) | docs | Investigar Sprite Fusion: export a Godot, MCP/API de pixel art, coste y claves | `abierto` |
 | `T-0077` | mundo | Enemigos exclusivos y loot table por estructura simple (previsto) | `abierto` |
 | `T-0081` | enemigos | Boss, arena y loot exclusivo (previsto) | `abierto` |
@@ -34,8 +34,8 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` (código hecho, si
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
 | [T-0004](tickets/pendientes/T-0004-legado-raiz-y-docs-obsoletos.md) | repo | Borrar legado real (`player.tscn`, `orc.tscn`, `coin` de `game.tscn`) y corregir docs falsos | `abierto` |
-| [T-0005](tickets/pendientes/T-0005-quitar-debug-numpad.md) | inventario | Retirar el debug del numpad cuando acabe la fase de pruebas | `abierto` |
-| [T-0006](tickets/pendientes/T-0006-converger-docs-enemigos.md) | docs | Converger los docs del compañero con `docs/enemies.md` (la rama se portó a mano en T-0019) | `abierto` |
+| [T-0005](tickets/resueltos/T-0005-quitar-debug-numpad.md) | inventario | Retirar el debug del numpad cuando acabe la fase de pruebas | `resuelto` |
+| [T-0006](tickets/resueltos/T-0006-converger-docs-enemigos.md) | docs | Converger los docs del compañero con `docs/enemies.md` (la rama se portó a mano en T-0019) | `resuelto` |
 
 ## P3 — Contenido
 

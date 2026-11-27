@@ -9,7 +9,9 @@ const MAX_SLOTS: int = 3
 
 # DEBUG temporary: numpad keys to spawn items (0 clears, 1 consumable,
 # 2 passive). Remove this block and `_handle_debug_key` when no longer needed.
-const DEBUG_TOOLS: bool = true
+## Numpad item cheats (T-0005). Off: the code stays for T-0002, which wants
+## `KP 3`, but no key reaches the game while this is false.
+const DEBUG_TOOLS: bool = false
 const _DEBUG_CONSUMABLES: Array[String] = [
 	"res://resources/pocion_mocos.tres",
 	"res://resources/pocion_cura.tres",

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
@@ -53,3 +53,5 @@ Hecho el 2026-11-27 por `buffy` en la misma rama que T-0099 por ser continuació
 castillo (`feat/estructuras-detras-castillo-grande`). `Leave` nuevo, pads negros, F en vez
 de `body_entered`, prompt enter/exit, contenido determinista por planta. **F5 pendiente**:
 no se ha visto ninguna puerta ni el contenido en el editor.
+
+Cerrado el 2026-11-27: commiteado en `9a2f1d2` (rama `feat/estructuras-detras-castillo-grande`). F5 pendiente.

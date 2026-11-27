@@ -29,17 +29,17 @@ The inventory has 3 fixed-width outlined columns: character/consumables, collect
 
 ## Temporary debug
 
-With the numpad, while the game is not paused:
+The item cheats are **off** (`DEBUG_TOOLS = false` in `scenes/inventory/inventory.gd`);
+the code stays until T-0002 (skills) uses `KP 3`. Still live, from `scripts/debug_tools.gd`,
+while the game is not paused:
 
 | Key | Effect |
 |---|---|
-| `KP 0` | Empties the inventory and active passives |
-| `KP 1` | Spawns a random consumable |
-| `KP 2` | Spawns a random passive/collectable |
 | `KP 4` / `KP 6` | Fast travel left / right (64 tiles), landing a few tiles above the ground |
 | `KP 7` / `KP 8` / `KP 9` | Game speed halved / reset to x1 / doubled (`Engine.time_scale`, no cap) |
 
-Items are added directly to the inventory or to active passives. The item code lives in `scenes/inventory/inventory.gd` (`DEBUG_TOOLS`) and the speed/travel code in `scripts/debug_tools.gd`; both are meant to be deleted when the testing phase ends. The current speed and keys are shown in a label at the bottom left (`DebugHint`).
+The current speed and keys are shown in a label at the bottom left (`DebugHint`).
+Both helpers are meant to be deleted when the testing phase ends.
 
 ## Structure
 

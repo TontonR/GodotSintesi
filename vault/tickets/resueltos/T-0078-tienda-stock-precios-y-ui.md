@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
@@ -63,3 +63,5 @@ derivados de las stats y ventana de compra a código que pausa el juego y cobra 
 `spend_coins()`. **F5 pendiente**: ni el sprite en el mundo, ni la ventana, ni la compra se
 han visto en el editor. Fuera de alcance: zona segura, persistencia del stock entre recargas
 del chunk, stock por bioma y objetos exclusivos (T-0083/T-0084).
+
+Cerrado el 2026-11-27: commiteado en `9a2f1d2` (rama `feat/estructuras-detras-castillo-grande`). F5 pendiente.

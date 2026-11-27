@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `resuelto` |
 | Tipo | `chore` |
 | Prioridad | `baja` |
-| Dueño | `sin asignar` |
+| Dueño | `buffy` |
 | Sistema | inventory |
 | Creado | 2026-11-03 |
 | Actualizado | 2026-11-03 |
@@ -44,3 +44,9 @@ Mantener el flag hasta cerrar T-0002 (usa `KP 3`) y entonces retirarlo, o elimin
 ## Resultado
 
 Pendiente.
+
+Hecho el 2026-11-27 por `buffy`: `DEBUG_TOOLS = false`, así que ningún atajo del numpad toca la
+partida. El código (`_handle_debug_key`, `_clear_debug_items`, `_give_debug_item`) se queda
+porque T-0002 quiere `KP 3`; se borra cuando esa feature aterrice. `README.md` deja solo la
+tabla de viaje/velocidad de `scripts/debug_tools.gd`, y `docs/items.md` y `docs/player.md`
+marcan los atajos de objetos como apagados. Comprobado por lectura, sin F5.

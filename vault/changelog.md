@@ -2,6 +2,14 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-27 · `buffy` · Debug del numpad apagado, docs de enemigos cerrados y seis tickets a resueltos
+
+- `DEBUG_TOOLS = false` (T-0005): ningún atajo del numpad toca la partida; el código se queda
+  para T-0002 (`KP 3`). README, `docs/items.md` y `docs/player.md` actualizados.
+- T-0006 cerrado: `docs/enemies.md` ya documenta lobo, sapo mutante y demonio con los `@export`
+  reales, así que los docs sueltos de la rama no hacen falta.
+- A `resueltos/`: T-0005, T-0006, T-0056, T-0078, T-0099 y T-0100. Roadmap y enlaces al día.
+
 ## 2026-11-27 · `buffy` · `icon_max_width` como constante de tema en la tienda (T-0106)
 
 - `shop_screen.gd:157` asignaba `button.icon_max_width = 16`; en `Button` eso es una
@@ -880,7 +888,7 @@ También toca `scripts/player.gd` (knockback/knockup/`is_guarding`) y `scripts/w
 
 | Qué | Dónde | Ticket |
 |---|---|---|
-| Docs de enemigos e items reescritos con datos verificados; nuevos `biomes`, `loot` y `passives`; corregidos mundo (ventana, biomas, caída), UI (debug), jugador (stats), historial y README; el vault estrena mapa de documentación con los huecos reales | `docs/`, `README.md`, `AGENTS.md`, `vault/documentacion.md`, `vault/pasivas/` | [T-0056](tickets/pendientes/T-0056-auditoria-documentacion.md) |
+| Docs de enemigos e items reescritos con datos verificados; nuevos `biomes`, `loot` y `passives`; corregidos mundo (ventana, biomas, caída), UI (debug), jugador (stats), historial y README; el vault estrena mapa de documentación con los huecos reales | `docs/`, `README.md`, `AGENTS.md`, `vault/documentacion.md`, `vault/pasivas/` | [T-0056](tickets/resueltos/T-0056-auditoria-documentacion.md) |
 
 ## 2026-11-12 · `main` — monedas arriba a la izquierda con icono
 

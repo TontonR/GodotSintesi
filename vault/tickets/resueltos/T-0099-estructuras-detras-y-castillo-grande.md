@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `revision` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
@@ -56,3 +56,5 @@ Hecho el 2026-11-27 por `buffy`. `z_index` por defecto `-1` en `WorldStructure`;
 de los `scene` con `size_tiles`/`pixel_size`; tienda hundida 6 px; castillo a 8 tiles
 (128 px) con `flatten_ground` y 2 px de hundido. **F5 pendiente**: ni el orden de dibujo ni
 la escala se han visto en el editor.
+
+Cerrado el 2026-11-27: commiteado en `9a2f1d2` (rama `feat/estructuras-detras-castillo-grande`). F5 pendiente.

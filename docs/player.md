@@ -63,7 +63,7 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives` · 2026-1
 - Travel calls `player.debug_teleport(offset)`: it moves, cuts velocity, clears the visual step offset and resets `_cam_y` so the camera doesn't drag the jump.
 - `_exit_tree` returns `time_scale` to 1.0: leaving the scene doesn't leave the game sped up.
 - The notice's second line is `pos · tile · chunk · seed`; `chunk` is `WorldGenerator.chunk_at_world_x()`.
-- The test items (KP1/KP2 give a random consumable/passive, KP_DIVIDE clears all) live separately, in `scenes/inventory/inventory.gd` (see `docs/items.md`).
+- The test items (KP1/KP2 give a random consumable/passive, KP_DIVIDE clears all) live separately, in `scenes/inventory/inventory.gd` and are **off** since 2026-11-27 (`DEBUG_TOOLS = false`, T-0005; see `docs/items.md`).
 
 ## Traps
 

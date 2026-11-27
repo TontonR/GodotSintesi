@@ -215,7 +215,8 @@ All are unique and none repeats an icon already used by another `.tres`.
 
 ## Debug (temporary, `scenes/inventory/inventory.gd`)
 
-- Numpad `0` empties inventory and passives; `1` adds a random consumable; `2` a random passive. There is no `3` key anymore.
+- **Disabled since 2026-11-27** (T-0005): `DEBUG_TOOLS = false`, so no numpad key reaches the game. The code stays for T-0002, which wants `KP 3`.
+- When enabled: numpad `0` empties inventory and passives; `1` adds a random consumable; `2` a random passive.
 - They are added directly (consumables to the 3 slots, passives to `PlayerPassives`); if the inventory is full, the item is discarded.
 - To remove it: `DEBUG_TOOLS = false` (or delete `_handle_debug_key`, `_clear_debug_items` and `_give_debug_item`).
 
