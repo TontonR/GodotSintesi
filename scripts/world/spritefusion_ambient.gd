@@ -46,6 +46,9 @@ const LEAF_GRAVITY := 460.0
 const LEAF_AIR_DRAG := 1.6
 const LEAF_BOUNCE := 0.38
 const LEAF_REACTION_COOLDOWN := 0.35
+## Force of a bush burst (`burst_leaves`): a little stronger than the first
+## T-0103 pass, so the leaves are still moving when they land (T-0107).
+const BURST_FORCE := 112.0
 ## A sword/enemy hitbox and a running actor only disturb a few leaves, then
 ## wait before the next batch so one attack cannot launch the whole cloud.
 const HIT_LEAF_LIMIT := 4
@@ -117,6 +120,13 @@ const DRIFT_HEX := ["e9f0ff", "c3cff0", "8e9ccc"]
 @export_enum("leaves", "snow") var effect: String = "leaves"
 ## Multiplies the recipe's particle count; 1.0 is the library default.
 @export_range(0.1, 3.0, 0.05) var density: float = 1.0
+## Idle weather. With `rain` off the pool only serves `burst_leaves()`: every
+## leaf waits hidden until a bush throws it. That is what the layer drawn
+## behind the bushes uses (T-0107).
+@export var rain: bool = true
+## Z of the leaves thrown by `burst_leaves()` inside this node's own canvas.
+## The behind layer keeps 0 so its burst never jumps in front of the foliage.
+@export var burst_z: int = 1
 ## Screen pixels per art pixel. The library recipe uses 2; 1 halves the sizes.
 @export_range(0.5, 2.0, 0.25) var pixel_scale: float = 1.0
 ## Seed for the initial scatter, so the same run reproduces the same cloud.
@@ -299,14 +309,16 @@ func _process(delta: float) -> void:
 ## Shakes leaves off a bush the player walks through (T-0103). Reuses the pool:
 ## the idle leaves are re-seeded on the spot and kicked outwards, so no node is
 ## created and the weather keeps its count. Does nothing with the effect off.
-func burst_leaves(world_position: Vector2, color: Color, amount: int, force: float = 95.0) -> void:
+func burst_leaves(world_position: Vector2, color: Color, amount: int, force: float = BURST_FORCE) -> void:
 	if not visible or _leaves.is_empty() or amount <= 0:
 		return
 	var spawned := 0
 	for leaf in _leaves:
 		if spawned >= amount:
 			break
-		if leaf.kicked or leaf.wait > 0.0 or leaf.sprite == null or not leaf.sprite.visible:
+		# Parked leaves (`wait` > 0) are eligible too: the burst-only layer
+		# keeps its whole pool hidden until a bush throws it (T-0107).
+		if leaf.kicked or leaf.sprite == null:
 			continue
 		_seed_leaf_at(leaf, world_position, color, force)
 		spawned += 1
@@ -323,9 +335,9 @@ func _seed_leaf_at(leaf, world_position: Vector2, color: Color, force: float) ->
 	leaf.x = world_position.x + _rng.randf_range(-8.0, 8.0)
 	leaf.x0 = leaf.x
 	leaf.y = world_position.y + _rng.randf_range(-8.0, 8.0)
-	leaf.vx = _rng.randf_range(-1.0, 1.0) * force
-	leaf.vy = -_rng.randf_range(0.5, 1.1) * force
-	leaf.spin = _rng.randf_range(-7.0, 7.0)
+	leaf.vx = _rng.randf_range(-1.2, 1.2) * force
+	leaf.vy = -_rng.randf_range(0.55, 1.2) * force
+	leaf.spin = _rng.randf_range(-8.0, 8.0)
 	leaf.angle = _rng.randf_range(-0.5, 0.5)
 	leaf.flip = _rng.randf_range(0.0, TAU)
 	leaf.near = true
@@ -334,7 +346,7 @@ func _seed_leaf_at(leaf, world_position: Vector2, color: Color, force: float) ->
 	leaf.sprite.texture = _leaf_color_texture(color, leaf.shape)
 	leaf.sprite.modulate.a = 1.0
 	leaf.sprite.visible = true
-	leaf.sprite.z_index = 1
+	leaf.sprite.z_index = burst_z
 	_set_dissolve(leaf.material, 0.0)
 	_place_leaf(leaf)
 
@@ -346,6 +358,8 @@ func _scatter() -> void:
 	if effect == "leaves":
 		_canopy_timer = CANOPY_REFRESH_SECONDS
 		_refresh_canopies()
+		if not rain:
+			return
 		for leaf in _leaves:
 			# A teleport must fill the whole new view, not stack the rain on
 			# the few crowns that happen to be visible.
@@ -477,7 +491,8 @@ func _build_leaves() -> void:
 	for shape in LEAF_SHAPES:
 		for palette in LEAF_PALETTES:
 			_leaf_textures.append(_make_texture(shape, _leaf_colors(palette)))
-	_build_litter()
+	if rain:
+		_build_litter()
 	var count := int(round(LEAF_COUNT * density))
 	for i in count:
 		var leaf := Leaf.new()
@@ -691,6 +706,9 @@ func _pick_canopy() -> Dictionary:
 
 
 func _reset_leaf(leaf: Leaf, top: bool, canopy_spawn: bool = true) -> void:
+	if not rain:
+		_hide_leaf(leaf)
+		return
 	leaf.wait = 0.0
 	leaf.top = top
 	leaf.rest = -1.0
@@ -749,6 +767,22 @@ func _reset_leaf(leaf: Leaf, top: bool, canopy_spawn: bool = true) -> void:
 	leaf.sprite.z_index = 1 if leaf.near else 0
 	leaf.sprite.modulate.a = 1.0
 	_place_leaf(leaf)
+
+
+## Parks a pooled leaf of a burst-only layer (`rain` off) until
+## `burst_leaves()` re-seeds it. INF keeps `_update_leaves()` from recycling it
+## into rain, and the invisible sprite keeps the bursts from kicking it.
+func _hide_leaf(leaf: Leaf) -> void:
+	leaf.wait = INF
+	leaf.top = false
+	leaf.rest = -1.0
+	leaf.kicked = false
+	leaf.vx = 0.0
+	leaf.vy = 0.0
+	leaf.spin = 0.0
+	leaf.reaction_cd = 0.0
+	_set_dissolve(leaf.material, 0.0)
+	leaf.sprite.visible = false
 
 
 func _update_leaves(delta: float) -> void:

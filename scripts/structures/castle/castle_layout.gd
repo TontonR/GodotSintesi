@@ -71,6 +71,13 @@ func build(seed: int, floor: int, width: int = HALL_WIDTH) -> Dictionary:
 		prev_top = next_top
 		cursor_x += block_width
 
+	# The loop can stop up to 6 columns before the right frame (`remaining -
+	# block_width < 6` allows exactly that remainder). The last block is
+	# stretched to the interior end so the floor always reaches the exit
+	# column; without it `_top_at()` fell back to MAX_BLOCK_TOP and the stairs
+	# appeared flying over the pit (T-0109).
+	_cover_interior(blocks, interior_end)
+
 	var exit_block: Dictionary = blocks[blocks.size() - 1]
 	var exit_rect: Rect2i = exit_block["rect"]
 	var exit_cell := Vector2i(exit_rect.position.x + exit_rect.size.x / 2, exit_rect.position.y)
@@ -113,6 +120,20 @@ func build(seed: int, floor: int, width: int = HALL_WIDTH) -> Dictionary:
 
 	_ensure_reachable(layout)
 	return layout
+
+
+## Stretches the last block to the interior end. Idempotent: it does nothing
+## when the block already reaches it.
+func _cover_interior(blocks: Array, interior_end: int) -> void:
+	if blocks.is_empty():
+		return
+	var last: Dictionary = blocks[blocks.size() - 1]
+	var rect: Rect2i = last["rect"]
+	var end_x := interior_end + 1
+	if rect.end.x >= end_x:
+		return
+	last["rect"] = Rect2i(rect.position.x, rect.position.y, end_x - rect.position.x, rect.size.y)
+	blocks[blocks.size() - 1] = last
 
 
 ## Ground row of the block covering `tile_x` (the floor is continuous, so there

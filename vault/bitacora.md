@@ -1164,3 +1164,21 @@ Formato de entrada:
 - Arte nuevo: `assets/map/structures/merchant_stall.png` (96×96 con alfa) generado a partir de la referencia de Rubén, con clave de magenta, recorte, downscale y cuantización.
 - Ficheros: `scenes/shop/merchant.tscn`, `scripts/world/merchant.gd`, `scripts/ui/shop_screen.gd`, `resources/world/structures/shop_test.tres`, `scripts/world_generator.gd`, `resources/world/biomes/{pradera,bosque_rojo}.tres`, `docs/shop.md`, `docs/world.md`, `AGENTS.md`.
 - F5 pendiente: el PNG necesita importarse en el editor antes de que la escena cargue la textura.
+
+## 2026-11-27 · `buffy` · HUD de debug fuera, hojas del arbusto con profundidad y puertas del castillo (T-0107, T-0108, T-0109)
+
+- Ruben manda una captura con la línea de debug abajo y con el arbusto demasiado cargado. El
+  interruptor de T-0005 solo apagaba los ítems de prueba: `DebugTools` seguía montando el
+  `DebugHint` y leyendo el numpad. Ahora `enabled` (default `false`, fijado en `game.tscn`) no
+  crea label, no escucha input y deja `Engine.time_scale` en 1.
+- Hojas: 4 al entrar y 9 al salir (antes 7/18), reparto del 45 % detrás vía `map/behind_leaves`
+  (ambiente sin lluvia, `burst_z = 0`, dibujado tras el terreno y antes de los chunks), la parte
+  de detrás nace en el jugador y `burst_force` sube a 112 con más recorrido lateral.
+- Puertas: el bucle de bloques del hall podía dejar 6 columnas sin suelo antes del marco
+  derecho y la puerta de salida (columna 59) quedaba sobre el hueco, con `_top_at()` cayendo al
+  respaldo `MAX_BLOCK_TOP`. `_cover_interior()` estira el último bloque hasta `interior_end + 1`.
+- Ficheros: `scripts/debug_tools.gd`, `scripts/world/decor_prop.gd`,
+  `scripts/world/spritefusion_ambient.gd`, `scripts/structures/castle/castle_layout.gd`,
+  `scenes/game.tscn`, `README.md`, `docs/fx.md`, `docs/decor.md`, `docs/player.md`,
+  `docs/dungeon.md`.
+- F5 pendiente: no se ha visto ninguna de las tres cosas en el editor.

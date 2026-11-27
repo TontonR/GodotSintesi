@@ -84,9 +84,16 @@ random weight, so a sparse biome cannot come out too alive or too dead.
   off, so a dense chunk costs nothing.
 - Within `decor_sway_radius_px` (48) of the player the bush bends up to
   `sway_angle` (0.1 rad) with a per-bush phase and returns upright on its own.
-- On entering that radius it calls `fx.leaves()` (`scripts/fx.gd`): a 7-leaf
-  burst in the bush's own tint. Particles go through the shared `fx` node, so
-  they do not inherit the sprite's scale and are not tied to the chunk.
+- On entering that radius it shakes leaves (T-0103, retuned in T-0107):
+  `leaves_per_burst` 4 on entry and `leaves_on_exit` 9 on exit, in the bush's own
+  tint, through `SpriteFusionAmbient.burst_leaves()` (see `docs/fx.md`).
+- The burst is split by `leaves_behind_share` (0.45): the front leaves come out of
+  the crown in the `biome_particles` layer, the behind ones come out of the
+  player's body (`behind_leaves_follow_player`) in `map/behind_leaves`, a
+  burst-only ambient that draws after the terrain and before the chunks. That is
+  what puts part of the leaves in front of the foliage and part behind it.
+- `burst_force` (112) gives the burst a bit more travel; it is the same force in
+  both layers.
 
 ## Trees and the ambient leaf rain
 

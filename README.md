@@ -29,9 +29,11 @@ The inventory has 3 fixed-width outlined columns: character/consumables, collect
 
 ## Temporary debug
 
-The item cheats are **off** (`DEBUG_TOOLS = false` in `scenes/inventory/inventory.gd`);
-the code stays until T-0002 (skills) uses `KP 3`. Still live, from `scripts/debug_tools.gd`,
-while the game is not paused:
+Everything is **off** in a normal run: `DEBUG_TOOLS = false` in
+`scenes/inventory/inventory.gd` (item cheats) and `enabled = false` on the
+`debug_tools` node in `game.tscn` (T-0107), so no shortcut nor the debug notice can
+appear. Tick `enabled` in the inspector to use the keys below while testing; the code
+stays until T-0002 (skills) uses `KP 3`:
 
 | Key | Effect |
 |---|---|

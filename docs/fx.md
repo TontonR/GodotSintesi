@@ -39,3 +39,25 @@ _2026-11-05 · 2026-11-10_
   leaves toggle is off (`visible == false`).
 - Entering the bush throws `leaves_per_burst` (7) and leaving throws `leaves_on_exit` (18).
 - Without an ambient in the scene (dungeon test scenes) it falls back to `fx.leaves()`.
+
+## Bush leaves in depth (2026-11-27, T-0107)
+
+- **Fewer leaves**: `leaves_per_burst` 7 → 4 and `leaves_on_exit` 18 → 9; the burst read as
+  a green cloud over the player.
+- **Two layers**: `leaves_behind_share` (0.45) splits every burst. The front part still goes
+  to the `biome_particles` ambient (CanvasLayer 5, over everything); the behind part goes to
+  the new `behind_leaves` node, a `SpriteFusionAmbient` child of `map` placed **before the
+  chunks**, so it draws over the terrain but behind the bushes (bushes are their chunk's
+  first child). `DecorProp._back_ambient()` finds it by name.
+- That layer has `rain = false`: `SpriteFusionAmbient` builds only the pool, parks every leaf
+  hidden (`_hide_leaf()`, `wait = INF`) and `_scatter()`/`_reset_leaf()` never spawn weather in
+  it. `burst_leaves()` accepts parked leaves (it only skips the ones already in the air), and
+  `burst_z = 0` keeps them from jumping in front of the foliage. `density` 0.35, `rng_seed` 21.
+- **Trailing leaves**: the behind part is born at the player's body (`_behind_origin()`,
+  `behind_leaves_follow_player`), so while he walks away they keep falling on him for a moment
+  instead of all at the crown. The front part keeps the crown.
+- **More physics**: `burst_force` (112, `BURST_FORCE` as the script default) and a wider
+  lateral/upward roll (`±1.2 * force`, `0.55–1.2 * force`, spin ±8) make the leaves travel a
+  little further and bounce before resting.
+- The `Single leaf toggle` still wins: with leaves off (`ambient.visible == false`) neither
+  layer throws anything.

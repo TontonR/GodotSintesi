@@ -57,6 +57,11 @@ _2026-10-20 · 2026-11-13 · branch `feat/skills-and-complex-passives` · 2026-1
 
 ## Debug (temporary, 2026-11-03)
 
+- **Off by default since 2026-11-27 (T-0107)**: the `debug_tools` node in `game.tscn` ships
+  with `enabled = false`, and the script builds no notice, listens to no key and forces
+  `Engine.time_scale = 1`. To test, tick `enabled` in the inspector (or set it in the scene).
+  The shortcut table below only applies while it is on.
+
 - `scripts/debug_tools.gd` (`DebugTools`, `debug_tools` node in `game.tscn`): KP7 halves `Engine.time_scale`, KP9 doubles it (no cap) and KP8 resets it to x1 (2026-11-12, T-0053); KP4/KP6 do a fast travel of 64 tiles left/right (`teleport_distance_tiles`) landing `teleport_above_ground_tiles` (4) above the ground at the destination, not 10 tiles above the current position: `WorldGenerator.ground_y_at()` gives the top row there and the destination chunks are refreshed in the same frame, so it never ends inside a slope. `start_speed` (default x1) is the speed at startup and `MIN_SPEED` (0.001) the floor, so halving never reaches x0 and freezes the game. The notice shows the current factor (`x0.5`, `x2`…).
 - **KP5** toggles immortality (`player.toggle_immortal()` → `immortal`): with it active `_apply_damage()` exits without touching health; the push/knockback from `take_damage_from()` still applies. The debug notice shows `immortal yes/no`. It's an independent numpad key; it doesn't use slots 1-3.
 - **KP3** jumps to the next structure to the right (`WorldGenerator.next_structure_x()` searches up to 64 chunk data blocks, generating them) and **KP0** to the start of the next biome run (`next_biome_start_x()`); both land above the ground at the destination with the same `debug_teleport` as KP4/KP6.

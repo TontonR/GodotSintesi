@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://b48a2t5pyf60t" path="res://assets/coins/MonedaD.png" id="28_coin"]
 [ext_resource type="PackedScene" path="res://scenes/ui/death_screen.tscn" id="29_death"]
 [ext_resource type="Script" uid="uid://q7pl4kcjxxgv" path="res://scripts/world/dungeon_layer.gd" id="30_dungeon_layer"]
+[ext_resource type="Script" uid="uid://jt252jxvfe1" path="res://scripts/world/spritefusion_ambient.gd" id="31_leaves_back"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_coin_hud"]
 atlas = ExtResource("28_coin")
@@ -283,6 +284,13 @@ tile_set = SubResource("TileSet_0tnpc")
 
 [node name="grass_map_layer" type="TileMapLayer" parent="map" unique_id=1954245395]
 tile_set = SubResource("TileSet_mdkdc")
+
+[node name="behind_leaves" type="Node2D" parent="map" unique_id=1052273042]
+script = ExtResource("31_leaves_back")
+density = 0.35
+rain = false
+burst_z = 0
+rng_seed = 21
 
 [node name="DungeonLayer" type="Node2D" parent="." unique_id=478481624]
 script = ExtResource("30_dungeon_layer")

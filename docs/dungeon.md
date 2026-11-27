@@ -50,3 +50,18 @@ _2026-11-26 · 2026-11-27 · branch `feat/estructuras-detras-castillo-grande` ·
 - The walk dust inside is stone grey: `DungeonLayer` sets `fx.dust_color` on the way in and
   clears it on the way out, so `Fx.dust()` stops sampling the biome grass under the castle
   (there is no biome there).
+
+## The floor always reaches the exit door (2026-11-27, T-0109)
+
+- The block loop stops at `cursor_x >= interior_end - 8`, and its `remaining - block_width < 6`
+  guard accepts a **6-column remainder**: the last block could end at column 56 and leave
+  57..62 with no floor above `bottom_row`. The exit door sits at column 59, so `_top_at()` found
+  no block, returned `MAX_BLOCK_TOP` (17) and the stairs appeared **flying** 4 tiles above the
+  pit; the player also fell to the frame floor to reach them.
+- `CastleLayout._cover_interior()` now stretches the last block to `interior_end + 1` right
+  after the loop, before `exit_cell` is read. It is idempotent, so the floors that already
+  reached the frame are untouched, and both `_top_at()` (doors) and
+  `DungeonGenerator._ground_top()` (crates, coins, archers) always find a block under every
+  interior column.
+- The doors are still the black 32×64 pads of T-0100 and keep the fixed columns of T-0102:
+  only their Y was wrong.

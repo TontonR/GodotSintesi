@@ -2,6 +2,28 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-27 · `buffy` · Puertas del castillo siempre sobre el suelo (T-0109)
+
+- El bucle de bloques de `CastleLayout.build()` podía dejar 6 columnas sin suelo antes del
+  marco derecho; la puerta de salida (columna 59) caía en ese hueco y `_top_at()` devolvía el
+  respaldo `MAX_BLOCK_TOP`, así que aparecía volando 4 tiles sobre el fondo del marco.
+- `_cover_interior()` estira el último bloque hasta `interior_end + 1` al salir del bucle, antes
+  de leer `exit_cell`; es idempotente y no toca las plantas que ya llegaban al marco.
+- Ticket T-0109. Comprobado por lectura, F5 pendiente.
+
+## 2026-11-27 · `buffy` · Aviso de debug apagado del todo y hojas de arbusto en dos planos (T-0107, T-0108)
+
+- **T-0107**: `DebugTools.enabled` (`false` por defecto y en `game.tscn`) apaga el nodo
+  entero: sin `DebugHint`, sin teclas del numpad y con `Engine.time_scale` en x1. El aviso que
+  salía en la captura de Ruben ya no puede aparecer en una partida normal; para depurar se
+  marca `enabled` en el inspector. README y `docs/player.md` al día.
+- **T-0108**: estallido del arbusto a 4 hojas al entrar y 9 al salir, repartido entre el
+  ambiente de delante (`biome_particles`) y una capa nueva `map/behind_leaves` que se dibuja
+  tras el terreno y antes de los chunks (`rain = false`, piscina solo para estallidos,
+  `burst_z = 0`). La parte de detrás sale desde el jugador (`behind_leaves_follow_player`) y
+  `burst_force` sube a 112 con un abanico más amplio. `docs/fx.md` y `docs/decor.md`.
+- Comprobado por lectura; F5 pendiente para los dos (profundidad del arbusto y ausencia del HUD).
+
 ## 2026-11-27 · `buffy` · Debug del numpad apagado, docs de enemigos cerrados y seis tickets a resueltos
 
 - `DEBUG_TOOLS = false` (T-0005): ningún atajo del numpad toca la partida; el código se queda

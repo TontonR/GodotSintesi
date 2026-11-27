@@ -11,9 +11,11 @@ extends Node
 # next structure or dungeon door on the right and 0 to the next biome start.
 # Test items (KP1/KP2) remain in `scenes/inventory/inventory.gd`, which
 # belongs to the inventory.
-# The bottom-left label always shows the speed, immortality, the player
-# position (pixels and tiles), the chunk and the seed of the run, so a world can
-# be reproduced from the menu's seed dialog.
+# The whole node is OFF unless `enabled` is ticked (T-0107): a normal run can
+# never show the notice nor read a numpad key. While it is on, the bottom-left
+# label shows the speed, immortality, the player position (pixels and tiles),
+# the chunk and the seed of the run, so a world can be reproduced from the
+# menu's seed dialog.
 
 const TILE_SIZE := 16
 const HINT := "speed %s · immortal %s · KP7/KP8/KP9 speed half/reset/double · KP4/KP6 quick travel · KP5 immortal · KP3 next structure/door · KP0 next biome"
@@ -21,6 +23,9 @@ const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 ## Floor for KP7: halving never reaches x0, which would freeze the game.
 const MIN_SPEED := 0.001
 
+## Off unless ticked (T-0107). Disabled, the node builds no notice, listens to
+## no key and leaves `Engine.time_scale` at 1; turn it on only while testing.
+@export var enabled: bool = false
 ## Game speed at startup (also changed live with the numpad).
 @export var start_speed: float = 1.0
 ## Tiles the KP4/KP6 quick travel advances.
@@ -42,6 +47,12 @@ var _info: String = ""
 
 
 func _ready() -> void:
+	if not enabled:
+		# Nothing is created and nothing listens: the debug HUD cannot appear.
+		set_process(false)
+		set_process_unhandled_input(false)
+		Engine.time_scale = 1.0
+		return
 	_apply_speed(start_speed)
 	_build_label()
 
