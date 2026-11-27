@@ -2,6 +2,13 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-27 · `buffy` · `icon_max_width` como constante de tema en la tienda (T-0106)
+
+- `shop_screen.gd:157` asignaba `button.icon_max_width = 16`; en `Button` eso es una
+  constante de tema, así que cada `open()` tiraba un error de runtime. Ahora va con
+  `add_theme_constant_override("icon_max_width", 16)`.
+- Ticket T-0106. Comprobado por lectura, F5 pendiente.
+
 ## 2026-11-27 · `buffy` · Puertas alineadas, polvo de piedra y tienda con zona segura (T-0102 parcial, T-0104)
 
 - `CastleLayout` fija la columna de entrada y de salida: todas las plantas del castillo

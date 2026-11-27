@@ -154,7 +154,9 @@ func _build_rows() -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.icon = item.icon
 		button.expand_icon = false
-		button.icon_max_width = 16
+		# `icon_max_width` is a theme constant on Button, not a property: the
+		# assignment version fails at runtime (T-0106).
+		button.add_theme_constant_override("icon_max_width", 16)
 		button.add_theme_font_size_override("font_size", FONT_SMALL)
 		button.pressed.connect(_buy.bind(_rows.size()))
 		_list.add_child(button)
