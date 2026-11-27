@@ -2,6 +2,128 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-26 · `buffy` · Subida automática estable a cualquier velocidad (T-0097)
+
+- `_try_step_up()` localiza la primera colisión dentro del avance del frame y sube solo
+  ese escalón; comprueba hueco y apoyo de 2 px en el destino y anula la velocidad Y para
+  no quedar 1 px por debajo del borde siguiente.
+- Si el contacto cae justo al final del avance, no consume la subida: `move_and_slide`
+  frena contra la cara y el frame siguiente reintenta. Esto corrige los atascos con KP9
+  alto y escalones consecutivos.
+- Verificado headless: 60/60 casos sintéticos de 8/16 px (anchos, estrechos y encadenados)
+  a 1×–64×, y el `game.tscn` real avanzando a 1×/16×/32×/64× sin errores. F5 visual
+  pendiente.
+- Docs: `docs/player.md`, `docs/world.md`; ticket T-0097.
+
+## 2026-11-26 · `buffy` · Rectángulos espejados y errores de `_lift_rect` (T-0098)
+
+- `EnemyBase._collision_rect()` y `Player._shape_rect()` normalizan el tamaño/radio con
+  `absf`: las `attack_range` de los enemigos cuelgan de `flip_pivot`, y al mirar a la
+  izquierda su `scale.x = -1` producía un `Rect2` de ancho negativo.
+- `SpriteFusionAmbient._lift_rect()` sanea cualquier rectángulo negativo con `Rect2.abs()`
+  antes de `get_center()`/`has_point()`, así que las hitboxes espejadas dejan de llenar el
+  debugger y las hojas siguen reaccionando.
+- Docs: `docs/fx.md`; ticket T-0098.
+- Limpieza: la rama de trabajo queda como rama única de consolidación; se borraron 13
+  ramas locales y 6 remotas ya fusionadas, y `main` se actualizó a `origin/main`. El
+  worktree viejo `GodotSintesi-vfx` se guardó en `stash@{0}` antes de retirarlo.
+
+## 2026-11-26 · `buffy` · Subida automática y borde del manto de nieve (T-0097)
+
+- La subida automática mira el alcance real del movimiento y comprueba que el cuerpo
+  elevado tenga apoyo; deja de fallar de forma intermitente al correr y no sube a
+  salientes sin suelo.
+- Las partículas ambientales vuelven a tener cantidad gradual: `ambient_amount_at_world_x`
+  da la cuota 0..1 y `ambient_density_at_world_x` mezcla la densidad del bioma. El manto
+  de nieve conserva un borde duro, pero se prolonga por terreno llano hasta el primer
+  cambio de altura (subida o bajada), sin cortarse en mitad de una llanura.
+- Docs: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md`; ticket T-0097.
+
+## 2026-11-26 · `buffy` · Hojas verdes y escasas en el prado (T-0096 ronda 12)
+
+- El prado activa `ambient = "leaves"` con `ambient_density = 0.2`: tiene hojas
+  ambientales, pero aproximadamente una quinta parte de las del bosque rojo.
+- `Biome.ambient_leaf_color` tiñe de verde las hojas de cielo abierto y el litter del
+  prado; las copas de sus árboles ya usan su propio tinte verde. El bosque rojo conserva
+  las paletas de otoño y su densidad completa.
+
+## 2026-11-26 · `buffy` · Nieve con ruido, corte de ambiente y puerta del castillo (T-0096/T-0095 ronda 11)
+
+- La nieve recupera un ruido de baja frecuencia (3–7 px) que ondula la superficie sin
+  los picos de 1 px que se leían como líneas; el corte en los escalones sigue limpio.
+- El ambiente ya no se degrada durante toda la transición: solo se enciende cuando al
+  menos el 80 % de la ventana pertenece al bioma (`AMBIENT_SHARE_CUTOFF`).
+- La entrada al castillo usa una puerta de 64×64 (4 tiles) en `tower_test.png`, visible
+  sobre el suelo; antes era un placeholder de 16×16 con `z_index = -1`.
+- `assets/downloads/` queda ignorado: son fuentes externas, no arte de runtime.
+
+## 2026-11-26 · `buffy` · Nieve uniforme sin líneas (T-0096 ronda 10)
+
+- El ventisquero vuelve a una altura uniforme de 3 px sobre el escalón real: fuera las
+  pendientes diagonales entre plataformas y los picos de 1 px que se leían como líneas.
+- El borde del bloque corta el manto y lo retoma en la repisa inferior; las partículas y
+  la huella del jugador conservan su comportamiento.
+
+## 2026-11-26 · `buffy` · TP de hojas, nieve continua, sangre al golpe y castillo restaurado (T-0096/T-0095 ronda 9)
+
+- El re-scatter tras teletransporte ya no asigna hojas a las copas: llena la vista al
+  aire; el reciclado normal deja ~35 % bajo copas y el resto repartido.
+- La nieve interpola el suelo entre muestras de 16 px para que los escalones no dejen
+  líneas verticales; las partículas siguen usando el escalón real.
+- `fx.enemy_hit()` lanza un chorro de sangre direccional en cada golpe; la muerte
+  conserva el estallido radial.
+- Se restauró el castillo de 64 tiles de HEAD (T-0095): el working tree había vuelto a
+  la sala antigua de 34 tiles.
+
+## 2026-11-26 · `buffy` · Nieve por píxel y hojas dirigidas (T-0096 ronda 8)
+
+- El ventisquero vuelve a dibujarse píxel a píxel, sin bandas de 16 px ni interpolación
+  diagonal entre alturas; cada columna cubre solo su superficie. Sube 1 px, se comprime
+  hasta 1 px bajo la huella del jugador con **Enhanced VFX physics** y deja una huella
+  baja de 3,5 s.
+- Las hojas ya no salen casi solo hacia arriba: el empuje lateral sigue el movimiento o
+  el centro de la hitbox. Los golpes limitan a 4 hojas por lote (0,3 s) y correr a 2 por
+  lote (0,18 s).
+
+## 2026-11-26 · `buffy` · Hojas interactivas, disolución por píxeles y ajustes VFX (T-0096)
+
+- Todas las copas vivas entran en la lluvia: fuera el 55 %, el cursor por turnos también
+  cubre la siembra inicial y el re-scatter tras un TP, así que ningún árbol se queda seco.
+- Las hojas reaccionan al jugador y a los enemigos al pasar; correr las lanza más lejos y
+  las hitboxes del jugador y de los enemigos levantan las que caen dentro. El litter del
+  suelo gana 5 s de vida y cancela su disolución al tocarlo.
+- `VfxSettings` (autoload) + `SettingsPanel`: **Leaf particles** apaga hojas, litter y
+  ráfagas de arbusto; **Enhanced VFX physics** enciende o apaga gravedad, rebotes y giro.
+  Se guardan en `[vfx]` de `user://settings.cfg` sin pisar `[display]`.
+- La retirada ya no es un fundido: `assets/vfx/spritefusion/leaf_dissolve.gdshader` descarta
+  píxeles aleatorios por texel, tanto en las hojas que caen como en el litter.
+- `player.gd` y `enemy_base.gd` exponen `hurt_rect()`, `attack_rects()` e
+  `is_attacking_now()`; los enemigos entran en el grupo `enemies`.
+- Docs: `docs/fx.md`, `docs/decor.md`, `docs/world.md`, `docs/ui.md`. Sin Godot en esta
+  sesión: F5 pendiente.
+
+## 2026-11-26 · `buffy` · Vuelta al hall de tres bloques, sangre radial y hojas estables (T-0093 ronda 6, T-0094)
+
+- `CastleLayout` vuelve al hall de 34×22 con tres bloques y dos fosas, repisas de madera,
+  8 ventanas y 2 estandartes; fuera el suelo continuo escalonado, el BFS y el ancho 64.
+- `CastlePainter` pinta sin autotiling de 8 vecinos y deja el ladrillo solo en la cara
+  superior de cada bloque: laterales y fondo son piedra, sin aspecto de cubo Minecraft.
+- La muerte lanza la sangre en radial (dirección 0): más gotas, 360° y menos velocidad
+  que el chorro, que ya no sale hacia el lado contrario del cadáver.
+- Hojas: probabilidad 0..1 independiente por partícula contra la cuota de su tile (una
+  tirada, sin agruparse; si falla queda oculta 5–9 s, un ciclo) y re-scatter a alturas
+  aleatorias tras un TP para que no caigan todas de golpe desde arriba; siembra inicial
+  sin copas y turnos entre árboles.
+
+## 2026-11-26 · `buffy` · Castillo de 3 a 10 plantas y subida por la puerta (T-0095)
+
+- `DungeonGenerator.max_floors` pasa de 6 a 10: la cascada del 50 % sigue desde la
+  planta 3, así que un castillo puede tener de 3 a 10.
+- La salida es la escalera: pisarla reconstruye el hall una planta más arriba y emite
+  `floor_changed(floor)`; `DungeonLayer` funde a negro, teletransporta al nuevo
+  `spawn_point` y vuelve. Solo la última planta emite `exit_requested` y deja el castillo.
+- El guardado por planta (T-0080) no cambia: se guarda `{seed, floor}`.
+
 ## 2026-11-26 · `buffy` · Hojas: más pequeñas, precargadas y bajo los árboles (T-0093 ronda 5)
 
 - 108 hojas a 0,75 px por píxel de arte (antes 80 a 1 px) y cada una con su propia

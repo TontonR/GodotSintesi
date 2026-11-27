@@ -82,6 +82,7 @@ func _open_dungeon(layout_seed: int, floor: int) -> bool:
 	_dungeon = DUNGEON_SCENE.instantiate() as DungeonGenerator
 	add_child(_dungeon)
 	_dungeon.exit_requested.connect(_leave)
+	_dungeon.floor_changed.connect(_on_floor_changed)
 	_dungeon.start(layout_seed, floor)
 	if _dungeon.spawn_point == null:
 		push_error("DungeonLayer: dungeon has no spawn_point.")
@@ -90,7 +91,17 @@ func _open_dungeon(layout_seed: int, floor: int) -> bool:
 	return true
 
 
-## `exit_requested` from the dungeon scene.
+## `floor_changed` from the dungeon scene: the door climbed one floor and the
+## hall is already rebuilt. Fade, drop the player on the new spawn, fade back.
+func _on_floor_changed(_floor: int) -> void:
+	if _dungeon == null or _player == null:
+		return
+	_set_fade(1.0)
+	_teleport(_dungeon.spawn_point.global_position)
+	_fade_in()
+
+
+## `exit_requested` from the dungeon scene (top floor).
 func _leave() -> void:
 	if _dungeon == null:
 		return

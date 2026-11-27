@@ -91,10 +91,18 @@ random weight, so a sparse biome cannot come out too alive or too dead.
 ## Trees and the ambient leaf rain
 
 - Living trees (`tree`, not `tree_dead`) join the **`decor_tree`** group when the
-  chunk spawns. `SpriteFusionAmbient` (leaves, T-0093 round 5) reads those nodes to
-  get the crown (`global_position`, texture height × scale) and `tint_color`, and
-  spawns 55 % of its leaves there with the tree's own colour. The group dies with
-  the chunk, so unloaded trees never rain anything.
+  chunk spawns. `SpriteFusionAmbient` (leaves, T-0093 rounds 5–6, T-0096 rounds 7–9) reads those
+  nodes to get the crown (`global_position`, texture height × scale) and `tint_color`.
+  Every crown takes part: the round-robin cursor hands each assigned leaf to the next
+  tree, so the rain is spread evenly instead of piling on one. Only about 35 % of
+  normal recycling leaves are assigned to a crown; the initial fill and the re-scatter
+  after a teleport skip crowns so the whole view fills evenly. Meadow crowns are green, so
+  their leaves match the sparse green rain; the red forest keeps its autumn colours. The
+  group dies with the chunk, so unloaded trees never rain anything.
+- Leaves react to the player and enemies walking through them; running throws them a
+  little further and sword/enemy hitboxes lift the ones inside. Ground litter keeps
+  its own lifetime, gains time when touched and dissolves pixel by pixel instead of
+  fading (T-0096).
 
 ## Adding or changing decor
 

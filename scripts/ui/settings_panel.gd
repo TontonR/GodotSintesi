@@ -4,7 +4,9 @@ extends PanelContainer
 # ==============================================================================
 # SETTINGS PANEL (main menu and pause menu)
 # ==============================================================================
-# Only window options: mode and size. The stretch is always `integer` (a
+# Window options (mode and size) plus the VFX toggles shared through the
+# `VfxSettings` autoload: leaf particles and the enhanced leaf physics. The
+# stretch is always `integer` (a
 # fractional factor changes the texel size of the nearest-filtered pixel art
 # every frame and the parallax shimmers, see T-0010/T-0045), but instead of
 # letterboxing the game viewport adapts to the window (`_apply_layout`): it is
@@ -18,6 +20,7 @@ extends PanelContainer
 signal closed
 
 const SETTINGS_PATH := "user://settings.cfg"
+const VFX_SETTINGS_SCRIPT := preload("res://scripts/vfx_settings.gd")
 ## Base game viewport: the smallest one the UI fits in.
 const VIEWPORT_SIZE := Vector2i(768, 432)
 ## `Window.content_scale_stretch` for integer scaling (0 is `fractional`).
@@ -54,12 +57,15 @@ enum WindowMode {
 @onready var _window_mode_label: Label = $Margin/Content/WindowModeRow/WindowModeLabel
 @onready var _resolution_option: OptionButton = $Margin/Content/ResolutionRow/Resolution
 @onready var _resolution_label: Label = $Margin/Content/ResolutionRow/ResolutionLabel
+@onready var _leaves_check: CheckButton = $Margin/Content/LeavesRow/Leaves
+@onready var _physics_check: CheckButton = $Margin/Content/PhysicsRow/Physics
 @onready var _back_button: Button = $Margin/Content/Back
 
 var _window_mode: int = WindowMode.WINDOWED
 var _window_size: Vector2i = Vector2i(1536, 864)
 ## Sizes offered by the list: the ones that fit on this screen.
 var _sizes: Array[Vector2i] = []
+var _vfx_settings: Node
 
 
 func _ready() -> void:
@@ -69,9 +75,28 @@ func _ready() -> void:
 	_apply_window()
 	_window_mode_option.item_selected.connect(_on_window_mode_selected)
 	_resolution_option.item_selected.connect(_on_resolution_selected)
+	_leaves_check.toggled.connect(_on_leaves_toggled)
+	_physics_check.toggled.connect(_on_physics_toggled)
 	_back_button.pressed.connect(_on_back)
 	hide()
 	_update_resolution_state()
+
+
+## Resolves the settings singleton at runtime instead of relying on the autoload
+## identifier. The fallback keeps the toggles working while the editor has not
+## reloaded an externally edited `project.godot` (T-0096).
+func _get_vfx_settings() -> Node:
+	if is_instance_valid(_vfx_settings):
+		return _vfx_settings
+	var tree := get_tree()
+	if tree == null:
+		return null
+	_vfx_settings = tree.root.get_node_or_null("VfxSettings")
+	if _vfx_settings == null:
+		_vfx_settings = VFX_SETTINGS_SCRIPT.new()
+		_vfx_settings.name = "VfxSettings"
+		tree.root.add_child(_vfx_settings)
+	return _vfx_settings
 
 
 func open() -> void:
@@ -111,6 +136,12 @@ func _build_options() -> void:
 		_window_size = _sizes[size_index]
 	_resolution_option.select(size_index)
 
+	# Set the state before connecting, so opening the panel never writes.
+	var vfx := _get_vfx_settings()
+	if vfx != null:
+		_leaves_check.button_pressed = bool(vfx.get("leaves_enabled"))
+		_physics_check.button_pressed = bool(vfx.get("enhanced_vfx_physics"))
+
 
 func _build_sizes() -> void:
 	_sizes.clear()
@@ -138,6 +169,18 @@ func _on_resolution_selected(index: int) -> void:
 		DisplayServer.window_set_size(_window_size)
 		_apply_layout(_window_size)
 	_save_settings()
+
+
+func _on_leaves_toggled(pressed: bool) -> void:
+	var vfx := _get_vfx_settings()
+	if vfx != null:
+		vfx.call("set_leaves_enabled", pressed)
+
+
+func _on_physics_toggled(pressed: bool) -> void:
+	var vfx := _get_vfx_settings()
+	if vfx != null:
+		vfx.call("set_enhanced_vfx_physics", pressed)
 
 
 func _apply_window() -> void:
@@ -208,6 +251,8 @@ func _load_settings() -> void:
 
 func _save_settings() -> void:
 	var config := ConfigFile.new()
+	# Keep the `[vfx]` section owned by VfxSettings.
+	config.load(SETTINGS_PATH)
 	config.set_value("display", "window_mode", _window_mode)
 	config.set_value("display", "width", _window_size.x)
 	config.set_value("display", "height", _window_size.y)

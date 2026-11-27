@@ -104,3 +104,30 @@ constante.
 - Los árboles vivos (`tree`) entran en el grupo `decor_tree`; el 55 % de las hojas nacen
   bajo una copa visible, con textura derivada de `DecorProp.tint_color`.
 - Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.
+
+## Ronda 6 · 2026-11-26 — vuelta al hall de tres bloques y hojas estables
+
+Pedido de Ruben: los bloques escalonados tipo Minecraft hicieron más mal que bien;
+volver al hall anterior, sin diagonales y con el borde solo en las caras de arriba.
+Las hojas aparecían en masa al hacer TP y los árboles soltaban montones irregulares.
+
+- `CastleLayout` vuelve a 34×22 con tres bloques (filas 12–17), dos fosas de 3 tiles,
+  repisas de madera, 8 ventanas y 2 estandartes; fuera el suelo continuo, el BFS de
+  alcanzabilidad y el ancho 64.
+- `CastlePainter` pinta marco y bloques de forma explícita, sin autotiling de 8 vecinos:
+  el ladrillo queda solo en la cara superior del bloque (`20/24/19/22` y esquinas
+  `18/21`); laterales y fondo son piedra `41`. `DungeonGenerator.width_tiles` vuelve a 34.
+- Hojas: cada una tira una X uniforme y **una sola** probabilidad contra la cuota de su
+  tile; si falla queda oculta 5–9 s (un ciclo completo), así el 0..1 refleja la cantidad
+  de partículas en vez de rellenarse con reintentos; tras un
+  teletransporte se reparte toda la vista a alturas aleatorias (sin oleada desde
+  arriba), la siembra inicial no usa copas y las copas se turnan para que ningún árbol
+  suelte un montón.
+- Sin Godot en esta sesión: F5 pendiente del hall, la lluvia bajo copas y el TP.
+
+## Ronda 9 · 2026-11-26 — rollback descartado
+
+El working tree había vuelto a la sala de 34×22 de la ronda 6, pero Ruben reportó que el
+castillo se veía fatal. Se restauró el layout de **64×22** de HEAD (T-0095) con suelo
+escalonado continuo, BFS y autotiling. La ronda 6 deja de ser el estado actual; el hall
+válido es el de T-0095.

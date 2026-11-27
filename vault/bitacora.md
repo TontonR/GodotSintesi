@@ -1024,3 +1024,102 @@ Formato de entrada:
 - `world_generator.gd`: los `tree` vivos entran en el grupo `decor_tree` (el muerto no);
   el ambiente lee corona y `tint_color` para teñir esas hojas como el árbol.
 - Sin Godot en esta sesión: F5 pendiente de tamaño, precarga y lluvia bajo copas.
+
+## 2026-11-26 · `buffy` · Castillo de 3 a 10 plantas y subida por la puerta (T-0095)
+
+- Ruben: los castillos van de 3 a 10 plantas y se sube al pasar la puerta, con 50 % por
+  planta desde la 3 mientras exista la anterior.
+- `dungeon_generator.gd`: `max_floors` 10 y `_step_forward()` diferido; la puerta
+  reconstruye la planta siguiente y emite `floor_changed(floor)`; en la última emite
+  `exit_requested` y deja el castillo.
+- `dungeon_layer.gd`: funde a negro, teletransporta al nuevo `spawn_point` y vuelve;
+  `dungeon_test.gd` sube con la puerta en F6. El guardado por planta no cambia.
+- Sin Godot en esta sesión: F5/F6 pendientes de recorrer el castillo completo.
+
+## 2026-11-26 · `buffy` · Vuelta al hall de tres bloques, sangre radial y hojas estables (T-0093 ronda 6, T-0094)
+
+- Ruben: los bloques escalonados tipo Minecraft hicieron más mal que bien. `CastleLayout`
+  vuelve a 34×22 con tres bloques (filas 12–17) y dos fosas de 3 tiles con repisas de
+  madera, 8 ventanas y 2 estandartes. `CastlePainter` pinta de forma explícita, sin
+  autotiling de 8 vecinos, y el ladrillo queda solo en la cara superior de los bloques
+  (`20/24/19/22`, esquinas `18/21`); laterales y fondo son piedra `41`.
+  `DungeonGenerator.width_tiles` vuelve a 34.
+- Sangre: `fx.enemy_death()` pasa dirección `0` a `SpriteFusionBlood`; la muerte usa una
+  explosión radial (72 gotas base ×1,6, 20 de anillo y 10 puffs, 360° y más lenta) en vez
+  del chorro lateral aleatorio.
+- Hojas: `_pick_spawn_x()` hace una tirada uniforme y una sola comprobación de cuota por
+  partícula (el 0..1 es la probabilidad; si falla queda oculta 5–9 s, un ciclo). Al
+  detectar un salto de cámara,
+  `_scatter()` rellena la vista a alturas aleatorias y sin copas, en vez de dejar caer
+  todas desde arriba; `_pick_canopy()` reparte las copas por turnos.
+- Docs: `docs/dungeon.md`, `docs/fx.md`, `docs/world.md`, `docs/decor.md`.
+  Tickets T-0093 (ronda 6) y T-0094, changelog y estado. Sin Godot en esta sesión: F5
+  pendiente del hall, la sangre y las hojas.
+
+## 2026-11-26 · `buffy` · Hojas interactivas y ajustes VFX (T-0096)
+
+- Ruben: todas las copas deben soltar hojas, los ajustes deben poder quitarlas, las hojas
+  se mueven al pasar/correr/golpear, el litter gana vida al tocarlo, la retirada es píxel a
+  píxel y las físicas VFX se pueden desactivar.
+- `spritefusion_ambient.gd`: fuera el 55 % de copas (turnos también en la siembra y el
+  re-scatter), impulsos por `hurt_rect()` de jugador/enemigos, `attack_rects()` levanta las
+  hojas de la hitbox, litter de 18–34 s +5 s al tocarlo y `leaf_dissolve.gdshader` por
+  texel. `scripts/vfx_settings.gd` (autoload) + filas del `SettingsPanel`.
+- `player.gd`/`enemy_base.gd`: `hurt_rect()`, `attack_rects()`, `is_attacking_now()` y
+  grupo `enemies`. Docs: `docs/fx.md`, `docs/decor.md`, `docs/world.md`, `docs/ui.md`.
+- Sin Godot en esta sesión: F5 pendiente de interacciones, disolución y ajustes.
+
+## 2026-11-26 · `buffy` · Subida automática y borde del manto (T-0097)
+
+- Ruben: la subida automática funciona casi siempre pero a veces se rompe; las partículas
+  deben tener transición de cantidad y el manto de nieve no debe cortarse en vertical.
+- `player.gd`: el sondeo de escalón usa la distancia real del frame (mínimo 3 px) y exige
+  2 px de apoyo bajo los pies elevados; así no falla al correr ni sube a salientes vacíos.
+- `world_generator.gd`: `ambient_amount_at_world_x()` da la cuota gradual de partículas y
+  `ambient_density_at_world_x()` mezcla la densidad del bioma; `ambient_share_at_world_x()`
+  queda como borde duro del manto. `spritefusion_ambient.gd` guarda `_cover_world` y
+  `_snow_cover_columns()` prolonga cada borde por terreno llano hasta un cambio de altura.
+- Docs: `docs/player.md`, `docs/world.md`, `docs/fx.md`, `docs/biomes.md`; T-0097,
+  changelog, estado y roadmap. Sin Godot en esta sesión: F5 pendiente. Sin commit.
+
+## 2026-11-26 · `buffy` · Rectángulos de ataque espejados (T-0098)
+
+- Ruben pasó 3974 errores del debugger: `spritefusion_ambient.gd:895 @ _lift_rect()`
+  rechazaba `Rect2` con tamaño negativo. Los puntos 881/895 son los `has_point()` de hojas
+  y litter, no el manto de nieve.
+- Causa: `EnemyBase._collision_rect()` multiplicaba el tamaño por
+  `global_transform.get_scale()`; `attack_range` cuelga de `flip_pivot`, que vale
+  `scale.x = -1` al mirar a la izquierda. `Player._shape_rect()` tenía el mismo patrón
+  latente.
+- Fix: tamaño/radio con `absf` en ambos lados y `Rect2.abs()` defensivo al entrar en
+  `_lift_rect()`. Docs: `docs/fx.md`; ticket T-0098, changelog, estado y roadmap. Sin
+  Godot en esta sesión: F5 pendiente de repetir el combate y ver el contador a cero.
+
+## 2026-11-26 · `buffy` · Consolidación de ramas y worktree (T-0098)
+
+- El trabajo de VFX, castillo, subida automática y rectángulos queda en
+  `feat/castillo-plantas-3-10`; el commit de código `694e6d2` se subió a `origin` y `main`
+  se actualizó a `origin/main`.
+- Limpieza local: borradas 13 ramas ya fusionadas. Limpieza remota: borradas 6 ramas ya
+  contenidas en `origin/main`. Se conservan `refactor/world-split` y
+  `feat/enemigos-demon-toad-werewolf` porque no están fusionadas, y `origin/feat/vfx-suelo`
+  porque su PR #12 sigue abierto.
+- El worktree `GodotSintesi-vfx` tenía cambios antiguos sin commitear; se guardaron en
+  `stash@{0}` y luego se retiró el worktree. No se descartó nada.
+- Push verificado: `ff2d986..694e6d2` en `origin/feat/castillo-plantas-3-10`; el credential
+  manager necesitó `GCM_INTERACTIVE=Never` porque el modo interactivo se quedaba colgado.
+
+## 2026-11-26 · `buffy` · Subida automática: primera colisión y apoyo en destino (T-0097)
+
+- Ruben: la subida automática funciona cada vez menos; probar con KP5, KP9 y D mantenida.
+- El arnés headless reprodujo el fallo a 1×: la comprobación de apoyo miraba bajo la
+  posición actual, donde el suelo ya no está al elevar el cuerpo. A 16×/32× el sondeo
+  además veía el segundo escalón de una escalera y rechazaba el primero.
+- `scripts/player.gd:_try_step_up()` ahora busca la primera colisión del recorrido, sube
+  solo ese escalón, comprueba hueco y apoyo en el destino, anula `velocity.y` y, si el
+  contacto cae en el límite del frame, espera al siguiente para no quedar nivelado con
+  la cara del escalón.
+- Verificación: 60/60 casos sintéticos (8/16 px, anchos/estrechos/encadenados, 1×–64×) y
+  `game.tscn` real (semilla 12345) avanzando 898/2.739/3.328/3.579 px a 1×/16×/32×/64×
+  sin errores de física. Arneses temporales retirados; F5 visual pendiente.
+- Docs: `docs/player.md`, `docs/world.md`; ticket T-0097, changelog y estado.

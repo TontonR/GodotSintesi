@@ -214,9 +214,27 @@ func _try_step_up(direction: float) -> void:
 	# see 1-tile steps (the origin is ~27 px above the feet).
 	if not is_on_floor() or direction == 0.0:
 		return
-	var forward := Vector2(direction, 0.0)
-	if not test_move(global_transform, forward):
+	# Look far enough ahead for the distance the body will cover this frame.
+	# Use the *first* collision, not the whole frame: at high time scales the
+	# frame reaches two steps and a single probe saw the second one, rejecting
+	# the first. Climbing one step per frame lets the next frame handle the next.
+	var lookahead := maxf(absf(velocity.x) * get_physics_process_delta_time(), 2.0) + 1.0
+	var forward_distance := 0.0
+	for px in range(1, int(ceil(lookahead)) + 1):
+		if test_move(global_transform, Vector2(direction * float(px), 0.0)):
+			# +1 px so the raised body actually overlaps the step for the
+			# support probe instead of only touching its vertical face.
+			forward_distance = minf(float(px) + 1.0, lookahead)
+			break
+	if forward_distance <= 0.0:
 		return
+	# If the first contact is at the very end of the frame's travel, lifting now
+	# would leave the body level with the step edge but not on top of it. Let
+	# `move_and_slide` stop against the face and step next frame, when the probe
+	# has room to overlap the surface.
+	if forward_distance >= lookahead - 0.001:
+		return
+	var forward := Vector2(direction * forward_distance, 0.0)
 	# Lowest lift that frees the space ahead, in 1 px steps: a half block (the
 	# ruins' half-height and half-width tiles) needs ~8, a whole tile ~16.
 	# `safe_margin` 0 is what makes it exact: at that height the body rests
@@ -228,18 +246,31 @@ func _try_step_up(direction: float) -> void:
 	for px in range(1, int(step_height) + 2):
 		var probe := global_transform
 		probe.origin.y -= float(px)
-		if not test_move(probe, forward, null, 0.0):
-			lift = float(px)
-			break
+		# `probe` has to clear the whole horizontal motion, not just the
+		# step face: at high speed the body advances several pixels in a frame.
+		if test_move(probe, forward, null, 0.0):
+			continue
+		# The raised body must have headroom both now and at the destination.
+		var destination := probe
+		destination.origin.x += forward.x
+		if test_move(probe, Vector2.UP, null, 0.0):
+			continue
+		if test_move(destination, Vector2.UP, null, 0.0):
+			continue
+		# Check support where the body will land. Checking under the current
+		# position rejected every real step: once raised, the old floor is no
+		# longer below the feet, even though the step ahead is solid.
+		if not test_move(destination, Vector2.DOWN * 2.0, null, 0.0):
+			continue
+		lift = float(px)
+		break
 	if lift <= 0.0:
 		return
-	# The lift has to fit: a ceiling right above the raised body would push the
-	# head into the ruins' wall, and 2+ tiles are still a jump.
-	var target := global_transform
-	target.origin.y -= lift
-	if test_move(target, Vector2.UP, null, 0.0):
-		return
 	global_position += Vector2(0.0, -lift)
+	# The body is resting on the new surface now. Keeping the gravity velocity
+	# accumulated this frame would move it back into the step in `move_and_slide`
+	# (noticeable at high time scales), leaving it 1 px below the next edge.
+	velocity.y = 0.0
 	_visual_step_offset += lift
 
 
@@ -509,6 +540,51 @@ func set_hitbox_active(active: bool) -> void:
 		attack_hitboxes[i].set_deferred("monitoring", active and i == _active_hitbox)
 	if active:
 		_hit_targets.clear()
+
+
+## Read-only state and boxes for other systems (ambient leaves, T-0096).
+func is_attacking_now() -> bool:
+	return _is_attacking
+
+
+func is_running_now() -> bool:
+	return _is_running
+
+
+func hurt_rect() -> Rect2:
+	return _shape_rect(body_collision)
+
+
+## World rectangles of the active sword hitbox(es).
+func attack_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	if not _is_attacking:
+		return rects
+	for i in attack_hitboxes.size():
+		if not attack_hitboxes[i].monitoring:
+			continue
+		var rect := _shape_rect(hitbox_shapes[i])
+		if rect.size != Vector2.ZERO:
+			rects.append(rect)
+	return rects
+
+
+func _shape_rect(shape_node: CollisionShape2D) -> Rect2:
+	if shape_node == null or shape_node.shape == null:
+		return Rect2()
+	var shape_scale := shape_node.global_transform.get_scale()
+	if shape_node.shape is RectangleShape2D:
+		# A mirrored parent (negative scale.x) used to return a Rect2 with a
+		# negative width; Godot rejects those in has_point()/get_center().
+		var size := (shape_node.shape as RectangleShape2D).size * shape_scale
+		size = Vector2(absf(size.x), absf(size.y))
+		return Rect2(shape_node.global_position - size * 0.5, size)
+	if shape_node.shape is CircleShape2D:
+		var radius := absf(
+			(shape_node.shape as CircleShape2D).radius * maxf(shape_scale.x, shape_scale.y)
+		)
+		return Rect2(shape_node.global_position - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
+	return Rect2()
 
 
 func _on_attack_hitbox_body_entered(body: Node2D) -> void:

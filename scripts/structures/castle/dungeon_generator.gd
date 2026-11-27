@@ -7,8 +7,11 @@ extends Node2D
 ## only handles lifecycle, spawn and exit. It is independent from the chunked
 ## world and never instantiates nor keeps the player.
 
-## Emitted once per `start()` when the player steps on the floor exit.
+## Emitted once per `start()` when the player steps on the top floor exit.
 signal exit_requested
+## Emitted after the exit door climbs one floor; the hall is already rebuilt and
+## the caller must move the player to the new `spawn_point`.
+signal floor_changed(floor: int)
 
 const LayoutScript := preload("res://scripts/structures/castle/castle_layout.gd")
 const TilesScript := preload("res://scripts/structures/castle/castle_tiles.gd")
@@ -23,8 +26,8 @@ const SPAWN_ABOVE_PX := 30.0
 ## Minimum guaranteed floors.  The actual count is derived from the seed
 ## via a cascade of 50 % rolls (see `_compute_floor_count`).
 @export var min_floors: int = 3
-## Hard cap on floors (cascade stops here).
-@export var max_floors: int = 6
+## Hard cap on floors (cascade stops here); the castle has 3..10 floors.
+@export var max_floors: int = 10
 
 @export_group("Test")
 ## Seed used when the scene is opened on its own; 0 = wait for `start()`.
@@ -180,8 +183,19 @@ func _on_exit_body_entered(body: Node2D) -> void:
 	if _exit_emitted or not body.is_in_group("player"):
 		return
 	_exit_emitted = true
-	# Deferred so leaving the dungeon (and rebuilding world chunks/physics)
-	# happens outside the Area2D physics query flush.
+	# Deferred so the rebuild (and the caller's teleport) happens outside the
+	# Area2D physics query flush.
+	_step_forward.call_deferred()
+
+
+## The exit pad is the staircase: rebuild the hall one floor up and let the
+## caller move the player. Only the top floor returns to the world.
+func _step_forward() -> void:
+	if _floor_index + 1 < floor_count():
+		start(_dungeon_seed, _floor_index + 1)
+		# Already outside the physics flush: the caller can move the player now.
+		floor_changed.emit(_floor_index)
+		return
 	exit_requested.emit.call_deferred()
 
 

@@ -12,6 +12,10 @@ const KEEP_CHUNKS_SIDE := 2
 ## The mountain base band darkens the biome's forest color by this factor
 ## (the meadow's `#283D43` comes out of `forest_color` darkened 0.35).
 const MOUNTAIN_BASE_DARKENING := 0.35
+## Ambient weather is on only when at least this share of the transition window
+## belongs to the biome; below it, it is off. This makes the switch abrupt near
+## the biome instead of a long density fade.
+const AMBIENT_SHARE_CUTOFF := 0.8
 @export_group("World")
 ## World seed; 0 = random per run.
 @export var world_seed: int = 0
@@ -218,9 +222,11 @@ var _base_tint_nodes: Array[ColorRect] = []
 var _last_biome_tile: int = -999999
 ## Biome runs already decided, in order: {start, index, length} in tiles.
 var _biome_runs: Array[Dictionary] = []
-## Ambient share per tile (`Vector2i(tile, 0 = leaves / 1 = snow)`), cached because
-## the ambient VFX ask for every visible tile every 0.1 s.
-var _ambient_share_cache: Dictionary = {}
+## Raw ambient amount per tile (`Vector2i(tile, 0 = leaves / 1 = snow)`), cached
+## because the ambient VFX ask for every visible tile every 0.1 s.
+var _ambient_amount_cache: Dictionary = {}
+## Blended density per tile, cached with the same key as the amount.
+var _ambient_density_cache: Dictionary = {}
 ## Decor name → index in the generator's parallel arrays.
 var _decor_lookup: Dictionary = {}
 ## Structure `display_name` → index in `structures`.
@@ -653,17 +659,16 @@ func biome_at_world_x(world_x: float) -> Biome:
 	return biomes[index]
 
 
-## Probability (0..1) that the tile under `world_x` belongs to a biome with
-## `ambient`. It uses the same ±`biome_transition_tiles` window that tints the
-## block, so the ambient VFX thin out block by block through the terrain
-## transition: the share is the spawn probability of a particle on that tile.
-func ambient_share_at_world_x(world_x: float, ambient: String) -> float:
+## Raw share (0..1) of the transition window that belongs to `ambient`. This
+## is the particle quantity: particles thin out gradually through the biome
+## edge instead of switching on at one tile.
+func ambient_amount_at_world_x(world_x: float, ambient: String) -> float:
 	if biomes.is_empty():
 		return 0.0
 	var tile_x := floori(world_x / float(TILE_SIZE))
 	var key := Vector2i(tile_x, 1 if ambient == "snow" else 0)
-	if _ambient_share_cache.has(key):
-		return float(_ambient_share_cache[key])
+	if _ambient_amount_cache.has(key):
+		return float(_ambient_amount_cache[key])
 	var counts := _biome_counts_at_tile(tile_x)
 	var samples := 0
 	var matching := 0
@@ -672,11 +677,53 @@ func ambient_share_at_world_x(world_x: float, ambient: String) -> float:
 		samples += count
 		if index >= 0 and index < biomes.size() and biomes[index].ambient == ambient:
 			matching += count
-	var share := 0.0 if samples <= 0 else float(matching) / float(samples)
-	if _ambient_share_cache.size() > 8192:
-		_ambient_share_cache.clear()
-	_ambient_share_cache[key] = share
-	return share
+	var amount := 0.0 if samples <= 0 else float(matching) / float(samples)
+	if _ambient_amount_cache.size() > 8192:
+		_ambient_amount_cache.clear()
+	_ambient_amount_cache[key] = amount
+	return amount
+
+
+## Hard snow-cover edge: the blanket exists only once at least
+## `AMBIENT_SHARE_CUTOFF` of the transition window belongs to `ambient`. The
+## snow drawing extends this edge over flat ground, so the visible cap ends on
+## a height change instead of in the middle of a flat run.
+func ambient_share_at_world_x(world_x: float, ambient: String) -> float:
+	return 1.0 if ambient_amount_at_world_x(world_x, ambient) >= AMBIENT_SHARE_CUTOFF else 0.0
+
+
+## Density multiplier of the ambient, blended over the same transition window
+## as the amount. The meadow's 0.2 therefore ramps into the red forest's 1.0
+## instead of jumping at the block where the biome changes.
+func ambient_density_at_world_x(world_x: float, ambient: String) -> float:
+	if biomes.is_empty():
+		return 0.0
+	var tile_x := floori(world_x / float(TILE_SIZE))
+	var key := Vector2i(tile_x, 1 if ambient == "snow" else 0)
+	if _ambient_density_cache.has(key):
+		return float(_ambient_density_cache[key])
+	var counts := _biome_counts_at_tile(tile_x)
+	var matching := 0
+	var weighted := 0.0
+	for index in counts:
+		var count := int(counts[index])
+		if index >= 0 and index < biomes.size() and biomes[index].ambient == ambient:
+			matching += count
+			weighted += float(count) * clampf(biomes[index].ambient_density, 0.0, 1.0)
+	var density := 0.0 if matching <= 0 else weighted / float(matching)
+	if _ambient_density_cache.size() > 8192:
+		_ambient_density_cache.clear()
+	_ambient_density_cache[key] = density
+	return density
+
+
+## Open-sky leaf tint of the biome at `world_x`; transparent means the
+## Sprite Fusion autumn palette. The canopy leaves use each tree's own tint.
+func ambient_leaf_color_at_world_x(world_x: float) -> Color:
+	var biome := biome_at_world_x(world_x)
+	if biome == null:
+		return Color(0, 0, 0, 0)
+	return biome.ambient_leaf_color
 
 
 ## Chunk biome for enemies and counts: the one at the central block.
