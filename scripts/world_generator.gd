@@ -569,13 +569,30 @@ func current_seed() -> int:
 	return _seed
 
 
+## Merchant items already bought, keyed by `spawn_id|resource_path` (T-0104).
+var _sold_spawns := {}
+
+
 ## Spawn ids that must survive a save/load (killed enemies, taken coins).
 func save_persistent_state() -> Dictionary:
 	return {
 		"defeated": PackedStringArray(_defeated_spawns.keys()),
 		"collected": PackedStringArray(_collected_spawns.keys()),
 		"broken": PackedStringArray(_broken_blocks.keys()),
+		"sold": PackedStringArray(_sold_spawns.keys()),
 	}
+
+
+## True when that merchant item was bought earlier in this run (T-0104).
+func is_item_sold(spawn_id: String, item_path: String) -> bool:
+	return _sold_spawns.has("%s|%s" % [spawn_id, item_path])
+
+
+## Remembers a purchase: survives a chunk unload and the save.
+func mark_item_sold(spawn_id: String, item_path: String) -> void:
+	if spawn_id.is_empty() or item_path.is_empty():
+		return
+	_sold_spawns["%s|%s" % [spawn_id, item_path]] = true
 
 
 func _restore_persistent_state() -> void:
@@ -585,6 +602,8 @@ func _restore_persistent_state() -> void:
 		_collected_spawns[String(id)] = true
 	for id in SaveGame.data.get("broken", []):
 		_broken_blocks[String(id)] = true
+	for id in SaveGame.data.get("sold", []):
+		_sold_spawns[String(id)] = true
 
 
 ## Biome index of a block. The first run is the safe zone with the first biome.
@@ -1662,6 +1681,9 @@ func _spawn_chunk_entities(chunk: WorldChunk, data: Dictionary) -> void:
 				int(entry["y"]) * TILE_SIZE + float(structure.y_offset_px)
 			)
 		node.set_meta("spawn_id", entry["id"])
+		# Merchants: the run remembers what this stall already sold (T-0104).
+		if node.has_method("restore_sold"):
+			node.call("restore_sold")
 		chunk.add_child(node)
 		chunk.move_child(node, 0)
 

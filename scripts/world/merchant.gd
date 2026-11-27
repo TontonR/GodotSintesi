@@ -33,6 +33,7 @@ var stock: Array[Items] = []
 ## `resource_path` of every item already bought here.
 var sold: Array[String] = []
 
+var _spawn_id := ""
 var _prompt: Label
 var _layer: CanvasLayer
 ## Untyped on purpose: `ShopScreen` types `Merchant` too, and two `class_name`
@@ -42,6 +43,7 @@ var _shop
 
 func _ready() -> void:
 	add_to_group("merchant")
+	_spawn_id = String(get_meta("spawn_id", ""))
 	_build_stock()
 	_build_prompt()
 
@@ -70,16 +72,42 @@ func price_of(item: Items) -> int:
 
 
 ## Marks an item as bought, so reopening the shop shows it sold out.
-func mark_sold(item: Items) -> void:
+func mark_sold(item: Items, notify_world: bool = true) -> void:
 	if item == null or item.resource_path.is_empty():
 		return
 	if not sold.has(item.resource_path):
 		sold.append(item.resource_path)
+	if notify_world:
+		var world := _world()
+		if world != null:
+			world.call("mark_item_sold", _spawn_id, item.resource_path)
 
 
 ## True when this stall has already sold that item.
 func is_sold(item: Items) -> bool:
 	return item != null and sold.has(item.resource_path)
+
+
+## Purchases this run already remembers (T-0104): the stock is deterministic, so
+## only the sold ones have to be marked again after a chunk reload.
+func restore_sold() -> void:
+	var world := _world()
+	if world == null:
+		return
+	for item in stock:
+		if item != null and bool(world.call("is_item_sold", _spawn_id, item.resource_path)):
+			mark_sold(item, false)
+
+
+## World generator this stall belongs to (chunk → map), when it can persist sales.
+func _world() -> Node:
+	var chunk := get_parent()
+	if chunk == null:
+		return null
+	var world := chunk.get_parent()
+	if world != null and world.has_method("mark_item_sold"):
+		return world
+	return null
 
 
 ## Three different consumables, picked with a hash of the world position: the

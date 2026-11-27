@@ -39,4 +39,21 @@
 
 ## Resultado
 
-Pendiente.
+En curso (2026-11-27). Hecho:
+
+- **Puertas en la misma X:** `CastleLayout` fija `ENTRY_COLUMN` (4) y `hall_width - EXIT_MARGIN`
+  (5 desde el marco derecho), con la altura leída del bloque que cubre cada columna
+  (`_top_at()`). Todas las plantas comparten columna de entrada y salida.
+- **Partículas de caminar con color del bioma:** el polvo sale de `Fx.dust()`, que muestreaba
+  `biome.grass_color` con la X del castillo. Ahora `DungeonLayer` fija `fx.dust_color` a gris
+  piedra al entrar y lo limpia al salir.
+- **Escena limpia:** la escena del castillo ya se construye de cero (`dungeon.tscn` +
+  `DungeonGenerator`), sin capas del mundo.
+
+Pendiente, y es lo que queda del ticket:
+
+- **"El mundo está abajo y congelado" al salir.** No está arreglado. `_close_dungeon()` restaura
+  `process_mode` y llama a `refresh_chunks()`, pero sin F5 no se ha podido reproducir si el
+  fallo es el refresco de chunks, la cámara quedándose con la Y del castillo o el jugador
+  cayendo antes de que el chunk esté montado. Hay que reproducirlo antes de tocar nada más.
+

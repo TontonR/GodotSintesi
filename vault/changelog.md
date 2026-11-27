@@ -2,6 +2,16 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-27 · `buffy` · Puertas alineadas, polvo de piedra y tienda con zona segura (T-0102 parcial, T-0104)
+
+- `CastleLayout` fija la columna de entrada y de salida: todas las plantas del castillo
+  comparten la X de las dos puertas.
+- `Fx.dust_color`: el polvo de caminar deja de leer el bioma dentro del castillo (gris piedra).
+- `EnemyBase` no persigue ni ataca a menos de 96 px de un mercader.
+- El stock vendido se recuerda por `spawn_id|resource_path` y viaja en el guardado.
+- Sigue pendiente de T-0102 el "mundo congelado" al salir del castillo.
+- Docs: `docs/shop.md`, `docs/dungeon.md`.
+
 ## 2026-11-27 · `buffy` · Hojas al entrar y salir del arbusto (T-0103) y error de parseo de la tienda (T-0105)
 
 - `SpriteFusionAmbient.burst_leaves()` reutiliza la piscina de hojas del clima; `DecorProp`

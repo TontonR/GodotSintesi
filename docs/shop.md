@@ -53,3 +53,16 @@ _2026-11-27 · branch `feat/estructuras-detras-castillo-grande` · T-0078_
   T-0084) and no art from Jorge (T-0085).
 - Reopening a stall after its chunk was unloaded gives the stock back (**T-0101**: `[world]
   sold` keyed by `spawn_id`, like `broken`).
+
+## Safe zone and sold stock (2026-11-27, T-0104)
+
+- **Safe zone:** while an enemy is within `SHOP_SAFE_RADIUS` (96 px) of a node in the
+  `merchant` group it stops chasing and attacking: `EnemyBase._in_shop_zone()` runs before the
+  attack branch and just brakes, so the stall can be used without a fight on top of it.
+- **No re-buy:** the stock is deterministic (`hash("merchant:x:y")`), so a chunk reload would
+  hand the same three items again. `Merchant.mark_sold()` now reports the purchase to the
+  generator (`mark_item_sold(spawn_id, resource_path)`), which keeps it in `_sold_spawns` and
+  writes it in `save_persistent_state()["sold"]`. On spawn, `restore_sold()` re-marks what the
+  run already bought.
+- The world link is resolved through the chunk (`get_parent().get_parent()`), so the stall
+  keeps no hard reference to `WorldGenerator`.

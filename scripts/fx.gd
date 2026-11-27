@@ -130,15 +130,24 @@ func heal(world_position: Vector2, amount: int) -> void:
 		_number(world_position, "+%d" % amount, Color(0.55, 1.0, 0.6))
 
 
+## Forces the dust colour while the alpha is above 0; cleared with `Color(0,0,0,0)`.
+## The castle interior sets its own stone tone here (T-0102).
+var dust_color: Color = Color(0, 0, 0, 0)
+
+
 ## Dust (jumping, landing, running). `strength` scales size and speed.
 ## The caller passes the feet point: the cloud opens hugging the ground.
 ## The color comes from the biome's grass (lightened) so it reads as local soil.
 func dust(world_position: Vector2, amount: int = 4, strength: float = 1.0) -> void:
 	var color := Color(0.84, 0.8, 0.72, 0.75)
-	var biome := _biome_at(world_position.x)
-	if biome:
-		color = biome.grass_color.lightened(0.35)
-		color.a = 0.75
+	if dust_color.a > 0.0:
+		# No biome to read (inside the castle, T-0102): the caller's tone wins.
+		color = dust_color
+	else:
+		var biome := _biome_at(world_position.x)
+		if biome:
+			color = biome.grass_color.lightened(0.35)
+			color.a = 0.75
 	_burst(world_position, color, amount, 38.0 * strength, 0.42, 1.1 * strength, 240.0, 4.0)
 
 

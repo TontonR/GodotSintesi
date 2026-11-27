@@ -99,6 +99,9 @@ const ITEM_PICKUP_SCENE: PackedScene = preload("res://item_pickup.tscn")
 @export var sprite_faces_right: bool = true
 
 
+## Radius (px) around a merchant where enemies hold their fire (T-0104).
+const SHOP_SAFE_RADIUS := 96.0
+
 var health: float = 0.0
 var defence: float = 0.0
 var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
@@ -180,6 +183,14 @@ func _physics_process(delta: float) -> void:
 	# Flying enemies are not affected by gravity.
 	if not flying_enemy and not is_on_floor():
 		velocity.y += gravity * delta
+
+	# Merchant safe zone (T-0104): no chasing and no attacking near a stall.
+	if _in_shop_zone():
+		_is_attacking = false
+		_decelerate()
+		_play_animation(idle_animation)
+		move_and_slide()
+		return
 
 	# While attacking it brakes; otherwise it decides what to do.
 	if _is_attacking:
@@ -806,6 +817,17 @@ func _coin_drop_bonus() -> float:
 
 func _fx() -> Node:
 	return get_tree().get_first_node_in_group("fx")
+
+
+## Close enough to a merchant stall to be under its calm area (T-0104).
+func _in_shop_zone() -> bool:
+	for node in get_tree().get_nodes_in_group("merchant"):
+		var merchant := node as Node2D
+		if merchant == null or not is_instance_valid(merchant):
+			continue
+		if merchant.global_position.distance_to(global_position) <= SHOP_SAFE_RADIUS:
+			return true
+	return false
 
 
 ## Red flash when taking damage.

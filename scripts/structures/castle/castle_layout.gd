@@ -14,6 +14,10 @@ const FLOOR_BOTTOM := 20
 const MIN_BLOCK_TOP := 11
 const MAX_BLOCK_TOP := 17
 const WINDOW_STEP := 5
+## Fixed column of the entry door, in every floor and every seed (T-0102).
+const ENTRY_COLUMN := 4
+## Tiles from the right frame to the exit door; also fixed, same reason.
+const EXIT_MARGIN := 5
 
 
 func build(seed: int, floor: int, width: int = HALL_WIDTH) -> Dictionary:
@@ -71,6 +75,13 @@ func build(seed: int, floor: int, width: int = HALL_WIDTH) -> Dictionary:
 	var exit_rect: Rect2i = exit_block["rect"]
 	var exit_cell := Vector2i(exit_rect.position.x + exit_rect.size.x / 2, exit_rect.position.y)
 
+	# Doors on the same columns on every floor (T-0102): the entry and the stairs
+	# always share their X, so the castle stacks vertically instead of drifting.
+	spawn_cell.x = ENTRY_COLUMN
+	spawn_cell.y = _top_at(blocks, spawn_cell.x)
+	exit_cell.x = hall_width - EXIT_MARGIN
+	exit_cell.y = _top_at(blocks, exit_cell.x)
+
 	var windows: Array[Vector2i] = []
 	var wx := 3
 	while wx <= hall_width - 5:
@@ -102,6 +113,16 @@ func build(seed: int, floor: int, width: int = HALL_WIDTH) -> Dictionary:
 
 	_ensure_reachable(layout)
 	return layout
+
+
+## Ground row of the block covering `tile_x` (the floor is continuous, so there
+## is always one).
+func _top_at(blocks: Array, tile_x: int) -> int:
+	for block in blocks:
+		var rect: Rect2i = block["rect"]
+		if tile_x >= rect.position.x and tile_x < rect.end.x:
+			return rect.position.y
+	return MAX_BLOCK_TOP
 
 
 func _block(x: int, top: int, width: int) -> Dictionary:

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `resuelto` |
 | Tipo | `feat` |
 | Prioridad | `media` |
 | Dueño | `sin asignar` |
@@ -54,4 +54,13 @@ T-0078 dejó la tienda jugable, pero quedan dos huecos que se notan en F5:
 
 ## Resultado
 
-Pendiente.
+Hecho el 2026-11-27 por `buffy`.
+
+- **Zona segura:** `EnemyBase._in_shop_zone()` (grupo `merchant`, 96 px) corta la IA antes del
+  ataque: el enemigo frena y se queda quieto, sin dañar mientras el jugador compra.
+- **Stock persistido:** `Merchant.mark_sold()` avisa al generador
+  (`mark_item_sold(spawn_id, resource_path)`), que lo guarda en `_sold_spawns` y en
+  `save_persistent_state()["sold"]`; al reaparecer el chunk, `restore_sold()` vuelve a marcar
+  lo vendido. Sin recompra tras recargar ni al volver a pasar.
+- Comprobado por lectura. **F5 pendiente.**
+

@@ -40,3 +40,13 @@ _2026-11-26 · 2026-11-27 · branch `feat/estructuras-detras-castillo-grande` ·
 - `start()` is the floor switch: it clears `Platforms`, `Walls`, `Back` and `Decor`.
 - The chunks must be gone before the dungeon appears: `unload_chunks()` frees them; `process_mode = DISABLED` only pauses the generator.
 - The `Exit`/`Leave` pads are 32×64 px; a 16×32 pad keeps the old proportions. Their `Area2D`s are only anchors now: no `body_entered`, the distance check is in the generator.
+
+## Fixed door columns and stone dust (2026-11-27, T-0102)
+
+- `CastleLayout` now pins both doors to fixed columns: entry on tile `ENTRY_COLUMN` (4) and
+  exit at `hall_width - EXIT_MARGIN` (5 from the right frame), with the Y read from the block
+  that covers each column (`_top_at()`). Every floor has its doors on the same X, so the
+  castle stacks vertically instead of drifting with the random block widths.
+- The walk dust inside is stone grey: `DungeonLayer` sets `fx.dust_color` on the way in and
+  clears it on the way out, so `Fx.dust()` stops sampling the biome grass under the castle
+  (there is no biome there).

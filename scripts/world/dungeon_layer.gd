@@ -181,6 +181,8 @@ func _unload_world() -> void:
 		return
 	_world.process_mode = Node.PROCESS_MODE_DISABLED
 	_world.call("unload_chunks")
+	# No biome to sample here: the walk dust goes stone grey inside (T-0102).
+	_set_dust_color(Color(0.66, 0.63, 0.7, 0.75))
 	if _ambient != null:
 		_ambient.visible = false
 	if _meters != null:
@@ -194,6 +196,7 @@ func _close_dungeon() -> void:
 		_dungeon.queue_free()
 		_dungeon = null
 	_teleport(_world_position)
+	_set_dust_color(Color(0, 0, 0, 0))
 	if _world != null:
 		_world.process_mode = Node.PROCESS_MODE_INHERIT
 		_world.call("refresh_chunks")
@@ -201,6 +204,13 @@ func _close_dungeon() -> void:
 		_ambient.visible = true
 	if _meters != null:
 		_meters.visible = true
+
+
+## Pushes the dust tone to the shared `fx` node (no hard reference).
+func _set_dust_color(color: Color) -> void:
+	var fx := get_tree().get_first_node_in_group("fx")
+	if fx != null:
+		fx.set("dust_color", color)
 
 
 ## Full-screen black rectangle above the HUD, transparent at rest.
