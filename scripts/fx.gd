@@ -303,7 +303,8 @@ func _burst(
 	particles.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	particles.one_shot = true
 	particles.emitting = false
-	particles.amount = maxi(amount, 1)
+	# Graphics quality (T-0101): low halves combat particles, never below one.
+	particles.amount = maxi(roundi(amount * GameSettings.get_instance().particle_scale()), 1)
 	particles.lifetime = lifetime
 	particles.explosiveness = 1.0
 	particles.direction = Vector2.UP

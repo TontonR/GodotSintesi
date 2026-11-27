@@ -11,13 +11,13 @@ Estados: `abierto` · `en-curso` · `bloqueado` · `revision` (código hecho, si
 
 | Id | Sistema | Qué | Estado |
 |---|---|---|---|
-| [T-0101](tickets/pendientes/T-0101-ajustes-de-verdad.md) | ui | Ajustes: remapeo de controles, VSync, tope de FPS, calidad gráfica e idioma | `abierto` |
-| [T-0102](tickets/pendientes/T-0102-mundo-del-castillo.md) | mundo | Castillo como escena limpia: mundo congelado al salir, partículas de bioma dentro y puertas alineadas en la misma X | `abierto` |
+| [T-0101](tickets/pendientes/T-0101-ajustes-de-verdad.md) | ui | Ajustes: remapeo de controles, VSync, tope de FPS, calidad gráfica, idioma y debug | `revision` |
+| [T-0102](tickets/pendientes/T-0102-mundo-del-castillo.md) | mundo | Castillo como escena limpia: vuelta al mundo sin quedarse arriba, partículas de bioma dentro y puertas alineadas en la misma X | `revision` |
 | [T-0103](tickets/pendientes/T-0103-mas-vfx.md) | fx | Hojas nuevas al entrar y salir del arbusto, con más partículas al salir | `resuelto` |
-| [T-0107](tickets/pendientes/T-0107-debug-hud-nunca.md) | player | El aviso de debug no puede aparecer en una partida normal (`debug_tools.enabled = false`) | `revision` |
+| [T-0107](tickets/pendientes/T-0107-debug-hud-nunca.md) | player | El aviso de debug no puede aparecer en una partida normal y las herramientas se encienden en Ajustes | `revision` |
 | [T-0109](tickets/pendientes/T-0109-puertas-castillo-volando.md) | world | Puertas del castillo a veces en el aire: el suelo no llegaba al marco derecho | `revision` |
 | [T-0108](tickets/pendientes/T-0108-arbusto-hojas-profundidad.md) | fx | Hojas del arbusto: menos, repartidas delante y detrás y desde el jugador, con más física | `revision` |
-| [T-0104](tickets/pendientes/T-0104-tienda-zona-segura-y-stock-persistente.md) | mundo/UI | Tienda: zona segura alrededor del puesto y stock vendido persistido por `spawn_id` | `abierto` |
+| [T-0104](tickets/pendientes/T-0104-tienda-zona-segura-y-stock-persistente.md) | mundo/UI | Tienda: zona segura alrededor del puesto y stock vendido persistido por `spawn_id` | `resuelto` |
 | [T-0105](tickets/pendientes/T-0105-shop-screen-error-parseo.md) | ui | Error de parseo en `shop_screen.gd` que dejaba la tienda sin abrir | `resuelto` |
 | [T-0078](tickets/resueltos/T-0078-tienda-stock-precios-y-ui.md) | mundo/UI | Tienda: puesto de mercader con stock de 3, precios derivados de stats y ventana de compra con F | `resuelto` |
 | [T-0099](tickets/resueltos/T-0099-estructuras-detras-y-castillo-grande.md) | mundo | Estructuras de sprite detrás del jugador (`z_index` −1), tienda hundida y castillo a 8 tiles | `resuelto` |

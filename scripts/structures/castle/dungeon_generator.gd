@@ -279,7 +279,8 @@ func _update_prompt() -> void:
 		return
 	# On the top floor the stairs are the way out, so they say "exit" too.
 	var leaves := pad == _leave_area or _floor_index + 1 >= floor_count()
-	_prompt.text = "F: exit" if leaves else "F: enter"
+	var settings := GameSettings.get_instance()
+	_prompt.text = settings.tr_key("prompt.exit" if leaves else "prompt.enter")
 	var screen := get_viewport().get_canvas_transform() * pad.global_position
 	_prompt.position = Vector2(roundf(screen.x - 40.0), roundf(screen.y - 78.0))
 	_prompt.visible = true

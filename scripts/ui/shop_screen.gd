@@ -25,9 +25,12 @@ var _selected := 0
 var _input_lock := 0.0
 
 var _root: Control
+var _title_label: Label
 var _coins_label: Label
 var _message_label: Label
+var _hint_label: Label
 var _list: VBoxContainer
+var _language_bound := false
 
 
 func _init() -> void:
@@ -63,6 +66,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func open(merchant) -> void:
 	_merchant = merchant
 	_build()
+	if not _language_bound:
+		_language_bound = true
+		GameSettings.get_instance().language_changed.connect(_on_language_changed)
 	_build_rows()
 	visible = true
 	get_tree().paused = true
@@ -113,11 +119,11 @@ func _build() -> void:
 	column.add_theme_constant_override("separation", 4)
 	panel.add_child(column)
 
-	var title := Label.new()
-	title.text = "Merchant"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", FONT_TITLE)
-	column.add_child(title)
+	_title_label = Label.new()
+	_title_label.text = GameSettings.get_instance().tr_key("shop.title")
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", FONT_TITLE)
+	column.add_child(_title_label)
 
 	_coins_label = Label.new()
 	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -133,12 +139,12 @@ func _build() -> void:
 	_message_label.add_theme_font_size_override("font_size", FONT_SMALL)
 	column.add_child(_message_label)
 
-	var hint := Label.new()
-	hint.text = "W/S pick · E buy · F leave"
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override("font_size", FONT_SMALL)
-	hint.add_theme_color_override("font_color", Color(0.72, 0.72, 0.78, 1))
-	column.add_child(hint)
+	_hint_label = Label.new()
+	_hint_label.text = GameSettings.get_instance().tr_key("shop.hint")
+	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_label.add_theme_font_size_override("font_size", FONT_SMALL)
+	_hint_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.78, 1))
+	column.add_child(_hint_label)
 
 
 func _build_rows() -> void:
@@ -169,15 +175,17 @@ func _build_rows() -> void:
 
 func _refresh() -> void:
 	var player := _player()
+	var settings := GameSettings.get_instance()
 	var coins := int(player.get("current_coins")) if player != null else 0
-	_coins_label.text = "%d coins" % coins
+	_coins_label.text = settings.tr_key("shop.coins") % coins
 	for i in _rows.size():
 		var row: Dictionary = _rows[i]
 		var item: Items = row["item"]
 		var button: Button = row["button"]
 		# Explicitly typed: `_merchant` is untyped, so `:=` cannot infer a bool.
 		var sold: bool = _merchant != null and bool(_merchant.call("is_sold", item))
-		button.text = "  %s — %s" % [item.item_name, "sold" if sold else "%d" % int(row["price"])]
+		var price_text := settings.tr_key("shop.sold") if sold else "%d" % int(row["price"])
+		button.text = "  %s — %s" % [item.item_name, price_text]
 		button.disabled = sold
 		button.modulate = Color(0.55, 0.55, 0.6, 1) if sold else Color.WHITE
 		button.add_theme_color_override(
@@ -201,26 +209,26 @@ func _buy(index: int) -> void:
 	var row: Dictionary = _rows[index]
 	var item: Items = row["item"]
 	if _merchant.is_sold(item):
-		_message_label.text = "Sold out"
+		_message_label.text = GameSettings.get_instance().tr_key("shop.sold_out")
 		return
 	var player := _player()
 	if player == null:
 		return
 	var price := int(row["price"])
 	if int(player.get("current_coins")) < price:
-		_message_label.text = "Not enough coins"
+		_message_label.text = GameSettings.get_instance().tr_key("shop.no_coins")
 		return
 	var inventory := player.get_node_or_null("Inventory") as Inventory
 	if inventory == null or not _has_room(inventory):
-		_message_label.text = "No free slot"
+		_message_label.text = GameSettings.get_instance().tr_key("shop.no_slot")
 		return
 	if not bool(player.call("spend_coins", price)):
-		_message_label.text = "Not enough coins"
+		_message_label.text = GameSettings.get_instance().tr_key("shop.no_coins")
 		return
 	inventory.add_item(item)
 	_merchant.mark_sold(item)
 	_selected = index
-	_message_label.text = "Bought %s" % item.item_name
+	_message_label.text = GameSettings.get_instance().tr_key("shop.bought") % item.item_name
 	_refresh()
 
 
@@ -236,6 +244,20 @@ func _player() -> Node:
 	if scene == null:
 		return null
 	return scene.get_node_or_null("player")
+
+
+## Language switch while the window is open: the title, the hint and the coin
+## line are built in code, so they are rewritten here.
+func _on_language_changed() -> void:
+	if _root == null:
+		return
+	var settings := GameSettings.get_instance()
+	if _title_label != null:
+		_title_label.text = settings.tr_key("shop.title")
+	if _hint_label != null:
+		_hint_label.text = settings.tr_key("shop.hint")
+	_message_label.text = ""
+	_refresh()
 
 
 func _event_key(event: InputEvent) -> int:

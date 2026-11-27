@@ -65,3 +65,16 @@ _2026-11-26 · 2026-11-27 · branch `feat/estructuras-detras-castillo-grande` ·
   interior column.
 - The doors are still the black 32×64 pads of T-0100 and keep the fixed columns of T-0102:
   only their Y was wrong.
+
+## Coming back to the world (2026-11-27, T-0102)
+
+- `DungeonLayer._close_dungeon()` removes the castle from the tree before `queue_free()`,
+  so it cannot stay painted over the world for the rest of the frame.
+- `_restore_world_view()` finishes the return: it asks `WorldGenerator.ground_y_at()` for
+  the surface under the player and pulls the player down when the return spot is more than
+  120 px above it (an old save without `world_position`, or a debug quick travel used inside
+  the castle, used to leave the player in the sky with the world far below). Standing on the
+  ground (~27 px above the surface) is left untouched.
+- It also drops the camera smoothing so the view lands on the player in that frame, and if
+  the chunk under the player is still not built it repeats `refresh_chunks()` on the next
+  idle frame instead of leaving an empty world.

@@ -39,6 +39,7 @@ var _collect_page: int = 0
 
 func _ready() -> void:
 	visible = false
+	GameSettings.get_instance().localize_tree(self)
 	_prev_page_button.pressed.connect(_change_page.bind(-1))
 	_next_page_button.pressed.connect(_change_page.bind(1))
 	_portrait_box.resized.connect(_layout_portrait)

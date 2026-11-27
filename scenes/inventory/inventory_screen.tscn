@@ -93,6 +93,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 13
 text = "Consumables"
+metadata/locale_key = "inv.consumables"
 
 [node name="ConsumablesFlow" type="FlowContainer" parent="Window/Layout/LeftPanel/LeftColumn" unique_id=622045477]
 layout_mode = 2
@@ -120,6 +121,7 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 13
 text = "Collectibles"
+metadata/locale_key = "inv.collectibles"
 
 [node name="CollectiblesPage" type="Label" parent="Window/Layout/CollectiblesPanel/CollectiblesColumn/CollectiblesHeaderRow" unique_id=1216784936]
 layout_mode = 2

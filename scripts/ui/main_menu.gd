@@ -66,6 +66,8 @@ func _ready() -> void:
 		_slot_button(slot).pressed.connect(_on_slot_pressed.bind(slot))
 		_erase_button(slot).pressed.connect(_on_slot_erase.bind(slot))
 	_load_back_button.pressed.connect(_close_load_dialog)
+	GameSettings.get_instance().language_changed.connect(_on_language_changed)
+	GameSettings.get_instance().localize_tree(self)
 	_load_dialog.hide()
 	_seed_start_button.pressed.connect(_confirm_new_game)
 	_seed_back_button.pressed.connect(_close_seed_dialog)
@@ -102,10 +104,13 @@ func _refresh_menu() -> void:
 		var summary := SaveGame.slot_summary(slot)
 		var occupied := bool(summary["exists"])
 		var play := _slot_button(slot)
+		var settings := GameSettings.get_instance()
 		if occupied:
-			play.text = "Slot %d — %d m · %d coins" % [slot + 1, summary["meters"], summary["coins"]]
+			play.text = settings.tr_key("menu.slot_summary") % [
+				slot + 1, summary["meters"], summary["coins"]
+			]
 		else:
-			play.text = "Slot %d — Empty" % (slot + 1)
+			play.text = settings.tr_key("menu.slot_empty") % (slot + 1)
 		play.disabled = not occupied and _dialog_mode == DIALOG_LOAD
 		_erase_button(slot).visible = occupied and _dialog_mode == DIALOG_LOAD
 
@@ -161,7 +166,7 @@ func _continue_game() -> void:
 
 func _open_load_dialog() -> void:
 	_dialog_mode = DIALOG_LOAD
-	_load_title.text = "Load run"
+	_load_title.text = GameSettings.get_instance().tr_key("menu.load_run")
 	_refresh_menu()
 	_layout.hide()
 	_load_dialog.show()
@@ -170,12 +175,21 @@ func _open_load_dialog() -> void:
 
 func _open_overwrite_dialog() -> void:
 	_dialog_mode = DIALOG_OVERWRITE
-	_load_title.text = "No free slots — overwrite which run?"
+	_load_title.text = GameSettings.get_instance().tr_key("menu.overwrite_run")
 	_refresh_menu()
 	_seed_dialog.hide()
 	_layout.hide()
 	_load_dialog.show()
 	_focus_first_slot()
+
+
+## The static labels carry a `locale_key`; the dialog title and the run rows are
+## built in code and are rebuilt here.
+func _on_language_changed() -> void:
+	_load_title.text = GameSettings.get_instance().tr_key(
+		"menu.overwrite_run" if _dialog_mode == DIALOG_OVERWRITE else "menu.load_run"
+	)
+	_refresh_menu()
 
 
 func _close_load_dialog() -> void:

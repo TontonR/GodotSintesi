@@ -26,6 +26,7 @@ func _ready() -> void:
 	_settings_button.pressed.connect(_open_settings)
 	_save_quit_button.pressed.connect(_save_and_quit)
 	_settings_panel.closed.connect(_back_to_pause)
+	GameSettings.get_instance().localize_tree(self)
 	_settings_panel.hide()
 
 

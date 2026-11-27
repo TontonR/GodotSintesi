@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `revision` |
 | Tipo | `bug` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
@@ -50,10 +50,19 @@ En curso (2026-11-27). Hecho:
 - **Escena limpia:** la escena del castillo ya se construye de cero (`dungeon.tscn` +
   `DungeonGenerator`), sin capas del mundo.
 
-Pendiente, y es lo que queda del ticket:
+Añadido el 2026-11-27:
 
-- **"El mundo está abajo y congelado" al salir.** No está arreglado. `_close_dungeon()` restaura
-  `process_mode` y llama a `refresh_chunks()`, pero sin F5 no se ha podido reproducir si el
-  fallo es el refresco de chunks, la cámara quedándose con la Y del castillo o el jugador
-  cayendo antes de que el chunk esté montado. Hay que reproducirlo antes de tocar nada más.
+- **"El mundo está abajo y congelado" al salir.** `_close_dungeon()` ahora saca el castillo
+  del árbol antes de `queue_free()` (no se queda pintado un frame) y termina con
+  `_restore_world_view()`:
+  - si la posición de vuelta está a más de 120 px sobre el suelo real
+    (`WorldGenerator.ground_y_at()`), el jugador baja hasta `suelo − player_spawn_height_tiles`;
+    es el caso de una partida guardada sin `world_position` o de un viaje rápido del debug
+    usado dentro del castillo, que dejaban al jugador en el cielo con el mundo muy abajo;
+  - `Camera2D.reset_smoothing()` para que la vista caiga en el jugador ese mismo frame;
+  - si el chunk del jugador aún no está montado, `refresh_chunks()` se repite en el
+    siguiente frame de idle en vez de dejar el mundo vacío.
+
+Comprobado por lectura y con `--check-only`. **F5 pendiente** de entrar, salir y volver a
+entrar.
 

@@ -120,6 +120,9 @@ const DRIFT_HEX := ["e9f0ff", "c3cff0", "8e9ccc"]
 @export_enum("leaves", "snow") var effect: String = "leaves"
 ## Multiplies the recipe's particle count; 1.0 is the library default.
 @export_range(0.1, 3.0, 0.05) var density: float = 1.0
+## Probability multiplier applied on top of the biome quota. The graphics
+## quality setting lowers it (T-0101) without rebuilding the pools.
+@export_range(0.05, 1.0, 0.05) var spawn_chance: float = 1.0
 ## Idle weather. With `rain` off the pool only serves `burst_leaves()`: every
 ## leaf waits hidden until a bush throws it. That is what the layer drawn
 ## behind the bushes uses (T-0107).
@@ -312,6 +315,7 @@ func _process(delta: float) -> void:
 func burst_leaves(world_position: Vector2, color: Color, amount: int, force: float = BURST_FORCE) -> void:
 	if not visible or _leaves.is_empty() or amount <= 0:
 		return
+	amount = maxi(1, roundi(amount * spawn_chance))
 	var spawned := 0
 	for leaf in _leaves:
 		if spawned >= amount:
@@ -472,7 +476,7 @@ func _leaf_tint_at(world_x: float) -> Color:
 ## follows the transition evenly instead of clustering on the best tiles.
 func _pick_spawn_x(min_x: float, max_x: float) -> float:
 	var x := _rng.randf_range(min_x, max_x)
-	return x if _rng.randf() <= _share_at(x) else INF
+	return x if _rng.randf() <= _share_at(x) * spawn_chance else INF
 
 
 func _out_of_area(x: float, y: float) -> bool:

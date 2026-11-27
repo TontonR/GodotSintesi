@@ -22,6 +22,10 @@ func _init() -> void:
 	add_theme_constant_override("h_separation", 2)
 	add_theme_constant_override("v_separation", 2)
 
+func _ready() -> void:
+	GameSettings.get_instance().language_changed.connect(_update_page_label)
+
+
 func bind(passives: PlayerPassives) -> void:
 	if source and source.passives_changed.is_connected(_refresh):
 		source.passives_changed.disconnect(_refresh)
@@ -49,7 +53,7 @@ func _update_page_label() -> void:
 		return
 	var pages := _page_count()
 	_page_label.visible = pages > 1
-	_page_label.text = "Page %d/%d" % [_page + 1, pages]
+	_page_label.text = GameSettings.get_instance().tr_key("hud.page") % [_page + 1, pages]
 
 ## Number of pages needed to show every passive
 func _page_count() -> int:

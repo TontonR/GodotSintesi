@@ -23,8 +23,10 @@ const IMMORTAL_LABELS: Array[String] = ["no", "yes"]
 ## Floor for KP7: halving never reaches x0, which would freeze the game.
 const MIN_SPEED := 0.001
 
-## Off unless ticked (T-0107). Disabled, the node builds no notice, listens to
-## no key and leaves `Engine.time_scale` at 1; turn it on only while testing.
+## Kept as an inspector override for a scene run from the editor. In a normal
+## run the switch is the `Debug tools` checkbox of the settings panel, saved in
+## `[debug] tools` (T-0107): off, the node builds no notice, listens to no key
+## and leaves `Engine.time_scale` at 1.
 @export var enabled: bool = false
 ## Game speed at startup (also changed live with the numpad).
 @export var start_speed: float = 1.0
@@ -44,17 +46,37 @@ var _player: Node2D
 var _world: Node
 ## Position + seed line, rebuilt only when it changes.
 var _info: String = ""
+## True while the tools are enabled; guards double activation.
+var _running: bool = false
 
 
 func _ready() -> void:
-	if not enabled:
-		# Nothing is created and nothing listens: the debug HUD cannot appear.
+	var settings := GameSettings.get_instance()
+	settings.debug_tools_changed.connect(_set_active)
+	_set_active(enabled or settings.debug_tools)
+
+
+## Enables or disables the tools live from the settings panel. Turning them off
+## removes the notice and leaves the game at normal speed; turning them on
+## rebuilds the notice and starts listening to the numpad.
+func _set_active(active: bool) -> void:
+	if not active:
+		_running = false
 		set_process(false)
 		set_process_unhandled_input(false)
 		Engine.time_scale = 1.0
+		_speed = 1.0
+		if _label != null and is_instance_valid(_label):
+			_label.queue_free()
+		_label = null
 		return
+	if _running:
+		return
+	_running = true
 	_apply_speed(start_speed)
 	_build_label()
+	set_process(true)
+	set_process_unhandled_input(true)
 
 
 func _process(_delta: float) -> void:

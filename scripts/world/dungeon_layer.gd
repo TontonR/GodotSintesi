@@ -193,6 +193,9 @@ func _unload_world() -> void:
 ## Frees the dungeon and rebuilds the world around the spot the player left.
 func _close_dungeon() -> void:
 	if _dungeon != null:
+		# Drop the castle from the tree now: `queue_free()` alone keeps it painted
+		# over the world for the rest of the frame.
+		remove_child(_dungeon)
 		_dungeon.queue_free()
 		_dungeon = null
 	_teleport(_world_position)
@@ -204,6 +207,34 @@ func _close_dungeon() -> void:
 		_ambient.visible = true
 	if _meters != null:
 		_meters.visible = true
+	_restore_world_view()
+
+
+## The world must come back exactly where the player left it, not "below and
+## frozen" (T-0102). A stale save without `world_position`, or a debug quick
+## travel used inside the castle, can leave the return spot far above the
+## terrain: it is snapped to the ground of the generator here. The camera drops
+## its smoothing so the view lands on the player this frame, and if the chunk
+## is still not built the refresh is repeated on the next idle frame instead of
+## leaving an empty world.
+func _restore_world_view() -> void:
+	if _player == null:
+		return
+	if _world != null and _world.has_method("ground_y_at"):
+		var ground: float = _world.call("ground_y_at", _player.global_position.x)
+		var lift := float(int(_world.get("player_spawn_height_tiles"))) * 16.0
+		if lift <= 0.0:
+			lift = 96.0
+		var target_y := ground - lift
+		# Standing on the ground is ~27 px above it: only a far-off return spot
+		# is pulled down, a normal one is left untouched.
+		if absf(_player.global_position.y - target_y) > 120.0:
+			_teleport(Vector2(_player.global_position.x, target_y))
+	var camera := _player.get_node_or_null("Camera2D") as Camera2D
+	if camera != null:
+		camera.reset_smoothing()
+	if not _world_loaded() and _world != null:
+		_world.call_deferred("refresh_chunks")
 
 
 ## Pushes the dust tone to the shared `fx` node (no hard reference).

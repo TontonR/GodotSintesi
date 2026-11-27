@@ -1299,12 +1299,20 @@ func _ensure_stats_ui() -> void:
 		ui_layer.add_child(grid)
 	if not _stats_values.is_empty():
 		return
-	var stat_names: Array[String] = [
-		"Damage", "Atk. speed", "Crit. damage", "Crit. chance", "Speed", "Luck"
+	var stat_keys: Array[String] = [
+		"stats.damage",
+		"stats.attack_speed",
+		"stats.crit_damage",
+		"stats.crit_chance",
+		"stats.speed",
+		"stats.luck",
 	]
-	for stat_name in stat_names:
+	var settings := GameSettings.get_instance()
+	for stat_key in stat_keys:
 		var key := Label.new()
-		key.text = stat_name
+		# The locale key lets a language switch relabel the panel in place.
+		key.text = settings.tr_key(stat_key)
+		key.set_meta("locale_key", stat_key)
 		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		key.add_theme_font_size_override("font_size", 9)
 		key.add_theme_color_override("font_color", Color(0.87, 0.91, 0.87, 1.0))

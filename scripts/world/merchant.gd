@@ -167,6 +167,7 @@ func _player_in_range() -> bool:
 func _update_prompt() -> void:
 	if _prompt == null:
 		return
+	_prompt.text = GameSettings.get_instance().tr_key("prompt.shop")
 	var shop_open := _shop != null and is_instance_valid(_shop)
 	var player := _player()
 	if shop_open or player == null or not _player_in_range():

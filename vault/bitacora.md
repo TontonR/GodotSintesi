@@ -1182,3 +1182,28 @@ Formato de entrada:
   `scenes/game.tscn`, `README.md`, `docs/fx.md`, `docs/decor.md`, `docs/player.md`,
   `docs/dungeon.md`.
 - F5 pendiente: no se ha visto ninguna de las tres cosas en el editor.
+
+## 2026-11-27 · `buffy` · Ajustes de verdad, idioma y debug desde el panel (T-0101, T-0107, T-0102)
+
+- Ruben: "acaba los tickets 101-104, aún no he visto los ajustes", y después: "no borres las
+  herramientas de debugging, devuélvemelas; que se activen o desactiven en los ajustes".
+- Nuevo `scripts/game_settings.gd` (`class_name GameSettings`, singleton perezoso sin
+  autoload para que el editor abierto no rompa el parseo): `[video]` (VSync, FPS, calidad),
+  `[language]` (diccionario EN/ES + `locale_key`/`localize_tree`), `[input]` (remapeo de
+  `movement`, `interact`, `inventory` y `use_slot_1..3`, con `Reset keys`) y `[debug]`.
+- `SettingsPanel` reescrito a dos columnas (vídeo / idioma+controles) con fila **Debug
+  tools**; `DebugTools._set_active()` engancha `debug_tools_changed` para encender y apagar
+  el aviso y el numpad en caliente. Sin ticket de borrado.
+- T-0102: `_close_dungeon()` saca el castillo del árbol antes de liberarlo y
+  `_restore_world_view()` devuelve al jugador al suelo si la vuelta quedó en el cielo, quita
+  el smoothing de cámara y repite `refresh_chunks()` si el chunk falta.
+- Verificado con `--check-only` en los 15 scripts tocados y un probe headless desechable:
+  panel, traducciones ES/EN, remapeo/reset contra `InputMap`, `particle_scale` 0.5/1.0 y
+  `DebugHint` creado/eliminado con la casilla. `user://settings.cfg` restaurado (solo quedó
+  `locale` devuelto a `en`). **F5 pendiente** de todo lo visual.
+- Afectados: `scripts/game_settings.gd`, `scripts/ui/settings_panel.gd`,
+  `scenes/ui/settings_panel.tscn`, `scripts/debug_tools.gd`, `scripts/world/dungeon_layer.gd`,
+  `scripts/world/{biome_particles,spritefusion_ambient,merchant}.gd`, `scripts/fx.gd`,
+  `scripts/player.gd`, `scripts/passive_ui.gd`, `scripts/structures/castle/dungeon_generator.gd`,
+  `scripts/ui/{main_menu,pause_menu,death_screen,shop_screen}.gd`, escenas de menú/pausa/
+  muerte/inventario, `README.md`, `docs/ui.md`, `docs/player.md`, `docs/dungeon.md`.

@@ -9,19 +9,33 @@ const MAIN_MENU_SCENE := "res://scenes/main_menu.tscn"
 @onready var _menu_button: Button = $Panel/Margin/Content/Buttons/Menu
 @onready var _quit_button: Button = $Panel/Margin/Content/Buttons/Quit
 
+## Last run shown, so the stats line survives a language switch.
+var _run_seed: int = 0
+var _run_coins: int = 0
+
 
 func _ready() -> void:
 	visible = false
 	_menu_button.pressed.connect(_back_to_menu)
 	_quit_button.pressed.connect(_quit)
+	GameSettings.get_instance().language_changed.connect(_refresh_stats)
+	GameSettings.get_instance().localize_tree(self)
 
 
 ## Called by the game root once the death animation has played.
 func show_death(run_seed: int, coins: int) -> void:
-	_stats.text = "Seed %d · %d coins" % [run_seed, coins]
+	_run_seed = run_seed
+	_run_coins = coins
+	_refresh_stats()
 	visible = true
 	get_tree().paused = true
 	_menu_button.grab_focus()
+
+
+func _refresh_stats() -> void:
+	if _stats == null:
+		return
+	_stats.text = GameSettings.get_instance().tr_key("death.stats") % [_run_seed, _run_coins]
 
 
 func _back_to_menu() -> void:

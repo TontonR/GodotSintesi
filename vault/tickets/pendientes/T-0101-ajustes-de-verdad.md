@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | `abierto` |
+| Estado | `revision` |
 | Tipo | `feat` |
 | Prioridad | `alta` |
 | Dueño | `buffy` |
@@ -41,4 +41,25 @@ están en `InputMap` del `project.godot` sin UI, y no hay ni vsync, ni tope de F
 
 ## Resultado
 
-Pendiente.
+Hecho el 2026-11-27 por `buffy`.
+
+- **Vídeo**: VSync (`Off`/`On`/`Adaptive`) y tope de FPS (`30/60/120/144/Unlimited`) se
+  aplican al instante y al arrancar (`DisplayServer.window_set_vsync_mode`, `Engine.max_fps`).
+  Calidad gráfica `High`/`Low`: la baja reduce a la mitad el presupuesto de partículas del
+  ambiente (`SpriteFusionAmbient.spawn_chance`, también la capa de detrás del terreno) y de
+  los estallidos de `Fx`.
+- **Idioma**: `GameSettings` lleva el diccionario EN/ES. Las etiquetas estáticas de las
+  escenas llevan `metadata/locale_key` y `localize_tree()` las reescribe; lo que se construye
+  por código (tienda, prompts, panel de stats, contador de páginas, filas de slots) se
+  refresca con `language_changed`. Cambia sin reiniciar.
+- **Controles**: remapeo de `movement` (derecha e izquierda), `interact`, `inventory`
+  (Tab e I) y `use_slot_1..3`; los valores por defecto se capturan de `project.godot` al
+  arrancar, se guardan en `[input] bindings` y `Reset keys` los devuelve.
+- **Persistencia**: `[video]`, `[language]`, `[input]` y `[debug]` en `user://settings.cfg`,
+  junto a `[display]` y `[vfx]` sin pisarlos.
+- **Debug tools**: el nodo del numpad se enciende y apaga desde el panel (T-0107).
+
+Verificado con un probe headless: panel con 2 columnas, 8 filas de teclas, título en ES/EN,
+placeholder de semilla traducido, remapeo aplicado al `InputMap` y `Reset keys` devolviendo
+F, `particle_scale` 0.5/1.0 y `DebugHint` creado/eliminado al alternar la casilla. **F5
+pendiente** de verlo en el editor.

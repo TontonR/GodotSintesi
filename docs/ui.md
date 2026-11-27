@@ -93,3 +93,35 @@ _2026-10-15 · 2026-10-22 · branch `feat/skills-and-complex-passives` · 2026-1
 - **In English**: identifiers (functions/vars/constants/enums), `@export`, `@export_group` titles and `##` doc (what the inspector shows).
 - **In English**: regular `#` comments, UI text (labels, `.tres`) and `docs/`.
 - Refactor scope: objects/inventory/UI/passives/loot systems — `item_pickup.gd`, `scenes/inventory/inventory.gd`, `scenes/inventory/inventory_ui.gd`, `passive_ui.gd`, `scenes/inventory/inventory_screen.gd`, `player_passive.gd`, `collectables/*`, `loot_drop_item.gd`. **Untouched**: `player.gd`, `enemy_base.gd`, `world_generator.gd`, `ghost*.gd`.
+
+## Settings, language and controls (2026-11-27, T-0101)
+
+- `SettingsPanel` now has two columns: **Video** (window mode, resolution, VSync, FPS cap,
+  graphics quality, leaf particles, enhanced VFX physics, debug tools) and **Gameplay**
+  (language, the remappable keys and `Reset keys`). It is the same scene in the main menu
+  and in the pause menu, 680×380 px, and the controls list scrolls inside the panel.
+- `scripts/game_settings.gd` (`class_name GameSettings`) owns `[video]`, `[language]`,
+  `[input]` and `[debug]` of `user://settings.cfg`. It is **not** an autoload: it is a lazy
+  singleton (`GameSettings.get_instance()` adds the node to the tree on first use), so an
+  open editor does not need `project.godot` reloaded. Every writer loads the file before
+  saving, so `[display]` (the panel) and `[vfx]` (`VfxSettings`) survive.
+- **Video**: VSync (`Off`/`On`/`Adaptive` → `DisplayServer.window_set_vsync_mode()`), FPS cap
+  (`30`/`60`/`120`/`144`/`Unlimited` → `Engine.max_fps`) and graphics quality. Both apply at
+  startup and on change; low quality halves the particle budget through
+  `SpriteFusionAmbient.spawn_chance` (ambient leaves/snow and the layer behind the terrain)
+  and `Fx._burst()`.
+- **Language** (`English`/`Español`): `GameSettings.TRANSLATIONS` is the dictionary (English
+  first, Spanish second). Static labels and buttons carry a `metadata/locale_key` in their
+  scenes and `localize_tree()` re-applies them on any switch; texts built in code (slot
+  rows, shop, prompts, stats panel, page counters) either set the same metadata or rebuild
+  on `language_changed`. Nothing restarts.
+- **Controls**: the remappable actions are `movement` (right, then left), `interact`,
+  `inventory` (Tab, then I) and `use_slot_1..3`. The defaults are captured from
+  `project.godot` before any override is applied; a remap replaces one key event and removes
+  the same code from the other slot of that action (movement can never put both directions
+  on one key). They are stored as `[input] bindings`, applied to `InputMap` live and
+  restored by `Reset keys`.
+- **Debug tools**: the numpad node is no longer "deleted or inspector-only". The checkbox
+  saves `[debug] tools` and `DebugTools` reacts live (`_set_active`): on builds the notice
+  and listens, off frees the notice and resets `Engine.time_scale`. It ships off, so the
+  notice still cannot appear by accident.

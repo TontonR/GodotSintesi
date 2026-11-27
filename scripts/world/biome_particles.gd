@@ -25,6 +25,20 @@ func _ready() -> void:
 	if _get_vfx_settings() != null:
 		_vfx_settings.connect("changed", _apply_vfx_settings)
 	_apply_vfx_settings()
+	GameSettings.get_instance().quality_changed.connect(_apply_quality)
+	_apply_quality()
+
+
+## Graphics quality (T-0101): low halves the ambient spawn chance of both the
+## climate emitters and the extra layer behind the terrain, which is where most
+## of the particles live. Nothing is rebuilt, so toggling is instant.
+func _apply_quality() -> void:
+	var scale := GameSettings.get_instance().particle_scale()
+	_leaves.spawn_chance = scale
+	_snow.spawn_chance = scale
+	var behind := get_node_or_null("../map/behind_leaves") as SpriteFusionAmbient
+	if behind != null:
+		behind.spawn_chance = scale
 
 
 ## Live toggles from SettingsPanel (T-0096): leaves can be removed entirely and

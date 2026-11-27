@@ -29,19 +29,21 @@ The inventory has 3 fixed-width outlined columns: character/consumables, collect
 
 ## Temporary debug
 
-Everything is **off** in a normal run: `DEBUG_TOOLS = false` in
-`scenes/inventory/inventory.gd` (item cheats) and `enabled = false` on the
-`debug_tools` node in `game.tscn` (T-0107), so no shortcut nor the debug notice can
-appear. Tick `enabled` in the inspector to use the keys below while testing; the code
-stays until T-0002 (skills) uses `KP 3`:
+Everything is **off** in a normal run and nothing is deleted: the numpad tools are
+switched from **Settings → Debug tools** (`[debug] tools` in `user://settings.cfg`, live,
+no restart) and the item cheats from `DEBUG_TOOLS = false` in
+`scenes/inventory/inventory.gd` (T-0005). With the box unticked no shortcut nor the debug
+notice can appear. While they are on the keys below work and the current speed shows in the
+`DebugHint` label at the bottom left:
 
 | Key | Effect |
 |---|---|
 | `KP 4` / `KP 6` | Fast travel left / right (64 tiles), landing a few tiles above the ground |
 | `KP 7` / `KP 8` / `KP 9` | Game speed halved / reset to x1 / doubled (`Engine.time_scale`, no cap) |
 
-The current speed and keys are shown in a label at the bottom left (`DebugHint`).
-Both helpers are meant to be deleted when the testing phase ends.
+The notice's second line is `pos · tile · chunk · seed`, so any world can be reproduced
+from the seed dialog. Turning the box off removes the notice and restores `time_scale` to
+x1 immediately.
 
 ## Structure
 

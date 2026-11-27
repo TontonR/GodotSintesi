@@ -2,6 +2,40 @@
 
 _Append-only: se añade arriba lo nuevo, no se reescribe lo viejo._
 
+## 2026-11-27 · `buffy` · Ajustes de verdad: vídeo, idioma y controles, y el debug de vuelta (T-0101, T-0107)
+
+- **Panel**: `SettingsPanel` pasa a dos columnas. Vídeo: modo de ventana, resolución, VSync
+  (Off/On/Adaptive), tope de FPS (30/60/120/144/sin límite), calidad (Low/High), hojas,
+  físicas VFX y **Debug tools**. Gameplay: idioma y la lista de teclas remapeables con
+  `Reset keys`.
+- **`GameSettings`** (`scripts/game_settings.gd`, singleton perezoso, sin autoload): dueño de
+  `[video]`, `[language]`, `[input]` y `[debug]` de `user://settings.cfg`. VSync y FPS se
+  aplican al instante y al arrancar; la calidad baja reduce a la mitad las partículas
+  ambientales (`spawn_chance`) y los estallidos de `Fx`.
+- **Idioma EN/ES** sin reiniciar: diccionario en `GameSettings`, `metadata/locale_key` en las
+  etiquetas de las escenas, `localize_tree()` al cambiar y refresco de lo dinámico (tienda,
+  prompts, slots, panel de stats, contador de páginas).
+- **Controles**: `movement` (derecha/izquierda), `interact`, `inventory` (Tab/I) y
+  `use_slot_1..3`; se capturan los valores de `project.godot`, se guardan en `[input]
+  bindings` y `Reset keys` los restaura.
+- **Debug**: las herramientas del numpad no se borran; se encienden y apagan en
+  **Ajustes → Debug tools** (`[debug] tools`) y `DebugTools._set_active()` reacciona en
+  caliente. Siguen apagadas por defecto, así que el aviso no puede salir solo.
+- Probe headless: panel con 8 filas de teclas, títulos ES/EN, placeholder de semilla
+traducido, remapeo aplicado al `InputMap` y reset a F, `particle_scale` 0.5/1.0 y
+`DebugHint` creado/eliminado al alternar la casilla. **F5 pendiente.**
+- Docs: `docs/ui.md`, `docs/player.md`, `README.md`.
+
+## 2026-11-27 · `buffy` · Volver del castillo ya no deja el mundo abajo (T-0102)
+
+- `DungeonLayer._close_dungeon()` saca el castillo del árbol antes de `queue_free()` y
+  llama a `_restore_world_view()`: si la posición de vuelta está a más de 120 px sobre el
+  suelo de `ground_y_at()` (partida vieja sin `world_position` o viaje rápido dentro del
+  castillo), el jugador baja al suelo; además `Camera2D.reset_smoothing()` y un
+  `refresh_chunks()` diferido si el chunk aún no está montado.
+- Comprobado por lectura y `--check-only`; **F5 pendiente**.
+- Docs: `docs/dungeon.md`.
+
 ## 2026-11-27 · `buffy` · Puertas del castillo siempre sobre el suelo (T-0109)
 
 - El bucle de bloques de `CastleLayout.build()` podía dejar 6 columnas sin suelo antes del

@@ -3,10 +3,10 @@
 [ext_resource type="Script" path="res://scripts/ui/settings_panel.gd" id="1_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 18.0
-content_margin_top = 16.0
-content_margin_right = 18.0
-content_margin_bottom = 16.0
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
 bg_color = Color(0.078431, 0.109804, 0.14902, 0.96)
 border_width_left = 2
 border_width_top = 2
@@ -25,10 +25,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -170.0
-offset_right = 220.0
-offset_bottom = 170.0
+offset_left = -340.0
+offset_top = -190.0
+offset_right = 340.0
+offset_bottom = 190.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -39,74 +39,199 @@ layout_mode = 2
 
 [node name="Content" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 8
 
 [node name="SettingsTitle" type="Label" parent="Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Settings"
+metadata/locale_key = "settings.title"
 horizontal_alignment = 1
 
-[node name="WindowModeRow" type="HBoxContainer" parent="Margin/Content"]
+[node name="Columns" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
-theme_override_constants/separation = 12
+size_flags_vertical = 3
+theme_override_constants/separation = 20
 
-[node name="WindowModeLabel" type="Label" parent="Margin/Content/WindowModeRow"]
+[node name="Video" type="VBoxContainer" parent="Margin/Content/Columns"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WindowModeRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WindowModeLabel" type="Label" parent="Margin/Content/Columns/Video/WindowModeRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 text = "Window mode"
+metadata/locale_key = "settings.window_mode"
 
-[node name="WindowMode" type="OptionButton" parent="Margin/Content/WindowModeRow"]
+[node name="WindowMode" type="OptionButton" parent="Margin/Content/Columns/Video/WindowModeRow"]
 layout_mode = 2
-custom_minimum_size = Vector2(210, 0)
-theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2(150, 0)
+theme_override_font_sizes/font_size = 14
 
-[node name="ResolutionRow" type="HBoxContainer" parent="Margin/Content"]
+[node name="ResolutionRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="ResolutionLabel" type="Label" parent="Margin/Content/ResolutionRow"]
+[node name="ResolutionLabel" type="Label" parent="Margin/Content/Columns/Video/ResolutionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 text = "Resolution"
+metadata/locale_key = "settings.resolution"
 
-[node name="Resolution" type="OptionButton" parent="Margin/Content/ResolutionRow"]
+[node name="Resolution" type="OptionButton" parent="Margin/Content/Columns/Video/ResolutionRow"]
 layout_mode = 2
-custom_minimum_size = Vector2(210, 0)
-theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2(150, 0)
+theme_override_font_sizes/font_size = 14
 
-[node name="LeavesRow" type="HBoxContainer" parent="Margin/Content"]
+[node name="VsyncRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="LeavesLabel" type="Label" parent="Margin/Content/LeavesRow"]
+[node name="VsyncLabel" type="Label" parent="Margin/Content/Columns/Video/VsyncRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
+text = "VSync"
+metadata/locale_key = "settings.vsync"
+
+[node name="Vsync" type="OptionButton" parent="Margin/Content/Columns/Video/VsyncRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 0)
+theme_override_font_sizes/font_size = 14
+
+[node name="FpsRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FpsLabel" type="Label" parent="Margin/Content/Columns/Video/FpsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "FPS limit"
+metadata/locale_key = "settings.fps"
+
+[node name="Fps" type="OptionButton" parent="Margin/Content/Columns/Video/FpsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 0)
+theme_override_font_sizes/font_size = 14
+
+[node name="QualityRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="QualityLabel" type="Label" parent="Margin/Content/Columns/Video/QualityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Graphics quality"
+metadata/locale_key = "settings.quality"
+
+[node name="Quality" type="OptionButton" parent="Margin/Content/Columns/Video/QualityRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 0)
+theme_override_font_sizes/font_size = 14
+
+[node name="LeavesRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LeavesLabel" type="Label" parent="Margin/Content/Columns/Video/LeavesRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
 text = "Leaf particles"
+metadata/locale_key = "settings.leaves"
 
-[node name="Leaves" type="CheckButton" parent="Margin/Content/LeavesRow"]
+[node name="Leaves" type="CheckButton" parent="Margin/Content/Columns/Video/LeavesRow"]
 layout_mode = 2
 
-[node name="PhysicsRow" type="HBoxContainer" parent="Margin/Content"]
+[node name="PhysicsRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="PhysicsLabel" type="Label" parent="Margin/Content/PhysicsRow"]
+[node name="PhysicsLabel" type="Label" parent="Margin/Content/Columns/Video/PhysicsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 text = "Enhanced VFX physics"
+metadata/locale_key = "settings.physics"
 
-[node name="Physics" type="CheckButton" parent="Margin/Content/PhysicsRow"]
+[node name="Physics" type="CheckButton" parent="Margin/Content/Columns/Video/PhysicsRow"]
 layout_mode = 2
+
+[node name="DebugRow" type="HBoxContainer" parent="Margin/Content/Columns/Video"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DebugLabel" type="Label" parent="Margin/Content/Columns/Video/DebugRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Debug tools"
+metadata/locale_key = "settings.debug_tools"
+
+[node name="Debug" type="CheckButton" parent="Margin/Content/Columns/Video/DebugRow"]
+layout_mode = 2
+
+[node name="Gameplay" type="VBoxContainer" parent="Margin/Content/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LanguageRow" type="HBoxContainer" parent="Margin/Content/Columns/Gameplay"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LanguageLabel" type="Label" parent="Margin/Content/Columns/Gameplay/LanguageRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Language"
+metadata/locale_key = "settings.language"
+
+[node name="Language" type="OptionButton" parent="Margin/Content/Columns/Gameplay/LanguageRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(130, 0)
+theme_override_font_sizes/font_size = 14
+
+[node name="ControlsLabel" type="Label" parent="Margin/Content/Columns/Gameplay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 15
+text = "Controls"
+metadata/locale_key = "settings.controls"
+
+[node name="ControlsScroll" type="ScrollContainer" parent="Margin/Content/Columns/Gameplay"]
+custom_minimum_size = Vector2(0, 148)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Controls" type="VBoxContainer" parent="Margin/Content/Columns/Gameplay/ControlsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="ResetControls" type="Button" parent="Margin/Content/Columns/Gameplay"]
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(150, 26)
+theme_override_font_sizes/font_size = 14
+text = "Reset keys"
+metadata/locale_key = "settings.reset_keys"
 
 [node name="Back" type="Button" parent="Margin/Content"]
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 36)
-theme_override_font_sizes/font_size = 18
+custom_minimum_size = Vector2(160, 32)
+theme_override_font_sizes/font_size = 16
 text = "Back"
+metadata/locale_key = "settings.back"

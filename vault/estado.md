@@ -8,10 +8,10 @@ _Actualizado 2026-11-27 por `buffy`_
 |---|---|
 | Rama | `feat/estructuras-detras-castillo-grande`, sacada de `main` con los PR #12 y #13 ya fusionados (`origin/main` en `69814d9`); `refactor/world-split` sigue sin PR |
 | Árbol | `revision` tras T-0080, T-0095, T-0097 y T-0098 (hall de 64×22 con suelo escalonado continuo, sin diagonales y con autotiling en las caras superiores): VFX ambientales de Sprite Fusion anclados al mundo (hojas y nieve con litter y ventisquero por tile, transición por densidad, hojas de ronda 9 sin oleadas ni montones tras TP, y sangre de la receta `blood` en golpes y muerte), castillo de 3–10 plantas que asciende al pisar la puerta (T-0095), hojas interactivas con disolución por píxeles y ajustes VFX (T-0096) y ronda 12: hojas verdes y escasas en el prado (densidad 0,2), ruido de nieve 3–7 px, ambiente con corte al 80 % y puerta del castillo con sprite de 64×64; ronda 13: subida automática con alcance real y apoyo, partículas con cantidad gradual y manto de nieve prolongado por terreno llano hasta un cambio de altura; ronda 14: rectángulos de ataque normalizados para que `flip_pivot` no genere `Rect2` negativos; ronda 15: hojas de arbusto a 4/9 en dos planos (la de detrás desde el jugador, `map/behind_leaves`, T-0108), `debug_tools` apagado por defecto (T-0107) y suelo del castillo siempre hasta la columna de la puerta de salida (T-0109). F5 pendiente |
-| Fase | Ruben en F5; `buffy` terminó su parte (mazmorra/castillo). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
-| Siguiente paso | F5 de Ruben (hall T-0095 de 64×22 con suelo escalonado, guardado dentro del castillo T-0080, ruinas, cajas, puerta, salida lejana, frontera hojas/nieve, hojas verdes del prado (ronda 12), subida automática y borde del manto (T-0097, ronda 13; subida revalidada en headless 2026-11-26), rectángulos de ataque (T-0098, ronda 14), sangre al golpe y en la muerte, subida de plantas T-0095 y hojas interactivas T-0096); PR #12 (`feat/vfx-suelo-transicion-sangre`) y PR de `feat/castillo-plantas-3-10` (base: la rama de VFX); después T-0081 (boss) y T-0078 (tienda) |
+| Fase | Ruben en F5; `buffy` cerró ajustes, debug y la vuelta del castillo (T-0101, T-0102, T-0107). PixelForge sigue con el arte de T-0086. Planning de estructuras y tienda al **2026-12-11** |
+| Siguiente paso | F5 de Ruben: ajustes nuevos (T-0101: VSync, FPS, calidad, idioma EN/ES y remapeo), debug desde Ajustes (T-0107), vuelta del castillo (T-0102), hojas del arbusto en dos planos (T-0108) y puertas sobre el suelo (T-0109); después T-0081 (boss), T-0086 (arte de cajas) y T-0003 (inventario lleno) |
 | Ramas | Limpieza 2026-11-26: 13 ramas locales y 6 remotas ya fusionadas borradas; `main` actualizado a `origin/main`. Se conservan `refactor/world-split` y `feat/enemigos-demon-toad-werewolf` porque no están fusionadas, y el worktree viejo `GodotSintesi-vfx` quedó guardado en `stash@{0}` antes de retirarlo. |
-| Bloqueos | Ninguno: moneda, precios y surtido de la tienda ya están decididos e implementados (T-0078); quedan la zona segura y el stock persistente (T-0101) |
+| Bloqueos | Ninguno: tienda completa (T-0078, T-0104), ajustes nuevos (T-0101) y debug desde el panel (T-0107); todo pendiente de F5 |
 
 ## Foco por agente
 
@@ -28,6 +28,8 @@ _Actualizado 2026-11-27 por `buffy`_
 
 | Fecha | Ticket | Qué |
 |---|---|---|
+| 2026-11-27 | T-0101 · T-0107 | Ajustes de verdad (VSync, FPS, calidad, idioma EN/ES y remapeo de teclas en `[input] bindings`) y el debug del numpad de vuelta como casilla de Ajustes; probe headless verde, F5 pendiente |
+| 2026-11-27 | T-0102 | Vuelta del castillo sin quedarse en el cielo: castillo fuera del árbol antes de liberar, snap al suelo real, cámara sin smoothing y refresco diferido si falta el chunk; F5 pendiente |
 | 2026-11-27 | T-0109 | El último bloque del hall se estira hasta el marco derecho: la puerta de salida ya no queda volando sobre un hueco; F5 pendiente |
 | 2026-11-27 | T-0107 · T-0108 | `debug_tools.enabled = false` (sin aviso ni teclas en partida normal) y hojas de arbusto a 4/9 en dos planos, la de detrás desde el jugador y con más física; F5 pendiente |
 | 2026-11-27 | T-0078 | Tienda jugable: puesto de mercader con sprite nuevo, stock determinista de 3 consumibles, precios por stats y ventana de compra con F; zona segura y persistencia del stock pendientes, F5 pendiente |

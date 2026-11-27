@@ -37,11 +37,21 @@ no tenía ningún interruptor: el label se construía sin condición.
 - [x] Una partida normal no muestra `DebugHint` ni reacciona al numpad.
 - [x] `Engine.time_scale` se queda en 1 con el nodo apagado.
 - [x] Encenderlo desde el inspector recupera todos los atajos de siempre.
-- [x] `docs/player.md` y `README.md` actualizados.
+- [x] Se enciende y se apaga desde **Ajustes → Debug tools**, sin reiniciar, y se recuerda
+      en `[debug] tools` de `user://settings.cfg`.
+- [x] `docs/player.md`, `docs/ui.md` y `README.md` actualizados.
 
 ## Resultado
 
 Hecho el 2026-11-27 por `buffy`. `DebugTools.enabled` (`scripts/debug_tools.gd`) apaga el nodo
 entero: sin label, sin `_unhandled_input`, `Engine.time_scale = 1`. `scenes/game.tscn` lo deja
-en `false`, así que el aviso de la captura ya no puede salir en una partida normal; para
-depurar se marca la casilla en el inspector. Comprobado por lectura, **sin F5**.
+en `false`, así que el aviso de la captura ya no puede salir en una partida normal.
+
+**Las herramientas no se borran** (petición de Ruben): el interruptor vive ahora en
+**Ajustes → Debug tools** (`GameSettings.set_debug_tools()`, `[debug] tools`). `DebugTools`
+se engancha a `debug_tools_changed` y `_set_active()` monta o libera el aviso y reengancha
+el numpad en caliente; el `enabled` del inspector queda como atajo para una escena suelta.
+No hay ticket de eliminación.
+
+Comprobado con un probe headless: off no crea `DebugHint`, on lo crea y off vuelve a dejarlo
+a cero con `time_scale = 1`. **F5 pendiente** de ver la casilla en el panel.
