@@ -10,6 +10,7 @@ extends Node2D
 ## Default blood red. Every layer of the death burst is derived from it, so an
 ## enemy only has to set one `blood_color` to change its own.
 const BLOOD_COLOR := Color(0.82, 0.11, 0.1)
+const VFX_SETTINGS_SCRIPT := preload("res://scripts/vfx_settings.gd")
 
 var _camera: Camera2D
 var _shake_time := 0.0
@@ -23,10 +24,12 @@ var _flash_tween: Tween
 var _text_layer: CanvasLayer
 var _dot_texture: ImageTexture
 var _streak_texture: ImageTexture
+var _vfx_settings: Node
 
 
 func _ready() -> void:
 	add_to_group("fx")
+	_get_vfx_settings()
 	_dot_texture = _solid_texture(2)
 	_streak_texture = _make_streak_texture()
 	_build_layers()
@@ -51,9 +54,15 @@ func _process(delta: float) -> void:
 # API FOR THE REST OF THE GAME
 # ==============================================================================
 
-## Hit on an enemy: sparks and damage number. If critical, more golden
-## sparks, bigger number and short shake.
-func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -> void:
+## Hit on an enemy: a directional blood jet, sparks and damage number. If
+## critical, more golden sparks, bigger number and short shake.
+func enemy_hit(
+	world_position: Vector2,
+	damage: float,
+	critical: bool = false,
+	blood_color: Color = BLOOD_COLOR
+) -> void:
+	_blood_hit(world_position, blood_color)
 	if critical:
 		_burst(world_position, Color(1.0, 0.8, 0.32), 14, 140.0, 0.45, 1.2, 280.0, 4.0)
 		_burst(world_position, Color(1.0, 1.0, 0.9), 6, 90.0, 0.25, 0.8, 120.0, 2.0)
@@ -66,14 +75,31 @@ func enemy_hit(world_position: Vector2, damage: float, critical: bool = false) -
 		_number(world_position + Vector2(0.0, -10.0), str(roundi(damage)), Color(1.0, 0.93, 0.72))
 
 
+## Directional spray for a normal hit. It flies away from the player and is
+## lighter than the death burst, so every sword hit reads without covering the
+## screen in blood.
+func _blood_hit(world_position: Vector2, blood_color: Color) -> void:
+	var direction := 1
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player != null and absf(world_position.x - player.global_position.x) > 1.0:
+		direction = 1 if world_position.x > player.global_position.x else -1
+	var spray := SpriteFusionBlood.new()
+	spray.blood_color = blood_color
+	spray.amount = 0.55
+	spray.size = 0.8
+	add_child(spray)
+	spray.play(world_position, direction)
+
+
 ## Enemy death: the Sprite Fusion blood spray (strands, drops, mist, drips and
 ## stains that dry on the ground) in the enemy's `blood_color`, a light spark
-## burst and the camera hit.
+## burst and the camera hit. The spray is radial and heavier than a hit, so it
+## reads as an explosion instead of a jet flying to one side.
 func enemy_death(world_position: Vector2, blood_color: Color = BLOOD_COLOR) -> void:
 	var spray := SpriteFusionBlood.new()
 	spray.blood_color = blood_color
 	add_child(spray)
-	spray.play(world_position, -1 if randf() < 0.5 else 1)
+	spray.play(world_position, 0)
 	_burst(world_position, blood_color.lightened(0.75), 8, 120.0, 0.3, 0.7, 260.0, 4.0)
 	shake(1.4, 0.12)
 
@@ -132,9 +158,30 @@ func crate_break(world_position: Vector2) -> void:
 	shake(1.2, 0.09)
 
 
+## Resolves the settings singleton without depending on the autoload identifier.
+## The fallback keeps the toggle working while the editor has not reloaded an
+## externally edited `project.godot` (T-0096).
+func _get_vfx_settings() -> Node:
+	if is_instance_valid(_vfx_settings):
+		return _vfx_settings
+	var tree := get_tree()
+	if tree == null:
+		return null
+	_vfx_settings = tree.root.get_node_or_null("VfxSettings")
+	if _vfx_settings == null:
+		_vfx_settings = VFX_SETTINGS_SCRIPT.new()
+		_vfx_settings.name = "VfxSettings"
+		tree.root.add_child(_vfx_settings)
+	return _vfx_settings
+
+
 ## Leaves shaken off a bush the player walks through: short, slow burst that
 ## falls with its own gravity.
 func leaves(world_position: Vector2, color: Color, amount: int = 7) -> void:
+	# Same global toggle as the ambient rain: bushes stop shedding too.
+	var vfx := _get_vfx_settings()
+	if vfx != null and not bool(vfx.get("leaves_enabled")):
+		return
 	_burst(world_position, color, amount, 45.0, 0.65, 0.9, 150.0, 2.5, 70.0)
 
 

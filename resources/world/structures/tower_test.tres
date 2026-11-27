@@ -7,4 +7,4 @@
 script = ExtResource("1_structure")
 display_name = "Test Tower"
 scene = ExtResource("2_entrance")
-size_tiles = 3
+size_tiles = 4

@@ -26,9 +26,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -220.0
-offset_top = -110.0
+offset_top = -170.0
 offset_right = 220.0
-offset_bottom = 110.0
+offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -77,6 +77,32 @@ text = "Resolution"
 layout_mode = 2
 custom_minimum_size = Vector2(210, 0)
 theme_override_font_sizes/font_size = 16
+
+[node name="LeavesRow" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LeavesLabel" type="Label" parent="Margin/Content/LeavesRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Leaf particles"
+
+[node name="Leaves" type="CheckButton" parent="Margin/Content/LeavesRow"]
+layout_mode = 2
+
+[node name="PhysicsRow" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PhysicsLabel" type="Label" parent="Margin/Content/PhysicsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Enhanced VFX physics"
+
+[node name="Physics" type="CheckButton" parent="Margin/Content/PhysicsRow"]
+layout_mode = 2
 
 [node name="Back" type="Button" parent="Margin/Content"]
 layout_mode = 2

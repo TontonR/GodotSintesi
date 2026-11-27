@@ -5,6 +5,9 @@
 # Configuración local de OpenCode
 opencode.json
 
+# Raw third-party downloads: source only, runtime art lives under assets/
+assets/downloads/
+
 # Obsidian (notas locales del vault)
 .obsidian/
 

@@ -8,7 +8,7 @@
 | Dueño | `buffy` |
 | Sistema | fx |
 | Creado | 2026-11-26 |
-| Actualizado | 2026-11-26 |
+| Actualizado | 2026-11-26 (chorro al golpe) |
 | Relacionado | T-0092, T-0093, T-0029, T-0043 |
 
 ## Problema
@@ -48,5 +48,15 @@ numérica, y el proyecto ya usa su canal público de ZIP para el ambiente (T-009
 ## Resultado
 
 Hecho en `scripts/fx/spritefusion_blood.gd` (`class_name SpriteFusionBlood`).
-`fx.enemy_death(world_position, blood_color)` crea el nodo, lo lanza hacia un lado
-al azar y conserva la chispa clara y `shake(1.4, 0.12)`. Sin F5 todavía.
+`fx.enemy_death(world_position, blood_color)` crea el nodo y conserva la chispa clara
+y `shake(1.4, 0.12)`. Desde la ronda 6 pasa dirección **0**: el chorro direccional se
+sustituye por una explosión radial (72 gotas base ×1,6, 20 de anillo y 10 puffs de
+niebla, todas en 360° y más lentas), así la sangre no sale hacia el lado contrario y
+se lee más cantidad al matar. El chorro lateral queda para golpes direccionales. Sin
+F5 todavía.
+
+## Golpes (2026-11-26)
+
+`fx.enemy_hit()` ya no deja solo chispas: crea un `SpriteFusionBlood` más pequeño
+(`amount` 0,55, `size` 0,8) y lo lanza hacia el lado contrario al jugador, con el
+`blood_color` del enemigo. La muerte conserva el estallido radial. F5 pendiente.
